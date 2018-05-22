@@ -466,7 +466,8 @@ Pgfe has been developed on the own funds. Donations are welcome!
 If you are using Pgfe for commercial purposes it is reasonable to donate or
 even sponsor the further development of Pgfe.
 
-(To make a donation, please refer to <https://paypal.me/dmitigr>.)
+To make a donation, please go to [here](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=38TY2K8KYKYJC&lc=US&item_name=Pgfe%20library&item_number=1&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted) or
+[here](https://paypal.me/dmitigr).
 
 If you need a commercial support, or you need to develop a custom client-side or
 server-side software based on PostgreSQL, please contact us.
