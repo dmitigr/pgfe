@@ -1,0 +1,934 @@
+// -*- C++ -*-
+// Copyright (C) Dmitry Igrishin
+// For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
+
+#ifndef DMITIGR_PGFE_ERRC_HPP
+#define DMITIGR_PGFE_ERRC_HPP
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// This file was generated automatically. There is no sense to edit!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+namespace dmitigr::pgfe {
+
+/**
+ * @ingroup errors
+ *
+ * @brief Represents a client error code.
+ */
+enum class Client_errc {
+  /** Denotes success (no error). */
+  success = @PGFE_CLIENT_ERRC_SUCCESS@,
+
+  /** Denotes an insufficient array dimensionality. */
+  insufficient_array_dimensionality = @PGFE_CLIENT_ERRC_INSUFFICIENT_ARRAY_DIMENSIONALITY@,
+
+  /** Denotes an excessive array dimensionality. */
+  excessive_array_dimensionality = @PGFE_CLIENT_ERRC_EXCESSIVE_ARRAY_DIMENSIONALITY@,
+
+  /** Denotes a malformed array literal. */
+  malformed_array_literal = @PGFE_CLIENT_ERRC_MALFORMED_ARRAY_LITERAL@
+};
+
+/**
+ * @ingroup errors
+ *
+ * @brief Represents a server error code.
+ */
+enum class Server_errc {
+  /*
+   * Class 00 - Successful Completion
+   */
+
+  /** 00000 */
+  c00_successful_completion = @PGFE_SERVER_ERRC_C00_SUCCESSFUL_COMPLETION@,
+
+  /*
+   * Class 01 - Warning
+   */
+
+  /** 01000 */
+  c01_warning = @PGFE_SERVER_ERRC_C01_WARNING@,
+
+  /** 0100C */
+  c01_dynamic_result_sets_returned = @PGFE_SERVER_ERRC_C01_DYNAMIC_RESULT_SETS_RETURNED@,
+
+  /** 01008 */
+  c01_implicit_zero_bit_padding = @PGFE_SERVER_ERRC_C01_IMPLICIT_ZERO_BIT_PADDING@,
+
+  /** 01003 */
+  c01_null_value_eliminated_in_set_function = @PGFE_SERVER_ERRC_C01_NULL_VALUE_ELIMINATED_IN_SET_FUNCTION@,
+
+  /** 01007 */
+  c01_privilege_not_granted = @PGFE_SERVER_ERRC_C01_PRIVILEGE_NOT_GRANTED@,
+
+  /** 01006 */
+  c01_privilege_not_revoked = @PGFE_SERVER_ERRC_C01_PRIVILEGE_NOT_REVOKED@,
+
+  /** 01004 */
+  c01_string_data_right_truncation = @PGFE_SERVER_ERRC_C01_STRING_DATA_RIGHT_TRUNCATION@,
+
+  /** 01P01 */
+  c01_deprecated_feature = @PGFE_SERVER_ERRC_C01_DEPRECATED_FEATURE@,
+
+  /*
+   * Class 02 - No Data
+   */
+
+  /** 02000 */
+  c02_no_data = @PGFE_SERVER_ERRC_C02_NO_DATA@,
+
+  /** 02001 */
+  c02_no_additional_dynamic_result_sets_returned = @PGFE_SERVER_ERRC_C02_NO_ADDITIONAL_DYNAMIC_RESULT_SETS_RETURNED@,
+
+  /*
+   * Class 03 - SQL Statement Not Yet Complete
+   */
+
+  /** 03000 */
+  c03_sql_statement_not_yet_complete = @PGFE_SERVER_ERRC_C03_SQL_STATEMENT_NOT_YET_COMPLETE@,
+
+  /*
+   * Class 08 - Connection Exception
+   */
+
+  /** 08000 */
+  c08_connection_exception = @PGFE_SERVER_ERRC_C08_CONNECTION_EXCEPTION@,
+
+  /** 08003 */
+  c08_connection_does_not_exist = @PGFE_SERVER_ERRC_C08_CONNECTION_DOES_NOT_EXIST@,
+
+  /** 08006 */
+  c08_connection_failure = @PGFE_SERVER_ERRC_C08_CONNECTION_FAILURE@,
+
+  /** 08001 */
+  c08_sqlclient_unable_to_establish_sqlconnection = @PGFE_SERVER_ERRC_C08_SQLCLIENT_UNABLE_TO_ESTABLISH_SQLCONNECTION@,
+
+  /** 08004 */
+  c08_sqlserver_rejected_establishment_of_sqlconnection = @PGFE_SERVER_ERRC_C08_SQLSERVER_REJECTED_ESTABLISHMENT_OF_SQLCONNECTION@,
+
+  /** 08007 */
+  c08_transaction_resolution_unknown = @PGFE_SERVER_ERRC_C08_TRANSACTION_RESOLUTION_UNKNOWN@,
+
+  /** 08P01 */
+  c08_protocol_violation = @PGFE_SERVER_ERRC_C08_PROTOCOL_VIOLATION@,
+
+  /*
+   * Class 09 - Triggered Action Exception
+   */
+
+  /** 09000 */
+  c09_triggered_action_exception = @PGFE_SERVER_ERRC_C09_TRIGGERED_ACTION_EXCEPTION@,
+
+  /*
+   * Class 0A - Feature Not Supported
+   */
+
+  /** 0A000 */
+  c0a_feature_not_supported = @PGFE_SERVER_ERRC_C0A_FEATURE_NOT_SUPPORTED@,
+
+  /*
+   * Class 0B - Invalid Transaction Initiation
+   */
+
+  /** 0B000 */
+  c0b_invalid_transaction_initiation = @PGFE_SERVER_ERRC_C0B_INVALID_TRANSACTION_INITIATION@,
+
+  /*
+   * Class 0F - Locator Exception
+   */
+
+  /** 0F000 */
+  c0f_locator_exception = @PGFE_SERVER_ERRC_C0F_LOCATOR_EXCEPTION@,
+
+  /** 0F001 */
+  c0f_invalid_locator_specification = @PGFE_SERVER_ERRC_C0F_INVALID_LOCATOR_SPECIFICATION@,
+
+  /*
+   * Class 0L - Invalid Grantor
+   */
+
+  /** 0L000 */
+  c0l_invalid_grantor = @PGFE_SERVER_ERRC_C0L_INVALID_GRANTOR@,
+
+  /** 0LP01 */
+  c0l_invalid_grant_operation = @PGFE_SERVER_ERRC_C0L_INVALID_GRANT_OPERATION@,
+
+  /*
+   * Class 0P - Invalid Role Specification
+   */
+
+  /** 0P000 */
+  c0p_invalid_role_specification = @PGFE_SERVER_ERRC_C0P_INVALID_ROLE_SPECIFICATION@,
+
+  /*
+   * Class 0Z - Diagnostics Exception
+   */
+
+  /** 0Z000 */
+  c0z_diagnostics_exception = @PGFE_SERVER_ERRC_C0Z_DIAGNOSTICS_EXCEPTION@,
+
+  /** 0Z002 */
+  c0z_stacked_diagnostics_accessed_without_active_handler = @PGFE_SERVER_ERRC_C0Z_STACKED_DIAGNOSTICS_ACCESSED_WITHOUT_ACTIVE_HANDLER@,
+
+  /*
+   * Class 20 - Case Not Found
+   */
+
+  /** 20000 */
+  c20_case_not_found = @PGFE_SERVER_ERRC_C20_CASE_NOT_FOUND@,
+
+  /*
+   * Class 21 - Cardinality Violation
+   */
+
+  /** 21000 */
+  c21_cardinality_violation = @PGFE_SERVER_ERRC_C21_CARDINALITY_VIOLATION@,
+
+  /*
+   * Class 22 - Data Exception
+   */
+
+  /** 22000 */
+  c22_data_exception = @PGFE_SERVER_ERRC_C22_DATA_EXCEPTION@,
+
+  /** 2202E */
+  c22_array_subscript_error = @PGFE_SERVER_ERRC_C22_ARRAY_SUBSCRIPT_ERROR@,
+
+  /** 22021 */
+  c22_character_not_in_repertoire = @PGFE_SERVER_ERRC_C22_CHARACTER_NOT_IN_REPERTOIRE@,
+
+  /** 22008 */
+  c22_datetime_field_overflow = @PGFE_SERVER_ERRC_C22_DATETIME_FIELD_OVERFLOW@,
+
+  /** 22012 */
+  c22_division_by_zero = @PGFE_SERVER_ERRC_C22_DIVISION_BY_ZERO@,
+
+  /** 22005 */
+  c22_error_in_assignment = @PGFE_SERVER_ERRC_C22_ERROR_IN_ASSIGNMENT@,
+
+  /** 2200B */
+  c22_escape_character_conflict = @PGFE_SERVER_ERRC_C22_ESCAPE_CHARACTER_CONFLICT@,
+
+  /** 22022 */
+  c22_indicator_overflow = @PGFE_SERVER_ERRC_C22_INDICATOR_OVERFLOW@,
+
+  /** 22015 */
+  c22_interval_field_overflow = @PGFE_SERVER_ERRC_C22_INTERVAL_FIELD_OVERFLOW@,
+
+  /** 2201E */
+  c22_invalid_argument_for_logarithm = @PGFE_SERVER_ERRC_C22_INVALID_ARGUMENT_FOR_LOGARITHM@,
+
+  /** 22014 */
+  c22_invalid_argument_for_ntile_function = @PGFE_SERVER_ERRC_C22_INVALID_ARGUMENT_FOR_NTILE_FUNCTION@,
+
+  /** 22016 */
+  c22_invalid_argument_for_nth_value_function = @PGFE_SERVER_ERRC_C22_INVALID_ARGUMENT_FOR_NTH_VALUE_FUNCTION@,
+
+  /** 2201F */
+  c22_invalid_argument_for_power_function = @PGFE_SERVER_ERRC_C22_INVALID_ARGUMENT_FOR_POWER_FUNCTION@,
+
+  /** 2201G */
+  c22_invalid_argument_for_width_bucket_function = @PGFE_SERVER_ERRC_C22_INVALID_ARGUMENT_FOR_WIDTH_BUCKET_FUNCTION@,
+
+  /** 22018 */
+  c22_invalid_character_value_for_cast = @PGFE_SERVER_ERRC_C22_INVALID_CHARACTER_VALUE_FOR_CAST@,
+
+  /** 22007 */
+  c22_invalid_datetime_format = @PGFE_SERVER_ERRC_C22_INVALID_DATETIME_FORMAT@,
+
+  /** 22019 */
+  c22_invalid_escape_character = @PGFE_SERVER_ERRC_C22_INVALID_ESCAPE_CHARACTER@,
+
+  /** 2200D */
+  c22_invalid_escape_octet = @PGFE_SERVER_ERRC_C22_INVALID_ESCAPE_OCTET@,
+
+  /** 22025 */
+  c22_invalid_escape_sequence = @PGFE_SERVER_ERRC_C22_INVALID_ESCAPE_SEQUENCE@,
+
+  /** 22P06 */
+  c22_nonstandard_use_of_escape_character = @PGFE_SERVER_ERRC_C22_NONSTANDARD_USE_OF_ESCAPE_CHARACTER@,
+
+  /** 22010 */
+  c22_invalid_indicator_parameter_value = @PGFE_SERVER_ERRC_C22_INVALID_INDICATOR_PARAMETER_VALUE@,
+
+  /** 22023 */
+  c22_invalid_parameter_value = @PGFE_SERVER_ERRC_C22_INVALID_PARAMETER_VALUE@,
+
+  /** 2201B */
+  c22_invalid_regular_expression = @PGFE_SERVER_ERRC_C22_INVALID_REGULAR_EXPRESSION@,
+
+  /** 2201W */
+  c22_invalid_row_count_in_limit_clause = @PGFE_SERVER_ERRC_C22_INVALID_ROW_COUNT_IN_LIMIT_CLAUSE@,
+
+  /** 2201X */
+  c22_invalid_row_count_in_result_offset_clause = @PGFE_SERVER_ERRC_C22_INVALID_ROW_COUNT_IN_RESULT_OFFSET_CLAUSE@,
+
+  /** 2202H */
+  c22_invalid_tablesample_argument = @PGFE_SERVER_ERRC_C22_INVALID_TABLESAMPLE_ARGUMENT@,
+
+  /** 2202G */
+  c22_invalid_tablesample_repeat = @PGFE_SERVER_ERRC_C22_INVALID_TABLESAMPLE_REPEAT@,
+
+  /** 22009 */
+  c22_invalid_time_zone_displacement_value = @PGFE_SERVER_ERRC_C22_INVALID_TIME_ZONE_DISPLACEMENT_VALUE@,
+
+  /** 2200C */
+  c22_invalid_use_of_escape_character = @PGFE_SERVER_ERRC_C22_INVALID_USE_OF_ESCAPE_CHARACTER@,
+
+  /** 2200G */
+  c22_most_specific_type_mismatch = @PGFE_SERVER_ERRC_C22_MOST_SPECIFIC_TYPE_MISMATCH@,
+
+  /** 22004 */
+  c22_null_value_not_allowed = @PGFE_SERVER_ERRC_C22_NULL_VALUE_NOT_ALLOWED@,
+
+  /** 22002 */
+  c22_null_value_no_indicator_parameter = @PGFE_SERVER_ERRC_C22_NULL_VALUE_NO_INDICATOR_PARAMETER@,
+
+  /** 22003 */
+  c22_numeric_value_out_of_range = @PGFE_SERVER_ERRC_C22_NUMERIC_VALUE_OUT_OF_RANGE@,
+
+  /** 2200H */
+  c22_sequence_generator_limit_exceeded = @PGFE_SERVER_ERRC_C22_SEQUENCE_GENERATOR_LIMIT_EXCEEDED@,
+
+  /** 22026 */
+  c22_string_data_length_mismatch = @PGFE_SERVER_ERRC_C22_STRING_DATA_LENGTH_MISMATCH@,
+
+  /** 22001 */
+  c22_string_data_right_truncation = @PGFE_SERVER_ERRC_C22_STRING_DATA_RIGHT_TRUNCATION@,
+
+  /** 22011 */
+  c22_substring_error = @PGFE_SERVER_ERRC_C22_SUBSTRING_ERROR@,
+
+  /** 22027 */
+  c22_trim_error = @PGFE_SERVER_ERRC_C22_TRIM_ERROR@,
+
+  /** 22024 */
+  c22_unterminated_c_string = @PGFE_SERVER_ERRC_C22_UNTERMINATED_C_STRING@,
+
+  /** 2200F */
+  c22_zero_length_character_string = @PGFE_SERVER_ERRC_C22_ZERO_LENGTH_CHARACTER_STRING@,
+
+  /** 22P01 */
+  c22_floating_point_exception = @PGFE_SERVER_ERRC_C22_FLOATING_POINT_EXCEPTION@,
+
+  /** 22P02 */
+  c22_invalid_text_representation = @PGFE_SERVER_ERRC_C22_INVALID_TEXT_REPRESENTATION@,
+
+  /** 22P03 */
+  c22_invalid_binary_representation = @PGFE_SERVER_ERRC_C22_INVALID_BINARY_REPRESENTATION@,
+
+  /** 22P04 */
+  c22_bad_copy_file_format = @PGFE_SERVER_ERRC_C22_BAD_COPY_FILE_FORMAT@,
+
+  /** 22P05 */
+  c22_untranslatable_character = @PGFE_SERVER_ERRC_C22_UNTRANSLATABLE_CHARACTER@,
+
+  /** 2200L */
+  c22_not_an_xml_document = @PGFE_SERVER_ERRC_C22_NOT_AN_XML_DOCUMENT@,
+
+  /** 2200M */
+  c22_invalid_xml_document = @PGFE_SERVER_ERRC_C22_INVALID_XML_DOCUMENT@,
+
+  /** 2200N */
+  c22_invalid_xml_content = @PGFE_SERVER_ERRC_C22_INVALID_XML_CONTENT@,
+
+  /** 2200S */
+  c22_invalid_xml_comment = @PGFE_SERVER_ERRC_C22_INVALID_XML_COMMENT@,
+
+  /** 2200T */
+  c22_invalid_xml_processing_instruction = @PGFE_SERVER_ERRC_C22_INVALID_XML_PROCESSING_INSTRUCTION@,
+
+  /*
+   * Class 23 - Integrity Constraint Violation
+   */
+
+  /** 23000 */
+  c23_integrity_constraint_violation = @PGFE_SERVER_ERRC_C23_INTEGRITY_CONSTRAINT_VIOLATION@,
+
+  /** 23001 */
+  c23_restrict_violation = @PGFE_SERVER_ERRC_C23_RESTRICT_VIOLATION@,
+
+  /** 23502 */
+  c23_not_null_violation = @PGFE_SERVER_ERRC_C23_NOT_NULL_VIOLATION@,
+
+  /** 23503 */
+  c23_foreign_key_violation = @PGFE_SERVER_ERRC_C23_FOREIGN_KEY_VIOLATION@,
+
+  /** 23505 */
+  c23_unique_violation = @PGFE_SERVER_ERRC_C23_UNIQUE_VIOLATION@,
+
+  /** 23514 */
+  c23_check_violation = @PGFE_SERVER_ERRC_C23_CHECK_VIOLATION@,
+
+  /** 23P01 */
+  c23_exclusion_violation = @PGFE_SERVER_ERRC_C23_EXCLUSION_VIOLATION@,
+
+  /*
+   * Class 24 - Invalid Cursor State
+   */
+
+  /** 24000 */
+  c24_invalid_cursor_state = @PGFE_SERVER_ERRC_C24_INVALID_CURSOR_STATE@,
+
+  /*
+   * Class 25 - Invalid Transaction State
+   */
+
+  /** 25000 */
+  c25_invalid_transaction_state = @PGFE_SERVER_ERRC_C25_INVALID_TRANSACTION_STATE@,
+
+  /** 25001 */
+  c25_active_sql_transaction = @PGFE_SERVER_ERRC_C25_ACTIVE_SQL_TRANSACTION@,
+
+  /** 25002 */
+  c25_branch_transaction_already_active = @PGFE_SERVER_ERRC_C25_BRANCH_TRANSACTION_ALREADY_ACTIVE@,
+
+  /** 25008 */
+  c25_held_cursor_requires_same_isolation_level = @PGFE_SERVER_ERRC_C25_HELD_CURSOR_REQUIRES_SAME_ISOLATION_LEVEL@,
+
+  /** 25003 */
+  c25_inappropriate_access_mode_for_branch_transaction = @PGFE_SERVER_ERRC_C25_INAPPROPRIATE_ACCESS_MODE_FOR_BRANCH_TRANSACTION@,
+
+  /** 25004 */
+  c25_inappropriate_isolation_level_for_branch_transaction = @PGFE_SERVER_ERRC_C25_INAPPROPRIATE_ISOLATION_LEVEL_FOR_BRANCH_TRANSACTION@,
+
+  /** 25005 */
+  c25_no_active_sql_transaction_for_branch_transaction = @PGFE_SERVER_ERRC_C25_NO_ACTIVE_SQL_TRANSACTION_FOR_BRANCH_TRANSACTION@,
+
+  /** 25006 */
+  c25_read_only_sql_transaction = @PGFE_SERVER_ERRC_C25_READ_ONLY_SQL_TRANSACTION@,
+
+  /** 25007 */
+  c25_schema_and_data_statement_mixing_not_supported = @PGFE_SERVER_ERRC_C25_SCHEMA_AND_DATA_STATEMENT_MIXING_NOT_SUPPORTED@,
+
+  /** 25P01 */
+  c25_no_active_sql_transaction = @PGFE_SERVER_ERRC_C25_NO_ACTIVE_SQL_TRANSACTION@,
+
+  /** 25P02 */
+  c25_in_failed_sql_transaction = @PGFE_SERVER_ERRC_C25_IN_FAILED_SQL_TRANSACTION@,
+
+  /** 25P03 */
+  c25_idle_in_transaction_session_timeout = @PGFE_SERVER_ERRC_C25_IDLE_IN_TRANSACTION_SESSION_TIMEOUT@,
+
+  /*
+   * Class 26 - Invalid SQL Statement Name
+   */
+
+  /** 26000 */
+  c26_invalid_sql_statement_name = @PGFE_SERVER_ERRC_C26_INVALID_SQL_STATEMENT_NAME@,
+
+  /*
+   * Class 27 - Triggered Data Change Violation
+   */
+
+  /** 27000 */
+  c27_triggered_data_change_violation = @PGFE_SERVER_ERRC_C27_TRIGGERED_DATA_CHANGE_VIOLATION@,
+
+  /*
+   * Class 28 - Invalid Authorization Specification
+   */
+
+  /** 28000 */
+  c28_invalid_authorization_specification = @PGFE_SERVER_ERRC_C28_INVALID_AUTHORIZATION_SPECIFICATION@,
+
+  /** 28P01 */
+  c28_invalid_password = @PGFE_SERVER_ERRC_C28_INVALID_PASSWORD@,
+
+  /*
+   * Class 2B - Dependent Privilege Descriptors Still Exist
+   */
+
+  /** 2B000 */
+  c2b_dependent_privilege_descriptors_still_exist = @PGFE_SERVER_ERRC_C2B_DEPENDENT_PRIVILEGE_DESCRIPTORS_STILL_EXIST@,
+
+  /** 2BP01 */
+  c2b_dependent_objects_still_exist = @PGFE_SERVER_ERRC_C2B_DEPENDENT_OBJECTS_STILL_EXIST@,
+
+  /*
+   * Class 2D - Invalid Transaction Termination
+   */
+
+  /** 2D000 */
+  c2d_invalid_transaction_termination = @PGFE_SERVER_ERRC_C2D_INVALID_TRANSACTION_TERMINATION@,
+
+  /*
+   * Class 2F - SQL Routine Exception
+   */
+
+  /** 2F000 */
+  c2f_sql_routine_exception = @PGFE_SERVER_ERRC_C2F_SQL_ROUTINE_EXCEPTION@,
+
+  /** 2F005 */
+  c2f_function_executed_no_return_statement = @PGFE_SERVER_ERRC_C2F_FUNCTION_EXECUTED_NO_RETURN_STATEMENT@,
+
+  /** 2F002 */
+  c2f_modifying_sql_data_not_permitted = @PGFE_SERVER_ERRC_C2F_MODIFYING_SQL_DATA_NOT_PERMITTED@,
+
+  /** 2F003 */
+  c2f_prohibited_sql_statement_attempted = @PGFE_SERVER_ERRC_C2F_PROHIBITED_SQL_STATEMENT_ATTEMPTED@,
+
+  /** 2F004 */
+  c2f_reading_sql_data_not_permitted = @PGFE_SERVER_ERRC_C2F_READING_SQL_DATA_NOT_PERMITTED@,
+
+  /*
+   * Class 34 - Invalid Cursor Name
+   */
+
+  /** 34000 */
+  c34_invalid_cursor_name = @PGFE_SERVER_ERRC_C34_INVALID_CURSOR_NAME@,
+
+  /*
+   * Class 38 - External Routine Exception
+   */
+
+  /** 38000 */
+  c38_external_routine_exception = @PGFE_SERVER_ERRC_C38_EXTERNAL_ROUTINE_EXCEPTION@,
+
+  /** 38001 */
+  c38_containing_sql_not_permitted = @PGFE_SERVER_ERRC_C38_CONTAINING_SQL_NOT_PERMITTED@,
+
+  /** 38002 */
+  c38_modifying_sql_data_not_permitted = @PGFE_SERVER_ERRC_C38_MODIFYING_SQL_DATA_NOT_PERMITTED@,
+
+  /** 38003 */
+  c38_prohibited_sql_statement_attempted = @PGFE_SERVER_ERRC_C38_PROHIBITED_SQL_STATEMENT_ATTEMPTED@,
+
+  /** 38004 */
+  c38_reading_sql_data_not_permitted = @PGFE_SERVER_ERRC_C38_READING_SQL_DATA_NOT_PERMITTED@,
+
+  /*
+   * Class 39 - External Routine Invocation Exception
+   */
+
+  /** 39000 */
+  c39_external_routine_invocation_exception = @PGFE_SERVER_ERRC_C39_EXTERNAL_ROUTINE_INVOCATION_EXCEPTION@,
+
+  /** 39001 */
+  c39_invalid_sqlstate_returned = @PGFE_SERVER_ERRC_C39_INVALID_SQLSTATE_RETURNED@,
+
+  /** 39004 */
+  c39_null_value_not_allowed = @PGFE_SERVER_ERRC_C39_NULL_VALUE_NOT_ALLOWED@,
+
+  /** 39P01 */
+  c39_trigger_protocol_violated = @PGFE_SERVER_ERRC_C39_TRIGGER_PROTOCOL_VIOLATED@,
+
+  /** 39P02 */
+  c39_srf_protocol_violated = @PGFE_SERVER_ERRC_C39_SRF_PROTOCOL_VIOLATED@,
+
+  /** 39P03 */
+  c39_event_trigger_protocol_violated = @PGFE_SERVER_ERRC_C39_EVENT_TRIGGER_PROTOCOL_VIOLATED@,
+
+  /*
+   * Class 3B - Savepoint Exception
+   */
+
+  /** 3B000 */
+  c3b_savepoint_exception = @PGFE_SERVER_ERRC_C3B_SAVEPOINT_EXCEPTION@,
+
+  /** 3B001 */
+  c3b_invalid_savepoint_specification = @PGFE_SERVER_ERRC_C3B_INVALID_SAVEPOINT_SPECIFICATION@,
+
+  /*
+   * Class 3D - Invalid Catalog Name
+   */
+
+  /** 3D000 */
+  c3d_invalid_catalog_name = @PGFE_SERVER_ERRC_C3D_INVALID_CATALOG_NAME@,
+
+  /*
+   * Class 3F - Invalid Schema Name
+   */
+
+  /** 3F000 */
+  c3f_invalid_schema_name = @PGFE_SERVER_ERRC_C3F_INVALID_SCHEMA_NAME@,
+
+  /*
+   * Class 40 - Transaction Rollback
+   */
+
+  /** 40000 */
+  c40_transaction_rollback = @PGFE_SERVER_ERRC_C40_TRANSACTION_ROLLBACK@,
+
+  /** 40002 */
+  c40_transaction_integrity_constraint_violation = @PGFE_SERVER_ERRC_C40_TRANSACTION_INTEGRITY_CONSTRAINT_VIOLATION@,
+
+  /** 40001 */
+  c40_serialization_failure = @PGFE_SERVER_ERRC_C40_SERIALIZATION_FAILURE@,
+
+  /** 40003 */
+  c40_statement_completion_unknown = @PGFE_SERVER_ERRC_C40_STATEMENT_COMPLETION_UNKNOWN@,
+
+  /** 40P01 */
+  c40_deadlock_detected = @PGFE_SERVER_ERRC_C40_DEADLOCK_DETECTED@,
+
+  /*
+   * Class 42 - Syntax Error or Access Rule Violation
+   */
+
+  /** 42000 */
+  c42_syntax_error_or_access_rule_violation = @PGFE_SERVER_ERRC_C42_SYNTAX_ERROR_OR_ACCESS_RULE_VIOLATION@,
+
+  /** 42601 */
+  c42_syntax_error = @PGFE_SERVER_ERRC_C42_SYNTAX_ERROR@,
+
+  /** 42501 */
+  c42_insufficient_privilege = @PGFE_SERVER_ERRC_C42_INSUFFICIENT_PRIVILEGE@,
+
+  /** 42846 */
+  c42_cannot_coerce = @PGFE_SERVER_ERRC_C42_CANNOT_COERCE@,
+
+  /** 42803 */
+  c42_grouping_error = @PGFE_SERVER_ERRC_C42_GROUPING_ERROR@,
+
+  /** 42P20 */
+  c42_windowing_error = @PGFE_SERVER_ERRC_C42_WINDOWING_ERROR@,
+
+  /** 42P19 */
+  c42_invalid_recursion = @PGFE_SERVER_ERRC_C42_INVALID_RECURSION@,
+
+  /** 42830 */
+  c42_invalid_foreign_key = @PGFE_SERVER_ERRC_C42_INVALID_FOREIGN_KEY@,
+
+  /** 42602 */
+  c42_invalid_name = @PGFE_SERVER_ERRC_C42_INVALID_NAME@,
+
+  /** 42622 */
+  c42_name_too_long = @PGFE_SERVER_ERRC_C42_NAME_TOO_LONG@,
+
+  /** 42939 */
+  c42_reserved_name = @PGFE_SERVER_ERRC_C42_RESERVED_NAME@,
+
+  /** 42804 */
+  c42_datatype_mismatch = @PGFE_SERVER_ERRC_C42_DATATYPE_MISMATCH@,
+
+  /** 42P18 */
+  c42_indeterminate_datatype = @PGFE_SERVER_ERRC_C42_INDETERMINATE_DATATYPE@,
+
+  /** 42P21 */
+  c42_collation_mismatch = @PGFE_SERVER_ERRC_C42_COLLATION_MISMATCH@,
+
+  /** 42P22 */
+  c42_indeterminate_collation = @PGFE_SERVER_ERRC_C42_INDETERMINATE_COLLATION@,
+
+  /** 42809 */
+  c42_wrong_object_type = @PGFE_SERVER_ERRC_C42_WRONG_OBJECT_TYPE@,
+
+  /** 428C9 */
+  c42_generated_always = @PGFE_SERVER_ERRC_C42_GENERATED_ALWAYS@,
+
+  /** 42703 */
+  c42_undefined_column = @PGFE_SERVER_ERRC_C42_UNDEFINED_COLUMN@,
+
+  /** 42883 */
+  c42_undefined_function = @PGFE_SERVER_ERRC_C42_UNDEFINED_FUNCTION@,
+
+  /** 42P01 */
+  c42_undefined_table = @PGFE_SERVER_ERRC_C42_UNDEFINED_TABLE@,
+
+  /** 42P02 */
+  c42_undefined_parameter = @PGFE_SERVER_ERRC_C42_UNDEFINED_PARAMETER@,
+
+  /** 42704 */
+  c42_undefined_object = @PGFE_SERVER_ERRC_C42_UNDEFINED_OBJECT@,
+
+  /** 42701 */
+  c42_duplicate_column = @PGFE_SERVER_ERRC_C42_DUPLICATE_COLUMN@,
+
+  /** 42P03 */
+  c42_duplicate_cursor = @PGFE_SERVER_ERRC_C42_DUPLICATE_CURSOR@,
+
+  /** 42P04 */
+  c42_duplicate_database = @PGFE_SERVER_ERRC_C42_DUPLICATE_DATABASE@,
+
+  /** 42723 */
+  c42_duplicate_function = @PGFE_SERVER_ERRC_C42_DUPLICATE_FUNCTION@,
+
+  /** 42P05 */
+  c42_duplicate_prepared_statement = @PGFE_SERVER_ERRC_C42_DUPLICATE_PREPARED_STATEMENT@,
+
+  /** 42P06 */
+  c42_duplicate_schema = @PGFE_SERVER_ERRC_C42_DUPLICATE_SCHEMA@,
+
+  /** 42P07 */
+  c42_duplicate_table = @PGFE_SERVER_ERRC_C42_DUPLICATE_TABLE@,
+
+  /** 42712 */
+  c42_duplicate_alias = @PGFE_SERVER_ERRC_C42_DUPLICATE_ALIAS@,
+
+  /** 42710 */
+  c42_duplicate_object = @PGFE_SERVER_ERRC_C42_DUPLICATE_OBJECT@,
+
+  /** 42702 */
+  c42_ambiguous_column = @PGFE_SERVER_ERRC_C42_AMBIGUOUS_COLUMN@,
+
+  /** 42725 */
+  c42_ambiguous_function = @PGFE_SERVER_ERRC_C42_AMBIGUOUS_FUNCTION@,
+
+  /** 42P08 */
+  c42_ambiguous_parameter = @PGFE_SERVER_ERRC_C42_AMBIGUOUS_PARAMETER@,
+
+  /** 42P09 */
+  c42_ambiguous_alias = @PGFE_SERVER_ERRC_C42_AMBIGUOUS_ALIAS@,
+
+  /** 42P10 */
+  c42_invalid_column_reference = @PGFE_SERVER_ERRC_C42_INVALID_COLUMN_REFERENCE@,
+
+  /** 42611 */
+  c42_invalid_column_definition = @PGFE_SERVER_ERRC_C42_INVALID_COLUMN_DEFINITION@,
+
+  /** 42P11 */
+  c42_invalid_cursor_definition = @PGFE_SERVER_ERRC_C42_INVALID_CURSOR_DEFINITION@,
+
+  /** 42P12 */
+  c42_invalid_database_definition = @PGFE_SERVER_ERRC_C42_INVALID_DATABASE_DEFINITION@,
+
+  /** 42P13 */
+  c42_invalid_function_definition = @PGFE_SERVER_ERRC_C42_INVALID_FUNCTION_DEFINITION@,
+
+  /** 42P14 */
+  c42_invalid_prepared_statement_definition = @PGFE_SERVER_ERRC_C42_INVALID_PREPARED_STATEMENT_DEFINITION@,
+
+  /** 42P15 */
+  c42_invalid_schema_definition = @PGFE_SERVER_ERRC_C42_INVALID_SCHEMA_DEFINITION@,
+
+  /** 42P16 */
+  c42_invalid_table_definition = @PGFE_SERVER_ERRC_C42_INVALID_TABLE_DEFINITION@,
+
+  /** 42P17 */
+  c42_invalid_object_definition = @PGFE_SERVER_ERRC_C42_INVALID_OBJECT_DEFINITION@,
+
+  /*
+   * Class 44 - With Check Option Violation
+   */
+
+  /** 44000 */
+  c44_with_check_option_violation = @PGFE_SERVER_ERRC_C44_WITH_CHECK_OPTION_VIOLATION@,
+
+  /*
+   * Class 53 - Insufficient Resources
+   */
+
+  /** 53000 */
+  c53_insufficient_resources = @PGFE_SERVER_ERRC_C53_INSUFFICIENT_RESOURCES@,
+
+  /** 53100 */
+  c53_disk_full = @PGFE_SERVER_ERRC_C53_DISK_FULL@,
+
+  /** 53200 */
+  c53_out_of_memory = @PGFE_SERVER_ERRC_C53_OUT_OF_MEMORY@,
+
+  /** 53300 */
+  c53_too_many_connections = @PGFE_SERVER_ERRC_C53_TOO_MANY_CONNECTIONS@,
+
+  /** 53400 */
+  c53_configuration_limit_exceeded = @PGFE_SERVER_ERRC_C53_CONFIGURATION_LIMIT_EXCEEDED@,
+
+  /*
+   * Class 54 - Program Limit Exceeded
+   */
+
+  /** 54000 */
+  c54_program_limit_exceeded = @PGFE_SERVER_ERRC_C54_PROGRAM_LIMIT_EXCEEDED@,
+
+  /** 54001 */
+  c54_statement_too_complex = @PGFE_SERVER_ERRC_C54_STATEMENT_TOO_COMPLEX@,
+
+  /** 54011 */
+  c54_too_many_columns = @PGFE_SERVER_ERRC_C54_TOO_MANY_COLUMNS@,
+
+  /** 54023 */
+  c54_too_many_arguments = @PGFE_SERVER_ERRC_C54_TOO_MANY_ARGUMENTS@,
+
+  /*
+   * Class 55 - Object Not In Prerequisite State
+   */
+
+  /** 55000 */
+  c55_object_not_in_prerequisite_state = @PGFE_SERVER_ERRC_C55_OBJECT_NOT_IN_PREREQUISITE_STATE@,
+
+  /** 55006 */
+  c55_object_in_use = @PGFE_SERVER_ERRC_C55_OBJECT_IN_USE@,
+
+  /** 55P02 */
+  c55_cant_change_runtime_param = @PGFE_SERVER_ERRC_C55_CANT_CHANGE_RUNTIME_PARAM@,
+
+  /** 55P03 */
+  c55_lock_not_available = @PGFE_SERVER_ERRC_C55_LOCK_NOT_AVAILABLE@,
+
+  /*
+   * Class 57 - Operator Intervention
+   */
+
+  /** 57000 */
+  c57_operator_intervention = @PGFE_SERVER_ERRC_C57_OPERATOR_INTERVENTION@,
+
+  /** 57014 */
+  c57_query_canceled = @PGFE_SERVER_ERRC_C57_QUERY_CANCELED@,
+
+  /** 57P01 */
+  c57_admin_shutdown = @PGFE_SERVER_ERRC_C57_ADMIN_SHUTDOWN@,
+
+  /** 57P02 */
+  c57_crash_shutdown = @PGFE_SERVER_ERRC_C57_CRASH_SHUTDOWN@,
+
+  /** 57P03 */
+  c57_cannot_connect_now = @PGFE_SERVER_ERRC_C57_CANNOT_CONNECT_NOW@,
+
+  /** 57P04 */
+  c57_database_dropped = @PGFE_SERVER_ERRC_C57_DATABASE_DROPPED@,
+
+  /*
+   * Class 58 - System Error
+   */
+
+  /** 58000 */
+  c58_system_error = @PGFE_SERVER_ERRC_C58_SYSTEM_ERROR@,
+
+  /** 58030 */
+  c58_io_error = @PGFE_SERVER_ERRC_C58_IO_ERROR@,
+
+  /** 58P01 */
+  c58_undefined_file = @PGFE_SERVER_ERRC_C58_UNDEFINED_FILE@,
+
+  /** 58P02 */
+  c58_duplicate_file = @PGFE_SERVER_ERRC_C58_DUPLICATE_FILE@,
+
+  /*
+   * Class 72 - Snapshot Too Old
+   */
+
+  /** 72000 */
+  c72_snapshot_too_old = @PGFE_SERVER_ERRC_C72_SNAPSHOT_TOO_OLD@,
+
+  /*
+   * Class F0 - Config File Error
+   */
+
+  /** F0000 */
+  cf0_config_file_error = @PGFE_SERVER_ERRC_CF0_CONFIG_FILE_ERROR@,
+
+  /** F0001 */
+  cf0_lock_file_exists = @PGFE_SERVER_ERRC_CF0_LOCK_FILE_EXISTS@,
+
+  /*
+   * Class HV - Foreign Data Wrapper Error
+   */
+
+  /** HV000 */
+  chv_fdw_error = @PGFE_SERVER_ERRC_CHV_FDW_ERROR@,
+
+  /** HV005 */
+  chv_fdw_column_name_not_found = @PGFE_SERVER_ERRC_CHV_FDW_COLUMN_NAME_NOT_FOUND@,
+
+  /** HV002 */
+  chv_fdw_dynamic_parameter_value_needed = @PGFE_SERVER_ERRC_CHV_FDW_DYNAMIC_PARAMETER_VALUE_NEEDED@,
+
+  /** HV010 */
+  chv_fdw_function_sequence_error = @PGFE_SERVER_ERRC_CHV_FDW_FUNCTION_SEQUENCE_ERROR@,
+
+  /** HV021 */
+  chv_fdw_inconsistent_descriptor_information = @PGFE_SERVER_ERRC_CHV_FDW_INCONSISTENT_DESCRIPTOR_INFORMATION@,
+
+  /** HV024 */
+  chv_fdw_invalid_attribute_value = @PGFE_SERVER_ERRC_CHV_FDW_INVALID_ATTRIBUTE_VALUE@,
+
+  /** HV007 */
+  chv_fdw_invalid_column_name = @PGFE_SERVER_ERRC_CHV_FDW_INVALID_COLUMN_NAME@,
+
+  /** HV008 */
+  chv_fdw_invalid_column_number = @PGFE_SERVER_ERRC_CHV_FDW_INVALID_COLUMN_NUMBER@,
+
+  /** HV004 */
+  chv_fdw_invalid_data_type = @PGFE_SERVER_ERRC_CHV_FDW_INVALID_DATA_TYPE@,
+
+  /** HV006 */
+  chv_fdw_invalid_data_type_descriptors = @PGFE_SERVER_ERRC_CHV_FDW_INVALID_DATA_TYPE_DESCRIPTORS@,
+
+  /** HV091 */
+  chv_fdw_invalid_descriptor_field_identifier = @PGFE_SERVER_ERRC_CHV_FDW_INVALID_DESCRIPTOR_FIELD_IDENTIFIER@,
+
+  /** HV00B */
+  chv_fdw_invalid_handle = @PGFE_SERVER_ERRC_CHV_FDW_INVALID_HANDLE@,
+
+  /** HV00C */
+  chv_fdw_invalid_option_index = @PGFE_SERVER_ERRC_CHV_FDW_INVALID_OPTION_INDEX@,
+
+  /** HV00D */
+  chv_fdw_invalid_option_name = @PGFE_SERVER_ERRC_CHV_FDW_INVALID_OPTION_NAME@,
+
+  /** HV090 */
+  chv_fdw_invalid_string_length_or_buffer_length = @PGFE_SERVER_ERRC_CHV_FDW_INVALID_STRING_LENGTH_OR_BUFFER_LENGTH@,
+
+  /** HV00A */
+  chv_fdw_invalid_string_format = @PGFE_SERVER_ERRC_CHV_FDW_INVALID_STRING_FORMAT@,
+
+  /** HV009 */
+  chv_fdw_invalid_use_of_null_pointer = @PGFE_SERVER_ERRC_CHV_FDW_INVALID_USE_OF_NULL_POINTER@,
+
+  /** HV014 */
+  chv_fdw_too_many_handles = @PGFE_SERVER_ERRC_CHV_FDW_TOO_MANY_HANDLES@,
+
+  /** HV001 */
+  chv_fdw_out_of_memory = @PGFE_SERVER_ERRC_CHV_FDW_OUT_OF_MEMORY@,
+
+  /** HV00P */
+  chv_fdw_no_schemas = @PGFE_SERVER_ERRC_CHV_FDW_NO_SCHEMAS@,
+
+  /** HV00J */
+  chv_fdw_option_name_not_found = @PGFE_SERVER_ERRC_CHV_FDW_OPTION_NAME_NOT_FOUND@,
+
+  /** HV00K */
+  chv_fdw_reply_handle = @PGFE_SERVER_ERRC_CHV_FDW_REPLY_HANDLE@,
+
+  /** HV00Q */
+  chv_fdw_schema_not_found = @PGFE_SERVER_ERRC_CHV_FDW_SCHEMA_NOT_FOUND@,
+
+  /** HV00R */
+  chv_fdw_table_not_found = @PGFE_SERVER_ERRC_CHV_FDW_TABLE_NOT_FOUND@,
+
+  /** HV00L */
+  chv_fdw_unable_to_create_execution = @PGFE_SERVER_ERRC_CHV_FDW_UNABLE_TO_CREATE_EXECUTION@,
+
+  /** HV00M */
+  chv_fdw_unable_to_create_reply = @PGFE_SERVER_ERRC_CHV_FDW_UNABLE_TO_CREATE_REPLY@,
+
+  /** HV00N */
+  chv_fdw_unable_to_establish_connection = @PGFE_SERVER_ERRC_CHV_FDW_UNABLE_TO_ESTABLISH_CONNECTION@,
+
+  /*
+   * Class P0 - PL/pgSQL Error
+   */
+
+  /** P0000 */
+  cp0_plpgsql_error = @PGFE_SERVER_ERRC_CP0_PLPGSQL_ERROR@,
+
+  /** P0001 */
+  cp0_raise_exception = @PGFE_SERVER_ERRC_CP0_RAISE_EXCEPTION@,
+
+  /** P0002 */
+  cp0_no_data_found = @PGFE_SERVER_ERRC_CP0_NO_DATA_FOUND@,
+
+  /** P0003 */
+  cp0_too_many_rows = @PGFE_SERVER_ERRC_CP0_TOO_MANY_ROWS@,
+
+  /** P0004 */
+  cp0_assert_failure = @PGFE_SERVER_ERRC_CP0_ASSERT_FAILURE@,
+
+  /*
+   * Class XX - Internal Error
+   */
+
+  /** XX000 */
+  cxx_internal_error = @PGFE_SERVER_ERRC_CXX_INTERNAL_ERROR@,
+
+  /** XX001 */
+  cxx_data_corrupted = @PGFE_SERVER_ERRC_CXX_DATA_CORRUPTED@,
+
+  /** XX002 */
+  cxx_index_corrupted = @PGFE_SERVER_ERRC_CXX_INDEX_CORRUPTED@
+};
+
+} // namespace dmitigr::pgfe
+
+#endif  // DMITIGR_PGFE_ERRC_HPP

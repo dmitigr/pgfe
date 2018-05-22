@@ -1,0 +1,13 @@
+*~
+*build*
+*.[oa]
+*.exe
+*.idb
+*.pdb
+*.ilk
+*.obj
+*.json
+.DS_Store
+.idea
+.private
+.vs
