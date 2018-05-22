@@ -350,6 +350,11 @@ By default, if not explicitly documented, all functions and methods of Pgfe are 
 thread safe. Thus, in most cases, some of the synchronization mechanisms (like mutexes)
 must be used to work with the same object from several threads.
 
+Documentation
+=============
+
+The documentation is located at <http://dmitigr.ru/pgfe/doc/>.
+
 Download
 ========
 
