@@ -470,7 +470,7 @@ To make a donation, please go to [here](https://www.paypal.com/cgi-bin/webscr?cm
 [here](https://paypal.me/dmitigr).
 
 If you need a commercial support, or you need to develop a custom client-side or
-server-side software based on PostgreSQL, please contact us.
+server-side software based on PostgreSQL, please contact us by sending email to <dmitigr@gmail.com>.
 
 Pgfe is a free software. Enjoy using it!
 
