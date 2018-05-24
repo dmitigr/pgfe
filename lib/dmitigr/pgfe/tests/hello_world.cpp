@@ -19,8 +19,18 @@ int main()
       {
         std::cout << pgfe::to<int>(row->data("natural")) << "\n";
       });
-    std::cout << "The " << conn->completion()->operation_name() << " query is done.";
-  } catch (const std::exception& e) {
-    std::cout << "Oops: " << e.what() << std::endl;
+    std::cout << "The " << conn->completion()->operation_name() << " query is done.\n";
+
+    // As a sample of error handling let's provoke syntax error and handle it away.
+    try {
+      conn->perform("PROVOKE SYNTAX ERROR");
+    } catch (const pgfe::Server_exception& e) {
+      if (e.error()->code() == pgfe::Server_errc::c42_syntax_error)
+        std::cout << "Error " << e.error()->sqlstate() << " is handled as expected.\n";
+      else
+        throw;
+    }
+  }  catch (const std::exception& e) {
+    std::cerr << "Oops: " << e.what() << "\n";
   }
 }
