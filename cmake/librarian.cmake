@@ -10,7 +10,7 @@
 # ${lib}_include_names - names of headers to find
 # ${lib}_library_names - names of libraries to find
 # ${lib}_debug_library_names - names of debug libraries to find
-# ${lib}_include_path_suffixes - PATH_SUFFIXES for headers. By default - ${lib}.
+# ${lib}_include_path_suffixes - PATH_SUFFIXES for headers. By default - include.
 # ${lib}_library_path_suffixes - PATH_SUFFIXES for libraries. By default - lib.
 # ${lib}_include_paths - PATHS for headers. Empty by default.
 # ${lib}_library_paths - PATHS for libraries. Empty by default.
@@ -35,7 +35,7 @@ set(${lib}_FOUND FALSE)
 set(${lib}_DEBUG_FOUND FALSE)
 
 if(NOT ${lib}_include_path_suffixes)
-  set(${lib}_include_path_suffixes ${lib})
+  set(${lib}_include_path_suffixes include)
 endif()
 
 if(NOT ${lib}_library_path_suffixes)
@@ -43,7 +43,7 @@ if(NOT ${lib}_library_path_suffixes)
 endif()
 
 find_path(${lib}_INCLUDE_DIRS
-  PATHS ${${lib}_include_paths} /usr/local
+  PATHS ${${lib}_include_paths}
   NAMES ${${lib}_include_names}
   PATH_SUFFIXES ${${lib}_include_path_suffixes})
 

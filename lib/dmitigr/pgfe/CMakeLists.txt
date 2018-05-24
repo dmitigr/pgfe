@@ -8,37 +8,16 @@
 
 set(CMAKE_MODULE_PATH ${pgfe_SOURCE_DIR}/cmake)
 
-if (UNIX)
-  set(PGFE_POSTGRESQL_RELOCATABLE_INSTALLATION_SUFFIX ""
-    CACHE STRING
-    "The suffix of the relocatable PostgreSQL installation directory")
-  set(PGFE_POSTGRESQL_RELOCATABLE_INSTALLATION "/usr/local/pgsql/${PGFE_POSTGRESQL_RELOCATABLE_INSTALLATION_SUFFIX}"
-    CACHE PATH
-    "The full path of the relocatable PostgreSQL installation directory")
-elseif (WIN32)
-  set(PGFE_POSTGRESQL_RELOCATABLE_INSTALLATION_SUFFIX "10"
-    CACHE STRING
-    "The suffix of the relocatable PostgreSQL installation directory")
-
-  # On AMD64: ProgramFiles=%ProgramFiles%
-  # On   x86: ProgramFiles=%ProgramFiles(x86)%
-  # See: https://msdn.microsoft.com/en-us/library/aa384274.aspx
-  set(PGFE_POSTGRESQL_RELOCATABLE_INSTALLATION "$ENV{ProgramFiles}\\PostgreSQL\\${PGFE_POSTGRESQL_RELOCATABLE_INSTALLATION_SUFFIX}"
-    CACHE PATH
-    "The full path of the relocatable PostgreSQL installation directory")
-endif()
-
-set(LIBPQ_PREFIX "${PGFE_POSTGRESQL_RELOCATABLE_INSTALLATION}" CACHE PATH
-  "Installation prefix of the libpq library")
-set(LIBPQH_PREFIX "${PGFE_POSTGRESQL_RELOCATABLE_INSTALLATION}" CACHE PATH
-  "Installation prefix of the libpq headers")
+# FindPq.cmake module will use these settings to find libpq.
+set(DMITIGR_LIBPQ_LIB_PREFIX "" CACHE PATH
+  "Installation prefix (with \"lib\" subdirectory) of the libpq binary")
+set(DMITIGR_LIBPQ_INCLUDE_PREFIX "" CACHE PATH
+  "Installation prefix (with \"include\" subdirectory) of the libpq includes")
 
 find_package(Pq REQUIRED)
-if(Pq_FOUND)
-  message("Found libpq headers at: ${Pq_INCLUDE_DIRS}")
-  message("Found libpq at: ${Pq_LIBRARIES}")
-  include_directories(${Pq_INCLUDE_DIRS})
-endif()
+message("libpq includes to use: ${Pq_INCLUDE_DIRS}")
+message("Suggested libpq binary to use: ${Suggested_Pq_LIBRARIES}")
+include_directories(${Pq_INCLUDE_DIRS})
 
 # ------------------------------------------------------------------------------
 # Sources
@@ -199,9 +178,9 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 if (UNIX)
-  target_link_libraries(dmitigr_pgfe ${Pq_LIBRARIES} stdc++fs)
+  target_link_libraries(dmitigr_pgfe ${Suggested_Pq_LIBRARIES} stdc++fs)
 elseif (WIN32)
-  target_link_libraries(dmitigr_pgfe ${Pq_LIBRARIES} Ws2_32.lib)
+  target_link_libraries(dmitigr_pgfe ${Suggested_Pq_LIBRARIES} Ws2_32.lib)
 endif()
 
 set_target_properties(dmitigr_pgfe

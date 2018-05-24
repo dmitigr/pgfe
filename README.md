@@ -405,8 +405,9 @@ Settings that may be specified at build time by using CMake variables are:
   1. the type of the build;
   2. the flag of build the shared library;
   3. the flag of building the tests (default is on);
-  4. installation directories;
-  5. default values of the connection options.
+  4. dependencies;
+  5. installation directories;
+  6. default values of the connection options.
 
 Details:
 
@@ -418,6 +419,9 @@ Details:
 |BUILD_SHARED_LIBS|On \| Off|On|On|
 |**The flag of building the tests**||||
 |PGFE_BUILD_TESTS|On \| Off|On|On|
+|**Dependencies**||||
+|DMITIGR_LIBPQ_LIB_PREFIX|*a path*|*not set (rely on CMake)*|*not set (rely on CMake)*|
+|DMITIGR_LIBPQ_INCLUDE_PREFIX|*a path*|*not set (rely on CMake)*|*not set (rely on CMake)*|
 |**Installation directories**||||
 |CMAKE_INSTALL_PREFIX|*an absolute path*|"/usr/local"|"%ProgramFiles%\dmitigr"|
 |PGFE_SHARE_INSTALL_DIR|*a path relative to CMAKE_INSTALL_PREFIX*|"share/dmitigr"|"share"|
@@ -447,6 +451,18 @@ Details:
 |PGFE_CONNECTION_SSL_CERTIFICATE_AUTHORITY_FILE|*an absolute path*|*null (libpq's default)*|*null (libpq's default)*|
 |PGFE_CONNECTION_SSL_CERTIFICATE_REVOCATION_LIST_FILE|*an absolute path*|*null (libpq's default)*|*null (libpq's default)*|
 
+Installation in common
+----------------------
+
+The only dependence of Pgfe is libpq. By default, CMake will try to locate it automatically.
+Anyway, it is possible to manually specify where libpq is located by using the following CMake variables:
+
+  - `DMITIGR_LIBPQ_LIB_PREFIX` - can be used to specify a prefix of the libpq binary path. For example,
+    if PostgreSQL installed relocatably into `/usr/local/pgsql`, the value of `DMITIGR_LIBPQ_LIB_PREFIX`
+    should be set accordingly at command line such as: `-DDMITIGR_LIBPQ_LIB_PREFIX=/usr/local/pgsql`;
+  - `DMITIGR_LIBPQ_INCLUDE_PREFIX` - similar to the above, but specifies a prefix of the libpq headers,
+    namely, `libpq-fe.h`.
+
 Installation on Linux
 ---------------------
 
@@ -457,7 +473,8 @@ Installation on Linux
     $ make
     $ sudo make install
 
-The value of the `BUILD_TYPE` could be replaced.
+The value of the `BUILD_TYPE` could be replaced. Also, remember about the possibility to specify location
+of libpq if CMake could not detect it automatically (see "Installation in common" section above).
 
 Installation on Microsoft Windows
 ---------------------------------
@@ -476,7 +493,9 @@ Next, run the Elevated Command Prompt (i.e. the command prompt with administrato
     > cmake -DBUILD_TYPE=Debug -P cmake_install.cmake
 
 If the target architecture is Win32 or ARM, then "Win64" should be replaced by "Win32" or "ARM" accordingly.
-The value of the `BUILD_TYPE` could be also replaced.
+
+The value of the `BUILD_TYPE` could be replaced. Also, remember about the possibility to specify location
+of libpq if CMake could not detect it automatically (see "Installation in common" section above).
 
 **WARNING** The target architecture must corresponds to the bitness of libpq to link!
 
