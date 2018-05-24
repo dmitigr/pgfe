@@ -255,6 +255,9 @@ enum class Server_errc {
   /** 22023 */
   c22_invalid_parameter_value = @PGFE_SERVER_ERRC_C22_INVALID_PARAMETER_VALUE@,
 
+  /** 22013 */
+  c22_invalid_preceding_following_size = @PGFE_SERVER_ERRC_C22_INVALID_PRECEDING_FOLLOWING_SIZE@,
+
   /** 2201B */
   c22_invalid_regular_expression = @PGFE_SERVER_ERRC_C22_INVALID_REGULAR_EXPRESSION@,
 

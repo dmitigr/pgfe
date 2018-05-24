@@ -131,6 +131,8 @@ const char* pgfe::detail::to_literal(const Server_errc errc)
     return "c22_invalid_indicator_parameter_value";
   case Server_errc::c22_invalid_parameter_value:
     return "c22_invalid_parameter_value";
+  case Server_errc::c22_invalid_preceding_following_size:
+    return "c22_invalid_preceding_following_size";
   case Server_errc::c22_invalid_regular_expression:
     return "c22_invalid_regular_expression";
   case Server_errc::c22_invalid_row_count_in_limit_clause:
