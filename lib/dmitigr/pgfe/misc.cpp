@@ -6,12 +6,12 @@
 
 namespace pgfe = dmitigr::pgfe;
 
-std::int_fast32_t pgfe::version()
+DMITIGR_PGFE_API std::int_fast32_t APIENTRY pgfe::version()
 {
   // Actual values are set in CMakeLists.txt.
   constexpr std::int_least32_t major = PGFE_VERSION_PART1;
   constexpr std::int_least32_t minor = PGFE_VERSION_PART2;
 
   // 11.234 -> 11 * 1000 + 234 = 11234
-  return 1000*major + minor;
+  return major*1000 + minor;
 }

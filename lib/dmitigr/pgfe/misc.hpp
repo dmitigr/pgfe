@@ -5,6 +5,8 @@
 #ifndef DMITIGR_PGFE_MISC_HPP
 #define DMITIGR_PGFE_MISC_HPP
 
+#include "dmitigr/pgfe/internal/dll.hxx"
+
 #include <cstdint>
 
 namespace dmitigr::pgfe {
@@ -17,7 +19,7 @@ namespace dmitigr::pgfe {
  * @par Thread safety
  * Thread-safe.
  */
-std::int_fast32_t version();
+DMITIGR_PGFE_API std::int_fast32_t APIENTRY version();
 
 } // namespace dmitigr::pgfe
 
