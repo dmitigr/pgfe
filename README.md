@@ -420,8 +420,9 @@ Details:
 |**The flag of building the tests**||||
 |PGFE_BUILD_TESTS|On \| Off|On|On|
 |**Dependencies**||||
-|DMITIGR_LIBPQ_LIB_PREFIX|*a path*|*not set (rely on CMake)*|*not set (rely on CMake)*|
-|DMITIGR_LIBPQ_INCLUDE_PREFIX|*a path*|*not set (rely on CMake)*|*not set (rely on CMake)*|
+|LIBPQ_PREFIX|*a path*|*not set (rely on CMake)*|*not set (rely on CMake)*|
+|LIBPQ_LIB_PREFIX|*a path*|${LIBPQ_PREFIX}|${LIBPQ_PREFIX}|
+|LIBPQ_INCLUDE_PREFIX|*a path*|${LIBPQ_PREFIX}|${LIBPQ_PREFIX}|
 |**Installation directories**||||
 |CMAKE_INSTALL_PREFIX|*an absolute path*|"/usr/local"|"%ProgramFiles%\DmitigrPgfe"|
 |PGFE_CMAKE_INSTALL_DIR|*a path relative to CMAKE_INSTALL_PREFIX*|"share/DmitigrPgfe/cmake"|"cmake"|
@@ -458,11 +459,12 @@ Installation in common
 The only dependence of Pgfe is libpq. By default, CMake will try to locate it automatically.
 Anyway, it is possible to manually specify where libpq is located by using the following CMake variables:
 
-  - `DMITIGR_LIBPQ_LIB_PREFIX` - can be used to specify a prefix of the libpq binary path. For example,
-    if PostgreSQL installed relocatably into `/usr/local/pgsql`, the value of `DMITIGR_LIBPQ_LIB_PREFIX`
-    should be set accordingly at command line such as: `-DDMITIGR_LIBPQ_LIB_PREFIX=/usr/local/pgsql`;
-  - `DMITIGR_LIBPQ_INCLUDE_PREFIX` - similar to the above, but specifies a prefix of the libpq headers,
-    namely, `libpq-fe.h`.
+  - `LIBPQ_PREFIX` - can be used to speficy a prefix for both binary and headers of libpq. For example,
+    if PostgreSQL installed relocatably into `/usr/local/pgsql`, the value of `LIBPQ_PREFIX`
+    may be set accordingly at command line such as: `-DLIBPQ_PREFIX=/usr/local/pgsql`;
+  - `LIBPQ_LIB_PREFIX` - similar to the above, but specifies a *prefix* of the libpq binary file (SO or DLL);
+  - `LIBPQ_INCLUDE_PREFIX` - similar to the above, but specifies a *prefix* of the libpq headers (namely,
+    `libpq-fe.h`).
 
 Installation on Linux
 ---------------------

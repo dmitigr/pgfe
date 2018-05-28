@@ -9,10 +9,12 @@
 set(CMAKE_MODULE_PATH ${DmitigrPgfe_SOURCE_DIR}/cmake)
 
 # FindPq.cmake module will use these settings to find libpq.
-set(DMITIGR_LIBPQ_LIB_PREFIX "" CACHE PATH
-  "Installation prefix (with \"lib\" subdirectory) of the libpq binary")
-set(DMITIGR_LIBPQ_INCLUDE_PREFIX "" CACHE PATH
-  "Installation prefix (with \"include\" subdirectory) of the libpq includes")
+set(LIBPQ_PREFIX "" CACHE PATH
+  "Installation prefix of the libpq library (where headers and binary resides)")
+set(LIBPQ_LIB_PREFIX "${LIBPQ_PREFIX}" CACHE PATH
+  "Installation prefix of the libpq binary (where the binary reside)")
+set(LIBPQ_INCLUDE_PREFIX "${LIBPQ_PREFIX}" CACHE PATH
+  "Installation prefix of the libpq includes (where the headers resides)")
 
 find_package(Pq REQUIRED)
 message("libpq includes to use: ${Pq_INCLUDE_DIRS}")
