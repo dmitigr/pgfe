@@ -1,0 +1,44 @@
+// -*- C++ -*-
+// Copyright (C) Dmitry Igrishin
+// For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
+
+#include <winres.h>
+
+#ifdef NDEBUG
+#define PGFE_VERSION_DEBUG 0
+#define PGFE_VERSION_ORIGINAL_FILENAME "dmitigr_pgfe.dll\0"
+#else
+#define PGFE_VERSION_DEBUG VS_FF_DEBUG
+#define PGFE_VERSION_ORIGINAL_FILENAME "dmitigr_pgfed.dll\0"
+#endif
+
+VS_VERSION_INFO VERSIONINFO
+
+FILEVERSION     11,0,0,0
+PRODUCTVERSION  11,0,0,0
+FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
+FILEFLAGS       (PGFE_VERSION_DEBUG)
+FILEOS          VOS__WINDOWS32
+FILETYPE        VFT_DLL
+FILESUBTYPE     0x0L
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904E4"
+    BEGIN
+      VALUE "CompanyName",      "Dmitry Igrishin\0"
+      VALUE "FileDescription",  "PostgreSQL API\0"
+      VALUE "FileVersion",      "11.0.0.0\0"
+      VALUE "InternalName",     "DmitigrPgfe\0"
+      VALUE "LegalCopyright",   "Copyright (C) Dmitry Igrishin\0"
+      VALUE "LegalTrademarks",  "\0"
+      VALUE "OriginalFilename", PGFE_VERSION_ORIGINAL_FILENAME
+      VALUE "ProductName",      "Dmitigr Pgfe\0"
+      VALUE "ProductVersion",   "11.0beta\0"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x409, 1200
+  END
+END

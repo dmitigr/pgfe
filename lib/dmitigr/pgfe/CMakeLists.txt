@@ -131,6 +131,10 @@ set(dmitigr_pgfe_sources
   internal/std/string/to_string/numeric.hxx
   )
 
+if (WIN32)
+  list(APPEND dmitigr_pgfe_sources version.rc)
+endif()
+
 set_source_files_properties(
   basics.cmake
   basics.hpp.in
