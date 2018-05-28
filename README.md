@@ -423,10 +423,11 @@ Details:
 |DMITIGR_LIBPQ_LIB_PREFIX|*a path*|*not set (rely on CMake)*|*not set (rely on CMake)*|
 |DMITIGR_LIBPQ_INCLUDE_PREFIX|*a path*|*not set (rely on CMake)*|*not set (rely on CMake)*|
 |**Installation directories**||||
-|CMAKE_INSTALL_PREFIX|*an absolute path*|"/usr/local"|"%ProgramFiles%\dmitigr"|
-|PGFE_SHARE_INSTALL_DIR|*a path relative to CMAKE_INSTALL_PREFIX*|"share/dmitigr"|"share"|
+|CMAKE_INSTALL_PREFIX|*an absolute path*|"/usr/local"|"%ProgramFiles%\DmitigrPgfe"|
+|PGFE_CMAKE_INSTALL_DIR|*a path relative to CMAKE_INSTALL_PREFIX*|"share/DmitigrPgfe/cmake"|"cmake"|
+|PGFE_DOC_INSTALL_DIR|*a path relative to CMAKE_INSTALL_PREFIX*|"share/DmitigrPgfe/doc"|"doc"|
 |PGFE_LIBRARY_INSTALL_DIR|*a path relative to CMAKE_INSTALL_PREFIX*|"lib"|"lib"|
-|PGFE_INCLUDES_INSTALL_DIR|*a path relative to CMAKE_INSTALL_PREFIX*|"include/dmitigr"|"include/dmitigr"|
+|PGFE_INCLUDES_INSTALL_DIR|*a path relative to CMAKE_INSTALL_PREFIX*|"include"|"include"|
 |**Default values of the connection options**||||
 |PGFE_CONNECTION_COMMUNICATION_MODE|uds \| tcp|uds|tcp|
 |PGFE_CONNECTION_UDS_DIRECTORY|*an absolute path*|/tmp|*unavailable*|

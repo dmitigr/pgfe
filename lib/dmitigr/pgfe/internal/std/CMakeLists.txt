@@ -5,7 +5,7 @@
 install(FILES
   cstring.hxx
 
-  DESTINATION ${PGFE_INCLUDES_INSTALL_DIR}/pgfe/internal/std)
+  DESTINATION ${PGFE_INCLUDES_INSTALL_DIR}/dmitigr/pgfe/internal/std)
 
 add_subdirectory(memory)
 add_subdirectory(string)

@@ -5,7 +5,7 @@
 install(FILES
   pgfe.hpp
 
-  DESTINATION ${PGFE_INCLUDES_INSTALL_DIR})
+  DESTINATION ${PGFE_INCLUDES_INSTALL_DIR}/dmitigr)
 
 # ------------------------------------------------------------------------------
 

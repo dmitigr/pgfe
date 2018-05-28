@@ -8,7 +8,7 @@ install(FILES
   enums.hxx
   macros.hxx
 
-  DESTINATION ${PGFE_INCLUDES_INSTALL_DIR}/pgfe/internal)
+  DESTINATION ${PGFE_INCLUDES_INSTALL_DIR}/dmitigr/pgfe/internal)
 
 configure_file(dll.hxx.in ${CMAKE_CURRENT_SOURCE_DIR}/dll.hxx @ONLY
   NEWLINE_STYLE UNIX)

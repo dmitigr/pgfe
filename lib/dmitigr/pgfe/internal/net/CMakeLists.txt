@@ -5,4 +5,4 @@
 install(FILES
   inet.hxx
 
-  DESTINATION ${PGFE_INCLUDES_INSTALL_DIR}/pgfe/internal/net)
+  DESTINATION ${PGFE_INCLUDES_INSTALL_DIR}/dmitigr/pgfe/internal/net)

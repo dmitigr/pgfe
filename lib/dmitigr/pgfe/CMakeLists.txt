@@ -6,7 +6,7 @@
 # Dependencies
 # ------------------------------------------------------------------------------
 
-set(CMAKE_MODULE_PATH ${pgfe_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${DmitigrPgfe_SOURCE_DIR}/cmake)
 
 # FindPq.cmake module will use these settings to find libpq.
 set(DMITIGR_LIBPQ_LIB_PREFIX "" CACHE PATH
@@ -245,7 +245,7 @@ install(FILES
   std_system_error.hpp
   types_fwd.hpp
 
-  DESTINATION ${PGFE_INCLUDES_INSTALL_DIR}/pgfe)
+  DESTINATION ${PGFE_INCLUDES_INSTALL_DIR}/dmitigr/pgfe)
 
 install(TARGETS dmitigr_pgfe
   ARCHIVE DESTINATION ${PGFE_LIBRARY_INSTALL_DIR}

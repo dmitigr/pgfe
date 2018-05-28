@@ -5,4 +5,4 @@
 install(FILES
   conditional_delete.hxx
 
-  DESTINATION ${PGFE_INCLUDES_INSTALL_DIR}/pgfe/internal/std/memory)
+  DESTINATION ${PGFE_INCLUDES_INSTALL_DIR}/dmitigr/pgfe/internal/std/memory)

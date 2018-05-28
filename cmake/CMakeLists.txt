@@ -3,7 +3,7 @@
 # For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
 install(FILES
-  FindPq.cmake
+  DmitigrPgfeConfig.cmake
   librarian.cmake
 
-  DESTINATION ${PGFE_SHARE_INSTALL_DIR}/cmake)
+  DESTINATION ${PGFE_CMAKE_INSTALL_DIR})
