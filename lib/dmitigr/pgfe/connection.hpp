@@ -371,7 +371,7 @@ public:
    * @param timeout - similar to wait_socket_readiness().
    *
    * @par Requires
-   * `(timeout >= -1 && is_connected())`
+   * `(timeout >= -1 && is_connected() && is_awaiting_response())`
    *
    * @par Exception safety guarantee
    * Basic.

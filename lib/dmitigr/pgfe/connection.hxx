@@ -174,9 +174,9 @@ public:
     using std::chrono::microseconds;
     using std::chrono::duration_cast;
 
-    DMINT_REQUIRE(timeout >= microseconds(-1) && is_connected());
+    DMINT_REQUIRE(timeout >= microseconds(-1) && is_connected() && is_awaiting_response());
 
-    if (is_response_available() || !is_awaiting_response())
+    if (is_response_available())
       return;
 
     const bool ignore_timeout = (timeout == microseconds(-1));
