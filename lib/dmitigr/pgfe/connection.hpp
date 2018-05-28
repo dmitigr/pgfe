@@ -132,7 +132,7 @@ public:
   /**
    * @brief Attempts to connect to the server.
    *
-   * @param timeout - similar to socket_readiness().
+   * @param timeout - similar to wait_socket_readiness().
    *
    * @par Effects
    * `(communication_status() == Communication_status::failure ||
@@ -176,8 +176,19 @@ public:
    *    (communication_status() != Communication_status::failure) &&
    *    (communication_status() != Communication_status::disconnected))`
    */
-  virtual Socket_readiness socket_readiness(Socket_readiness mask,
-    std::chrono::microseconds timeout = {}) const = 0;
+  virtual Socket_readiness wait_socket_readiness(Socket_readiness mask,
+    std::chrono::microseconds timeout = std::chrono::microseconds{-1}) const = 0;
+
+  /**
+   * @brief Polls the readiness of the connection socket.
+   *
+   * @param mask - similar to wait_socket_readiness().
+   *
+   * @returns wait_socket_readiness(mask, std::chrono::microseconds{});
+   *
+   * @see wait_socket_readiness().
+   */
+  virtual Socket_readiness socket_readiness(Socket_readiness mask) const = 0;
 
   ///@}
 
@@ -357,7 +368,7 @@ public:
   /**
    * @brief Waits a some kind of Response if it is unavailable and awaited.
    *
-   * @param timeout - similar to socket_readiness().
+   * @param timeout - similar to wait_socket_readiness().
    *
    * @par Requires
    * `(timeout >= -1 && is_connected())`
@@ -380,7 +391,7 @@ public:
   /**
    * @brief Waits for the Completion or the Error of the very last query.
    *
-   * @param timeout - similar to socket_readiness().
+   * @param timeout - similar to wait_socket_readiness().
    *
    * @par Requires
    * `(timeout >= -1 && is_connected())`

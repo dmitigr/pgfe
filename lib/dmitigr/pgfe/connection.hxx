@@ -86,11 +86,11 @@ public:
       Socket_readiness current_socket_readiness;
       switch (current_status) {
       case Communication_status::establishment_reading:
-        current_socket_readiness = socket_readiness(Socket_readiness::read_ready, timeout);
+        current_socket_readiness = wait_socket_readiness(Socket_readiness::read_ready, timeout);
         break;
 
       case Communication_status::establishment_writing:
-        current_socket_readiness = socket_readiness(Socket_readiness::write_ready, timeout);
+        current_socket_readiness = wait_socket_readiness(Socket_readiness::write_ready, timeout);
         break;
 
       case Communication_status::connected:
@@ -118,8 +118,8 @@ public:
     DMINT_ASSERT(is_invariant_ok());
   }
 
-  Socket_readiness socket_readiness(Socket_readiness mask,
-    std::chrono::microseconds timeout = {}) const override
+  Socket_readiness wait_socket_readiness(Socket_readiness mask,
+    std::chrono::microseconds timeout = std::chrono::microseconds{-1}) const override
   {
     using std::chrono::system_clock;
     using std::chrono::microseconds;
@@ -153,6 +153,12 @@ public:
     }
   }
 
+  Socket_readiness socket_readiness(const Socket_readiness mask) const override
+  {
+    constexpr std::chrono::microseconds no_wait_just_poll{};
+    return wait_socket_readiness(mask, no_wait_just_poll);
+  }
+
 protected:
   virtual int socket() const = 0;
 
@@ -181,7 +187,7 @@ public:
       if (is_response_available())
         break;
       const auto timepoint1 = system_clock::now();
-      if (socket_readiness(Socket_readiness::read_ready, timeout) == Socket_readiness::read_ready) {
+      if (wait_socket_readiness(Socket_readiness::read_ready, timeout) == Socket_readiness::read_ready) {
         if (!ignore_timeout)
           timeout -= duration_cast<microseconds>(system_clock::now() - timepoint1);
       } else
