@@ -79,9 +79,12 @@ The urgent TODO-list includes:
 Tutorial
 ========
 
+There are [overview class diagram](http://dmitigr.ru/pgfe/doc/pgfe.class.violet.html) of
+the API for better understanding.
+
 Client programs that use Pgfe should include header file `dmitigr/pgfe.hpp` and
-must link with `dmitigr_pgfe` library. Logically Pgfe library consists of the
-following parts:
+must link with `dmitigr_pgfe` (or the debug build - `dmitigr_pgfed`)  library.
+Logically Pgfe library consists of the following parts:
 
   - Main (client/server communication);
   - Large objects (future feature, see the above TODO-list);
