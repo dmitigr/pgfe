@@ -4,6 +4,8 @@
 
 #include "dmitigr/pgfe/sql_string.hxx"
 
+#include <locale>
+
 // -----------------------------------------------------------------------------
 // Very basic SQL input parser
 // -----------------------------------------------------------------------------
@@ -196,6 +198,7 @@ auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_
         state = positional_parameter;
         result.push_text(fragment);
         fragment.clear();
+        // The first digit of positional parameter (current_char) will be stored below.
       } else if (is_ident_char(current_char)) {
         if (current_char == '$') {
           state = dollar_quote;
@@ -209,7 +212,7 @@ auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_
         fragment += previous_char;
       }
 
-      fragment += current_char; // store the first digit of positional parameter
+      fragment += current_char;
       continue;
 
     case positional_parameter:
@@ -388,7 +391,8 @@ auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_
   case top:
     if (current_char == ';')
       ++text;
-    result.push_text(fragment);
+    if (!fragment.empty())
+      result.push_text(fragment);
     break;
   case quote_quote:
     fragment += previous_char;
