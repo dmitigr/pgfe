@@ -75,9 +75,8 @@ protected:
 
 class string_Data : public container_Data<std::string> {
 public:
-  template<class S>
-  string_Data(S&& storage, const Format format)
-    : container_Data(std::forward<S>(storage), format)
+  string_Data(std::string storage, const Format format)
+    : container_Data(std::move(storage), format)
   {
     DMINT_ASSERT(is_invariant_ok());
   }
