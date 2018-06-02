@@ -223,6 +223,9 @@ auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_
         fragment.clear();
       }
 
+      if (current_char == ';')
+        goto finish;
+
       fragment += current_char;
       continue;
 
@@ -283,6 +286,9 @@ auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_
         fragment.clear();
       }
 
+      if (current_char == ';')
+        goto finish;
+
       fragment += current_char;
       continue;
 
@@ -311,7 +317,9 @@ auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_
       DMINT_ASSERT(previous_char == '-');
       if (current_char == '-') {
         state = one_line_comment;
-        // Skip ("--")
+        result.push_text(fragment);
+        fragment.clear();
+        // The comment marker ("--") will not be included in the next fragment.
       } else {
         state = top;
         fragment += previous_char;
@@ -340,9 +348,9 @@ auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_
           fragment += previous_char;
           fragment += current_char;
         } else {
-          // Skip the opening of the top-level multiline comment ("/*"), and save already collected text fragment.
           result.push_text(fragment);
           fragment.clear();
+          // The comment marker ("/*") will not be included in the next fragment.
         }
         ++depth;
       } else {
