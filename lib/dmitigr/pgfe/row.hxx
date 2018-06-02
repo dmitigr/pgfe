@@ -19,19 +19,8 @@ protected:
 
 inline bool iRow::is_invariant_ok()
 {
-  const auto datas_ok = [this]()
-  {
-    // The data of each field must not be nullptr.
-    const auto fc = field_count();
-    using Counter = std::remove_const_t<decltype (fc)>;
-    for (Counter i = 0; i < fc; ++i) {
-      if (!data(i))
-        return false;
-    }
-    return true;
-  }();
   const bool compositional_ok = detail::is_invariant_ok(*this);
-  return datas_ok && compositional_ok;
+  return compositional_ok;
 }
 
 // -----------------------------------------------------------------------------
