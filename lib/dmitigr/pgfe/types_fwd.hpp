@@ -42,6 +42,7 @@ enum class Server_errc;
 // -----------------------------------------------------------------------------
 
 class Completion;
+class Composite;
 class Compositional;
 class Connection;
 class Connection_options;
@@ -73,6 +74,7 @@ template<typename> struct Conversions;
 namespace detail {
 
 class iCompletion;
+class iComposite;
 class iConnection;
 class iConnection_options;
 class iData;
