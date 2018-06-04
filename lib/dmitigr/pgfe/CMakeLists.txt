@@ -41,6 +41,10 @@ set(dmitigr_pgfe_sources
   compositional.hpp
   compositional.hxx
 
+  composite.cpp
+  composite.hpp
+  composite.hxx
+
   connection.cpp
   connection.hpp
   connection.hxx
