@@ -146,9 +146,9 @@ public:
     return i;
   }
 
-  bool has_field(const std::string& name) const override
+  bool has_field(const std::string& name, const std::size_t offset = 0) const override
   {
-    return bool(field_index(name));
+    return bool(field_index(name, offset));
   }
 
   // ---------------------------------------------------------------------------

@@ -69,9 +69,9 @@ public:
     return info_.field_index_throw(name, offset);
   }
 
-  bool has_field(const std::string& name) const override
+  bool has_field(const std::string& name, const std::size_t offset = 0) const override
   {
-    return info_.has_field(name);
+    return info_.has_field(name, offset);
   }
 
   // ---------------------------------------------------------------------------

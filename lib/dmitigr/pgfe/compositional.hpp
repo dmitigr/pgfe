@@ -56,7 +56,7 @@ public:
   /**
    * @returns `true` if the field named by `name` is presents, or `false` otherwise.
    */
-  virtual bool has_field(const std::string& name) const = 0;
+  virtual bool has_field(const std::string& name, std::size_t offset = 0) const = 0;
 
 private:
   friend Composite;
