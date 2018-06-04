@@ -59,6 +59,7 @@ public:
   virtual bool has_field(const std::string& name) const = 0;
 
 private:
+  friend Composite;
   friend Row;
   friend Row_info;
 
