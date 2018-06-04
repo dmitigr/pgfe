@@ -16,6 +16,10 @@ namespace dmitigr::pgfe {
  * @ingroup main
  *
  * @brief Defines an interface of compositional types.
+ *
+ * @param index - field index specifier;
+ * @param name - field name specifier;
+ * @param offset - field offset specifier.
  */
 class Compositional {
 public:

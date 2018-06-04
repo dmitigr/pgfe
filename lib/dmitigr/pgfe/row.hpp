@@ -27,7 +27,7 @@ public:
   /**
    * @returns The field data of this row, or `nullptr` if NULL.
    *
-   * @param index - field index specifier
+   * @param index - see Compositional.
    *
    * @par Requires
    * Index in range [0, field_count()).
@@ -37,8 +37,8 @@ public:
   /**
    * @overload
    *
-   * @param name - field name specifier
-   * @param offset - field offset specifier
+   * @param name - see Compositional;
+   * @param offset - see Compositional.
    *
    * @par Requires
    * `has_field(name, offset)`.

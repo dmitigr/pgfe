@@ -33,6 +33,8 @@ public:
   /**
    * @returns The field data of this composite, or `nullptr` if NULL.
    *
+   * @param index - see Compositional;
+   *
    * @par Requires
    * Index in range [0, field_count()).
    */
@@ -41,8 +43,8 @@ public:
   /**
    * @overload
    *
-   * @param name - field name specifier.
-   * @param offset - field offset specifier.
+   * @param name - see Compositional;
+   * @param offset - see Compositional.
    *
    * @par Requires
    * `has_field(name, offset)`.
@@ -54,6 +56,9 @@ public:
   /**
    * @brief Sets the object of type Data to the field of the composite.
    *
+   * @param index - see Compositional;
+   * @param data - the data to set.
+   *
    * @par Requires
    * Index in range [0, field_count()).
    */
@@ -62,6 +67,9 @@ public:
   /**
    * @overload
    *
+   * @param name - see Compositional;
+   * @param offset - see Compositional.
+   *
    * @par Requires
    * `has_field(name, offset)`.
    */
@@ -69,6 +77,8 @@ public:
 
   /**
    * @brief Sets the object of type Data to the field of the composite.
+   *
+   * @param index - see Compositional.
    *
    * @returns The released object of type Data.
    *
@@ -83,6 +93,9 @@ public:
   /**
    * @overload
    *
+   * @param name - see Compositional;
+   * @param offset - see Compositional.
+   *
    * @par Requires
    * `has_field(name, offset)`.
    */
@@ -91,8 +104,8 @@ public:
   /**
    * @brief Adds new field to a composite.
    *
-   * @param name - field name specifier.
-   * @param data - field data to assign.
+   * @param name - see Compositional.
+   * @param data - the data to set.
    */
   virtual void add_field(const std::string& name, std::unique_ptr<Data>&& data = {}) = 0;
 
@@ -108,6 +121,9 @@ public:
 
   /**
    * @overload
+   *
+   * @param name - see Compositional;
+   * @param offset - see Compositional.
    *
    * @par Requires
    * `has_field(name, offset)`.

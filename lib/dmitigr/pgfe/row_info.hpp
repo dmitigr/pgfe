@@ -24,6 +24,8 @@ public:
    * @returns The object ID of the table if the field at `index` can be
    * identified as a column of a specific table, or `0` otherwise.
    *
+   * @param index - see Compositional.
+   *
    * @par Requires
    * `(index < field_count())`
    */
@@ -32,8 +34,8 @@ public:
   /**
    * @overload
    *
-   * @param name - field name specifier
-   * @param offset - field offset specifier
+   * @param name - see Compositional;
+   * @param offset - see Compositional.
    *
    * @par Requires
    * `has_field(name, offset)`
@@ -46,6 +48,8 @@ public:
    * @returns The attribute number of a column if the field at `index` can be
    * identified as the column of a specific table, or `0` otherwise.
    *
+   * @param index - see Compositional.
+   *
    * @par Requires
    * `(index < field_count())`
    *
@@ -56,8 +60,8 @@ public:
   /**
    * @overload
    *
-   * @param name - field name specifier
-   * @param offset - field offset specifier
+   * @param name - see Compositional;
+   * @param offset - see Compositional.
    *
    * @par Requires
    * `has_field(name, offset)`
@@ -69,6 +73,8 @@ public:
   /**
    * @returns The object identifier of the field's data type.
    *
+   * @param index - see Compositional.
+   *
    * @par Requires
    * `(index < field_count())`
    */
@@ -77,8 +83,8 @@ public:
   /**
    * @overload
    *
-   * @param name - field name specifier
-   * @param offset - field offset specifier
+   * @param name - see Compositional;
+   * @param offset - see Compositional.
    *
    * @par Requires
    * `has_field(name, offset)`
@@ -93,6 +99,8 @@ public:
    * - -1 to indicate "varlena" type;
    * - -2 to indicate null-terminated C string.
    *
+   * @param index - see Compositional.
+   *
    * @par Requires
    * `(index < field_count())`
    */
@@ -101,8 +109,8 @@ public:
   /**
    * @overload
    *
-   * @param name - field name specifier
-   * @param offset - field offset specifier
+   * @param name - see Compositional;
+   * @param offset - see Compositional.
    *
    * @par Requires
    * `has_field(name, offset)`
@@ -114,6 +122,8 @@ public:
    * - the type modifier of the field's data;
    * - -1 to indicate "no information available".
    *
+   * @param index - see Compositional.
+   *
    * @par Requires
    * `(index < field_count())`
    */
@@ -122,8 +132,8 @@ public:
   /**
    * @overload
    *
-   * @param name - field name specifier
-   * @param offset - field offset specifier
+   * @param name - see Compositional;
+   * @param offset - see Compositional.
    *
    * @par Requires
    * `has_field(name, offset)`
@@ -133,6 +143,8 @@ public:
   /**
    * @returns The field data format.
    *
+   * @param index - see Compositional.
+   *
    * @par Requires
    * `(index < field_count())`
    */
@@ -141,8 +153,8 @@ public:
   /**
    * @overload
    *
-   * @param name - field name specifier
-   * @param offset - field offset specifier
+   * @param name - see Compositional;
+   * @param offset - see Compositional.
    *
    * @par Requires
    * `has_field(name, offset)`
