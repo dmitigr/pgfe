@@ -4,8 +4,6 @@
 
 #include "dmitigr/pgfe/sql_string.hxx"
 
-#include <locale>
-
 // -----------------------------------------------------------------------------
 // Very basic SQL input parser
 // -----------------------------------------------------------------------------
@@ -223,11 +221,11 @@ auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_
         fragment.clear();
       }
 
-      if (current_char == ';')
+      if (current_char != ';') {
+        fragment += current_char;
+        continue;
+      } else
         goto finish;
-
-      fragment += current_char;
-      continue;
 
     case dollar_quote_leading_tag:
       DMINT_ASSERT(previous_char != '$' && is_ident_char(previous_char));
@@ -269,14 +267,17 @@ auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_
         state = named_parameter;
         result.push_text(fragment);
         fragment.clear();
-        fragment += current_char; // store the first character of the named parameter
+        // The first character of the named parameter (current_char) will be stored below.
       } else {
         state = top;
         fragment += previous_char;
-        fragment += current_char;
       }
 
-      continue;
+      if (current_char != ';') {
+        fragment += current_char;
+        continue;
+      } else
+        goto finish;
 
     case named_parameter:
       DMINT_ASSERT(is_ident_char(previous_char));
@@ -286,11 +287,11 @@ auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_
         fragment.clear();
       }
 
-      if (current_char == ';')
+      if (current_char != ';') {
+        fragment += current_char;
+        continue;
+      } else
         goto finish;
-
-      fragment += current_char;
-      continue;
 
     case quote:
       if (current_char == quote_char)
@@ -310,8 +311,11 @@ auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_
         fragment += previous_char; // store previous quote
       }
 
-      fragment += current_char;
-      continue;
+      if (current_char != ';') {
+        fragment += current_char;
+        continue;
+      } else
+        goto finish;
 
     case dash:
       DMINT_ASSERT(previous_char == '-');
@@ -323,7 +327,12 @@ auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_
       } else {
         state = top;
         fragment += previous_char;
-        fragment += current_char;
+
+        if (current_char != ';') {
+          fragment += current_char;
+          continue;
+        } else
+          goto finish;
       }
 
       continue;
@@ -331,7 +340,7 @@ auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_
     case one_line_comment:
       if (current_char == '\n') {
         state = top;
-        if (fragment.back() == '\r')
+        if (!fragment.empty() && fragment.back() == '\r')
           fragment.pop_back();
         result.push_one_line_comment(fragment);
         fragment.clear();
