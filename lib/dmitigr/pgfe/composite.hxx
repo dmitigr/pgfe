@@ -152,6 +152,16 @@ public:
     // The invariant is already checked.
   }
 
+  // ---------------------------------------------------------------------------
+  // Non public API
+  // ---------------------------------------------------------------------------
+
+  void append(heap_data_Composite&& rhs)
+  {
+    datas_.insert(cend(datas_), std::make_move_iterator(begin(rhs.datas_)), std::make_move_iterator(end(rhs.datas_)));
+    DMINT_ASSERT(is_invariant_ok());
+  }
+
 protected:
   bool is_invariant_ok()
   {

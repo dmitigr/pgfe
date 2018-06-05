@@ -68,6 +68,7 @@ public:
    * @overload
    *
    * @param name - see Compositional;
+   * @param data - the data to set;
    * @param offset - see Compositional.
    *
    * @par Requires
