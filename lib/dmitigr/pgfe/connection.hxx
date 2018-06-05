@@ -918,22 +918,27 @@ public:
     }
   }
 
-  void complete(const std::function<void(const Completion*)>& body) override
+  void complete(const std::function<void(const Completion*)>& body = {}) override
   {
-    DMINT_REQUIRE(body);
+    if (is_awaiting_response())
+      wait_last_response_throw();
 
     if (const auto* const c = completion()) {
-      body(c);
+      if (body)
+        body(c);
       dismiss_response();
     }
   }
 
   void complete(const std::function<void(std::unique_ptr<Completion>&&)>& body) override
   {
-    DMINT_REQUIRE(body);
+    if (is_awaiting_response())
+      wait_last_response_throw();
 
-    if (auto c = release_completion())
-      body(std::move(c));
+    if (auto c = release_completion()) {
+      if (body)
+        body(std::move(c));
+    }
   }
 
   std::string to_quoted_literal(const std::string& literal) const override

@@ -389,7 +389,7 @@ public:
   virtual void wait_response_throw(std::chrono::microseconds timeout = std::chrono::microseconds{-1}) = 0;
 
   /**
-   * @brief Waits for the Completion or the Error of the very last query.
+   * @brief Waits for the Completion or the Error.
    *
    * @param timeout - similar to wait_socket_readiness().
    *
@@ -791,7 +791,7 @@ public:
   /// @{
 
   /**
-   * @brief For each row calls body(row()).
+   * @brief For each awaited row calls `body(row())` just after retrieving.
    *
    * @param body - a callback function.
    *
@@ -811,17 +811,15 @@ public:
   virtual void for_each(const std::function<void(std::unique_ptr<Row>&&)>& body) = 0;
 
   /**
-   * @brief If Completion is available, calls body(completion()).
+   * @brief Waits for the Completion or the Error and
+   * calls `body(completion())` if the `body` is given.
    *
    * @param body - a callback function.
-   *
-   * @par Requires
-   * `(body)`
    *
    * @par Exception safety guarantee
    * Basic.
    */
-  virtual void complete(const std::function<void(const Completion*)>& body) = 0;
+  virtual void complete(const std::function<void(const Completion*)>& body = {}) = 0;
 
   /**
    * @overload
