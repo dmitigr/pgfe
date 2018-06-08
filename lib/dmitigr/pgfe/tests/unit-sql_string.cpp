@@ -26,7 +26,7 @@ int main(int argc, char* argv[])
       assert(s->is_query_empty());
       assert(!s->extra()->has_fields());
 
-      s->extra()->add_field("description", pgfe::Data::make("This is an unknown query"));
+      s->extra()->append_field("description", pgfe::Data::make("This is an unknown query"));
       assert(s->extra()->has_fields());
       assert(s->extra()->field_count() == 1);
       assert(s->extra()->has_field("description"));

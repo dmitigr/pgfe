@@ -11,6 +11,7 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 namespace dmitigr::pgfe {
@@ -62,6 +63,11 @@ public:
   static DMITIGR_PGFE_API std::unique_ptr<Sql_vector> APIENTRY make(const std::string& input);
 
   /**
+   * @overload
+   */
+  static DMITIGR_PGFE_API std::unique_ptr<Sql_vector> APIENTRY make(std::vector<std::unique_ptr<Sql_string>>&& v);
+
+  /**
    * @returns The copy of this instance.
    */
   virtual std::unique_ptr<Sql_vector> clone() const = 0;
@@ -70,144 +76,7 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  /// @name Generic observers and modifiers
-  /// @{
-
-  /** Denotes the underlying container type. */
-  using Container = std::vector<std::unique_ptr<Sql_string>>;
-
-  /** Denotes the value type. */
-  using Value = Sql_string*;
-
-  /**
-   * @returns The underlying container.
-   */
-  virtual Container& container() = 0;
-
-  /**
-   * @overload
-   */
-  virtual const Container& container() const = 0;
-
-  /**
-   * @returns The value by the given `index`.
-   *
-   * @par Requires
-   * `(index < container().size())`.
-   *
-   * @remarks This method can be useful in generic code to access the object
-   * of type Value.
-   */
-  virtual Value value(std::size_t index) = 0;
-
-  /**
-   * @overload
-   */
-  virtual const Value value(std::size_t index) const = 0;
-
-  /**
-   * @overload
-   */
-  Value value(const Container::iterator i) noexcept
-  {
-    return i->get();
-  }
-
-  /**
-   * @overload
-   */
-  const Value value(const Container::const_iterator i) const noexcept
-  {
-    return i->get();
-  }
-
-  /**
-   * @overload
-   */
-  Value value(Container::value_type& cv) noexcept
-  {
-    return cv.get();
-  }
-
-  /**
-   * @overload
-   */
-  const Value value(const Container::value_type& cv) const noexcept
-  {
-    return cv.get();
-  }
-
-  /**
-   * @brief Parses the input to add SQL string(-s) to this vector.
-   *
-   * @param args - the arguments to forward to Sql_string::make().
-   *
-   * @par Exception safety guarantee
-   * Strong.
-   */
-  template<typename ... Types>
-  Value emplace_back(Types&& ... args)
-  {
-    return container().emplace_back(Sql_string::make(std::forward<Types>(args)...)).get();
-  }
-
-  /**
-   * @brief Parses the input to insert SQL string(-s)
-   *
-   * @par Requires
-   * `(i < container().size())`
-   */
-  template<typename ... Types>
-  Container::iterator emplace(const std::size_t index, Types&& ... args)
-  {
-    return emplace(container_iterator(index), std::forward<Types>(args)...);
-  }
-
-  /**
-   * @overload
-   *
-   * @par Requires
-   * `i` must be in the range [container().begin(), container().end()].
-   */
-  template<typename ... Types>
-  Container::iterator emplace(const Container::iterator i, Types&& ... args)
-  {
-    return container().emplace(i, Sql_string::make(std::forward<Types>(args)...));
-  }
-
-  /**
-   * @brief Sets the `value` of the underlying container.
-   *
-   * @par Requires
-   * `(index < container().size())`
-   */
-  virtual void set(std::size_t index, std::unique_ptr<Sql_string>&& value) = 0;
-
-  /**
-   * @overload
-   *
-   * @param args - the arguments to forward to Sql_string::make().
-   */
-  template<typename ... Types>
-  void set(std::size_t index, Types&& ... args)
-  {
-    set(index, Sql_string::make(std::forward<Types>(args)...));
-  }
-
-  /**
-   * @overload
-   */
-  template<typename ... Types>
-  void set(const Container::iterator i, Types&& ... args)
-  {
-    *i = Sql_string::make(std::forward<Types>(args)...);
-  }
-
-  /// @}
-
-  // ---------------------------------------------------------------------------
-
-  /// @name Special observers
+  /// @name Observers
   /// @{
 
   /**
@@ -247,18 +116,12 @@ public:
     std::size_t offset = 0, std::size_t extra_offset = 0) const = 0;
 
   /**
-   * @returns The iterator of underlying container by the given criterias.
+   * @brief Similar to sql_string_index(const std::string&, const std::string&, std::size_t, std::size_t) except the requirement.
    *
-   * @par Parameters
-   * See sql_string_index().
+   * @par Requires:
+   * `(has_sql_string(name))`
    */
-  virtual Container::iterator container_iterator(const std::string& extra_name, const std::string& extra_value,
-    std::size_t offset = 0, std::size_t extra_offset = 0) = 0;
-
-  /**
-   * @overload
-   */
-  virtual Container::const_iterator container_const_iterator(const std::string& extra_name, const std::string& extra_value,
+  virtual std::size_t sql_string_index_throw(const std::string& extra_name, const std::string& extra_value,
     std::size_t offset = 0, std::size_t extra_offset = 0) const = 0;
 
   /**
@@ -299,6 +162,81 @@ public:
 
   /// @}
 
+  // --------------------------------------------------------------------------
+
+  /// @{
+  /// @name Modifiers
+
+  /**
+   * @brief Sets the SQL string at the given `index`.
+   *
+   * @par Requires
+   * `(index < sql_string_count() && sql_string != nullptr)`
+   */
+  virtual void set_sql_string(std::size_t index, std::unique_ptr<Sql_string>&& sql_string) = 0;
+
+  /**
+   * @overload
+   *
+   * @param args - the arguments to forward to Sql_string::make().
+   */
+  template<typename ... Types>
+  void set_sql_string(std::size_t index, Types&& ... args)
+  {
+    set_sql_string(index, Sql_string::make(std::forward<Types>(args)...));
+  }
+
+  /**
+   * @brief Appends the SQL string to this vector.
+   *
+   * @param sql_string - the SQL string to append.
+   *
+   * @par Requires
+   * `(sql_string != nullptr)`
+   */
+  virtual void append_sql_string(std::unique_ptr<Sql_string>&& sql_string) = 0;
+
+  /**
+   * @overload
+   */
+  template<typename ... Types>
+  void append_sql_string(Types&& ... args)
+  {
+    append_sql_string(Sql_string::make(std::forward<Types>(args)...));
+  }
+
+  /**
+   * @brief Inserts new SQL string to this vector.
+   *
+   * @param index - the index of the SQL string before which the new SQL string will be inserted;
+   * @param sql_string - the SQL string to insert.
+   *
+   * @par Requires
+   * `(index < sql_string_count() && sql_string != nullptr)`
+   */
+  virtual void insert_sql_string(std::size_t index, std::unique_ptr<Sql_string>&& sql_string) = 0;
+
+  /**
+   * @overload
+   */
+  template<typename ... Types>
+  void insert_sql_string(std::size_t index, Types&& ... args)
+  {
+    static_assert(sizeof ... (args) != 1 || !std::is_same_v<std::tuple_element_t<0, std::tuple<Types ...>>, std::nullptr_t>,
+      "A SQL string must not be null");
+    insert_sql_string(index, Sql_string::make(std::forward<Types>(args)...));
+  }
+
+  /**
+   * @brief Removes SQL string from the vector.
+   *
+   * @par Requires
+   * `(index < sql_string_count())`
+   */
+  virtual void remove_sql_string(std::size_t index) = 0;
+
+  /// @}
+
   // ---------------------------------------------------------------------------
 
   /// @name Conversions
@@ -313,6 +251,14 @@ public:
    * @returns The result of conversion of this instance to the instance of type `std::vector`.
    */
   virtual std::vector<std::unique_ptr<Sql_string>> to_vector() const = 0;
+
+  /**
+   * @returns The result of conversion of this instance to the instance of type `std::vector`.
+   *
+   * @par Effects
+   * `(has_sql_strings() == false)`
+   */
+  virtual std::vector<std::unique_ptr<Sql_string>> move_to_vector() = 0;
 
   /// @}
 

@@ -228,15 +228,12 @@ private:
 
   std::size_t field_index__(const std::string& name, std::size_t offset) const
   {
-    const auto fc = field_count();
-    if (offset < fc) {
-      const auto b = cbegin(*shared_field_names_);
-      const auto e = cend(*shared_field_names_);
-      const auto ident = unquote_identifier(name);
-      const auto i = std::find(b + offset, e, ident);
-      return (i - b);
-    } else
-      return fc;
+    DMINT_ASSERT(offset < field_count());
+    const auto b = cbegin(*shared_field_names_);
+    const auto e = cend(*shared_field_names_);
+    const auto ident = unquote_identifier(name);
+    const auto i = std::find(b + offset, e, ident);
+    return (i - b);
   }
 
   pq::Result pq_result_;

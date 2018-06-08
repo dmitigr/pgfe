@@ -18,4 +18,9 @@ DMITIGR_PGFE_API std::unique_ptr<Sql_vector> APIENTRY Sql_vector::make(const std
   return std::make_unique<detail::iSql_vector>(input);
 }
 
+DMITIGR_PGFE_API std::unique_ptr<Sql_vector> APIENTRY Sql_vector::make(std::vector<std::unique_ptr<Sql_string>>&& v)
+{
+  return std::make_unique<detail::iSql_vector>(std::move(v));
+}
+
 } // namespace dmitigr::pgfe

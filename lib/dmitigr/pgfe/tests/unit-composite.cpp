@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
     assert(c->field_count() == 0);
     assert(!c->has_fields());
     assert(is_logic_throw_works([&](){ c->field_name(0); }));
-    assert(!c->field_index("foo"));
+    assert(is_logic_throw_works([&](){ c->field_index("foo"); }));
     assert(is_logic_throw_works([&](){ c->data(0); }));
     assert(is_logic_throw_works([&](){ c->data("foo"); }));
     assert(is_logic_throw_works([&](){ c->set_data(0, nullptr); }));
@@ -25,7 +25,7 @@ int main(int argc, char* argv[])
     assert(is_logic_throw_works([&](){ c->release_data("foo"); }));
     // Modifying the composite.
     assert(c->field_count() == 0);
-    c->add_field("foo");
+    c->append_field("foo");
     assert(c->field_count() == 1);
     assert(c->has_fields());
     assert(c->field_name(0) == "foo");
@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
     assert(c->data("foo") == nullptr);
     //
     assert(c->field_count() == 1);
-    c->add_field("bar", "bar data");
+    c->append_field("bar", "bar data");
     assert(c->field_count() == 2);
     assert(c->has_fields());
     assert(c->field_name(1) == "bar");

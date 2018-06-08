@@ -44,7 +44,7 @@ public:
 
   /// @}
 
-  /// @name Observers and modifiers
+  /// @name Observers
   /// @{
 
   /**
@@ -53,7 +53,7 @@ public:
    * @param index - see Compositional;
    *
    * @par Requires
-   * Index in range [0, field_count()).
+   * `(index < field_count())`
    */
   virtual const Data* data(std::size_t index) const = 0;
 
@@ -64,11 +64,16 @@ public:
    * @param offset - see Compositional.
    *
    * @par Requires
-   * `has_field(name, offset)`.
-   *
-   * @see has_field()
+   * `has_field(name, offset)`
    */
   virtual const Data* data(const std::string& name, std::size_t offset = 0) const = 0;
+
+  /// @}
+
+  // ---------------------------------------------------------------------------
+
+  /// @name Modifiers
+  /// @{
 
   /**
    * @brief Sets the object of type Data to the field of the composite.
@@ -76,8 +81,11 @@ public:
    * @param index - see Compositional;
    * @param data - the data to set.
    *
+   * @par Exception safety guarantee
+   * Strong.
+   *
    * @par Requires
-   * Index in range [0, field_count()).
+   * `(index < field_count())`
    */
   virtual void set_data(std::size_t index, std::unique_ptr<Data>&& data) = 0;
 
@@ -124,7 +132,7 @@ public:
   }
 
   /**
-   * @brief Sets the object of type Data to the field of the composite.
+   * @brief Release the object of type Data from the composite.
    *
    * @param index - see Compositional.
    *
@@ -133,8 +141,11 @@ public:
    * @par Effects
    * `(data(index) == nullptr)`.
    *
+   * @par Exception safety guarantee
+   * Strong.
+   *
    * @par Requires
-   * Index in range [0, field_count()).
+   * `(index < field_count())`
    */
   virtual std::unique_ptr<Data> release_data(std::size_t index) = 0;
 
@@ -145,25 +156,28 @@ public:
    * @param offset - see Compositional.
    *
    * @par Requires
-   * `has_field(name, offset)`.
+   * `has_field(name, offset)`
    */
   virtual std::unique_ptr<Data> release_data(const std::string& name, std::size_t offset = 0) = 0;
 
   /**
-   * @brief Adds the last field to a composite.
+   * @brief Appends the field to this composite.
    *
    * @param name - see Compositional.
    * @param data - the data to set.
+   *
+   * @par Exception safety guarantee
+   * Strong.
    */
-  virtual void add_field(const std::string& name, std::unique_ptr<Data>&& data = {}) = 0;
+  virtual void append_field(const std::string& name, std::unique_ptr<Data>&& data = {}) = 0;
 
   /**
    * @overload
    */
   template<typename T>
-  void add_field(const std::string& name, T&& value)
+  void append_field(const std::string& name, T&& value)
   {
-    add_field(name, to_data(std::forward<T>(value)));
+    append_field(name, to_data(std::forward<T>(value)));
   }
 
   /**
@@ -172,6 +186,9 @@ public:
    * @param index - the index of the field before which the new field will be inserted;
    * @param name - the name of the new field;
    * @param data - the data to set to the new field.
+   *
+   * @par Exception safety guarantee
+   * Strong.
    *
    * @par Requires
    * `(index < field_count())`
@@ -214,7 +231,8 @@ public:
    * @par Requires
    * `(index < field_count())`
    *
-   * @see has_field()
+   * @par Exception safety guarantee
+   * Strong.
    */
   virtual void remove_field(std::size_t index) = 0;
 
@@ -225,11 +243,13 @@ public:
    * @param offset - see Compositional.
    *
    * @par Requires
-   * `has_field(name, offset)`.
+   * `has_field(name, offset)`
    */
   virtual void remove_field(const std::string& name, std::size_t offset = 0) = 0;
 
   /// @}
+
+  // ---------------------------------------------------------------------------
 
   /// @name Conversions
   /// @{

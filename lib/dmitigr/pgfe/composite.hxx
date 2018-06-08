@@ -121,6 +121,8 @@ public:
     return std::make_unique<heap_data_Composite>(*this);
   }
 
+  // ---------------------------------------------------------------------------
+
   const Data* data(const std::size_t index) const override
   {
     DMINT_REQUIRE(index < field_count());
@@ -129,9 +131,10 @@ public:
 
   const Data* data(const std::string& name, const std::size_t offset) const override
   {
-    const auto index = field_index_throw(name, offset);
-    return datas_[index].second.get();
+    return data(field_index_throw(name, offset));
   }
+
+  // -------------------------------------------------------------------------------------
 
   void set_data(const std::size_t index, std::unique_ptr<Data>&& data) override
   {
@@ -164,12 +167,10 @@ public:
 
   std::unique_ptr<Data> release_data(const std::string& name, const std::size_t offset = 0) override
   {
-    const auto index = field_index_throw(name, offset);
-    return release_data(index);
-    // The invariant is already checked.
+    return release_data(field_index_throw(name, offset));
   }
 
-  void add_field(const std::string& name, std::unique_ptr<Data>&& data = {}) override
+  void append_field(const std::string& name, std::unique_ptr<Data>&& data = {}) override
   {
     datas_.emplace_back(name, std::move(data));
     DMINT_ASSERT(is_invariant_ok());
@@ -196,10 +197,10 @@ public:
 
   void remove_field(const std::string& name, std::size_t offset = 0) override
   {
-    const auto index = field_index_throw(name, offset);
-    remove_field(index);
-    // The invariant is already checked.
+    remove_field(field_index_throw(name, offset));
   }
+
+  // ---------------------------------------------------------------------------
 
   std::vector<std::pair<std::string, std::unique_ptr<Data>>> to_vector() const override
   {
@@ -233,15 +234,12 @@ protected:
 private:
   std::size_t field_index__(const std::string& name, std::size_t offset) const
   {
-    const auto fc = field_count();
-    if (offset < fc) {
-      const auto b = cbegin(datas_);
-      const auto e = cend(datas_);
-      const auto ident = unquote_identifier(name);
-      const auto i = std::find_if(b + offset, e, [&](const auto& pair) { return pair.first == ident; });
-      return (i - b);
-    } else
-      return fc;
+    DMINT_REQUIRE(offset < field_count());
+    const auto b = cbegin(datas_);
+    const auto e = cend(datas_);
+    const auto ident = unquote_identifier(name);
+    const auto i = std::find_if(b + offset, e, [&](const auto& pair) { return pair.first == ident; });
+    return (i - b);
   }
 
   std::vector<std::pair<std::string, std::unique_ptr<Data>>> datas_;

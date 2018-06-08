@@ -20,20 +20,16 @@ int main(int argc, char* argv[])
     // -------------------------------------------------------------------------
 
     auto bunch = pgfe::Sql_vector::make();
-    assert(bunch->container().empty());
     assert(!bunch->has_sql_strings());
     assert(bunch->sql_string_count() == 0);
-    assert(is_logic_throw_works([&]() { bunch->value(0); }));
-    bunch->emplace_back("SELECT 1");
-    assert(!bunch->container().empty());
+    assert(is_logic_throw_works([&]() { bunch->sql_string(0); }));
+    bunch->append_sql_string("SELECT 1");
     assert(bunch->has_sql_strings());
     assert(bunch->sql_string_count() == 1);
-    assert(bunch->value(0));
-    assert(bunch->value(0) == bunch->container()[0].get());
-    assert(bunch->value(0) == bunch->sql_string(0));
+    assert(bunch->sql_string(0));
     assert(bunch->to_string() == "SELECT 1");
     const auto vec = bunch->to_vector();
-    assert(vec.size() == bunch->container().size());
+    assert(vec.size() == bunch->sql_string_count());
     assert([&]()
       {
         for (decltype (vec.size()) i = 0; i < vec.size(); ++i) {
@@ -94,15 +90,15 @@ int main(int argc, char* argv[])
     // -------------------------------------------------------------------------
 
     // First, let's insert nullptr.
-    bunch->container().insert(bunch->container().begin() + 1, nullptr);
+    bunch->insert_sql_string(1, "SELECT 2");
 
-    const auto i = bunch->container_iterator("id", "plus_one");
-    assert(i != end(bunch->container()));
-    bunch->container().erase(i);
-    assert(bunch->sql_string_count() == 2); // {nullptr, digit} are still heere
+    const auto i = bunch->sql_string_index("id", "plus_one");
+    assert(i);
+    bunch->remove_sql_string(*i);
+    assert(bunch->sql_string_count() == 2); // {"SELECT 2", digit} are still here
     assert(!bunch->has_sql_string("id", "plus_one"));
     assert(!bunch->sql_string_index("id", "plus_one"));
-    assert(bunch->sql_string(0) == nullptr); // nullptr
+    assert(bunch->sql_string(0)->to_string() == "SELECT 2"); // SELECT 2
     assert(bunch->sql_string(1) != nullptr); // digit
     assert(bunch->has_sql_string("id", "digit"));
     assert(bunch->sql_string_index("id", "digit") == 1);
