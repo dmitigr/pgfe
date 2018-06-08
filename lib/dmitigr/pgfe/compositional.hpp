@@ -58,6 +58,14 @@ public:
   virtual std::optional<std::size_t> field_index(const std::string& name, std::size_t offset = 0) const = 0;
 
   /**
+   * @brief Similar to field_index(const std::string&, std::size_t) except the requirement.
+   *
+   * @par Requires:
+   * `(has_field(name, offset))`
+   */
+  virtual std::size_t field_index_throw(const std::string& name, std::size_t offset = 0) const = 0;
+
+  /**
    * @returns `true` if the field named by `name` is presents, or `false` otherwise.
    */
   virtual bool has_field(const std::string& name, std::size_t offset = 0) const = 0;
@@ -66,16 +74,6 @@ private:
   friend Composite;
   friend Row;
   friend Row_info;
-
-  /**
-   * @internal
-   *
-   * @brief Similar to field_index(const std::string&, std::size_t) except the requirement.
-   *
-   * @par Requires:
-   * `(has_field(name, offset))`
-   */
-  virtual std::size_t field_index_throw(const std::string& name, std::size_t offset = 0) const = 0;
 
   Compositional() = default;
 };

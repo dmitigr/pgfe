@@ -6,10 +6,14 @@
 #define DMITIGR_PGFE_COMPOSITE_HPP
 
 #include "dmitigr/pgfe/compositional.hpp"
+#include "dmitigr/pgfe/conversions.hpp"
+#include "dmitigr/pgfe/data.hpp"
 #include "dmitigr/pgfe/internal/dll.hxx"
 
 #include <memory>
 #include <string>
+#include <type_traits>
+#include <vector>
 
 namespace dmitigr::pgfe {
 
@@ -28,7 +32,20 @@ public:
    */
   static DMITIGR_PGFE_API std::unique_ptr<Composite> APIENTRY make();
 
+  /**
+   * @overload
+   */
+  static DMITIGR_PGFE_API std::unique_ptr<Composite> APIENTRY make(std::vector<std::pair<std::string, std::unique_ptr<Data>>>&& v);
+
+  /**
+   * @returns The copy of this instance.
+   */
+  virtual std::unique_ptr<Composite> clone() const = 0;
+
   /// @}
+
+  /// @name Observers and modifiers
+  /// @{
 
   /**
    * @returns The field data of this composite, or `nullptr` if NULL.
@@ -66,15 +83,45 @@ public:
 
   /**
    * @overload
+   */
+  virtual void set_data(std::size_t index, std::nullptr_t data) = 0;
+
+  /**
+   * @overload
+   *
+   * Sets the data of the specified index with the value of type T, implicitly
+   * converted to the Data by using to_data().
+   */
+  template<typename T>
+  std::enable_if_t<!std::is_same_v<Data*, T>> set_data(std::size_t index, T&& value)
+  {
+    set_data(index, to_data(std::forward<T>(value)));
+  }
+
+  /**
+   * @overload
    *
    * @param name - see Compositional;
-   * @param data - the data to set;
-   * @param offset - see Compositional.
+   * @param data - the data to set.
    *
    * @par Requires
-   * `has_field(name, offset)`.
+   * `(has_field(name, 0))`
    */
-  virtual void set_data(const std::string& name, std::unique_ptr<Data>&& data, std::size_t offset = 0) = 0;
+  virtual void set_data(const std::string& name, std::unique_ptr<Data>&& data) = 0;
+
+  /**
+   * @overload
+   */
+  virtual void set_data(const std::string& name, std::nullptr_t data) = 0;
+
+  /**
+   * @overload
+   */
+  template<typename T>
+  std::enable_if_t<!std::is_same_v<Data*, T>> set_data(const std::string& name, T&& value)
+  {
+    set_data(field_index_throw(name), to_data(std::forward<T>(value)));
+  }
 
   /**
    * @brief Sets the object of type Data to the field of the composite.
@@ -84,7 +131,7 @@ public:
    * @returns The released object of type Data.
    *
    * @par Effects
-   * `data(index) == nullptr`.
+   * `(data(index) == nullptr)`.
    *
    * @par Requires
    * Index in range [0, field_count()).
@@ -103,7 +150,7 @@ public:
   virtual std::unique_ptr<Data> release_data(const std::string& name, std::size_t offset = 0) = 0;
 
   /**
-   * @brief Adds new field to a composite.
+   * @brief Adds the last field to a composite.
    *
    * @param name - see Compositional.
    * @param data - the data to set.
@@ -111,10 +158,61 @@ public:
   virtual void add_field(const std::string& name, std::unique_ptr<Data>&& data = {}) = 0;
 
   /**
+   * @overload
+   */
+  template<typename T>
+  void add_field(const std::string& name, T&& value)
+  {
+    add_field(name, to_data(std::forward<T>(value)));
+  }
+
+  /**
+   * @brief Inserts new field to a composite.
+   *
+   * @param index - the index of the field before which the new field will be inserted;
+   * @param name - the name of the new field;
+   * @param data - the data to set to the new field.
+   *
+   * @par Requires
+   * `(index < field_count())`
+   */
+  virtual void insert_field(std::size_t index, const std::string& new_field_name, std::unique_ptr<Data>&& data = {}) = 0;
+
+  /**
+   * @overload
+   */
+  template<typename T>
+  void insert_field(std::size_t index, const std::string& name, T&& value)
+  {
+    insert_field(index, name, to_data(std::forward<T>(value)));
+  }
+
+  /**
+   * @overload
+   *
+   * @param name - the name of the field before which the new field will be inserted;
+   * @param new_field_name - the name of the new field;
+   * @param data - the data to set to the new field.
+   *
+   * @par Requires
+   * `(has_field(name, 0))`
+   */
+  virtual void insert_field(const std::string& name, const std::string& new_field_name, std::unique_ptr<Data>&& data) = 0;
+
+  /**
+   * @overload
+   */
+  template<typename T>
+  void insert_field(const std::string& name, const std::string& new_field_name, T&& value)
+  {
+    insert_field(name, new_field_name, to_data(std::forward<T>(value)));
+  }
+
+  /**
    * @brief Removes field from a composite.
    *
    * @par Requires
-   * Index in range [0, field_count()).
+   * `(index < field_count())`
    *
    * @see has_field()
    */
@@ -130,6 +228,26 @@ public:
    * `has_field(name, offset)`.
    */
   virtual void remove_field(const std::string& name, std::size_t offset = 0) = 0;
+
+  /// @}
+
+  /// @name Conversions
+  /// @{
+
+  /**
+   * @returns The result of conversion of this instance to the instance of type `std::vector`.
+   */
+  virtual std::vector<std::pair<std::string, std::unique_ptr<Data>>> to_vector() const = 0;
+
+  /**
+   * @returns The result of conversion of this instance to the instance of type `std::vector`.
+   *
+   * @par Effects
+   * `(has_fields() == false)`
+   */
+  virtual std::vector<std::pair<std::string, std::unique_ptr<Data>>> move_to_vector() = 0;
+
+  /// @}
 
 private:
   friend detail::iComposite;

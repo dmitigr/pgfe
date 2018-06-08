@@ -48,6 +48,30 @@ public:
     DMINT_ASSERT(is_invariant_ok());
   }
 
+  heap_data_Composite(const heap_data_Composite& rhs)
+    : datas_{rhs.datas_.size()}
+  {
+    std::transform(cbegin(rhs.datas_), cend(rhs.datas_), begin(datas_),
+      [&](const auto& pair) { return std::make_pair(pair.first, pair.second->clone()); });
+    DMINT_ASSERT(is_invariant_ok());
+  }
+
+  heap_data_Composite& operator=(const heap_data_Composite& rhs)
+  {
+    heap_data_Composite tmp{rhs};
+    swap(tmp);
+    return *this;
+  }
+
+  heap_data_Composite(heap_data_Composite&& rhs) = default;
+
+  heap_data_Composite& operator=(heap_data_Composite&& rhs) = default;
+
+  void swap(heap_data_Composite& rhs) noexcept
+  {
+    datas_.swap(rhs.datas_);
+  }
+
   // ---------------------------------------------------------------------------
   // Compositional overridings
   // ---------------------------------------------------------------------------
@@ -76,7 +100,7 @@ public:
       return std::nullopt;
   }
 
-  std::size_t field_index_throw(const std::string& name, std::size_t offset) const override
+  std::size_t field_index_throw(const std::string& name, const std::size_t offset = 0) const override
   {
     const auto i = field_index__(name, offset);
     DMINT_REQUIRE(i < field_count());
@@ -91,6 +115,11 @@ public:
   // ---------------------------------------------------------------------------
   // Composite overridings
   // ---------------------------------------------------------------------------
+
+  std::unique_ptr<Composite> clone() const override
+  {
+    return std::make_unique<heap_data_Composite>(*this);
+  }
 
   const Data* data(const std::size_t index) const override
   {
@@ -111,11 +140,19 @@ public:
     DMINT_ASSERT(is_invariant_ok());
   }
 
-  void set_data(const std::string& name, std::unique_ptr<Data>&& data, const std::size_t offset = 0) override
+  void set_data(const std::size_t index, std::nullptr_t data) override
   {
-    const auto index = field_index_throw(name, offset);
-    set_data(index, std::move(data));
-    // The invariant is already checked.
+    set_data(index, std::unique_ptr<Data>{});
+  }
+
+  void set_data(const std::string& name, std::unique_ptr<Data>&& data) override
+  {
+    set_data(field_index_throw(name), std::move(data));
+  }
+
+  void set_data(const std::string& name, std::nullptr_t data) override
+  {
+    set_data(name, std::unique_ptr<Data>{});
   }
 
   std::unique_ptr<Data> release_data(const std::size_t index) override
@@ -138,6 +175,18 @@ public:
     DMINT_ASSERT(is_invariant_ok());
   }
 
+  void insert_field(const std::size_t index, const std::string& name, std::unique_ptr<Data>&& data = {}) override
+  {
+    DMINT_REQUIRE(index < field_count());
+    datas_.insert(begin(datas_) + index, std::make_pair(name, std::move(data)));
+    DMINT_ASSERT(is_invariant_ok());
+  }
+
+  void insert_field(const std::string& name, const std::string& new_field_name, std::unique_ptr<Data>&& data) override
+  {
+    insert_field(field_index_throw(name), new_field_name, std::move(data));
+  }
+
   void remove_field(const std::size_t index) override
   {
     DMINT_REQUIRE(index < field_count());
@@ -150,6 +199,19 @@ public:
     const auto index = field_index_throw(name, offset);
     remove_field(index);
     // The invariant is already checked.
+  }
+
+  std::vector<std::pair<std::string, std::unique_ptr<Data>>> to_vector() const override
+  {
+    heap_data_Composite copy{*this};
+    return std::move(copy.datas_);
+  }
+
+  std::vector<std::pair<std::string, std::unique_ptr<Data>>> move_to_vector() override
+  {
+    std::vector<std::pair<std::string, std::unique_ptr<Data>>> result;
+    datas_.swap(result);
+    return std::move(result);
   }
 
   // ---------------------------------------------------------------------------

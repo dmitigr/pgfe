@@ -32,7 +32,7 @@ int main(int argc, char* argv[])
     assert(c->field_index("foo") == 0);
     assert(c->data(0) == nullptr);
     assert(c->data("foo") == nullptr);
-    c->set_data("foo", pgfe::Data::make("foo data"));
+    c->set_data("foo", "foo data");
     assert(pgfe::to<std::string>(c->data(0)) == "foo data");
     assert(pgfe::to<std::string>(c->data("foo")) == "foo data");
     assert(pgfe::to<std::string>(c->release_data(0)) == "foo data");
@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
     assert(c->data("foo") == nullptr);
     //
     assert(c->field_count() == 1);
-    c->add_field("bar", pgfe::Data::make("bar data"));
+    c->add_field("bar", "bar data");
     assert(c->field_count() == 2);
     assert(c->has_fields());
     assert(c->field_name(1) == "bar");
@@ -53,14 +53,16 @@ int main(int argc, char* argv[])
     assert(c->data(1) == nullptr);
     assert(c->data("bar") == nullptr);
     //
-    assert(c->field_count() == 2);
+    c->insert_field("bar", "baz", 1983);
+    assert(c->field_count() == 3);
+    assert(pgfe::to<int>(c->data("baz")) == 1983);
     c->remove_field("foo");
-    assert(c->field_count() == 1);
+    assert(c->field_count() == 2);
     assert(!c->has_field("foo"));
     c->remove_field("bar");
-    assert(c->field_count() == 0);
+    assert(c->field_count() == 1);
     assert(!c->has_field("bar"));
-    assert(!c->has_fields());
+    assert(c->has_field("baz"));
   } catch (const std::exception& e) {
     report_failure(argv[0], e);
     return 1;

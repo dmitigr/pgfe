@@ -11,4 +11,9 @@ DMITIGR_PGFE_API std::unique_ptr<Composite> APIENTRY Composite::make()
   return std::make_unique<detail::heap_data_Composite>();
 }
 
+DMITIGR_PGFE_API std::unique_ptr<Composite> APIENTRY Composite::make(std::vector<std::pair<std::string, std::unique_ptr<Data>>>&& v)
+{
+  return std::make_unique<detail::heap_data_Composite>(std::move(v));
+}
+
 } // namespace dmitigr::pgfe
