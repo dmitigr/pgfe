@@ -24,12 +24,6 @@ namespace dmitigr::pgfe {
  */
 class Sql_vector {
 public:
-  /** Denotes the underlying container type. */
-  using Container = std::vector<std::unique_ptr<Sql_string>>;
-
-  /** Denotes the value type. */
-  using Value = Sql_string*;
-
   /**
    * @brief The destructor.
    */
@@ -76,8 +70,14 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  /// @name Generic
+  /// @name Generic observers and modifiers
   /// @{
+
+  /** Denotes the underlying container type. */
+  using Container = std::vector<std::unique_ptr<Sql_string>>;
+
+  /** Denotes the value type. */
+  using Value = Sql_string*;
 
   /**
    * @returns The underlying container.
@@ -140,34 +140,74 @@ public:
   /**
    * @brief Parses the input to add SQL string(-s) to this vector.
    *
-   * @param args - the arguments to forward to the Sql_string::make().
+   * @param args - the arguments to forward to Sql_string::make().
    *
    * @par Exception safety guarantee
    * Strong.
    */
-  template<typename ... Args>
-  Value emplace_back(Args&& ... args)
+  template<typename ... Types>
+  Value emplace_back(Types&& ... args)
   {
-    return container().emplace_back(Sql_string::make(std::forward<Args>(args)...)).get();
+    return container().emplace_back(Sql_string::make(std::forward<Types>(args)...)).get();
   }
 
   /**
    * @brief Parses the input to insert SQL string(-s)
    *
    * @par Requires
+   * `(i < container().size())`
+   */
+  template<typename ... Types>
+  Container::iterator emplace(const std::size_t index, Types&& ... args)
+  {
+    return emplace(container_iterator(index), std::forward<Types>(args)...);
+  }
+
+  /**
+   * @overload
+   *
+   * @par Requires
    * `i` must be in the range [container().begin(), container().end()].
    */
-  template<typename ... Args>
-  Container::iterator emplace(const Container::iterator i, Args&& ... args)
+  template<typename ... Types>
+  Container::iterator emplace(const Container::iterator i, Types&& ... args)
   {
-    return container().emplace(i, Sql_string::make(std::forward<Args>(args)...));
+    return container().emplace(i, Sql_string::make(std::forward<Types>(args)...));
+  }
+
+  /**
+   * @brief Sets the `value` of the underlying container.
+   *
+   * @par Requires
+   * `(index < container().size())`
+   */
+  virtual void set(std::size_t index, std::unique_ptr<Sql_string>&& value) = 0;
+
+  /**
+   * @overload
+   *
+   * @param args - the arguments to forward to Sql_string::make().
+   */
+  template<typename ... Types>
+  void set(std::size_t index, Types&& ... args)
+  {
+    set(index, Sql_string::make(std::forward<Types>(args)...));
+  }
+
+  /**
+   * @overload
+   */
+  template<typename ... Types>
+  void set(const Container::iterator i, Types&& ... args)
+  {
+    *i = Sql_string::make(std::forward<Types>(args)...);
   }
 
   /// @}
 
   // ---------------------------------------------------------------------------
 
-  /// @name Observers
+  /// @name Special observers
   /// @{
 
   /**
@@ -210,7 +250,7 @@ public:
    * @returns The iterator of underlying container by the given criterias.
    *
    * @par Parameters
-   * See value_index().
+   * See sql_string_index().
    */
   virtual Container::iterator container_iterator(const std::string& extra_name, const std::string& extra_value,
     std::size_t offset = 0, std::size_t extra_offset = 0) = 0;
@@ -241,7 +281,7 @@ public:
    * SQL strings that meets the given criterias exists in this vector.
    *
    * @par Parameters
-   * See value_index().
+   * See sql_string_index().
    *
    * @par Requires
    * `(offset < sql_string_count())`

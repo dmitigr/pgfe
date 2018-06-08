@@ -76,6 +76,12 @@ public:
     return storage_[index].get();
   }
 
+  void set(const std::size_t index, std::unique_ptr<Sql_string>&& value) override
+  {
+    DMINT_REQUIRE(index < container().size());
+    storage_[index] = std::move(value);
+  }
+
   // ---------------------------------------------------------------------------
 
   std::size_t sql_string_count() const override

@@ -96,7 +96,7 @@ int main(int argc, char* argv[])
     // First, let's insert nullptr.
     bunch->container().insert(bunch->container().begin() + 1, nullptr);
 
-    auto i = bunch->container_iterator("id", "plus_one");
+    const auto i = bunch->container_iterator("id", "plus_one");
     assert(i != end(bunch->container()));
     bunch->container().erase(i);
     assert(bunch->sql_string_count() == 2); // {nullptr, digit} are still heere
