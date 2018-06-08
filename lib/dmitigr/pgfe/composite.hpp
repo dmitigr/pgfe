@@ -193,7 +193,7 @@ public:
    * @par Requires
    * `(index < field_count())`
    */
-  virtual void insert_field(std::size_t index, const std::string& new_field_name, std::unique_ptr<Data>&& data = {}) = 0;
+  virtual void insert_field(std::size_t index, const std::string& name, std::unique_ptr<Data>&& data = {}) = 0;
 
   /**
    * @overload

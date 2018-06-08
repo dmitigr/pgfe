@@ -170,6 +170,9 @@ public:
   /**
    * @brief Sets the SQL string at the given `index`.
    *
+   * @param index - the index of SQL string to set;
+   * @param sql_string - the SQL string to set.
+   *
    * @par Requires
    * `(index < sql_string_count() && sql_string != nullptr)`
    */
@@ -178,6 +181,7 @@ public:
   /**
    * @overload
    *
+   * @param index - the index of SQL string to set.
    * @param args - the arguments to forward to Sql_string::make().
    */
   template<typename ... Types>
