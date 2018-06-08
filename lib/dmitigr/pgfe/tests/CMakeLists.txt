@@ -11,11 +11,17 @@ endif()
 add_executable(hello_world hello_world.cpp)
 target_link_libraries(hello_world dmitigr_pgfe)
 
+add_executable(test-unit-composite unit-composite.cpp unit.hpp)
+target_link_libraries(test-unit-composite dmitigr_pgfe)
+
 add_executable(test-unit-data unit-data.cpp unit.hpp)
 target_link_libraries(test-unit-data dmitigr_pgfe)
 
 add_executable(test-unit-sql_string unit-sql_string.cpp unit.hpp)
 target_link_libraries(test-unit-sql_string dmitigr_pgfe)
+
+add_executable(test-unit-sql_vector unit-sql_vector.cpp unit.hpp)
+target_link_libraries(test-unit-sql_vector dmitigr_pgfe)
 
 add_executable(test-unit-conversions unit-conversions.cpp unit.hpp)
 target_link_libraries(test-unit-conversions dmitigr_pgfe)
@@ -51,32 +57,16 @@ add_executable(test-benchmark-array-server benchmark-array-server.cpp unit.hpp)
 target_link_libraries(test-benchmark-array-server dmitigr_pgfe)
 
 # ------------------------------------------------------------------------------
-
-# Note: Multi-configuration generators (VS, Xcode) append a per-configuration
-# subdirectory to the RUNTIME_OUTPUT_DIRECTORY unless a generator expression is used.
-set_target_properties(
-  hello_world
-  test-unit-data
-  test-unit-sql_string
-  test-unit-conversions
-  test-unit-connection_options
-  test-unit-connection
-  test-unit-connection-ssl
-  test-unit-connection-deferrable
-  test-unit-connection-err_in_mid
-  test-unit-ps
-  test-unit-conversions-online
-  test-benchmark-sql_string_replace
-  test-benchmark-array-client
-  test-benchmark-array-server
-  PROPERTIES
-  RUNTIME_OUTPUT_DIRECTORY "${PGFE_LIBRARY_OUTPUT_DIR}")
-
+add_custom_target(copy_test_resources ALL
+  COMMAND cmake -E copy "${CMAKE_CURRENT_SOURCE_DIR}/unit-sql_vector.sql"
+  "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/unit-sql_vector.sql")
 # ------------------------------------------------------------------------------
 
 add_test(NAME hello_world COMMAND hello_world)
+add_test(NAME unit-composite COMMAND test-unit-composite)
 add_test(NAME unit-data COMMAND test-unit-data)
 add_test(NAME unit-sql_string COMMAND test-unit-sql_string)
+add_test(NAME unit-sql_vector COMMAND test-unit-sql_vector)
 add_test(NAME unit-conversions COMMAND test-unit-conversions)
 add_test(NAME unit-connection_options COMMAND test-unit-connection_options)
 add_test(NAME unit-connection COMMAND test-unit-connection)

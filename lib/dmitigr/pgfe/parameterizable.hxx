@@ -10,7 +10,7 @@
 
 namespace dmitigr::pgfe::detail {
 
-inline bool is_invariant_ok(Parameterizable& o)
+inline bool is_invariant_ok(const Parameterizable& o)
 {
   const bool params_ok = !o.has_parameters() || (o.parameter_count() > 0);
   const bool named_params_ok = [&]()

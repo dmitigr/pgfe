@@ -59,6 +59,7 @@ class Row;
 class Row_info;
 class Server_message;
 class Signal;
+class Sql_vector;
 class Sql_string;
 
 class Client_exception;
@@ -84,6 +85,7 @@ class iNotification;
 class iPrepared_statement;
 class iRow;
 class iRow_info;
+class iSql_vector;
 class iSql_string;
 
 class iClient_exception;

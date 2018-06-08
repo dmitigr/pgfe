@@ -5,6 +5,8 @@
 #ifndef DMITIGR_PGFE_SQL_STRING_HXX
 #define DMITIGR_PGFE_SQL_STRING_HXX
 
+#include "dmitigr/pgfe/composite.hxx"
+#include "dmitigr/pgfe/data.hpp"
 #include "dmitigr/pgfe/parameterizable.hxx"
 #include "dmitigr/pgfe/sql_string.hpp"
 #include "dmitigr/pgfe/internal/debug.hxx"
@@ -12,10 +14,10 @@
 #include <algorithm>
 #include <list>
 #include <locale>
+#include <optional>
 #include <stdexcept>
 #include <type_traits>
 #include <utility>
-#include <vector>
 
 namespace dmitigr::pgfe::detail {
 
@@ -106,7 +108,7 @@ public:
       return std::nullopt;
   }
 
-  std::size_t parameter_index_throw(const std::string& name) const override
+  std::size_t parameter_index_throw(const std::string& name) const
   {
     const auto i = named_parameter_index__(name);
     DMINT_REQUIRE(i < parameter_count());
@@ -145,6 +147,15 @@ public:
     return fragments_.empty();
   }
 
+  bool is_query_empty() const noexcept override
+  {
+    return std::all_of(cbegin(fragments_), cend(fragments_),
+      [](const Fragment& f)
+      {
+        return is_comment(f) || (is_text(f) && is_blank_string(f.str));
+      });
+  }
+
   bool is_parameter_missing(const std::size_t index) const override
   {
     DMINT_REQUIRE(index < positional_parameter_count());
@@ -162,11 +173,16 @@ public:
     const auto* const iappendix = dynamic_cast<const iSql_string*>(appendix);
     DMINT_ASSERT_ALWAYS(iappendix);
 
+    const bool was_query_empty = is_query_empty();
+
     // Updating fragments
     auto old_fragments = fragments_;
     try {
       fragments_.insert(cend(fragments_), cbegin(iappendix->fragments_), cend(iappendix->fragments_));
       update_cache(*iappendix); // can throw (strong exception safety guarantee)
+
+      if (was_query_empty)
+        is_extra_data_should_be_extracted_from_comments_ = true;
     } catch (...) {
       fragments_.swap(old_fragments); // rollback
       throw;
@@ -249,11 +265,8 @@ public:
   }
 
   // Returns: output query string.
-  //
-  // Requires: !has_missing_parameters().
-  std::string to_query_string() const
+  std::string to_query_string() const override
   {
-    DMINT_ASSERT(!has_missing_parameters());
     std::string result;
     result.reserve(512);
     for (const auto& fragment : fragments_) {
@@ -277,18 +290,34 @@ public:
         break;
       }
     }
-    result.shrink_to_fit();
     return result;
   }
 
+  Composite* extra() override
+  {
+    return const_cast<Composite*>(static_cast<const iSql_string*>(this)->extra());
+  }
+
+  const Composite* extra() const override
+  {
+    if (!extra_)
+      extra_.emplace(Extra::extract(fragments_));
+    else if (is_extra_data_should_be_extracted_from_comments_)
+      extra_->append(heap_data_Composite(Extra::extract(fragments_)));
+    is_extra_data_should_be_extracted_from_comments_ = false;
+    DMINT_ASSERT(is_invariant_ok());
+    return &*extra_;
+  }
+
 protected:
-  bool is_invariant_ok()
+  bool is_invariant_ok() const
   {
     const bool positional_parameters_ok = ((positional_parameter_count() > 0) == has_positional_parameters());
     const bool named_parameters_ok = ((named_parameter_count() > 0) == has_named_parameters());
     const bool parameters_ok = ((parameter_count() > 0) == has_parameters());
     const bool parameters_count_ok = (parameter_count() == (positional_parameter_count() + named_parameter_count()));
     const bool empty_ok = !is_empty() || !has_parameters();
+    const bool extra_ok = is_extra_data_should_be_extracted_from_comments_ || extra_;
     const bool parameterizable_ok = detail::is_invariant_ok(*this);
 
     return
@@ -466,9 +495,415 @@ private:
     return unique_fragments(Fragment::Type::named_parameter);
   }
 
+  // ---------------------------------------------------------------------------
+  // Predicates
+  // ---------------------------------------------------------------------------
+
+  static bool is_space(const char c)
+  {
+    return std::isspace(c, std::locale{});
+  }
+
+  static bool is_blank_string(const std::string& str)
+  {
+    return std::all_of(cbegin(str), cend(str), is_space);
+  };
+
+  /**
+   * @return `true` if the given fragment is a comment.
+   */
+  static bool is_comment(const Fragment& f)
+  {
+    return (f.type == Fragment::Type::one_line_comment || f.type == Fragment::Type::multi_line_comment);
+  };
+
+  /**
+   * @return `true` if the given fragment is a text.
+   */
+  static bool is_text(const Fragment& f)
+  {
+    return (f.type == Fragment::Type::text);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Extra data
+  // ---------------------------------------------------------------------------
+
+  /**
+   * @internal
+   *
+   * @brief Represents an API for extraction the extra data from the comments.
+   */
+  struct Extra {
+  public:
+    /** Denotes the key type of the associated data. */
+    using Key = std::string;
+
+    /** Denotes the value type of the associated data. */
+    using Value = std::unique_ptr<Data>;
+
+    /** Denotes the fragment type. */
+    using Fragment = iSql_string::Fragment;
+
+    /** Denotes the fragment list type. */
+    using Fragment_list = iSql_string::Fragment_list;
+
+    /**
+     * @returns The vector of associated extra data.
+     */
+    static std::vector<std::pair<Key, Value>> extract(const Fragment_list& fragments)
+    {
+      std::vector<std::pair<Key, Value>> result;
+      const auto iters = first_related_comments(fragments);
+      if (iters.first != cend(fragments)) {
+        const auto comments = joined_comments(iters.first, iters.second);
+        for (const auto& comment : comments) {
+          auto associations = extract(comment.first, comment.second);
+          result.reserve(result.capacity() + associations.size());
+          for (auto& a : associations)
+            result.push_back(std::move(a));
+        }
+      }
+      return result;
+    }
+
+  private:
+    /**
+     * Represents a comment type.
+     */
+    enum class Comment_type {
+      /** Denotes one line comment */
+      one_line,
+
+      /** Denotes multi line comment */
+      multi_line
+    };
+
+    /**
+     * @brief Extracts the associated data from dollar quoted literals found in comments.
+     *
+     * @returns Extracted data as key/value pairs.
+     *
+     * @param input - the input string with comments.
+     * @param comment_type - the type of comments in the `input`.
+     */
+    static std::vector<std::pair<Key, Value>> extract(const std::string& input, const Comment_type comment_type)
+    {
+      enum { top, dollar, dollar_quote_leading_tag, dollar_quote, dollar_quote_dollar } state = top;
+
+      std::vector<std::pair<Key, Value>> result;
+      std::string content;
+      std::string dollar_quote_leading_tag_name;
+      std::string dollar_quote_trailing_tag_name;
+
+      const auto is_valid_tag_char = [](const char c)
+      {
+        return std::isalnum(c, std::locale{}) || c == '_' || c == '-';
+      };
+
+      for (const auto current_char : input) {
+        switch (state) {
+        case top:
+          if (current_char == '$')
+            state = dollar;
+          continue;
+        case dollar:
+          if (is_valid_tag_char(current_char)) {
+            state = dollar_quote_leading_tag;
+            dollar_quote_leading_tag_name += current_char;
+          }
+          continue;
+        case dollar_quote_leading_tag:
+          if (current_char == '$') {
+            state = dollar_quote;
+          } else if (is_valid_tag_char(current_char)) {
+            dollar_quote_leading_tag_name += current_char;
+          } else
+            throw std::runtime_error("invalid dollar quote tag");
+          continue;
+        case dollar_quote:
+          if (current_char == '$')
+            state = dollar_quote_dollar;
+          else
+            content += current_char;
+          continue;
+        case dollar_quote_dollar:
+          if (current_char == '$') {
+            if (dollar_quote_leading_tag_name == dollar_quote_trailing_tag_name) {
+              /*
+               * Okay, the tag's name and content are successfully extracted.
+               * Now attempt to clean up the content before adding it to the result.
+               */
+              state = top;
+              result.emplace_back(std::move(dollar_quote_leading_tag_name),
+                Data::make(cleaned_content(std::move(content), comment_type), Data_format::text));
+              content = std::string{};
+              dollar_quote_leading_tag_name = std::string{};
+            } else
+              state = dollar_quote;
+
+            dollar_quote_trailing_tag_name.clear();
+          } else
+            dollar_quote_trailing_tag_name += current_char;
+          continue;
+        }
+      }
+
+      if (state != top)
+        throw std::runtime_error("invalid comment block:\n" + input);
+
+      return result;
+    }
+
+    /**
+     * @brief Scans the extra data content to determine the indent size.
+     *
+     * @returns The number of characters to remove after each '\n'.
+     */
+    static std::size_t indent_size(const std::string& content, const Comment_type comment_type)
+    {
+      const auto set_if_less = [](auto& variable, const auto count)
+      {
+        if (!variable)
+          variable.emplace(count);
+        else if (count < variable)
+          variable = count;
+      };
+
+      enum { counting, after_asterisk, after_non_asterisk, skiping } state = counting;
+      std::optional<std::size_t> min_indent_to_border{};
+      std::optional<std::size_t> min_indent_to_content{};
+      std::size_t count{};
+      for (const auto current_char : content) {
+        switch (state) {
+        case counting:
+          if (current_char == '\n')
+            count = 0;
+          else if (current_char == '*')
+            state = after_asterisk;
+          else if (std::isspace(current_char, std::locale{}))
+            ++count;
+          else
+            state = after_non_asterisk;
+          continue;
+        case after_asterisk:
+          if (current_char == ' ') {
+            if (min_indent_to_border) {
+              if (count < *min_indent_to_border) {
+                set_if_less(min_indent_to_content, *min_indent_to_border);
+                min_indent_to_border = count;
+              } else if (count == *min_indent_to_border + 1)
+                set_if_less(min_indent_to_content, count);
+            } else
+              min_indent_to_border.emplace(count);
+          } else
+            set_if_less(min_indent_to_content, count);
+          state = skiping;
+          continue;
+        case after_non_asterisk:
+          set_if_less(min_indent_to_content, count);
+          state = skiping;
+          continue;
+        case skiping:
+          if (current_char == '\n') {
+            count = 0;
+            state = counting;
+          }
+          continue;
+        }
+      }
+
+      // Calculating the result depending on the comment type.
+      switch (comment_type) {
+      case Comment_type::multi_line:
+        if (min_indent_to_border) {
+          if (min_indent_to_content) {
+            if (min_indent_to_content <= min_indent_to_border)
+              return 0;
+            else if (min_indent_to_content == *min_indent_to_border + 1)
+              return *min_indent_to_content;
+          }
+          return *min_indent_to_border + 1 + 1;
+        } else
+          return 0;
+      case Comment_type::one_line:
+        return min_indent_to_content ? (*min_indent_to_content == 0 ? 0 : 1) : 1;
+      }
+
+      DMINT_ASSERT(!true);
+    }
+
+    /**
+     * @brief Cleans up the extra data content.
+     *
+     * Cleaning up includes:
+     *   - removing the indentation characters;
+     *   - trimming most leading and/or most trailing newline characters (for multiline comments only).
+     */
+    static std::string cleaned_content(std::string&& content, const Comment_type comment_type)
+    {
+      std::string result;
+
+      // Removing the indentation characters (if any).
+      if (const std::size_t isize = indent_size(content, comment_type); isize > 0) {
+        std::size_t count{};
+        enum { eating, skiping } state = eating;
+        for (const auto current_char : content) {
+          switch (state) {
+          case eating:
+            if (current_char == '\n') {
+              count = isize;
+              state = skiping;
+            }
+            result += current_char;
+            continue;
+          case skiping:
+            if (count > 1)
+              --count;
+            else
+              state = eating;
+            continue;
+          }
+        }
+        std::string{}.swap(content);
+      } else
+        result.swap(content);
+
+      // Trimming the result string: remove the most leading and the most trailing newline-characters.
+      if (const auto size = result.size(); size > 0) {
+        std::string::size_type start{};
+        if (result[start] == '\r')
+          ++start;
+        if (start < size && result[start] == '\n')
+          ++start;
+
+        std::string::size_type end{size};
+        if (start < end && result[end - 1] == '\n')
+          --end;
+        if (start < end && result[end - 1] == '\r')
+          --end;
+
+        if (start > 0 || end < size)
+          result = result.substr(start, end - start);
+      }
+
+      return result;
+    }
+
+    // -------------------------------------------------------------------------
+    // Related comments extraction
+    // -------------------------------------------------------------------------
+
+    /**
+     * @brief Finds very first relevant comments of the specified fragments.
+     *
+     * @returns The pair of iterators that specifies the range of relevant comments.
+     */
+    std::pair<Fragment_list::const_iterator, Fragment_list::const_iterator>
+    static first_related_comments(const Fragment_list& fragments)
+    {
+      const auto b = cbegin(fragments);
+      const auto e = cend(fragments);
+      auto result = std::make_pair(e, e);
+
+      const auto is_nearby_string = [&](const std::string& str)
+      {
+        std::string::size_type count{};
+        for (const auto c : str) {
+          if (c == '\n') {
+            ++count;
+            if (count > 1)
+              return false;
+          } else if (!is_space(c))
+            break;
+        }
+        return true;
+      };
+
+      /* An attempt to find the first commented out text fragment.
+       * Stops lookup when either named parameter or positional parameter are found.
+       * (Only fragments of type `text` can have related comments.)
+       */
+      auto i = std::find_if(b, e, [&](const Fragment& f)
+      {
+        return (f.type == Fragment::Type::text && is_nearby_string(f.str) && !is_blank_string(f.str)) ||
+          f.type == Fragment::Type::named_parameter ||
+          f.type == Fragment::Type::positional_parameter;
+      });
+      if (i != b && i != e && is_text(*i)) {
+        result.second = i;
+        do {
+          --i;
+          DMINT_ASSERT(is_comment(*i) || (is_text(*i) && is_blank_string(i->str)));
+          if (i->type == Fragment::Type::text) {
+            if (!is_nearby_string(i->str))
+              break;
+          }
+          result.first = i;
+        } while (i != b);
+      }
+
+      return result;
+    }
+
+    /**
+     * @brief Joins first comments of the same type into the result string.
+     *
+     * @returns The pair of:
+     *   - the pair of the result string (comment) and its type;
+     *   - the iterator that points to the fragment that follows the last comment
+     *     appended to the result.
+     */
+    std::pair<std::pair<std::string, Extra::Comment_type>, Fragment_list::const_iterator>
+    static joined_comments_of_same_type(Fragment_list::const_iterator i, const Fragment_list::const_iterator e)
+    {
+      DMINT_ASSERT(is_comment(*i));
+      std::string result;
+      const auto fragment_type = i->type;
+      for (; i->type == fragment_type && i != e; ++i) {
+        result.append(i->str);
+        if (fragment_type == Fragment::Type::one_line_comment)
+          result.append("\n");
+      }
+      const auto comment_type = [](const Fragment::Type ft)
+      {
+        switch (ft) {
+        case Fragment::Type::one_line_comment: return Extra::Comment_type::one_line;
+        case Fragment::Type::multi_line_comment: return Extra::Comment_type::multi_line;
+        default: DMINT_ASSERT(!true);
+        }
+      };
+      return std::make_pair(std::make_pair(result, comment_type(fragment_type)), i);
+    }
+
+    /**
+     * @brief Joins all comments into the vector of strings.
+     *
+     * @returns The vector of pairs of:
+     *   - the joined comments as first element;
+     *   - the type of the joined comments as second element.
+     */
+    std::vector<std::pair<std::string, Extra::Comment_type>>
+    static joined_comments(Fragment_list::const_iterator i, const Fragment_list::const_iterator e)
+    {
+      std::vector<std::pair<std::string, Extra::Comment_type>> result;
+      while (i != e) {
+        if (is_comment(*i)) {
+          auto comments = joined_comments_of_same_type(i, e);
+          result.push_back(std::move(comments.first));
+          i = comments.second;
+        } else
+          ++i;
+      }
+      return result;
+    }
+  };
+
   Fragment_list fragments_;
   std::vector<bool> positional_parameters_; // cache
   std::vector<Fragment_list::const_iterator> named_parameters_; // cache
+  mutable bool is_extra_data_should_be_extracted_from_comments_{true};
+  mutable std::optional<heap_data_Composite> extra_; // cache
 };
 
 } // namespace dmitigr::pgfe::detail

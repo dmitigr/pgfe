@@ -2,6 +2,7 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
+#include "dmitigr/pgfe/composite.hpp"
 #include "dmitigr/pgfe/exceptions.hpp"
 #include "dmitigr/pgfe/sql_string.hpp"
 #include "dmitigr/pgfe/tests/unit.hpp"
@@ -15,6 +16,27 @@ int main(int argc, char* argv[])
     {
       auto s = pgfe::Sql_string::make("");
       assert(s->is_empty());
+
+      // append
+      s = pgfe::Sql_string::make(R"(
+      /*
+       * $id$unknown-query$id$
+       */)");
+      assert(!s->is_empty());
+      assert(s->is_query_empty());
+      assert(!s->extra()->has_fields());
+
+      s->extra()->add_field("description", pgfe::Data::make("This is an unknown query"));
+      assert(s->extra()->has_fields());
+      assert(s->extra()->field_count() == 1);
+      assert(s->extra()->has_field("description"));
+      assert(s->extra()->data("description"));
+
+      s->append("SELECT 1");
+      assert(s->extra()->field_count() == 2);
+      assert(s->extra()->has_field("id"));
+      assert(s->extra()->data("id"));
+      assert(pgfe::to<std::string>(s->extra()->data("id")) == "unknown-query");
     }
 
     {

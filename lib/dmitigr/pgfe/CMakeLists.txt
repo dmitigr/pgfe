@@ -112,6 +112,10 @@ set(dmitigr_pgfe_sources
   sql_string.hpp
   sql_string.hxx
 
+  sql_vector.cpp
+  sql_vector.hpp
+  sql_vector.hxx
+
   std_system_error.cpp
   std_system_error.hpp
 
@@ -155,8 +159,9 @@ set_source_files_properties(
 # ------------------------------------------------------------------------------
 
 # Note: Multi-configuration generators (VS, Xcode) append a per-configuration
-# subdirectory to PGFE_LIBRARY_OUTPUT_DIR unless a generator expression is used.
-set(PGFE_LIBRARY_OUTPUT_DIR "${CMAKE_CURRENT_BINARY_DIR}")
+# subdirectory to CMAKE_RUNTIME_OUTPUT_DIRECTORY unless a generator expression
+# is used.
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 
 add_library(dmitigr_pgfe ${dmitigr_pgfe_sources})
 

@@ -10,6 +10,8 @@
 
 #include <cassert>
 #include <cstdlib>
+#include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <stdexcept>
 
@@ -102,6 +104,26 @@ inline std::unique_ptr<Connection> make_ssl_connection()
   conn_opts->set_ssl_server_host_name_verification_enabled(true);
 
   return pgfe::Connection::make(conn_opts.get());
+}
+
+inline std::string read_stream(std::istream& stream)
+{
+  constexpr std::size_t buffer_size = 512;
+  std::string result;
+  char buffer[buffer_size];
+  while (stream.read(buffer, buffer_size))
+    result.append(buffer, buffer_size);
+  result.append(buffer, stream.gcount());
+  return result;
+}
+
+inline std::string read_file(const std::filesystem::path& path)
+{
+  std::ifstream stream(path, std::ios_base::in | std::ios_base::binary);
+  if (stream)
+    return read_stream(stream);
+  else
+    throw std::runtime_error("unable to open file \"" + path.generic_string() + "\"");
 }
 
 inline void report_failure(const char* const test_name, const std::exception& e)
