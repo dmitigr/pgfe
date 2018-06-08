@@ -1,5 +1,5 @@
-Introduction {#mainpage}
-============
+Introduction to the C++ client library for PostgreSQL {#mainpage}
+=====================================================
 
 The [PostgreSQL] Frontend (Pgfe) is client C++ API to [PostgreSQL] servers. **ATTENTION, this
 software is "beta" quality, and the API is a subject to change**. Any feedback (*especially
