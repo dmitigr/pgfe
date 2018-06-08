@@ -94,6 +94,9 @@ public:
    *
    * @par Requires
    * `(index < container().size())`.
+   *
+   * @remarks This method can be useful in generic code to access the object
+   * of type Value.
    */
   virtual Value value(std::size_t index) = 0;
 
