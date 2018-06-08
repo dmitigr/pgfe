@@ -54,12 +54,12 @@ public:
   /// @see extra().
   static DMITIGR_PGFE_API std::unique_ptr<Sql_string> APIENTRY make(const std::string& input);
 
-  /// @}
-
   /**
    * @returns The copy of this instance.
    */
   virtual std::unique_ptr<Sql_string> clone() const = 0;
+
+  /// @}
 
   /**
    * @returns `true` if this SQL string is empty, or `false` otherwise.
