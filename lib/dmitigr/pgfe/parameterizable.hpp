@@ -55,6 +55,14 @@ public:
   virtual std::optional<std::size_t> parameter_index(const std::string& name) const = 0;
 
   /**
+   * @returns `parameter_index(name)`
+   *
+   * @par Requires
+   * `(has_parameter(name))`
+   */
+  virtual std::size_t parameter_index_throw(const std::string& name) const = 0;
+
+  /**
    * @returns `bool(parameter_index(name))`
    */
   virtual bool has_parameter(const std::string& name) const = 0;
@@ -77,14 +85,6 @@ public:
 private:
   friend Prepared_statement;
   friend Sql_string;
-
-  /**
-   * @returns `parameter_index(name)`
-   *
-   * @par Requires
-   * `(has_parameter(name))`
-   */
-  virtual std::size_t parameter_index_throw(const std::string& name) const = 0;
 
   Parameterizable() = default;
 };
