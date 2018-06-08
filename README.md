@@ -86,7 +86,6 @@ Logically Pgfe library consists of the following parts:
 
   - Main (client/server communication);
   - Large objects (future feature, see the above TODO-list);
-  - Data types (future feature, see the above TODO-list);
   - Data types conversions;
   - Errors (exceptions and error codes);
   - Utilities.
