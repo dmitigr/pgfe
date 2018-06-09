@@ -143,7 +143,7 @@ public:
     DMINT_ASSERT(is_invariant_ok());
   }
 
-  void set_data(const std::size_t index, std::nullptr_t data) override
+  void set_data(const std::size_t index, std::nullptr_t) override
   {
     set_data(index, std::unique_ptr<Data>{});
   }
@@ -153,7 +153,7 @@ public:
     set_data(field_index_throw(name), std::move(data));
   }
 
-  void set_data(const std::string& name, std::nullptr_t data) override
+  void set_data(const std::string& name, std::nullptr_t) override
   {
     set_data(name, std::unique_ptr<Data>{});
   }
@@ -226,7 +226,7 @@ public:
   }
 
 protected:
-  bool is_invariant_ok()
+  bool is_invariant_ok() override
   {
     return true;
   }

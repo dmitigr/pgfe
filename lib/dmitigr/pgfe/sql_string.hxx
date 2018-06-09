@@ -108,7 +108,7 @@ public:
       return std::nullopt;
   }
 
-  std::size_t parameter_index_throw(const std::string& name) const
+  std::size_t parameter_index_throw(const std::string& name) const override
   {
     const auto i = named_parameter_index__(name);
     DMINT_REQUIRE(i < parameter_count());
@@ -326,6 +326,7 @@ protected:
       parameters_ok &&
       parameters_count_ok &&
       empty_ok &&
+      extra_ok &&
       parameterizable_ok;
   }
 

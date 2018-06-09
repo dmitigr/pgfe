@@ -57,9 +57,14 @@ add_executable(test-benchmark-array-server benchmark-array-server.cpp unit.hpp)
 target_link_libraries(test-benchmark-array-server dmitigr_pgfe)
 
 # ------------------------------------------------------------------------------
+if (WIN32)
+  set(PGFE_RESOURCE_DESTINATION_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/unit-sql_vector.sql")
+elseif (UNIX)
+  set(PGFE_RESOURCE_DESTINATION_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/unit-sql_vector.sql")
+endif()
+
 add_custom_target(copy_test_resources ALL
-  COMMAND cmake -E copy "${CMAKE_CURRENT_SOURCE_DIR}/unit-sql_vector.sql"
-  "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/unit-sql_vector.sql")
+  COMMAND cmake -E copy "${CMAKE_CURRENT_SOURCE_DIR}/unit-sql_vector.sql" ${PGFE_RESOURCE_DESTINATION_DIR})
 # ------------------------------------------------------------------------------
 
 add_test(NAME hello_world COMMAND hello_world)

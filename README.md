@@ -372,7 +372,7 @@ Let's consider the simple SQL input:
 -- This is query 1
 --
 -- $id$plus-one$id$
-SELECT :n::int + 1;
+SELECT :n::int + 1, ';'; -- note, the semicolons in quotes are allowed!
 
 /* This is query 2
  *
@@ -396,7 +396,7 @@ void foo()
   const std::string input = read_file("bunch.sql");
   auto bunch = pgfe::Sql_vector::make(input);
   auto* minus_one = bunch->sql_string("id", "minus-one"); // SELECT :n::int - 1
-  auto*  plus_one = bunch->sql_string("id",  "plus-one"); // SELECT :n::int + 1
+  auto*  plus_one = bunch->sql_string("id",  "plus-one"); // SELECT :n::int + 1, ';'
   // Next, working with the queries ...
 }
 ```

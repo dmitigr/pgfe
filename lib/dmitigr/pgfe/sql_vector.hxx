@@ -20,7 +20,6 @@ public:
 
   explicit iSql_vector(const std::string& input)
   {
-    constexpr bool all{}; // Someday it might become an argument.
     const char* text{input.c_str()};
     while (*text != '\0') {
       const auto parsed = parse_sql_input(text);
