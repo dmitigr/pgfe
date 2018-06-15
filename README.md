@@ -383,9 +383,8 @@ SELECT :n::int - 1
 
 The vector of two SQL strings can be created from this input with dmitigr::pgfe::Sql_vector::make().
 These objects has an extra data specified by the dollar-quoted string constants. ([The dollar quoting
-syntax](https://www.postgresql.org/docs/current/static/sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING)
-are well-know way of quoting string literals in [PostgreSQL].) Next, these queries can be easily accessed
-by using the dmitigr::pgfe::Sql_vector API, for example:
+syntax][dollar-quoting] are well-know way of quoting string literals in [PostgreSQL].) Next, these
+queries can be easily accessed by using the dmitigr::pgfe::Sql_vector API, for example:
 
 ```cpp
 std::string read_file(const std::filesystem::path& path);
@@ -425,12 +424,12 @@ must be used to work with the same object from several threads.
 Documentation
 =============
 
-The documentation is located at <http://dmitigr.ru/pgfe/doc/>.
+The Pgfe documentation is located at the official site [here][doc].
 
 Download
 ========
 
-Pgfe can be downloaded from Github - <https://github.com/dmitigr/pgfe>.
+The Pgfe repository is located at Github [here][github].
 
 Installation
 ============
@@ -572,17 +571,20 @@ Copyright
 
 Copyright (C) Dmitry Igrishin
 
-[doc]: http://dmitigr.ru/pgfe/doc/
+[doc]: http://dmitigr.ru/en/projects/pgfe/doc/
+[github]: https://github.com/dmitigr/pgfe.git
 [paypal1]: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=38TY2K8KYKYJC&lc=US&item_name=Pgfe%20library&item_number=1&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 [paypal2]: https://paypal.me/dmitigr
 
+[PostgreSQL]: https://www.postgresql.org/
+[dollar-quoting]: https://www.postgresql.org/docs/current/static/sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING
+[errcodes]: https://www.postgresql.org/docs/current/static/errcodes-appendix.html
+[libpq]: https://www.postgresql.org/docs/current/static/libpq.html
+
 [CMake]: https://cmake.org/
 [Doxygen]: http://doxygen.org/
-[errcodes]: https://www.postgresql.org/docs/current/static/errcodes-appendix.html
 [GCC]: https://gcc.gnu.org/
-[libpq]: https://www.postgresql.org/docs/current/static/libpq.html
 [PayPal]: https://paypal.com/
-[PostgreSQL]: https://www.postgresql.org/
 [Visual_Studio]: https://www.visualstudio.com/
 
 [system_error]: https://en.cppreference.com/w/cpp/header/system_error
