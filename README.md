@@ -71,9 +71,9 @@ Features of the near future
 
 The urgent TODO-list includes support of:
 
-  - Large Objects via IO streams of the Standard C++ library;
+  - [Large Objects][lob] via IO streams of the Standard C++ library;
   - conversions for `dmitigr::pgfe::Composite` data type;
-  - yet more convenient work with arrays of variable dimensions;
+  - yet more convenient work with arrays of variable dimensions at runtime;
   - COPY command;
   - C API.
 
@@ -431,8 +431,8 @@ Download
 
 The Pgfe repository is located at Github [here][github].
 
-Installation
-============
+Installation and consuming
+==========================
 
 Dependencies
 ------------
@@ -467,9 +467,9 @@ Details:
 |LIBPQ_LIB_PREFIX|*a path*|${LIBPQ_PREFIX}|${LIBPQ_PREFIX}|
 |LIBPQ_INCLUDE_PREFIX|*a path*|${LIBPQ_PREFIX}|${LIBPQ_PREFIX}|
 |**Installation directories**||||
-|CMAKE_INSTALL_PREFIX|*an absolute path*|"/usr/local"|"%ProgramFiles%\DmitigrPgfe"|
-|PGFE_CMAKE_INSTALL_DIR|*a path relative to CMAKE_INSTALL_PREFIX*|"share/DmitigrPgfe/cmake"|"cmake"|
-|PGFE_DOC_INSTALL_DIR|*a path relative to CMAKE_INSTALL_PREFIX*|"share/DmitigrPgfe/doc"|"doc"|
+|CMAKE_INSTALL_PREFIX|*an absolute path*|"/usr/local"|"%ProgramFiles%\dmitigr_pgfe"|
+|PGFE_CMAKE_INSTALL_DIR|*a path relative to CMAKE_INSTALL_PREFIX*|"share/dmitigr_pgfe/cmake"|"cmake"|
+|PGFE_DOC_INSTALL_DIR|*a path relative to CMAKE_INSTALL_PREFIX*|"share/dmitigr_pgfe/doc"|"doc"|
 |PGFE_LIBRARY_INSTALL_DIR|*a path relative to CMAKE_INSTALL_PREFIX*|"lib"|"lib"|
 |PGFE_INCLUDES_INSTALL_DIR|*a path relative to CMAKE_INSTALL_PREFIX*|"include"|"include"|
 |**Default values of the connection options**||||
@@ -545,6 +545,24 @@ of [libpq] if [CMake] could not detect it automatically (see "Installation in co
 
 **WARNING** The target architecture must corresponds to the bitness of [libpq] to link!
 
+Consuming
+---------
+
+If you are using CMake the consuming of the Pgfe library is quite simple. For example:
+
+```cmake
+cmake_minimum_required(VERSION 3.10)
+project(foo)
+find_package(dmitigr_pgfe REQUIRED)
+set(CMAKE_CXX_STANDARD 17)
+set(CXX_STANDARD_REQUIRED ON)
+add_executable(foo foo.cpp)
+target_link_libraries(foo dmitigr_pgfe)
+```
+
+The above code snippet is minimal CMakeLists.txt that enough to build the
+application `foo` that depends on the Pgfe library.
+
 License
 =======
 
@@ -587,6 +605,7 @@ Copyright (C) Dmitry Igrishin
 [dollar-quoting]: https://www.postgresql.org/docs/current/static/sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING
 [errcodes]: https://www.postgresql.org/docs/current/static/errcodes-appendix.html
 [libpq]: https://www.postgresql.org/docs/current/static/libpq.html
+[lob]: https://www.postgresql.org/docs/current/static/largeobjects.html
 
 [CMake]: https://cmake.org/
 [Doxygen]: http://doxygen.org/

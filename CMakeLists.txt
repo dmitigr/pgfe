@@ -9,7 +9,7 @@ if (NOT (UNIX OR WIN32))
   message(FATAL_ERROR "unsupported target platform")
 endif()
 
-project(DmitigrPgfe)
+project(dmitigr_pgfe)
 
 set(PGFE_VERSION_PART1 1)
 set(PGFE_VERSION_PART2 1)
@@ -52,9 +52,9 @@ endif()
 # ------------------------------------------------------------------------------
 
 if (UNIX)
-  set(PGFE_CMAKE_INSTALL_DIR "share/DmitigrPgfe/cmake" CACHE
+  set(PGFE_CMAKE_INSTALL_DIR "share/dmitigr_pgfe/cmake" CACHE
     STRING "Name of the cmake directory relative to ${CMAKE_INSTALL_PREFIX}")
-  set(PGFE_DOC_INSTALL_DIR "share/DmitigrPgfe/doc" CACHE
+  set(PGFE_DOC_INSTALL_DIR "share/dmitigr_pgfe/doc" CACHE
     STRING "Name of the documentation directory relative to ${CMAKE_INSTALL_PREFIX}")
   set(PGFE_LIBRARY_INSTALL_DIR "lib" CACHE
     STRING "Name of the library directory relative to ${CMAKE_INSTALL_PREFIX}")
@@ -252,6 +252,5 @@ add_custom_command(TARGET uninstall PRE_BUILD
 
 # -------------------------------------------------------------------------------
 
-add_subdirectory(cmake)
 add_subdirectory(doc)
 add_subdirectory(lib)

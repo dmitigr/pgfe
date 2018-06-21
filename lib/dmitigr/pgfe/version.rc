@@ -29,7 +29,7 @@ BEGIN
       VALUE "CompanyName",      "Dmitry Igrishin\0"
       VALUE "FileDescription",  "PostgreSQL API\0"
       VALUE "FileVersion",      "1.0.1.0\0"
-      VALUE "InternalName",     "DmitigrPgfe\0"
+      VALUE "InternalName",     "dmitigr_pgfe\0"
       VALUE "LegalCopyright",   "Copyright (C) Dmitry Igrishin\0"
       VALUE "LegalTrademarks",  "\0"
       VALUE "OriginalFilename", PGFE_VERSION_ORIGINAL_FILENAME
