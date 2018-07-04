@@ -107,7 +107,7 @@ public:
         timeout -= duration_cast<microseconds>(system_clock::now() - timepoint1);
         DMITIGR_PGFE_INTERNAL_ASSERT(current_socket_readiness != Socket_readiness::unready || is_timeout());
         if (is_timeout())
-          goto done; // The time is out.
+          throw detail::iClient_exception{Client_errc::timed_out, "connection timeout"};
       }
 
       connect_async();

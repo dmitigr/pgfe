@@ -27,7 +27,10 @@ enum class Client_errc {
   excessive_array_dimensionality = @PGFE_CLIENT_ERRC_EXCESSIVE_ARRAY_DIMENSIONALITY@,
 
   /** Denotes a malformed array literal. */
-  malformed_array_literal = @PGFE_CLIENT_ERRC_MALFORMED_ARRAY_LITERAL@
+  malformed_array_literal = @PGFE_CLIENT_ERRC_MALFORMED_ARRAY_LITERAL@,
+
+  /** Denotes a timed out operation. */
+  timed_out = @PGFE_CLIENT_ERRC_TIMED_OUT@
 };
 
 /**
