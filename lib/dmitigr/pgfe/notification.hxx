@@ -32,7 +32,7 @@ public:
   {
     if (pgnotify_->extra)
       payload_ = Data_view(pgnotify_->extra, std::strlen(pgnotify_->extra), Data_format::text);
-    DMINT_ASSERT(is_invariant_ok());
+    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
   }
 
   // Non copyable.

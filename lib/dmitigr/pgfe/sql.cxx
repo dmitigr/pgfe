@@ -78,7 +78,7 @@ std::string dmitigr::pgfe::detail::unquote_identifier(const std::string& identif
 
 int dmitigr::pgfe::detail::sqlstate_to_int(const char* const code)
 {
-  DMINT_ASSERT(code &&
+  DMITIGR_PGFE_INTERNAL_ASSERT(code &&
     (std::isalnum(code[0]) &&
       std::isalnum(code[1]) &&
       std::isalnum(code[2]) &&
@@ -86,7 +86,7 @@ int dmitigr::pgfe::detail::sqlstate_to_int(const char* const code)
       std::isalnum(code[4]) && code[5] == '\0'));
 
   const long int result_candidate = std::strtol(code, NULL, 36);
-  DMINT_ASSERT(errno == 0);
-  DMINT_ASSERT(result_candidate >= 0 && result_candidate <= std::numeric_limits<int>::max());
+  DMITIGR_PGFE_INTERNAL_ASSERT(errno == 0);
+  DMITIGR_PGFE_INTERNAL_ASSERT(result_candidate >= 0 && result_candidate <= std::numeric_limits<int>::max());
   return result_candidate;
 }

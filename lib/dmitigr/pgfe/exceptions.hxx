@@ -30,7 +30,7 @@ public:
     : Server_exception(error->code())
     , error_(std::move(error))
   {
-    DMINT_ASSERT(is_invariant_ok());
+    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
   }
 
   const Error* error() const noexcept override

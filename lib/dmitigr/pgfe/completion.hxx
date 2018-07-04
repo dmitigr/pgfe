@@ -55,7 +55,7 @@ public:
     } else if (!tag.empty())
       operation_name_ = tag;
 
-    DMINT_ASSERT(is_invariant_ok());
+    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
   }
 
   const std::string& operation_name() const override

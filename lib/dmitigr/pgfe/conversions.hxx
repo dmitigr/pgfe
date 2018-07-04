@@ -62,7 +62,7 @@ struct Generic_data_conversions {
   template<typename ... Types>
   static Type to_type(const Data* const data, Types&& ... args)
   {
-    DMINT_REQUIRE(data);
+    DMITIGR_PGFE_INTERNAL_REQUIRE(data);
     return StringConversions::to_type(std::string(data->bytes(), data->size()), std::forward<Types>(args)...);
   }
 
@@ -261,10 +261,10 @@ struct Numeric_data_conversions {
   template<typename ... Types>
   static Type to_type(const Data* const data, Types&& ... args)
   {
-    DMINT_REQUIRE(data);
+    DMITIGR_PGFE_INTERNAL_REQUIRE(data);
     if (data->format() == Data_format::binary) {
       const auto data_size = data->size();
-      DMINT_REQUIRE(data_size <= sizeof(Type));
+      DMITIGR_PGFE_INTERNAL_REQUIRE(data_size <= sizeof(Type));
       Type result{};
       const auto data_ubytes = reinterpret_cast<const unsigned char*>(data->bytes());
       const auto result_ubytes = reinterpret_cast<unsigned char*>(&result);
@@ -352,7 +352,7 @@ struct Char_string_conversions {
   template<typename ... Types>
   static Type to_type(const std::string& text, Types&& ...)
   {
-    DMINT_REQUIRE(text.size() == 1);
+    DMITIGR_PGFE_INTERNAL_REQUIRE(text.size() == 1);
     return text[0];
   }
 
@@ -369,7 +369,7 @@ struct Char_data_conversions {
   template<typename ... Types>
   static Type to_type(const Data* const data, Types&& ...)
   {
-    DMINT_REQUIRE(data && (data->size() == 1));
+    DMITIGR_PGFE_INTERNAL_REQUIRE(data && (data->size() == 1));
     return data->bytes()[0];
   }
 
@@ -410,7 +410,7 @@ private:
 
   static Type to_type__(const char* const text, const std::size_t size)
   {
-    DMINT_ASSERT(text);
+    DMITIGR_PGFE_INTERNAL_ASSERT(text);
     if (std::strncmp(text, "t", size) == 0 ||
       std::strncmp(text, "true", size) == 0 ||
       std::strncmp(text, "TRUE", size) == 0 ||
@@ -438,9 +438,9 @@ struct Bool_data_conversions {
   template<typename ... Types>
   static Type to_type(const Data* const data, Types&& ...)
   {
-    DMINT_REQUIRE(data);
+    DMITIGR_PGFE_INTERNAL_REQUIRE(data);
     if (data->format() == Data_format::binary) {
-      DMINT_REQUIRE(data->size() == 1);
+      DMITIGR_PGFE_INTERNAL_REQUIRE(data->size() == 1);
       return data->bytes()[0];
     } else
       return Bool_string_conversions::to_type__(data->bytes(), data->size());

@@ -81,7 +81,7 @@ public:
     : pq_result_(std::move(pq_result))
     , shared_field_names_(make_shared_field_names(pq_result_)) // note pq_result_
   {
-    DMINT_ASSERT(is_invariant_ok());
+    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
   }
 
   pq_Row_info(pq::Result&& pq_result,
@@ -89,7 +89,7 @@ public:
     : pq_result_(std::move(pq_result))
     , shared_field_names_(shared_field_names)
   {
-    DMINT_ASSERT(is_invariant_ok());
+    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
   }
 
   // Non copyable.
@@ -102,7 +102,7 @@ public:
 
   static std::shared_ptr<std::vector<std::string>> make_shared_field_names(const pq::Result& pq_result)
   {
-    DMINT_ASSERT(pq_result);
+    DMITIGR_PGFE_INTERNAL_ASSERT(pq_result);
     auto result = std::make_shared<std::vector<std::string>>(pq_result.field_count());
     const auto fc = pq_result.field_count();
     using Counter = std::remove_const_t<decltype (fc)>;
@@ -127,7 +127,7 @@ public:
 
   const std::string& field_name(const std::size_t index) const override
   {
-    DMINT_REQUIRE(index < field_count());
+    DMITIGR_PGFE_INTERNAL_REQUIRE(index < field_count());
     return (*shared_field_names_)[index];
   }
 
@@ -142,7 +142,7 @@ public:
   std::size_t field_index_throw(const std::string& name, std::size_t offset) const override
   {
     const auto i = field_index__(name, offset);
-    DMINT_REQUIRE(i < field_count());
+    DMITIGR_PGFE_INTERNAL_REQUIRE(i < field_count());
     return i;
   }
 
@@ -164,37 +164,37 @@ public:
 
   std::uint_fast32_t table_oid(const std::size_t index) const override
   {
-    DMINT_REQUIRE(index < field_count());
+    DMITIGR_PGFE_INTERNAL_REQUIRE(index < field_count());
     return pq_result_.field_table_oid(int(index));
   }
 
   std::int_fast32_t table_column_number(const std::size_t index) const override
   {
-    DMINT_REQUIRE(index < field_count());
+    DMITIGR_PGFE_INTERNAL_REQUIRE(index < field_count());
     return pq_result_.field_table_column(int(index));
   }
 
   std::uint_fast32_t type_oid(const std::size_t index) const override
   {
-    DMINT_REQUIRE(index < field_count());
+    DMITIGR_PGFE_INTERNAL_REQUIRE(index < field_count());
     return pq_result_.field_type_oid(int(index));
   }
 
   std::int_fast32_t type_size(const std::size_t index) const override
   {
-    DMINT_REQUIRE(index < field_count());
+    DMITIGR_PGFE_INTERNAL_REQUIRE(index < field_count());
     return pq_result_.field_type_size(int(index));
   }
 
   std::int_fast32_t type_modifier(const std::size_t index) const override
   {
-    DMINT_REQUIRE(index < field_count());
+    DMITIGR_PGFE_INTERNAL_REQUIRE(index < field_count());
     return pq_result_.field_type_modifier(int(index));
   }
 
   Data_format data_format(const std::size_t index) const override
   {
-    DMINT_REQUIRE(index < field_count());
+    DMITIGR_PGFE_INTERNAL_REQUIRE(index < field_count());
     return pq_result_.field_format(int(index));
   }
 
@@ -228,7 +228,7 @@ private:
 
   std::size_t field_index__(const std::string& name, std::size_t offset) const
   {
-    DMINT_ASSERT(offset < field_count());
+    DMITIGR_PGFE_INTERNAL_ASSERT(offset < field_count());
     const auto b = cbegin(*shared_field_names_);
     const auto e = cend(*shared_field_names_);
     const auto ident = unquote_identifier(name);

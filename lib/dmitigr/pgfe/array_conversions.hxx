@@ -68,7 +68,7 @@ struct Array_data_conversions {
   template<typename ... Types>
   static Type to_type(const Data* const data, Types&& ... args)
   {
-    DMINT_REQUIRE(data && data->format() == Data_format::text);
+    DMITIGR_PGFE_INTERNAL_REQUIRE(data && data->format() == Data_format::text);
     return to_container<Type>(data->bytes(), ',', std::forward<Types>(args)...);
   }
 

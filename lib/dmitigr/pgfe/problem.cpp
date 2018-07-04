@@ -37,7 +37,7 @@ Problem_severity Problem::severity() const
   else if (severity_string == "PANIC")
     result = Problem_severity::panic;
   else
-    DMINT_ASSERT_ALWAYS(!true);
+    DMITIGR_PGFE_INTERNAL_ASSERT_ALWAYS(!true);
   return result;
 }
 

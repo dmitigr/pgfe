@@ -54,7 +54,7 @@ inline int to_int(const Data_format format)
   case Data_format::text:   return 0;
   case Data_format::binary: return 1;
   }
-  DMINT_ASSERT(!true);
+  DMITIGR_PGFE_INTERNAL_ASSERT(!true);
 }
 
 /**
@@ -68,7 +68,7 @@ inline Data_format to_data_format(const int format)
   case 0: return Data_format::text;
   case 1: return Data_format::binary;
   }
-  DMINT_ASSERT(!true);
+  DMITIGR_PGFE_INTERNAL_ASSERT(!true);
 }
 
 /**

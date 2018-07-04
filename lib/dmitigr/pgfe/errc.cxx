@@ -19,7 +19,7 @@ const char* pgfe::detail::to_literal(const Client_errc errc)
   case Client_errc::malformed_array_literal:
     return "malformed_array_literal";
   }
-  DMINT_ASSERT(!true);
+  DMITIGR_PGFE_INTERNAL_ASSERT(!true);
 }
 
 const char* pgfe::detail::to_literal(const Server_errc errc)
@@ -508,5 +508,5 @@ const char* pgfe::detail::to_literal(const Server_errc errc)
   case Server_errc::cxx_index_corrupted:
     return "cxx_index_corrupted";
   }
-  DMINT_ASSERT(!true);
+  DMITIGR_PGFE_INTERNAL_ASSERT(!true);
 }

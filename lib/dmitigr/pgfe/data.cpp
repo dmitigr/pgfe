@@ -15,7 +15,7 @@ namespace dmitigr::pgfe {
 DMITIGR_PGFE_API std::unique_ptr<Data> APIENTRY
 Data::make(const char* const bytes, const std::size_t size, const Data_format format)
 {
-  DMINT_REQUIRE(bytes && (format == Data_format::binary || bytes[size] == '\0'));
+  DMITIGR_PGFE_INTERNAL_REQUIRE(bytes && (format == Data_format::binary || bytes[size] == '\0'));
   if (size > 0)
     return std::make_unique<detail::vector_Data>(reinterpret_cast<const unsigned char*>(bytes), size, format);
   else
@@ -31,7 +31,7 @@ Data::make(const char* const bytes)
 DMITIGR_PGFE_API std::unique_ptr<Data> APIENTRY
 Data::make(std::unique_ptr<void, void(*)(void*)>&& storage, const std::size_t size, const Data_format format)
 {
-  DMINT_REQUIRE(storage &&
+  DMITIGR_PGFE_INTERNAL_REQUIRE(storage &&
     (format == Data_format::binary || static_cast<const char*>(storage.get())[size] == '\0'));
   return std::make_unique<detail::custom_memory_Data>(std::move(storage), size, format);
 }
@@ -45,7 +45,7 @@ Data::make(std::string storage, const Data_format format)
 DMITIGR_PGFE_API std::unique_ptr<Data> APIENTRY
 Data::make(std::vector<unsigned char> storage, const Data_format format)
 {
-  DMINT_REQUIRE(format == Data_format::binary || (!storage.empty() && storage.back() == '\0'));
+  DMITIGR_PGFE_INTERNAL_REQUIRE(format == Data_format::binary || (!storage.empty() && storage.back() == '\0'));
   return std::make_unique<detail::vector_Data>(std::move(storage), format);
 }
 
@@ -55,7 +55,7 @@ namespace {
 
 std::unique_ptr<pgfe::Data> to_binary_data__(const char* const text)
 {
-  DMINT_ASSERT(text);
+  DMITIGR_PGFE_INTERNAL_ASSERT(text);
   const auto* const bytes = reinterpret_cast<const unsigned char*>(text);
   std::size_t storage_size;
   using Uptr = std::unique_ptr<void, void(*)(void*)>;
@@ -70,7 +70,7 @@ std::unique_ptr<pgfe::Data> to_binary_data__(const char* const text)
 DMITIGR_PGFE_API auto APIENTRY
 pgfe::to_binary_data(const Data* const text_data) -> std::unique_ptr<Data>
 {
-  DMINT_REQUIRE(text_data && text_data->format() == Data_format::text);
+  DMITIGR_PGFE_INTERNAL_REQUIRE(text_data && text_data->format() == Data_format::text);
   return to_binary_data__(text_data->bytes());
 }
 

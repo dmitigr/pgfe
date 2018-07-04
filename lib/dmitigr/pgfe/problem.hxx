@@ -54,7 +54,7 @@ public:
   , source_line_(std::move(source_line))
   , source_function_(std::move(source_function))
   {
-    DMINT_ASSERT(is_invariant_ok());
+    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
   }
 
   std::error_code code() const noexcept override
