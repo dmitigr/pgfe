@@ -7,7 +7,7 @@
 
 #include <string>
 
-namespace dmitigr::internal::net {
+namespace dmitigr::pgfe::internal::net {
 
 /**
  * @internal
@@ -25,6 +25,6 @@ bool is_ip_address_valid(const std::string& address);
  */
 bool is_domain_name_valid(const std::string& domain_name);
 
-} // namespace dmitigr::internal::net
+} // namespace dmitigr::pgfe::internal::net
 
 #endif  // DMITIGR_PGFE_INTERNAL_NET_INET_HXX

@@ -38,12 +38,12 @@ bool is_tcp_port(const T value)
 
 inline bool is_ip_address(const std::string& value)
 {
-  return dmitigr::internal::net::is_ip_address_valid(value);
+  return internal::net::is_ip_address_valid(value);
 }
 
 inline bool is_domain_name(const std::string& value)
 {
-  return dmitigr::internal::net::is_domain_name_valid(value);
+  return internal::net::is_domain_name_valid(value);
 }
 
 inline bool is_absolute_directory_name(const std::filesystem::path& value)

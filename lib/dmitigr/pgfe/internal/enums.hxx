@@ -7,7 +7,7 @@
 
 #include <type_traits>
 
-namespace dmitigr::internal {
+namespace dmitigr::pgfe::internal {
 
 /*
  * The following code is inspired by the exposition from 14822:2014 17.5.2.1.3.
@@ -68,7 +68,7 @@ operator^=(T& lhs, const T rhs) noexcept
   return lhs = (lhs ^ rhs);
 }
 
-} // namespace dmitigr::internal
+} // namespace dmitigr::pgfe::internal
 
 #define DMINT_DECLARE_ENUM_BITMASK_OPERATORS(T) \
   T operator&(T lhs, T rhs) noexcept;           \
@@ -88,37 +88,37 @@ operator^=(T& lhs, const T rhs) noexcept
 #define DMINT_DEFINE_ENUM_BITMASK_OPERATORS(N, T)           \
   T N::operator&(const T lhs, const T rhs) noexcept         \
   {                                                         \
-    return dmitigr::internal::operator&(lhs, rhs);          \
+    return dmitigr::pgfe::internal::operator&(lhs, rhs);    \
   }                                                         \
                                                             \
   T N::operator|(const T lhs, const T rhs) noexcept         \
   {                                                         \
-    return dmitigr::internal::operator|(lhs, rhs);          \
+    return dmitigr::pgfe::internal::operator|(lhs, rhs);    \
   }                                                         \
                                                             \
   T N::operator^(const T lhs, const T rhs) noexcept         \
   {                                                         \
-    return dmitigr::internal::operator^(lhs, rhs);          \
+    return dmitigr::pgfe::internal::operator^(lhs, rhs);    \
   }                                                         \
                                                             \
   T N::operator~(const T rhs) noexcept                      \
   {                                                         \
-    return dmitigr::internal::operator~(rhs);               \
+    return dmitigr::pgfe::internal::operator~(rhs);         \
   }                                                         \
                                                             \
   T& N::operator&=(T& lhs, T rhs) noexcept                  \
   {                                                         \
-    return dmitigr::internal::operator&=(lhs, rhs);         \
+    return dmitigr::pgfe::internal::operator&=(lhs, rhs);   \
   }                                                         \
                                                             \
   T& N::operator|=(T& lhs, T rhs) noexcept                  \
   {                                                         \
-    return dmitigr::internal::operator|=(lhs, rhs);         \
+    return dmitigr::pgfe::internal::operator|=(lhs, rhs);   \
   }                                                         \
                                                             \
   T& N::operator^=(T& lhs, T rhs) noexcept                  \
   {                                                         \
-    return dmitigr::internal::operator^=(lhs, rhs);         \
+    return dmitigr::pgfe::internal::operator^=(lhs, rhs);   \
   }
 
 #endif  // DMITIGR_PGFE_INTERNAL_ENUMS_HXX

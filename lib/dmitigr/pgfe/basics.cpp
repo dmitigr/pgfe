@@ -10,10 +10,10 @@
 
 namespace pgfe = dmitigr::pgfe;
 
-namespace dmitigr::internal {
+namespace dmitigr::pgfe::internal {
 
 template<> struct Is_bitmask_enum<pgfe::Socket_readiness> : std::true_type {};
 
-} // namespace dmitigr::internal
+} // namespace dmitigr::pgfe::internal
 
 DMINT_DEFINE_ENUM_BITMASK_OPERATORS(pgfe, pgfe::Socket_readiness)

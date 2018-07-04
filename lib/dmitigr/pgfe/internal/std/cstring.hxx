@@ -9,7 +9,7 @@
 #include <initializer_list>
 #include <locale>
 
-namespace dmitigr::internal {
+namespace dmitigr::pgfe::internal {
 
 /**
  * @internal
@@ -49,6 +49,6 @@ constexpr const char* coalesce(std::initializer_list<const char*> literals) noex
   return nullptr;
 }
 
-} // namespace dmitigr::internal
+} // namespace dmitigr::pgfe::internal
 
 #endif  // DMITIGR_PGFE_INTERNAL_STD_CSTRING_HXX

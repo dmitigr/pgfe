@@ -7,7 +7,7 @@
 
 #include <memory>
 
-namespace dmitigr::internal {
+namespace dmitigr::pgfe::internal {
 
 /**
  * @internal
@@ -42,6 +42,6 @@ private:
   bool condition_{true};
 };
 
-} // namespace dmitigr::internal
+} // namespace dmitigr::pgfe::internal
 
 #endif  // DMITIGR_PGFE_INTERNAL_STD_MEMORY_CONDITIONAL_DELETE_HXX

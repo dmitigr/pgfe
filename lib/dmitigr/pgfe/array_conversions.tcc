@@ -217,7 +217,7 @@ const char* dmitigr::pgfe::detail::fill_container(Container<Optional<T>, Allocat
   DMINT_ASSERT(result.empty());
   DMINT_ASSERT(literal);
 
-  using dmitigr::internal::next_non_space_pointer;
+  using internal::next_non_space_pointer;
 
   literal = next_non_space_pointer(literal);
   if (*literal != '{')

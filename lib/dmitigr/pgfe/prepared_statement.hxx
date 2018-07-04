@@ -253,7 +253,7 @@ public:
 private:
   friend pq_Connection;
 
-  using Data_deletion_required = dmitigr::internal::Conditional_delete<const Data>;
+  using Data_deletion_required = internal::Conditional_delete<const Data>;
   using Data_ptr = std::unique_ptr<const Data, Data_deletion_required>;
 
   struct Parameter {

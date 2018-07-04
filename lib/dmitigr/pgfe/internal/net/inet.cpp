@@ -15,7 +15,7 @@
 #include <arpa/inet.h>
 #endif
 
-namespace net = dmitigr::internal::net;
+namespace net = dmitigr::pgfe::internal::net;
 
 namespace {
 

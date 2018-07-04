@@ -34,7 +34,7 @@ std::string Server_error_category::message(const int ev) const
   result += ' ';
   result += std::to_string(ev);
   result += ' ';
-  result += dmitigr::internal::to_string(ev, 36);
+  result += internal::to_string(ev, 36);
   result += ' ';
   result += detail::to_literal(Server_errc(ev));
   return result;

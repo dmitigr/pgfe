@@ -11,7 +11,7 @@
 #include <string>
 #include <type_traits>
 
-namespace dmitigr::internal {
+namespace dmitigr::pgfe::internal {
 
 /**
  * @internal
@@ -48,6 +48,6 @@ to_string(Number value, const Number base = 10)
   return result;
 }
 
-} // namespace dmitigr::internal
+} // namespace dmitigr::pgfe::internal
 
 #endif  // DMITIGR_PGFE_INTERNAL_STD_STRING_TO_STRING_NUMERIC_HXX
