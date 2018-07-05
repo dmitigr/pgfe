@@ -63,7 +63,7 @@ public:
   template<typename ... Types>
   void operator()(std::string&& value, const bool is_null, const int /*dimension*/, Types&& ... args)
   {
-    if (!is_value_type_container) {
+    if constexpr (!is_value_type_container) {
       if (is_null)
         cont_.push_back(Optional_type());
       else

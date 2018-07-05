@@ -5,7 +5,8 @@
 #ifndef DMITIGR_PGFE_ARRAY_CONVERSIONS_HXX
 #define DMITIGR_PGFE_ARRAY_CONVERSIONS_HXX
 
-#include "dmitigr/pgfe/types_fwd.hpp"
+#include "dmitigr/pgfe/basic_conversions.hpp"
+#include "dmitigr/pgfe/conversions_api.hpp"
 #include "dmitigr/pgfe/data.hpp"
 #include "dmitigr/pgfe/internal/debug.hxx"
 
@@ -14,7 +15,8 @@
 #include <string>
 #include <utility>
 
-namespace dmitigr::pgfe::detail {
+namespace dmitigr::pgfe {
+namespace detail {
 
 /**
  * @internal
@@ -139,14 +141,14 @@ to_container_of_optionals(Container<T, Allocator<T>>&& container);
 
 // -----------------------------------------------------------------------------
 
-template<typename> struct Array_string_conversions;
-template<typename> struct Array_data_conversions;
+template<typename> struct Array_string_conversions_opts;
+template<typename> struct Array_data_conversions_opts;
 
 template<typename T,
   template<class> class Optional,
   template<class, class> class Container,
   template<class> class Allocator>
-struct Array_string_conversions<Container<Optional<T>, Allocator<Optional<T>>>> {
+struct Array_string_conversions_opts<Container<Optional<T>, Allocator<Optional<T>>>> {
   using Type = Container<Optional<T>, Allocator<Optional<T>>>;
 
   template<typename ... Types>
@@ -166,7 +168,7 @@ template<typename T,
   template<class> class Optional,
   template<class, class> class Container,
   template<class> class Allocator>
-struct Array_data_conversions<Container<Optional<T>, Allocator<Optional<T>>>> {
+struct Array_data_conversions_opts<Container<Optional<T>, Allocator<Optional<T>>>> {
   using Type = Container<Optional<T>, Allocator<Optional<T>>>;
 
   template<typename ... Types>
@@ -185,29 +187,33 @@ struct Array_data_conversions<Container<Optional<T>, Allocator<Optional<T>>>> {
   template<typename ... Types>
   static std::unique_ptr<Data> to_data(const Type& value, Types&& ... args)
   {
-    using StringConversions = Array_string_conversions<Type>;
+    using StringConversions = Array_string_conversions_opts<Type>;
     return Data::make(StringConversions::to_string(value, std::forward<Types>(args)...));
   }
 };
 
 // -----------------------------------------------------------------------------
 
+template<typename> struct Array_string_conversions_vals;
+template<typename> struct Array_data_conversions_vals;
+
 template<typename T,
   template<class, class> class Container,
   template<class> class Allocator>
-struct Array_string_conversions<Container<T, Allocator<T>>> {
+struct Array_string_conversions_vals<Container<T, Allocator<T>>> {
   using Type = Container<T, Allocator<T>>;
 
   template<typename ... Types>
   static Type to_type(const std::string& literal, Types&& ... args)
   {
-    return to_container_of_values(Array_string_conversions<Cont>::to_type(literal, std::forward<Types>(args)...));
+    return to_container_of_values(Array_string_conversions_opts<Cont>::to_type(literal, std::forward<Types>(args)...));
   }
 
   template<typename ... Types>
   static std::string to_string(const Type& value, Types&& ... args)
   {
-    return Array_string_conversions<Cont>::to_string(to_container_of_optionals<std::optional>(value), std::forward<Types>(args)...);
+    return Array_string_conversions_opts<Cont>::to_string(
+      to_container_of_optionals<std::optional>(value), std::forward<Types>(args)...);
   }
 
 private:
@@ -217,25 +223,25 @@ private:
 template<typename T,
   template<class, class> class Container,
   template<class> class Allocator>
-struct Array_data_conversions<Container<T, Allocator<T>>> {
+struct Array_data_conversions_vals<Container<T, Allocator<T>>> {
   using Type = Container<T, Allocator<T>>;
 
   template<typename ... Types>
   static Type to_type(const Data* const data, Types&& ... args)
   {
-    return to_container_of_values(Array_data_conversions<Cont>::to_type(data, std::forward<Types>(args)...));
+    return to_container_of_values(Array_data_conversions_opts<Cont>::to_type(data, std::forward<Types>(args)...));
   }
 
   template<typename ... Types>
   static Type to_type(std::unique_ptr<Data>&& data, Types&& ... args)
   {
-    return to_container_of_values(Array_data_conversions<Cont>::to_type(std::move(data), std::forward<Types>(args)...));
+    return to_container_of_values(Array_data_conversions_opts<Cont>::to_type(std::move(data), std::forward<Types>(args)...));
   }
 
   template<typename ... Types>
   static std::unique_ptr<Data> to_data(Type&& value, Types&& ... args)
   {
-    return Array_data_conversions<Cont>::to_data(
+    return Array_data_conversions_opts<Cont>::to_data(
       to_container_of_optionals<std::optional>(std::forward<Type>(value)), std::forward<Types>(args)...);
   }
 
@@ -243,7 +249,33 @@ private:
   using Cont = Cont_of_opts_t<Type>;
 };
 
-} // namespace dmitigr::pgfe::detail
+} // namespace detail
+
+/**
+ * @internal
+ *
+ * @brief Partial specialization of Conversions for containers (arrays) with mandatory values.
+ *
+ * This is a workaround for GCC. When using multidimensional STL-containers GCC (at least version 8.1)
+ * incorrectly choises the specialization of Conversions<Container<Optional<T>, Allocator<Optional<T>>>>
+ * by deducing Optional as an STL container, insead of choising Conversions<Container<T>, Allocator<T>>.
+ * For example, the nested vector in `std::vector<std::vector<int>>` treated as Optional.
+ */
+template<typename T,
+  template<class, class> class Container,
+  template<class, class> class Subcontainer,
+  template<class> class ContainerAllocator,
+  template<class> class SubcontainerAllocator>
+struct Conversions<Container<Subcontainer<T, SubcontainerAllocator<T>>,
+                     ContainerAllocator<Subcontainer<T, SubcontainerAllocator<T>>>>>
+  : public Basic_conversions<Container<Subcontainer<T, SubcontainerAllocator<T>>,
+    ContainerAllocator<Subcontainer<T, SubcontainerAllocator<T>>>>,
+    detail::Array_string_conversions_vals<Container<Subcontainer<T, SubcontainerAllocator<T>>,
+      ContainerAllocator<Subcontainer<T, SubcontainerAllocator<T>>>>>,
+    detail::Array_data_conversions_vals<Container<Subcontainer<T, SubcontainerAllocator<T>>,
+      ContainerAllocator<Subcontainer<T, SubcontainerAllocator<T>>>>>> {};
+
+} // namespace dmitigr::pgfe
 
 #include "dmitigr/pgfe/array_conversions.tcc"
 

@@ -6,7 +6,8 @@
 #define DMITIGR_PGFE_ARRAY_CONVERSIONS_HPP
 
 #include "dmitigr/pgfe/array_conversions.hxx"
-#include "dmitigr/pgfe/basic_conversions.hpp"
+
+// The workaround specializations of Conversions are defined in array_conversions.hxx.
 
 namespace dmitigr::pgfe {
 
@@ -28,7 +29,7 @@ namespace dmitigr::pgfe {
  *   - implemented operator*() that returns a reference to the value of type T.
  * @endparblock
  *
- * @tparam T   - the type of the elements of the Container;
+ * @tparam T - the type of the elements of the Container (which may be a container of optionals itself);
  * @tparam Optional - the optional template class, for example, `std::optional`;
  * @tparam Container - the container template class, for example, `std::vector`;
  * @tparam Allocator - the allocator template class, for example, `std::allocator`.
@@ -43,8 +44,8 @@ template<typename T,
   template<class> class Allocator>
 struct Conversions<Container<Optional<T>, Allocator<Optional<T>>>>
   : public Basic_conversions<Container<Optional<T>, Allocator<Optional<T>>>,
-    detail::Array_string_conversions<Container<Optional<T>, Allocator<Optional<T>>>>,
-    detail::Array_data_conversions<Container<Optional<T>, Allocator<Optional<T>>>>> {};
+      detail::Array_string_conversions_opts<Container<Optional<T>, Allocator<Optional<T>>>>,
+      detail::Array_data_conversions_opts<Container<Optional<T>, Allocator<Optional<T>>>>> {};
 
 /**
  * @ingroup conversions
@@ -58,7 +59,7 @@ struct Conversions<Container<Optional<T>, Allocator<Optional<T>>>>
  *   - Convertible (there shall be a suitable specialization of Conversions).
  * @endparblock
  *
- * @tparam T   - the type of the elements of the Container;
+ * @tparam T - the type of the elements of the Container (which may be a container itself);
  * @tparam Container - the container template class, for example, `std::vector`;
  * @tparam Allocator - the allocator template class, for example, `std::allocator`.
  *
@@ -76,8 +77,8 @@ template<typename T,
   template<class> class Allocator>
 struct Conversions<Container<T, Allocator<T>>>
   : public Basic_conversions<Container<T, Allocator<T>>,
-  detail::Array_string_conversions<Container<T, Allocator<T>>>,
-  detail::Array_data_conversions<Container<T, Allocator<T>>>> {};
+    detail::Array_string_conversions_vals<Container<T, Allocator<T>>>,
+    detail::Array_data_conversions_vals<Container<T, Allocator<T>>>> {};
 
 } // namespace dmitigr::pgfe
 
