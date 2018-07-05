@@ -281,14 +281,26 @@ The template structure dmitigr::pgfe::Conversions are used by:
 There is the partial specialization of the template structure dmitigr::pgfe::Conversions to
 perform conversions from/to [PostgreSQL] arrays representation to any combination of the STL
 containers. (At the moment, arrays conversions are only implemented for dmitigr::pgfe::Data_format::text
-format.) Any [PostgreSQL] array can be represented as `Container<Optional<T>>`, where:
+format.) In general, any [PostgreSQL] array can be represented as `Container<Optional<T>>`, where:
 
-  - `Container` - is the template class of the container such as [`std::vector`][std_vector] or [`std::list`][std_list];
-  - `Optional` - is the template class of the optional value holder such as [`std::optional`][std_optional] or `boost::optional`.
-    The special value of [`std::nullopt`][std_nullopt] represents the SQL `NULL`;
+  - `Container` - is the template class of the container such as [`std::vector`][std_vector]
+    or [`std::list`][std_list] or [`std::deque`][std_deque];
+  - `Optional` - is the template class of the optional value holder such as [`std::optional`][std_optional]
+    or `boost::optional`. The special value like [`std::nullopt`][std_nullopt] represents the SQL `NULL`;
   - T - is the type of elements of the array. It can be `Container<Optional<T>>` to represent
-    the multidimensional array. For example, the type `std::vector<std::optional<std::list<std::optional<int>>>>`
-    can be used to represent 2-dimensional array of integers!
+    the multidimensional array.
+
+In case when all the array elements are non-NULL, such an array can be represented as just the container with
+elements of type T (ie no need to make it optional). But in case when the source array (which comes from the
+PostgreSQL server) contain at least one NULL element a runtime exception will be thrown.
+
+In light of the above:
+
+  - the types `Container<Optional<T>>`, `Container<Optional<Container<Optional<T>>>>`, ...
+    can be used to represent N-dimensional arrays of `T` which *can* contain NULL values;
+
+  - the types `Container<T>`, `Container<Container<T>>`, ... can be used to represent
+    N-dimensional arrays of `T` which *cannot* contain NULL values;
 
 User-defined data conversions could be implemented by either:
 
@@ -614,6 +626,7 @@ Copyright (C) Dmitry Igrishin
 [Visual_Studio]: https://www.visualstudio.com/
 
 [system_error]: https://en.cppreference.com/w/cpp/header/system_error
+[std_deque]: https://en.cppreference.com/w/cpp/container/deque
 [std_error_code]: https://en.cppreference.com/w/cpp/error/error_code
 [std_istream]: https://en.cppreference.com/w/cpp/io/basic_istream
 [std_list]: https://en.cppreference.com/w/cpp/container/list

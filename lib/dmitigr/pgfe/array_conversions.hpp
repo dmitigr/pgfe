@@ -62,6 +62,13 @@ struct Conversions<Container<Optional<T>, Allocator<Optional<T>>>>
  * @tparam Container - the container template class, for example, `std::vector`;
  * @tparam Allocator - the allocator template class, for example, `std::allocator`.
  *
+ * @throws The methods that converts the PostgreSQL array representations to the
+ * STL containers can throw an instance of Client_exception with code of
+ * Client_errc::improper_value_type_of_container if there are NULL element presents
+ * in the source array representation.
+ *
+ * if there are element `e` presents in `container` for which `bool(e) == false`.
+ *
  * The support of the following data formats is implemented:
  *   - for input data  - Data_format::text;
  *   - for output data - Data_format::text.
