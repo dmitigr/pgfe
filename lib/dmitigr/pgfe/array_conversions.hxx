@@ -115,7 +115,7 @@ using Cont_of_vals_t = typename Cont_of_vals<T>::Type;
  *
  * @brief Converts the container of optionals to the container of values.
  *
- * @throws An instance of Client_exception with code Client_errc::improper_value_type_of_container
+ * @throws Client_exception with code of Client_errc::improper_value_type_of_container
  * if there are element `e` presents in `container` for which `bool(e) == false`.
  */
 template<typename T,

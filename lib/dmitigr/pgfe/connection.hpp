@@ -141,8 +141,8 @@ public:
    * @par Requires
    * `(timeout >= -1)`
    *
-   * @throws An instance of class Client_exception with code Client_errc::timed_out
-   * if the `(connection_status() == Communication_status::connected)` will not
+   * @throws Client_exception with code of Client_errc::timed_out if the
+   * `(connection_status() == Communication_status::connected)` will not
    * evaluates to `true` within the specified `timeout`.
    *
    * @par Exception safety guarantee
