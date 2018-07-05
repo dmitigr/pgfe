@@ -29,6 +29,9 @@ enum class Client_errc {
   /** Denotes a malformed array literal. */
   malformed_array_literal = @PGFE_CLIENT_ERRC_MALFORMED_ARRAY_LITERAL@,
 
+  /** Denotes an usage of container with improper type of elements. */
+  improper_value_type_of_container = @PGFE_CLIENT_ERRC_IMPROPER_VALUE_TYPE_OF_CONTAINER@,
+
   /** Denotes a timed out operation. */
   timed_out = @PGFE_CLIENT_ERRC_TIMED_OUT@
 };

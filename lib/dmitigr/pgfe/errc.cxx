@@ -18,6 +18,8 @@ const char* pgfe::detail::to_literal(const Client_errc errc)
     return "excessive_array_dimensionality";
   case Client_errc::malformed_array_literal:
     return "malformed_array_literal";
+  case Client_errc::improper_value_type_of_container:
+    return "improper_value_type_of_container";
   case Client_errc::timed_out:
     return "timed_out";
   }

@@ -13,7 +13,7 @@ namespace dmitigr::pgfe {
 /**
  * @ingroup conversions
  *
- * @brief Partial specialization of Conversions for containers (arrays).
+ * @brief Partial specialization of Conversions for containers (arrays) with optional values.
  *
  * @par Requirements
  * @parblock
@@ -43,8 +43,36 @@ template<typename T,
   template<class> class Allocator>
 struct Conversions<Container<Optional<T>, Allocator<Optional<T>>>>
   : public Basic_conversions<Container<Optional<T>, Allocator<Optional<T>>>,
-  detail::Array_string_conversions<T, Optional, Container, Allocator>,
-  detail::Array_data_conversions<T, Optional, Container, Allocator>> {};
+    detail::Array_string_conversions<Container<Optional<T>, Allocator<Optional<T>>>>,
+    detail::Array_data_conversions<Container<Optional<T>, Allocator<Optional<T>>>>> {};
+
+/**
+ * @ingroup conversions
+ *
+ * @brief Partial specialization of Conversions for containers (arrays) with mandatory values.
+ *
+ * @par Requirements
+ * @parblock
+ * Requirements to the type T of elements of array:
+ *   - DefaultConstructable, CopyConstructable;
+ *   - Convertible (there shall be a suitable specialization of Conversions).
+ * @endparblock
+ *
+ * @tparam T   - the type of the elements of the Container;
+ * @tparam Container - the container template class, for example, `std::vector`;
+ * @tparam Allocator - the allocator template class, for example, `std::allocator`.
+ *
+ * The support of the following data formats is implemented:
+ *   - for input data  - Data_format::text;
+ *   - for output data - Data_format::text.
+ */
+template<typename T,
+  template<class, class> class Container,
+  template<class> class Allocator>
+struct Conversions<Container<T, Allocator<T>>>
+  : public Basic_conversions<Container<T, Allocator<T>>,
+  detail::Array_string_conversions<Container<T, Allocator<T>>>,
+  detail::Array_data_conversions<Container<T, Allocator<T>>>> {};
 
 } // namespace dmitigr::pgfe
 

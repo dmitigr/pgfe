@@ -10,6 +10,7 @@
 #include "dmitigr/pgfe/internal/debug.hxx"
 #include "dmitigr/pgfe/internal/std/cstring.hxx"
 
+#include <algorithm>
 #include <locale>
 #include <utility>
 
@@ -199,6 +200,28 @@ std::string to_array_literal(const std::basic_string<CharT, Traits, Allocator>& 
   return result;
 }
 
+/**
+ * @internal
+ *
+ * Used by: to_container_of_values()
+ */
+template<typename T>
+T to_container_of_values(T&& element)
+{
+  return std::move(element);
+}
+
+/**
+ * @internal
+ *
+ * Used by: to_container_of_optionals()
+ */
+template<template<class> class Optional, typename T>
+Optional<T> to_container_of_optionals(T&& element)
+{
+  return Optional<T>{std::move(element)};
+}
+
 } // namespace arrays
 } // namespace dmitigr::pgfe::detail
 
@@ -240,7 +263,7 @@ const char* dmitigr::pgfe::detail::fill_container(Container<Optional<T>, Allocat
        * "arrays" which throws exception if the dimensionality of the result
        * is insufficient.
        */
-      using namespace detail::arrays;
+      using namespace arrays;
       subliteral = fill_container(subcontainer, subliteral, delimiter, std::forward<Types>(args)...);
 
       // For better understanding, imagine the source literal as "{{{1,2}},{{3,4}}}".
@@ -428,7 +451,7 @@ std::string dmitigr::pgfe::detail::to_array_literal(const Container<Optional<T>,
          * End elements shall be quoted, subliterals shall not be quoted.
          * We are using overloads defined in nested namespace "arrays" for this.
          */
-        using namespace detail::arrays;
+        using namespace arrays;
         result.append(quote_for_array_element(*element));
         result.append(to_array_literal(*element, delimiter, std::forward<Types>(args)...));
         result.append(quote_for_array_element(*element));
@@ -452,6 +475,45 @@ Container dmitigr::pgfe::detail::to_container(const char* const literal,
 {
   Container result;
   detail::fill_container(result, literal, delimiter, std::forward<Types>(args)...);
+  return result;
+}
+
+template<typename T,
+  template<class> class Optional,
+  template<class, class> class Container,
+  template<class> class Allocator>
+auto dmitigr::pgfe::detail::to_container_of_values(Container<Optional<T>, Allocator<Optional<T>>>&& container)
+  -> Cont_of_vals_t<Container<Optional<T>, Allocator<Optional<T>>>>
+{
+  Cont_of_vals_t<Container<Optional<T>, Allocator<Optional<T>>>> result;
+  result.resize(container.size());
+  std::transform(begin(container), end(container), begin(result),
+    [](auto& elem)
+    {
+      using namespace arrays;
+      if (elem)
+        return to_container_of_values(std::move(*elem));
+      else
+        throw iClient_exception{Client_errc::improper_value_type_of_container};
+    });
+  return result;
+}
+
+template<template<class> class Optional,
+  typename T,
+  template<class, class> class Container,
+  template<class> class Allocator>
+auto dmitigr::pgfe::detail::to_container_of_optionals(Container<T, Allocator<T>>&& container)
+  -> Cont_of_opts_t<Container<T, Allocator<T>>>
+{
+  Cont_of_opts_t<Container<T, Allocator<T>>> result;
+  result.resize(container.size());
+  std::transform(begin(container), end(container), begin(result),
+    [](auto& elem)
+    {
+      using namespace arrays;
+      return to_container_of_optionals<Optional>(std::move(elem));
+    });
   return result;
 }
 

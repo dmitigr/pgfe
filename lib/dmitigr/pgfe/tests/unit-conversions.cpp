@@ -221,63 +221,89 @@ int main(int argc, char* argv[])
 
     // Array literals
     {
-      using Arr  = Vector_array<int>;
+      using Arr = Vector_array<int>;
       using Arr2 = Vector_array<Vector_array<int>>;
+      using Vec = std::vector<int>;
+      using Vec2 = std::vector<std::vector<int>>;
 
       {
         const char* valid_literal = "{}";
         const auto data = pgfe::Data::make(valid_literal);
-        const auto native = pgfe::to<Arr>(data.get());
-        assert((native == Arr{}));
+        const auto native_arr = pgfe::to<Arr>(data.get());
+        const auto native_vec = pgfe::to<Vec>(data.get());
+        assert((native_arr == Arr{}));
+        assert((native_vec == Vec{}));
       }
 
       {
         const char* valid_literal = "{1}";
         const auto data = pgfe::Data::make(valid_literal);
-        const auto native = pgfe::to<Arr>(data.get());
-        assert((native == Arr{1}));
+        const auto native_arr = pgfe::to<Arr>(data.get());
+        const auto native_vec = pgfe::to<Vec>(data.get());
+        assert((native_arr == Arr{1}));
+        assert((native_vec == Vec{1}));
       }
 
       {
         const char* valid_literal = "{1,2}";
         const auto data = pgfe::Data::make(valid_literal);
-        const auto native = pgfe::to<Arr>(data.get());
-        assert((native == Arr{1,2}));
+        const auto native_arr = pgfe::to<Arr>(data.get());
+        const auto native_vec = pgfe::to<Vec>(data.get());
+        assert((native_arr == Arr{1,2}));
+        assert((native_vec == Vec{1,2}));
+      }
+
+      {
+        const char* valid_literal = "{1,NULL}";
+        const auto data = pgfe::Data::make(valid_literal);
+        const auto native_arr = pgfe::to<Arr>(data.get());
+        assert((native_arr == Arr{1,{}}));
+        assert(is_runtime_throw_works([&] { const auto native_vec = pgfe::to<Vec>(data.get()); }));
       }
 
       {
         const char* valid_literal = "{1}}";
         const auto data = pgfe::Data::make(valid_literal);
-        const auto native = pgfe::to<Arr>(data.get());
-        assert((native == Arr{1}));
+        const auto native_arr = pgfe::to<Arr>(data.get());
+        const auto native_vec = pgfe::to<Vec>(data.get());
+        assert((native_arr == Arr{1}));
+        assert((native_vec == Vec{1}));
       }
 
       {
         const char* valid_literal = "{{}}";
         const auto data = pgfe::Data::make(valid_literal);
-        const auto native = pgfe::to<Arr2>(data.get());
-        assert((native == Arr2{Arr{}}));
+        const auto native_arr2 = pgfe::to<Arr2>(data.get());
+        const auto native_vec2 = pgfe::to<Vec2>(data.get());
+        assert((native_arr2 == Arr2{Arr{}}));
+        assert((native_vec2 == Vec2{Vec{}}));
       }
 
       {
         const char* valid_literal = "{{1}{2}}";
         const auto data = pgfe::Data::make(valid_literal);
-        const auto native = pgfe::to<Arr2>(data.get());
-        assert((native == Arr2{Arr{1}, Arr{2}}));
+        const auto native_arr2 = pgfe::to<Arr2>(data.get());
+        const auto native_vec2 = pgfe::to<Vec2>(data.get());
+        assert((native_arr2 == Arr2{Arr{1}, Arr{2}}));
+        assert((native_vec2 == Vec2{Vec{1}, Vec{2}}));
       }
 
       {
         const char* valid_literal = "{{1},{2}}";
         const auto data = pgfe::Data::make(valid_literal);
-        const auto native = pgfe::to<Arr2>(data.get());
-        assert((native == Arr2{Arr{1}, Arr{2}}));
+        const auto native_arr2 = pgfe::to<Arr2>(data.get());
+        const auto native_vec2 = pgfe::to<Vec2>(data.get());
+        assert((native_arr2 == Arr2{Arr{1}, Arr{2}}));
+        assert((native_vec2 == Vec2{Vec{1}, Vec{2}}));
       }
 
       {
         const char* valid_literal = "{{1}}}";
         const auto data = pgfe::Data::make(valid_literal);
-        const auto native = pgfe::to<Arr2>(data.get());
-        assert((native == Arr2{Arr{1}}));
+        const auto native_arr2 = pgfe::to<Arr2>(data.get());
+        const auto native_vec2 = pgfe::to<Vec2>(data.get());
+        assert((native_arr2 == Arr2{Arr{1}}));
+        assert((native_vec2 == Vec2{Vec{1}}));
       }
 
       {

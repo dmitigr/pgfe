@@ -10,7 +10,8 @@ set(PGFE_CLIENT_ERRC_SUCCESS                                 0)
 set(PGFE_CLIENT_ERRC_INSUFFICIENT_ARRAY_DIMENSIONALITY     100)
 set(PGFE_CLIENT_ERRC_EXCESSIVE_ARRAY_DIMENSIONALITY        200)
 set(PGFE_CLIENT_ERRC_MALFORMED_ARRAY_LITERAL               300)
-set(PGFE_CLIENT_ERRC_TIMED_OUT                             400)
+set(PGFE_CLIENT_ERRC_IMPROPER_VALUE_TYPE_OF_CONTAINER      400)
+set(PGFE_CLIENT_ERRC_TIMED_OUT                             500)
 
 # ------------------------------------------------------------------------------
 # Server_errc
