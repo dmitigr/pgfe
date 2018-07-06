@@ -54,6 +54,40 @@ struct Cont_of_opts {
 /**
  * @internal
  *
+ * @brief Full specialization of the structure template Cont_of_opts.
+ *
+ * This specialization is needed to force treat std::string as a non-container type.
+ * Without this specialization, std::string will be translated to
+ * std::basic_string<Optional<char>, ...>.
+ *
+ * @remarks This is a workaround for GCC since the partial specialization by
+ * std::basic_string<CharT, Traits, Allocator> does not works.
+ */
+template<>
+struct Cont_of_opts<std::string> {
+  using Type = std::string;
+};
+
+/**
+ * @internal
+ *
+ * @brief Partial specialization of the structure template Cont_of_opts.
+ *
+ * This specialization is needed to force treat std::basic_string<> as a non-container type.
+ * Without this specialization, std::basic_string<CharT, ...> will be translated to
+ * std::basic_string<Optional<CharT>, ...>.
+ *
+ * @remarks This specialization does not works with GCC. (And it does not needs to MSVC.)
+ * Thus, this specialization is not required at all. But let it be just in case.
+ */
+template<class CharT, class Traits, class Allocator>
+struct Cont_of_opts<std::basic_string<CharT, Traits, Allocator>> {
+  using Type = std::basic_string<CharT, Traits, Allocator>;
+};
+
+/**
+ * @internal
+ *
  * @brief Partial specialization of the structure template Cont_of_opts.
  */
 template<typename T,

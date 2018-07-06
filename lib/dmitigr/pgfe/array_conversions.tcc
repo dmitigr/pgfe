@@ -215,6 +215,36 @@ T to_container_of_values(T&& element)
  * @internal
  *
  * Used by: to_container_of_optionals()
+ *
+ * @remarks Workaround for GCC.
+ */
+template<template<class> class Optional>
+Optional<std::string> to_container_of_optionals(std::string&& element)
+{
+  return Optional<std::string>{std::move(element)};
+}
+
+/**
+ * @internal
+ *
+ * @overload
+ *
+ * @remarks It does not works with GCC. (And it does not needs to MSVC.)
+ * Thus, this specialization is not required at all. But let it be just in case.
+ */
+template<template<class> class Optional, class CharT, class Traits, class Allocator>
+Optional<std::basic_string<CharT, Traits, Allocator>> to_container_of_optionals(std::basic_string<CharT, Traits, Allocator>&& element)
+{
+  using String = std::basic_string<CharT, Traits, Allocator>;
+  return Optional<String>{std::move(element)};
+}
+
+/**
+ * @internal
+ *
+ * @overload
+ *
+ * Used by: to_container_of_optionals()
  */
 template<template<class> class Optional, typename T>
 Optional<T> to_container_of_optionals(T&& element)
