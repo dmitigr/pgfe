@@ -256,6 +256,8 @@ install(FILES
   sql.hxx
   sql_string.hpp
   sql_string.hxx
+  sql_vector.hpp
+  sql_vector.hxx
   std_system_error.hpp
   types_fwd.hpp
 

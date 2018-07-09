@@ -49,6 +49,7 @@
 #include "dmitigr/pgfe/server_message.hpp"
 #include "dmitigr/pgfe/signal.hpp"
 #include "dmitigr/pgfe/sql_string.hpp"
+#include "dmitigr/pgfe/sql_vector.hpp"
 #include "dmitigr/pgfe/std_system_error.hpp"
 #include "dmitigr/pgfe/types_fwd.hpp"
 
