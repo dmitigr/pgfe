@@ -158,8 +158,11 @@ public:
   std::string to_string() const override
   {
     std::string result;
-    for (const auto& sql_string : storage_)
-      result.append(sql_string->to_string());
+    if (!storage_.empty()) {
+      for (const auto& sql_string : storage_)
+        result.append(sql_string->to_string()).append(";");
+      result.pop_back();
+    }
     return result;
   }
 
