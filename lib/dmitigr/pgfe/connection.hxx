@@ -68,15 +68,20 @@ public:
     auto current_status = communication_status();
 
     const bool ignore_timeout = (timeout == microseconds(-1));
-    const auto is_timeout = [timeout]()
+    const auto is_timeout = [&timeout]()
     {
-      return timeout <= decltype (timeout)::zero();
+      return timeout <= std::decay_t<decltype (timeout)>::zero();
+    };
+
+    const auto throw_timeout = []()
+    {
+      throw detail::iClient_exception{Client_errc::timed_out, "connection timeout"};
     };
 
     if (!ignore_timeout) {
       timeout -= duration_cast<microseconds>(system_clock::now() - timepoint1);
       if (is_timeout())
-        goto done;
+        throw_timeout();
     }
 
     // Stage 2: polling.
@@ -107,14 +112,13 @@ public:
         timeout -= duration_cast<microseconds>(system_clock::now() - timepoint1);
         DMITIGR_PGFE_INTERNAL_ASSERT(current_socket_readiness != Socket_readiness::unready || is_timeout());
         if (is_timeout())
-          throw detail::iClient_exception{Client_errc::timed_out, "connection timeout"};
+          throw_timeout();
       }
 
       connect_async();
       current_status = communication_status();
     } // while
 
-  done:
     DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
   }
 
