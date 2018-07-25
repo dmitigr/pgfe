@@ -57,14 +57,19 @@ public:
     DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
   }
 
+  std::unique_ptr<Problem> to_problem() const override
+  {
+    return std::make_unique<basic_Problem>(*this);
+  }
+
   std::error_code code() const noexcept override
   {
-    return Problem::code();
+    return ProblemDerived::code();
   }
 
   Problem_severity severity() const override
   {
-    return Problem::severity();
+    return ProblemDerived::severity();
   }
 
   const std::string& severity_localized() const noexcept override

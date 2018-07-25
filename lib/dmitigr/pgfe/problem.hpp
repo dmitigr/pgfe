@@ -7,6 +7,7 @@
 
 #include "dmitigr/pgfe/types_fwd.hpp"
 
+#include <memory>
 #include <optional>
 #include <string>
 #include <system_error>
@@ -24,6 +25,16 @@ public:
    * @brief The destructor.
    */
   virtual ~Problem() = default;
+
+  /// @name Conversions
+  /// @{
+
+  /**
+   * @returns The copy of this instance.
+   */
+  virtual std::unique_ptr<Problem> to_problem() const = 0;
+
+  /// @}
 
   /**
    * @returns The object with the corresponding PostgreSQL error code.

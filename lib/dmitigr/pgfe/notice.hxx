@@ -11,6 +11,12 @@
 namespace dmitigr::pgfe::detail {
 
 class iNotice : public Notice {
+public:
+  std::unique_ptr<Notice> to_notice() const override
+  {
+    return std::unique_ptr<Notice>{static_cast<Notice*>(to_problem().release())};
+  }
+
 protected:
   virtual bool is_invariant_ok() = 0;
 };

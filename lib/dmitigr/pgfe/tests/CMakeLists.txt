@@ -6,6 +6,8 @@ if(NOT PGFE_BUILD_TESTS)
   return()
 endif()
 
+remove_definitions(-DDMITIGR_PGFE_DLL_BUILDING)
+
 # ------------------------------------------------------------------------------
 
 add_executable(hello_world hello_world.cpp)
@@ -16,6 +18,9 @@ target_link_libraries(test-unit-composite dmitigr_pgfe)
 
 add_executable(test-unit-data unit-data.cpp unit.hpp)
 target_link_libraries(test-unit-data dmitigr_pgfe)
+
+add_executable(test-unit-problem unit-problem.cpp ../problem.cpp ../sql.cxx unit.hpp)
+target_link_libraries(test-unit-problem dmitigr_pgfe)
 
 add_executable(test-unit-sql_string unit-sql_string.cpp unit.hpp)
 target_link_libraries(test-unit-sql_string dmitigr_pgfe)
@@ -70,6 +75,7 @@ add_custom_target(copy_test_resources ALL
 add_test(NAME hello_world COMMAND hello_world)
 add_test(NAME unit-composite COMMAND test-unit-composite)
 add_test(NAME unit-data COMMAND test-unit-data)
+add_test(NAME unit-problem COMMAND test-unit-problem)
 add_test(NAME unit-sql_string COMMAND test-unit-sql_string)
 add_test(NAME unit-sql_vector COMMAND test-unit-sql_vector)
 add_test(NAME unit-conversions COMMAND test-unit-conversions)

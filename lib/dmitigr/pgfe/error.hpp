@@ -20,6 +20,17 @@ namespace dmitigr::pgfe {
  * from the PostgreSQL server with the information about the error occurred.
  */
 class Error : public Response, public Problem {
+public:
+  /// @name Conversions
+  /// @{
+
+  /**
+   * @returns The copy of this instance.
+   */
+  virtual std::unique_ptr<Error> to_error() const = 0;
+
+  /// @}
+
 private:
   friend detail::iError;
 

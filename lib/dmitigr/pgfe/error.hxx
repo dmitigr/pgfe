@@ -11,6 +11,12 @@
 namespace dmitigr::pgfe::detail {
 
 class iError : public Error {
+public:
+  std::unique_ptr<Error> to_error() const override
+  {
+    return std::unique_ptr<Error>{static_cast<Error*>(to_problem().release())};
+  }
+
 protected:
   virtual bool is_invariant_ok() = 0;
 };

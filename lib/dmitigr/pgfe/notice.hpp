@@ -24,6 +24,17 @@ namespace dmitigr::pgfe {
  * @remarks It should not be confused with the Notification signal.
  */
 class Notice : public Signal, public Problem {
+public:
+  /// @name Conversions
+  /// @{
+
+  /**
+   * @returns The copy of this instance.
+   */
+  virtual std::unique_ptr<Notice> to_notice() const = 0;
+
+  /// @}
+
 private:
   friend detail::iNotice;
 

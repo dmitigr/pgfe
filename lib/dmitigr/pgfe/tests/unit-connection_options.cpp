@@ -5,7 +5,6 @@
 #include "dmitigr/pgfe/tests/unit.hpp"
 #include "dmitigr/pgfe/connection_options.hxx"
 
-#include <cassert>
 #include <cstring>
 #include <iostream>
 #include <string>
