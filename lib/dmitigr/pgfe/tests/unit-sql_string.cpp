@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
                                            "SELECT :last_name::text, /* comment */ :age, $2, f(:age),"
                                            " 'simple string', $$dollar quoted$$, $tag$dollar quoted$tag$");
       assert(s_orig);
-      auto s_copy = s_orig->clone();
+      auto s_copy = s_orig->to_sql_string();
       assert(s_copy);
 
       for (const auto* s : {s_orig.get(), s_copy.get()}) {

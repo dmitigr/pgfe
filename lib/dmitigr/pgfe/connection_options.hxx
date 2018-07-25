@@ -92,7 +92,7 @@ public:
 
   std::unique_ptr<Connection> make_connection() const override; // defined in connection.cpp
 
-  std::unique_ptr<Connection_options> clone() const override
+  std::unique_ptr<Connection_options> to_connection_options() const override
   {
     return std::make_unique<iConnection_options>(*this);
   }

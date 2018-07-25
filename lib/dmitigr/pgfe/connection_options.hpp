@@ -48,7 +48,7 @@ public:
   /**
    * @returns The copy of this instance.
    */
-  virtual std::unique_ptr<Connection_options> clone() const = 0;
+  virtual std::unique_ptr<Connection_options> to_connection_options() const = 0;
 
   /// @}
 

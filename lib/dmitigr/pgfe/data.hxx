@@ -81,7 +81,7 @@ public:
     DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
   }
 
-  std::unique_ptr<Data> clone() const override
+  std::unique_ptr<Data> to_data() const override
   {
     return std::make_unique<string_Data>(storage_, format_);
   }
@@ -123,7 +123,7 @@ public:
     DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
   }
 
-  std::unique_ptr<Data> clone() const override
+  std::unique_ptr<Data> to_data() const override
   {
     return std::make_unique<vector_Data>(storage_, format_);
   }
@@ -172,7 +172,7 @@ public:
     DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
   }
 
-  std::unique_ptr<Data> clone() const override
+  std::unique_ptr<Data> to_data() const override
   {
     return std::make_unique<vector_Data>(static_cast<unsigned char*>(storage_.get()), size_, format_);
   }
@@ -223,7 +223,7 @@ public:
     DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
   }
 
-  std::unique_ptr<Data> clone() const override
+  std::unique_ptr<Data> to_data() const override
   {
     return std::make_unique<empty_Data>(format_);
   }
@@ -287,7 +287,7 @@ public:
   Data_view(Data_view&&) = default;
   Data_view& operator=(Data_view&&) = default;
 
-  std::unique_ptr<Data> clone() const override
+  std::unique_ptr<Data> to_data() const override
   {
     return std::make_unique<vector_Data>(reinterpret_cast<const unsigned char*>(bytes_), size_, format_);
   }

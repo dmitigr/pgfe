@@ -137,7 +137,7 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  std::unique_ptr<Sql_string> clone() const override
+  std::unique_ptr<Sql_string> to_sql_string() const override
   {
     return std::make_unique<iSql_string>(*this);
   }

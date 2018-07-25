@@ -52,7 +52,7 @@ public:
     : datas_{rhs.datas_.size()}
   {
     std::transform(cbegin(rhs.datas_), cend(rhs.datas_), begin(datas_),
-      [&](const auto& pair) { return std::make_pair(pair.first, pair.second->clone()); });
+      [&](const auto& pair) { return std::make_pair(pair.first, pair.second->to_data()); });
     DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
   }
 
@@ -116,7 +116,7 @@ public:
   // Composite overridings
   // ---------------------------------------------------------------------------
 
-  std::unique_ptr<Composite> clone() const override
+  std::unique_ptr<Composite> to_composite() const override
   {
     return std::make_unique<heap_data_Composite>(*this);
   }

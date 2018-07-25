@@ -40,7 +40,7 @@ public:
     : storage_(rhs.storage_.size())
   {
     std::transform(cbegin(rhs.storage_), cend(rhs.storage_), begin(storage_),
-      [](const auto& sqlstr) { return sqlstr->clone(); });
+      [](const auto& sqlstr) { return sqlstr->to_sql_string(); });
     DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
   }
 
@@ -62,7 +62,7 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  std::unique_ptr<Sql_vector> clone() const override
+  std::unique_ptr<Sql_vector> to_sql_vector() const override
   {
     return std::make_unique<iSql_vector>(*this);
   }

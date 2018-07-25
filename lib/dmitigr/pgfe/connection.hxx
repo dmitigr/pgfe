@@ -33,7 +33,7 @@ namespace dmitigr::pgfe::detail {
 
 class iConnection : public Connection {
 public:
-  std::unique_ptr<Connection> clone() const override
+  std::unique_ptr<Connection> to_connection() const override
   {
     return options()->make_connection();
   }

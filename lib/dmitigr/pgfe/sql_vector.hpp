@@ -71,7 +71,7 @@ public:
   /**
    * @returns The copy of this instance.
    */
-  virtual std::unique_ptr<Sql_vector> clone() const = 0;
+  virtual std::unique_ptr<Sql_vector> to_sql_vector() const = 0;
 
   /// @}
 

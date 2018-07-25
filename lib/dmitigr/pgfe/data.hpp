@@ -100,7 +100,7 @@ public:
   /**
    * @returns The copy of this instance.
    */
-  virtual std::unique_ptr<Data> clone() const = 0;
+  virtual std::unique_ptr<Data> to_data() const = 0;
 
   /// @}
 

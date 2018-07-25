@@ -40,7 +40,7 @@ public:
   /**
    * @returns The copy of this instance.
    */
-  virtual std::unique_ptr<Composite> clone() const = 0;
+  virtual std::unique_ptr<Composite> to_composite() const = 0;
 
   /// @}
 

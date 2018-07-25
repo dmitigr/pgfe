@@ -57,7 +57,7 @@ public:
   /**
    * @returns The copy of this instance.
    */
-  virtual std::unique_ptr<Sql_string> clone() const = 0;
+  virtual std::unique_ptr<Sql_string> to_sql_string() const = 0;
 
   /// @}
 

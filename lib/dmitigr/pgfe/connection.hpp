@@ -45,7 +45,7 @@ public:
    *
    * @remarks The communication status of a copy will be Communication_status::disconnected.
    */
-  virtual std::unique_ptr<Connection> clone() const = 0;
+  virtual std::unique_ptr<Connection> to_connection() const = 0;
 
   /// @}
 
