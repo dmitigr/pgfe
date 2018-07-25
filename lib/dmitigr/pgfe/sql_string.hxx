@@ -360,29 +360,25 @@ private:
 
   void push_back_fragment__(Fragment::Type type, const std::string& str)
   {
-    DMITIGR_PGFE_INTERNAL_ASSERT(!str.empty());
     fragments_.emplace_back(type, str);
     // The invariant should be checked by the caller.
   }
 
   void push_text(const std::string& str)
   {
-    if (!str.empty())
-      push_back_fragment__(Fragment::Type::text, str);
+    push_back_fragment__(Fragment::Type::text, str);
     DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
   }
 
   void push_one_line_comment(const std::string& str)
   {
-    if (!str.empty())
-      push_back_fragment__(Fragment::Type::one_line_comment, str);
+    push_back_fragment__(Fragment::Type::one_line_comment, str);
     DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
   }
 
   void push_multi_line_comment(const std::string& str)
   {
-    if (!str.empty())
-      push_back_fragment__(Fragment::Type::multi_line_comment, str);
+    push_back_fragment__(Fragment::Type::multi_line_comment, str);
     DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
   }
 
