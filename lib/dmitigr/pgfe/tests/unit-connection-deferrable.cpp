@@ -16,7 +16,7 @@ int main(int argc, char* argv[])
     conn->connect();
 
     conn->perform("begin");
-    assert(conn->completion() && conn->completion()->operation_name() == "BEGIN");
+    ASSERT(conn->completion() && conn->completion()->operation_name() == "BEGIN");
 
     conn->perform_async
     ("create table test(id integer not null);"
@@ -36,16 +36,16 @@ int main(int argc, char* argv[])
      " for each row"
      " execute procedure test_constraint()");
     conn->wait_last_response_throw();
-    assert(conn->completion() && conn->completion()->operation_name() == "CREATE TRIGGER");
+    ASSERT(conn->completion() && conn->completion()->operation_name() == "CREATE TRIGGER");
 
     conn->execute("insert into test(id) values($1)", 1);
-    assert(conn->completion()->operation_name() == "INSERT");
+    ASSERT(conn->completion()->operation_name() == "INSERT");
 
     try {
       conn->perform("commit");
     } catch (const pgfe::Server_exception& e) {
       // ok, expected.
-      assert(e.code() == pgfe::Server_errc::cp0_raise_exception);
+      ASSERT(e.code() == pgfe::Server_errc::cp0_raise_exception);
     }
   } catch (const std::exception& e) {
     report_failure(argv[0], e);

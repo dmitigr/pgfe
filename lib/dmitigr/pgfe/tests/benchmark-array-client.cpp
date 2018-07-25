@@ -17,7 +17,7 @@ int main(int argc, char* argv[])
   try {
     auto [output_file, conn] = prepare(argc, argv);
     conn->perform("select dat from benchmark_test_array");
-    assert(conn->row());
+    ASSERT(conn->row());
     conn->for_each([&](const pgfe::Row* const r)
                    {
                      using Array = std::vector<std::optional<std::string>>;

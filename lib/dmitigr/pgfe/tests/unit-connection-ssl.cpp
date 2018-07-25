@@ -13,11 +13,11 @@ int main(int argc, char* argv[])
   try {
     auto conn = pgfe::tests::make_ssl_connection();
     conn->connect();
-    assert(conn->is_ssl_secured());
+    ASSERT(conn->is_ssl_secured());
     conn->perform("begin");
-    assert(conn->completion() && conn->completion()->operation_name() == "BEGIN");
+    ASSERT(conn->completion() && conn->completion()->operation_name() == "BEGIN");
     conn->perform("commit");
-    assert(conn->completion() && conn->completion()->operation_name() == "COMMIT");
+    ASSERT(conn->completion() && conn->completion()->operation_name() == "COMMIT");
   } catch (const std::exception& e) {
     report_failure(argv[0], e);
     return 1;

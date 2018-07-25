@@ -17,9 +17,9 @@ int main(int argc, char* argv[])
   try {
     auto [output_file, conn] = prepare(argc, argv);
     conn->perform("select dat[1], dat[2], dat[3], dat[4], dat[5] from benchmark_test_array");
-    assert(conn->row() && conn->row()->info());
+    ASSERT(conn->row() && conn->row()->info());
     const auto field_count = conn->row()->info()->field_count();
-    assert(field_count == 5);
+    ASSERT(field_count == 5);
     conn->for_each([&](const pgfe::Row* const r)
                    {
                      using Counter = std::decay_t<decltype (field_count)>;

@@ -7,8 +7,10 @@
 
 #include "dmitigr/pgfe/connection.hpp"
 #include "dmitigr/pgfe/connection_options.hpp"
+#include "dmitigr/pgfe/internal/debug.hxx"
 
-#include <cassert>
+#define ASSERT(a) DMITIGR_PGFE_INTERNAL_ASSERT(a)
+
 #include <cstdlib>
 #include <filesystem>
 #include <fstream>
@@ -47,11 +49,11 @@ inline std::string get_env_var(const std::string& name)
   const std::unique_ptr<char, void(*)(void*)> buffer{nullptr, &std::free};
   char* buf = buffer.get();
   const auto err = _dupenv_s(&buf, nullptr, name.c_str());
-  assert(!err);
+  ASSERT(!err);
   return buf ? std::string{buf} : std::string{};
 #else
   const char* const result = std::getenv(name.c_str());
-  assert(result);
+  ASSERT(result);
   return result;
 #endif
 }
@@ -91,11 +93,11 @@ inline std::unique_ptr<Connection> make_ssl_connection()
 
 #ifdef _WIN32
   auto appdata = get_env_var("APPDATA");
-  assert(!appdata.empty());
+  ASSERT(!appdata.empty());
   const std::filesystem::path certs_dir = appdata + "\\postgresql";
 #else // Unix
   auto home = get_env_var("HOME");
-  assert(!home.empty());
+  ASSERT(!home.empty());
   const std::filesystem::path certs_dir = home + "/.postgresql";
 #endif
 

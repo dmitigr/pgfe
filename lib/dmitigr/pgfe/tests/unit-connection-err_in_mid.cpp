@@ -8,8 +8,6 @@
 #include "dmitigr/pgfe/row.hpp"
 #include "dmitigr/pgfe/tests/unit.hpp"
 
-#include <cassert>
-
 int main(int argc, char* argv[])
 {
   namespace pgfe = dmitigr::pgfe;
@@ -20,7 +18,7 @@ int main(int argc, char* argv[])
     conn->connect();
 
     conn->perform("begin");
-    assert(conn->completion() && conn->completion()->operation_name() == "BEGIN");
+    ASSERT(conn->completion() && conn->completion()->operation_name() == "BEGIN");
 
     conn->perform("create or replace function provoke_err_in_mid(a_i integer)"
                   " returns integer"
@@ -34,7 +32,7 @@ int main(int argc, char* argv[])
                   " end;"
                   " $f$"
                   );
-    assert(conn->completion() && conn->completion()->operation_name() == "CREATE FUNCTION");
+    ASSERT(conn->completion() && conn->completion()->operation_name() == "CREATE FUNCTION");
 
     bool rows_processed{};
     try {
@@ -42,17 +40,17 @@ int main(int argc, char* argv[])
       conn->for_each([&](const pgfe::Row* const row)
                      {
                        const auto n = pgfe::to<int>(row->data(0));
-                       assert(n < 3);
+                       ASSERT(n < 3);
                        if (n > 1)
                          rows_processed = true;
                      });
     } catch (const pgfe::Server_exception& e) {
       // ok, expected.
-      assert(e.code() == pgfe::Server_errc::cp0_raise_exception);
-      assert(rows_processed);
+      ASSERT(e.code() == pgfe::Server_errc::cp0_raise_exception);
+      ASSERT(rows_processed);
     }
-    assert(conn->is_ready_for_async_request());
-    assert(!conn->is_awaiting_response());
+    ASSERT(conn->is_ready_for_async_request());
+    ASSERT(!conn->is_awaiting_response());
   } catch (const std::exception& e) {
     report_failure(argv[0], e);
     return 1;

@@ -6,10 +6,6 @@
 #include "dmitigr/pgfe/error.hxx"
 #include "dmitigr/pgfe/notice.hxx"
 
-#include <cstring>
-#include <iostream>
-#include <string>
-
 int main(int argc, char* argv[])
 {
   namespace pgfe = dmitigr::pgfe;
@@ -40,31 +36,31 @@ int main(int argc, char* argv[])
 
     const auto test_problem = [&](const pgfe::Problem* const problem)
     {
-      assert(problem);
+      ASSERT(problem);
       const auto severity = problem->severity();
-      assert(severity == pgfe::Problem_severity::warning || severity == pgfe::Problem_severity::error);
-      assert(severity != pgfe::Problem_severity::warning || problem->code() == pgfe::Server_errc::c01_warning);
-      assert(severity != pgfe::Problem_severity::error   || problem->code() == pgfe::Server_errc::c0a_feature_not_supported);
-      assert(problem->severity_localized() == severity_localized);
-      assert(severity != pgfe::Problem_severity::warning || problem->severity_non_localized() == notice_severity_non_localized);
-      assert(severity != pgfe::Problem_severity::error   || problem->severity_non_localized() == error_severity_non_localized);
-      assert(severity != pgfe::Problem_severity::warning || problem->sqlstate() == notice_sqlstate);
-      assert(severity != pgfe::Problem_severity::error   || problem->sqlstate() == error_sqlstate);
-      assert(problem->brief() == brief);
-      assert(problem->detail() == detail);
-      assert(problem->hint() == hint);
-      assert(problem->query_position() == query_position);
-      assert(problem->internal_query_position() == internal_query_position);
-      assert(problem->internal_query() == internal_query);
-      assert(problem->context() == context);
-      assert(problem->schema_name() == schema_name);
-      assert(problem->table_name() == table_name);
-      assert(problem->column_name() == column_name);
-      assert(problem->data_type_name() == data_type_name);
-      assert(problem->constraint_name() == constraint_name);
-      assert(problem->source_file() == source_file);
-      assert(problem->source_line() == source_line);
-      assert(problem->source_function() == source_function);
+      ASSERT(severity == pgfe::Problem_severity::warning || severity == pgfe::Problem_severity::error);
+      ASSERT(severity != pgfe::Problem_severity::warning || problem->code() == pgfe::Server_errc::c01_warning);
+      ASSERT(severity != pgfe::Problem_severity::error   || problem->code() == pgfe::Server_errc::c0a_feature_not_supported);
+      ASSERT(problem->severity_localized() == severity_localized);
+      ASSERT(severity != pgfe::Problem_severity::warning || problem->severity_non_localized() == notice_severity_non_localized);
+      ASSERT(severity != pgfe::Problem_severity::error   || problem->severity_non_localized() == error_severity_non_localized);
+      ASSERT(severity != pgfe::Problem_severity::warning || problem->sqlstate() == notice_sqlstate);
+      ASSERT(severity != pgfe::Problem_severity::error   || problem->sqlstate() == error_sqlstate);
+      ASSERT(problem->brief() == brief);
+      ASSERT(problem->detail() == detail);
+      ASSERT(problem->hint() == hint);
+      ASSERT(problem->query_position() == query_position);
+      ASSERT(problem->internal_query_position() == internal_query_position);
+      ASSERT(problem->internal_query() == internal_query);
+      ASSERT(problem->context() == context);
+      ASSERT(problem->schema_name() == schema_name);
+      ASSERT(problem->table_name() == table_name);
+      ASSERT(problem->column_name() == column_name);
+      ASSERT(problem->data_type_name() == data_type_name);
+      ASSERT(problem->constraint_name() == constraint_name);
+      ASSERT(problem->source_file() == source_file);
+      ASSERT(problem->source_line() == source_line);
+      ASSERT(problem->source_function() == source_function);
     };
 
     {
@@ -89,11 +85,11 @@ int main(int argc, char* argv[])
       test_problem(&snotice);
 
       auto iproblem_copy = snotice.to_problem();
-      assert(iproblem_copy);
+      ASSERT(iproblem_copy);
       test_problem(iproblem_copy.get());
 
       auto inotice_copy = snotice.to_notice();
-      assert(inotice_copy);
+      ASSERT(inotice_copy);
       test_problem(inotice_copy.get());
     }
 
@@ -119,11 +115,11 @@ int main(int argc, char* argv[])
       test_problem(&serror);
 
       auto iproblem_copy = serror.to_problem();
-      assert(iproblem_copy);
+      ASSERT(iproblem_copy);
       test_problem(iproblem_copy.get());
 
       auto ierror_copy = serror.to_error();
-      assert(ierror_copy);
+      ASSERT(ierror_copy);
       test_problem(ierror_copy.get());
     }
   } catch (const std::exception& e) {

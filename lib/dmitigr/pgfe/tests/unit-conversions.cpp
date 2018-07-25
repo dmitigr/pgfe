@@ -69,7 +69,7 @@ int main(int argc, char* argv[])
       const auto original = numeric_limits<short>::max();
       const auto data = pgfe::to_data(original);
       const auto converted = pgfe::to<short>(data.get());
-      assert(original == converted);
+      ASSERT(original == converted);
     }
 
     // int
@@ -77,7 +77,7 @@ int main(int argc, char* argv[])
       const auto original = numeric_limits<int>::max();
       const auto data = pgfe::to_data(original);
       const auto converted = pgfe::to<int>(data.get());
-      assert(original == converted);
+      ASSERT(original == converted);
     }
 
     // long
@@ -85,7 +85,7 @@ int main(int argc, char* argv[])
       const auto original = numeric_limits<long>::max();
       const auto data = pgfe::to_data(original);
       const auto converted = pgfe::to<long>(data.get());
-      assert(original == converted);
+      ASSERT(original == converted);
     }
 
     // long long
@@ -93,7 +93,7 @@ int main(int argc, char* argv[])
       const auto original = numeric_limits<long long>::max();
       const auto data = pgfe::to_data(original);
       const auto converted = pgfe::to<long long>(data.get());
-      assert(original == converted);
+      ASSERT(original == converted);
     }
 
     // float
@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
       const auto original = numeric_limits<float>::max();
       const auto data = pgfe::to_data(original);
       const auto converted = pgfe::to<float>(data.get());
-      assert(original == converted);
+      ASSERT(original == converted);
     }
 
     // double
@@ -109,7 +109,7 @@ int main(int argc, char* argv[])
       const auto original = numeric_limits<double>::max();
       const auto data = pgfe::to_data(original);
       const auto converted = pgfe::to<double>(data.get());
-      assert(original == converted);
+      ASSERT(original == converted);
     }
 
     // long double
@@ -117,7 +117,7 @@ int main(int argc, char* argv[])
       const auto original = numeric_limits<long double>::max();
       const auto data = pgfe::to_data(original);
       const auto converted = pgfe::to<long double>(data.get());
-      assert(original == converted);
+      ASSERT(original == converted);
     }
 
     // char
@@ -125,7 +125,7 @@ int main(int argc, char* argv[])
       char original = 'd';
       auto data = pgfe::to_data(original);
       auto converted = pgfe::to<char>(data.get());
-      assert(original == converted);
+      ASSERT(original == converted);
     }
 
     // bool
@@ -133,12 +133,12 @@ int main(int argc, char* argv[])
       bool original = false;
       auto data = pgfe::to_data(original);
       auto converted = pgfe::to<bool>(data.get());
-      assert(original == converted);
+      ASSERT(original == converted);
 
       original = true;
       data = pgfe::to_data(original);
       converted = pgfe::to<bool>(data.get());
-      assert(original == converted);
+      ASSERT(original == converted);
     }
 
     // std::string
@@ -146,7 +146,7 @@ int main(int argc, char* argv[])
       const std::string original{"Dmitry Igrishin"};
       const auto data = pgfe::to_data(original);
       const auto converted = pgfe::to<std::string>(data.get());
-      assert(original == converted);
+      ASSERT(original == converted);
     }
 
     // My_string with overloaded operator<< and operator>>
@@ -154,7 +154,7 @@ int main(int argc, char* argv[])
       My_string original{"Dmitry Igrishin"};
       const auto data = pgfe::to_data(original);
       const auto converted = pgfe::to<My_string>(data.get());
-      assert(original == converted);
+      ASSERT(original == converted);
     }
 
     // Arrays
@@ -165,7 +165,7 @@ int main(int argc, char* argv[])
       const Vector_array<int> original{1,2};
       const auto data = pgfe::to_data(original);
       const auto converted = pgfe::to<Vector_array<int>>(data.get());
-      assert(original == converted);
+      ASSERT(original == converted);
     }
 
     // 2-dimensional array (vector of lists of integers)
@@ -174,7 +174,7 @@ int main(int argc, char* argv[])
       const Arr original{List_array<int>{1,2}, List_array<int>{3,4}};
       const auto data = pgfe::to_data(original);
       const auto converted = pgfe::to<Arr>(data.get());
-      assert(original == converted);
+      ASSERT(original == converted);
     }
 
     // 3-dimensional array (vector of lists of deques of integers)
@@ -184,7 +184,7 @@ int main(int argc, char* argv[])
                          List_array<Deque_array<int>>{Deque_array<int>{3,4}}};
       const auto data = pgfe::to_data(original);
       const auto converted = pgfe::to<Arr>(data.get());
-      assert(original == converted);
+      ASSERT(original == converted);
     }
 
     // Insufficient array dimensionality
@@ -200,7 +200,7 @@ int main(int argc, char* argv[])
       } catch (const pgfe::Client_exception& e) {
         test_ok = (e.code() == pgfe::Client_errc::insufficient_array_dimensionality);
       }
-      assert(test_ok);
+      ASSERT(test_ok);
     }
 
     // excessive_array_dimensionality
@@ -216,7 +216,7 @@ int main(int argc, char* argv[])
       } catch (const pgfe::Client_exception& e) {
         test_ok = (e.code() == pgfe::Client_errc::excessive_array_dimensionality);
       }
-      assert(test_ok);
+      ASSERT(test_ok);
     }
 
     // Array literals
@@ -231,8 +231,8 @@ int main(int argc, char* argv[])
         const auto data = pgfe::Data::make(valid_literal);
         const auto native_arr = pgfe::to<Arr>(data.get());
         const auto native_vec = pgfe::to<Vec>(data.get());
-        assert((native_arr == Arr{}));
-        assert((native_vec == Vec{}));
+        ASSERT((native_arr == Arr{}));
+        ASSERT((native_vec == Vec{}));
       }
 
       {
@@ -240,8 +240,8 @@ int main(int argc, char* argv[])
         const auto data = pgfe::Data::make(valid_literal);
         const auto native_arr = pgfe::to<Arr>(data.get());
         const auto native_vec = pgfe::to<Vec>(data.get());
-        assert((native_arr == Arr{1}));
-        assert((native_vec == Vec{1}));
+        ASSERT((native_arr == Arr{1}));
+        ASSERT((native_vec == Vec{1}));
       }
 
       {
@@ -249,16 +249,16 @@ int main(int argc, char* argv[])
         const auto data = pgfe::Data::make(valid_literal);
         const auto native_arr = pgfe::to<Arr>(data.get());
         const auto native_vec = pgfe::to<Vec>(data.get());
-        assert((native_arr == Arr{1,2}));
-        assert((native_vec == Vec{1,2}));
+        ASSERT((native_arr == Arr{1,2}));
+        ASSERT((native_vec == Vec{1,2}));
       }
 
       {
         const char* valid_literal = "{1,NULL}";
         const auto data = pgfe::Data::make(valid_literal);
         const auto native_arr = pgfe::to<Arr>(data.get());
-        assert((native_arr == Arr{1,{}}));
-        assert(is_runtime_throw_works([&] { const auto native_vec = pgfe::to<Vec>(data.get()); }));
+        ASSERT((native_arr == Arr{1,{}}));
+        ASSERT(is_runtime_throw_works([&] { const auto native_vec = pgfe::to<Vec>(data.get()); }));
       }
 
       {
@@ -266,8 +266,8 @@ int main(int argc, char* argv[])
         const auto data = pgfe::Data::make(valid_literal);
         const auto native_arr = pgfe::to<Arr>(data.get());
         const auto native_vec = pgfe::to<Vec>(data.get());
-        assert((native_arr == Arr{1}));
-        assert((native_vec == Vec{1}));
+        ASSERT((native_arr == Arr{1}));
+        ASSERT((native_vec == Vec{1}));
       }
 
       {
@@ -275,8 +275,8 @@ int main(int argc, char* argv[])
         const auto data = pgfe::Data::make(valid_literal);
         const auto native_arr2 = pgfe::to<Arr2>(data.get());
         const auto native_vec2 = pgfe::to<Vec2>(data.get());
-        assert((native_arr2 == Arr2{Arr{}}));
-        assert((native_vec2 == Vec2{Vec{}}));
+        ASSERT((native_arr2 == Arr2{Arr{}}));
+        ASSERT((native_vec2 == Vec2{Vec{}}));
       }
 
       {
@@ -284,8 +284,8 @@ int main(int argc, char* argv[])
         const auto data = pgfe::Data::make(valid_literal);
         const auto native_arr2 = pgfe::to<Arr2>(data.get());
         const auto native_vec2 = pgfe::to<Vec2>(data.get());
-        assert((native_arr2 == Arr2{Arr{1}, Arr{2}}));
-        assert((native_vec2 == Vec2{Vec{1}, Vec{2}}));
+        ASSERT((native_arr2 == Arr2{Arr{1}, Arr{2}}));
+        ASSERT((native_vec2 == Vec2{Vec{1}, Vec{2}}));
       }
 
       {
@@ -293,8 +293,8 @@ int main(int argc, char* argv[])
         const auto data = pgfe::Data::make(valid_literal);
         const auto native_arr2 = pgfe::to<Arr2>(data.get());
         const auto native_vec2 = pgfe::to<Vec2>(data.get());
-        assert((native_arr2 == Arr2{Arr{1}, Arr{2}}));
-        assert((native_vec2 == Vec2{Vec{1}, Vec{2}}));
+        ASSERT((native_arr2 == Arr2{Arr{1}, Arr{2}}));
+        ASSERT((native_vec2 == Vec2{Vec{1}, Vec{2}}));
       }
 
       {
@@ -302,8 +302,8 @@ int main(int argc, char* argv[])
         const auto data = pgfe::Data::make(valid_literal);
         const auto native_arr2 = pgfe::to<Arr2>(data.get());
         const auto native_vec2 = pgfe::to<Vec2>(data.get());
-        assert((native_arr2 == Arr2{Arr{1}}));
-        assert((native_vec2 == Vec2{Vec{1}}));
+        ASSERT((native_arr2 == Arr2{Arr{1}}));
+        ASSERT((native_vec2 == Vec2{Vec{1}}));
       }
 
       {
@@ -320,7 +320,7 @@ int main(int argc, char* argv[])
               throw;
             }
           }
-          assert(code == pgfe::Client_errc::malformed_array_literal);
+          ASSERT(code == pgfe::Client_errc::malformed_array_literal);
         }
       }
 
@@ -338,7 +338,7 @@ int main(int argc, char* argv[])
               throw;
             }
           }
-          assert(code == pgfe::Client_errc::malformed_array_literal);
+          ASSERT(code == pgfe::Client_errc::malformed_array_literal);
         }
       }
     }

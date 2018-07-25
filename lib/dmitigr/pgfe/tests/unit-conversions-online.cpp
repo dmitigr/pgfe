@@ -21,19 +21,19 @@ int main(int argc, char* argv[])
     conn->connect();
     conn->set_result_format(pgfe::Data_format::binary);
 
-    assert(conn->is_connected());
+    ASSERT(conn->is_connected());
 
     // character
     {
       conn->execute("SELECT 'Dima', 'i', $1::character, $2::character", 'm', "a");
       auto* r = conn->row();
-      assert(r);
+      ASSERT(r);
       for (std::size_t i = 0; i < r->field_count(); ++i)
-        assert(r->data(i) && r->data(i)->format() == pgfe::Data_format::binary);
-      assert('D' == r->data(0)->bytes()[0]);
-      assert('i' == r->data(1)->bytes()[0]);
-      assert('m' == r->data(2)->bytes()[0]);
-      assert('a' == r->data(3)->bytes()[0]);
+        ASSERT(r->data(i) && r->data(i)->format() == pgfe::Data_format::binary);
+      ASSERT('D' == r->data(0)->bytes()[0]);
+      ASSERT('i' == r->data(1)->bytes()[0]);
+      ASSERT('m' == r->data(2)->bytes()[0]);
+      ASSERT('a' == r->data(3)->bytes()[0]);
       conn->dismiss_response();
       conn->wait_response();
     }
@@ -43,9 +43,9 @@ int main(int argc, char* argv[])
       // Caution: note parentheses on expression to type cast!
       conn->execute("SELECT ($1 - 1)::smallint, $1::smallint", 16384);
       auto* const r = conn->row();
-      assert(r);
-      assert(to<short>(r->data(0)) == 16384 - 1);
-      assert(to<short>(r->data(1)) == 16384);
+      ASSERT(r);
+      ASSERT(to<short>(r->data(0)) == 16384 - 1);
+      ASSERT(to<short>(r->data(1)) == 16384);
       conn->dismiss_response();
       conn->wait_response();
     }
@@ -55,9 +55,9 @@ int main(int argc, char* argv[])
       // Caution: note parentheses on expression to type cast.!
       conn->execute("SELECT (2^31 - 1)::integer, $1::integer", 65536);
       auto* const r = conn->row();
-      assert(r);
-      assert(to<int>(r->data(0)) == 2147483647);
-      assert(to<int>(r->data(1)) == 65536);
+      ASSERT(r);
+      ASSERT(to<int>(r->data(0)) == 2147483647);
+      ASSERT(to<int>(r->data(1)) == 65536);
       conn->dismiss_response();
       conn->wait_response();
     }
@@ -67,9 +67,9 @@ int main(int argc, char* argv[])
       constexpr long long n{1000000000000000000};
       conn->execute("SELECT (2^60)::bigint, $1::bigint", n);
       auto* const r = conn->row();
-      assert(r);
-      assert(to<long long>(r->data(0)) == 1152921504606846976);
-      assert(to<long long>(r->data(1)) == 1000000000000000000);
+      ASSERT(r);
+      ASSERT(to<long long>(r->data(0)) == 1152921504606846976);
+      ASSERT(to<long long>(r->data(1)) == 1000000000000000000);
       conn->dismiss_response();
       conn->wait_response();
     }
@@ -78,11 +78,11 @@ int main(int argc, char* argv[])
     {
       conn->execute("SELECT 98.765::real, $1::real", float(4.321));
       auto* const r = conn->row();
-      assert(r);
+      ASSERT(r);
       const auto float1 = to<float>(r->data(0));
       const auto float2 = to<float>(r->data(1));
-      assert(98 <= float1 && float1 <= 99);
-      assert( 4 <= float2 && float2 <=  5);
+      ASSERT(98 <= float1 && float1 <= 99);
+      ASSERT( 4 <= float2 && float2 <=  5);
       conn->dismiss_response();
       conn->wait_response();
     }
@@ -91,11 +91,11 @@ int main(int argc, char* argv[])
     {
       conn->execute("SELECT 12.345::double precision, $1::double precision", double(67.89));
       auto* const r = conn->row();
-      assert(r);
+      ASSERT(r);
       const auto double1 = to<double>(r->data(0));
       const auto double2 = to<double>(r->data(1));
-      assert(12 <= double1 && double1 <= 13);
-      assert(67 <= double2 && double2 <= 68);
+      ASSERT(12 <= double1 && double1 <= 13);
+      ASSERT(67 <= double2 && double2 <= 68);
       conn->dismiss_response();
       conn->wait_response();
     }
@@ -108,10 +108,10 @@ int main(int argc, char* argv[])
       ps->set_parameter("nm2", "vika");
       ps->execute();
       auto* const r = conn->row();
-      assert(r);
-      assert(to<std::string>(r->data(0)) == "dima");
-      assert(to<std::string>(r->data(1)) == "olga");
-      assert(to<std::string>(r->data(2)) == "vika");
+      ASSERT(r);
+      ASSERT(to<std::string>(r->data(0)) == "dima");
+      ASSERT(to<std::string>(r->data(1)) == "olga");
+      ASSERT(to<std::string>(r->data(2)) == "vika");
       conn->dismiss_response();
       conn->wait_response();
     }
@@ -120,9 +120,9 @@ int main(int argc, char* argv[])
     {
       conn->execute("SELECT true, $1::boolean", false);
       auto* const r = conn->row();
-      assert(r);
-      assert(to<bool>(r->data(0)) == true);
-      assert(to<bool>(r->data(1)) == false);
+      ASSERT(r);
+      ASSERT(to<bool>(r->data(0)) == true);
+      ASSERT(to<bool>(r->data(1)) == false);
       conn->dismiss_response();
       conn->wait_response();
     }

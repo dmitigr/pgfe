@@ -32,7 +32,7 @@ inline std::tuple<std::ofstream, std::unique_ptr<dmitigr::pgfe::Connection>> pre
 
   conn->perform("create temp table benchmark_test_array"
                 "(id serial not null primary key, dat varchar[] not null)");
-  assert(conn->completion());
+  ASSERT(conn->completion());
 
   conn->execute("insert into benchmark_test_array(dat)"
                 " select array["
@@ -40,7 +40,7 @@ inline std::tuple<std::ofstream, std::unique_ptr<dmitigr::pgfe::Connection>> pre
                 " 'Column 3, Row ' || r, 'Column 4, Row ' || r,"
                 " 'Column 5, Row ' || r]::text[]"
                 " from (select generate_series(1, $1)::text as r) as foo", row_count);
-  assert(conn->completion());
+  ASSERT(conn->completion());
 
   return std::make_tuple(std::move(output_file), std::move(conn));
 }
