@@ -552,6 +552,17 @@ Next, run the Elevated Command Prompt (i.e. the command prompt with administrato
 
 If the target architecture is Win32 or ARM, then "Win64" should be replaced by "Win32" or "ARM" accordingly.
 
+To make the installed DLL available for *any* application that depends on it, the symbolic link to the
+dmitigr_pgfe.dll (or to the debug version - dmitigr_pgfed.dll) should be created:
+
+  - in %SYSTEMROOT%\System32 for the 64-bit DLL on 64-bit host (or for 32-bit DLL on 32-bit host);
+  - in %SYSTEMROOT%\SysWOW64 for the 32-bit DLL on 64-bit host.
+
+To create the symbolic link run the Elevated Command Prompt and use `mklink` command, for example:
+
+    > cd /d %SYSTEMROOT%\System32
+    > mklink dmitigr_pgfed.dll "%ProgramFiles%\dmitigr_pgfe\lib\dmitigr_pgfed.dll"
+
 The value of the `BUILD_TYPE` could be replaced. Also, remember about the possibility to specify location
 of [libpq] if [CMake] could not detect it automatically (see "Installation in common" section above).
 
