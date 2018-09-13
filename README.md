@@ -365,7 +365,7 @@ sql->replace_parameter("expr", "sin(:expr1::int), cos(:expr2::int)");
 Now the statement has two named parameters, and looks like:
 
 ```sql
-SELECT sin(:expr1::int), cos(:expr2::), ':expr'
+SELECT sin(:expr1::int), cos(:expr2::int), ':expr'
 ```
 
 Note, that the quoted string `:expr` is not affected by the replacement operation!
