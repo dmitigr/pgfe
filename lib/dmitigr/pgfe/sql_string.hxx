@@ -727,7 +727,7 @@ private:
         return min_indent_to_content ? (*min_indent_to_content == 0 ? 0 : 1) : 1;
       }
 
-      DMITIGR_PGFE_INTERNAL_ASSERT(!true);
+      DMITIGR_PGFE_INTERNAL_ASSERT_ALWAYS(!true);
     }
 
     /**
@@ -867,7 +867,7 @@ private:
         switch (ft) {
         case Fragment::Type::one_line_comment: return Extra::Comment_type::one_line;
         case Fragment::Type::multi_line_comment: return Extra::Comment_type::multi_line;
-        default: DMITIGR_PGFE_INTERNAL_ASSERT(!true);
+        default: DMITIGR_PGFE_INTERNAL_ASSERT_ALWAYS(!true);
         }
       };
       return std::make_pair(std::make_pair(result, comment_type(fragment_type)), i);

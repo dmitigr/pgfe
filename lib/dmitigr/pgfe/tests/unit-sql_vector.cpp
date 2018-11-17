@@ -30,7 +30,7 @@ int main(int argc, char* argv[])
     ASSERT(bunch->to_string() == "SELECT 1");
     const auto vec = bunch->to_vector();
     ASSERT(vec.size() == bunch->sql_string_count());
-    ASSERT([&]()
+    ASSERT([&]() -> bool
       {
         for (decltype (vec.size()) i = 0; i < vec.size(); ++i) {
           if (vec[i]->to_string() != bunch->sql_string(i)->to_string())

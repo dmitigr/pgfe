@@ -711,7 +711,7 @@ private:
     case target_session_attrs: return "target_session_attrs";
     case Keyword_count_:;
     }
-    DMITIGR_PGFE_INTERNAL_ASSERT(!true);
+    DMITIGR_PGFE_INTERNAL_ASSERT_ALWAYS(!true);
   }
 
   void update_cache()

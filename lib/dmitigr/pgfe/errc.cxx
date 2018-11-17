@@ -23,7 +23,7 @@ const char* pgfe::detail::to_literal(const Client_errc errc)
   case Client_errc::timed_out:
     return "timed_out";
   }
-  DMITIGR_PGFE_INTERNAL_ASSERT(!true);
+  DMITIGR_PGFE_INTERNAL_ASSERT_ALWAYS(!true);
 }
 
 const char* pgfe::detail::to_literal(const Server_errc errc)
@@ -512,5 +512,5 @@ const char* pgfe::detail::to_literal(const Server_errc errc)
   case Server_errc::cxx_index_corrupted:
     return "cxx_index_corrupted";
   }
-  DMITIGR_PGFE_INTERNAL_ASSERT(!true);
+  DMITIGR_PGFE_INTERNAL_ASSERT_ALWAYS(!true);
 }
