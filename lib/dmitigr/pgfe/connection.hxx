@@ -560,7 +560,7 @@ public:
         if (!shared_field_names_)
           shared_field_names_ = pq_Row_info::make_shared_field_names(r);
         response_ = pq_Row(pq_Row_info(std::move(r), shared_field_names_));
-        goto almost_done;
+        goto done;
 
       case PGRES_TUPLES_OK:
         DMITIGR_PGFE_INTERNAL_ASSERT(op_id == Request_id::perform || op_id == Request_id::execute);
