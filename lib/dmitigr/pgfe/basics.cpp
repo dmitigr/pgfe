@@ -3,8 +3,8 @@
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
 #include "dmitigr/pgfe/basics.hpp"
+#include "dmitigr/pgfe/internal/basics.hxx"
 #include "dmitigr/pgfe/internal/debug.hxx"
-#include "dmitigr/pgfe/internal/enums.hxx"
 
 #include <cstring>
 

@@ -21,14 +21,14 @@ constexpr bool is_debug_enabled = true;
 
 } // namespace dmitigr::pgfe::internal
 
-#define DMITIGR_PGFE_INTERNAL_DOUT__(...) {                     \
-    std::fprintf(stderr, "Debug output from " __FILE__ ":"      \
-      DMITIGR_PGFE_INTERNAL_XSTR__(__LINE__) ": " __VA_ARGS__); \
+#define DMITIGR_PGFE_INTERNAL_DOUT__(...) {                      \
+    std::fprintf(stderr, "Debug output from " __FILE__ ":"  \
+      DMITIGR_PGFE_INTERNAL_XSTR__(__LINE__) ": " __VA_ARGS__);  \
   }
 
-#define DMITIGR_PGFE_INTERNAL_ASSERT__(a, t) {                          \
+#define DMITIGR_PGFE_INTERNAL_ASSERT__(a, t) {                               \
     if (!(a)) {                                                         \
-      DMITIGR_PGFE_INTERNAL_DOUT__("assertion '%s' failed\n", #a)       \
+      DMITIGR_PGFE_INTERNAL_DOUT__("assertion '%s' failed\n", #a)            \
         if constexpr (t) {                                              \
           throw std::logic_error(std::string("assertion '" #a "' failed at " __FILE__ ":") \
             .append(std::to_string(int(__LINE__))));                    \
@@ -48,10 +48,10 @@ constexpr bool is_debug_enabled = true;
 
 // -----------------------------------------------------------------------------
 
-#define DMITIGR_PGFE_INTERNAL_REQUIRE__(r) {                            \
+#define DMITIGR_PGFE_INTERNAL_REQUIRE__(r) {                                 \
     if (!(r)) {                                                         \
       std::string message{"API requirement '" #r "' violated"};         \
-      if constexpr (dmitigr::pgfe::internal::is_debug_enabled) {        \
+      if constexpr (dmitigr::pgfe::internal::is_debug_enabled) {              \
         message.append(" at " __FILE__ ":").append(std::to_string(int(__LINE__))); \
       }                                                                 \
       throw std::logic_error(message);                                  \

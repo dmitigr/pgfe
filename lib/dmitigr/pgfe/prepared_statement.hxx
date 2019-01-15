@@ -10,7 +10,7 @@
 #include "dmitigr/pgfe/pq.hxx"
 #include "dmitigr/pgfe/prepared_statement.hpp"
 #include "dmitigr/pgfe/row_info.hxx"
-#include "dmitigr/pgfe/internal/std/memory/conditional_delete.hxx"
+#include "dmitigr/pgfe/internal/memory.hxx"
 
 #include <algorithm>
 #include <chrono>
@@ -253,7 +253,7 @@ public:
 private:
   friend pq_Connection;
 
-  using Data_deletion_required = internal::Conditional_delete<const Data>;
+  using Data_deletion_required = internal::memory::Conditional_delete<const Data>;
   using Data_ptr = std::unique_ptr<const Data, Data_deletion_required>;
 
   struct Parameter {

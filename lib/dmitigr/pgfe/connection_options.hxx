@@ -9,7 +9,7 @@
 #include "dmitigr/pgfe/connection_options.cxx"
 #include "dmitigr/pgfe/errc.hpp"
 #include "dmitigr/pgfe/internal/debug.hxx"
-#include "dmitigr/pgfe/internal/net/inet.hxx"
+#include "dmitigr/pgfe/internal/net.hxx"
 
 #include <algorithm>
 #include <stdexcept>
@@ -41,9 +41,9 @@ inline bool is_ip_address(const std::string& value)
   return internal::net::is_ip_address_valid(value);
 }
 
-inline bool is_domain_name(const std::string& value)
+inline bool is_hostname(const std::string& value)
 {
-  return internal::net::is_domain_name_valid(value);
+  return internal::net::is_hostname_valid(value);
 }
 
 inline bool is_absolute_directory_name(const std::filesystem::path& value)
@@ -255,7 +255,7 @@ public:
   {
     DMITIGR_PGFE_INTERNAL_REQUIRE(communication_mode() == Communication_mode::tcp);
     if (value)
-      validate(is_domain_name(*value), "TCP host name");
+      validate(is_hostname(*value), "TCP host name");
     else
       DMITIGR_PGFE_INTERNAL_REQUIRE(tcp_host_address());
     tcp_host_name_ = std::move(value);
@@ -477,7 +477,7 @@ private:
         (!tcp_keepalives_count_ || is_non_negative(tcp_keepalives_count_)) &&
         (tcp_host_address_ || tcp_host_name_) &&
         (!tcp_host_address_ || is_ip_address(*tcp_host_address_)) &&
-        (!tcp_host_name_ || is_domain_name(*tcp_host_name_)) &&
+        (!tcp_host_name_ || is_hostname(*tcp_host_name_)) &&
         is_tcp_port(tcp_host_port_));
     const bool auth_ok =
       !username_.empty() &&

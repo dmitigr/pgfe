@@ -4,7 +4,7 @@
 
 #include "dmitigr/pgfe/errc.hxx"
 #include "dmitigr/pgfe/std_system_error.hpp"
-#include "dmitigr/pgfe/internal/std/string/to_string/numeric.hxx"
+#include "dmitigr/pgfe/internal/string.hxx"
 
 namespace dmitigr::pgfe {
 
@@ -34,7 +34,7 @@ std::string Server_error_category::message(const int ev) const
   result += ' ';
   result += std::to_string(ev);
   result += ' ';
-  result += internal::to_string(ev, 36);
+  result += internal::string::to_string(ev, 36);
   result += ' ';
   result += detail::to_literal(Server_errc(ev));
   return result;

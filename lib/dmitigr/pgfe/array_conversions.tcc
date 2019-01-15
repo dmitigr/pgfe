@@ -8,7 +8,7 @@
 #include "dmitigr/pgfe/conversions_api.hpp"
 #include "dmitigr/pgfe/exceptions.hxx"
 #include "dmitigr/pgfe/internal/debug.hxx"
-#include "dmitigr/pgfe/internal/std/cstring.hxx"
+#include "dmitigr/pgfe/internal/string.hxx"
 
 #include <algorithm>
 #include <locale>
@@ -270,7 +270,7 @@ const char* dmitigr::pgfe::detail::fill_container(Container<Optional<T>, Allocat
   DMITIGR_PGFE_INTERNAL_ASSERT(result.empty());
   DMITIGR_PGFE_INTERNAL_ASSERT(literal);
 
-  using internal::next_non_space_pointer;
+  using internal::string::next_non_space_pointer;
 
   literal = next_non_space_pointer(literal);
   if (*literal != '{')

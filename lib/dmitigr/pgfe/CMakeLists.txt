@@ -128,15 +128,6 @@ set(dmitigr_pgfe_sources
 
   sql.cxx
   sql.hxx
-
-  internal/debug.hxx
-  internal/enums.hxx
-  internal/macros.hxx
-  internal/net/inet.cpp
-  internal/net/inet.hxx
-  internal/std/cstring.hxx
-  internal/std/memory/conditional_delete.hxx
-  internal/std/string/to_string/numeric.hxx
   )
 
 if (WIN32)
@@ -162,7 +153,7 @@ set_source_files_properties(
 # is used.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 
-add_library(dmitigr_pgfe ${dmitigr_pgfe_sources})
+add_library(dmitigr_pgfe $<TARGET_OBJECTS:dmitigr_pgfe_internal> ${dmitigr_pgfe_sources})
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

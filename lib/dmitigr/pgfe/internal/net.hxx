@@ -2,8 +2,8 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
-#ifndef DMITIGR_PGFE_INTERNAL_NET_INET_HXX
-#define DMITIGR_PGFE_INTERNAL_NET_INET_HXX
+#ifndef DMITIGR_PGFE_INTERNAL_NET_HXX
+#define DMITIGR_PGFE_INTERNAL_NET_HXX
 
 #include <string>
 
@@ -20,11 +20,11 @@ bool is_ip_address_valid(const std::string& address);
 /**
  * @internal
  *
- * @returns `true` if the `domain_name` denotes a valid domain name, or
+ * @returns `true` if the `hostname` denotes a valid hostname, or
  * `false` otherwise.
  */
-bool is_domain_name_valid(const std::string& domain_name);
+bool is_hostname_valid(const std::string& hostname);
 
 } // namespace dmitigr::pgfe::internal::net
 
-#endif  // DMITIGR_PGFE_INTERNAL_NET_INET_HXX
+#endif  // DMITIGR_PGFE_INTERNAL_NET_HXX
