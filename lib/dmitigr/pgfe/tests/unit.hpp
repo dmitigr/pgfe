@@ -8,11 +8,11 @@
 #include "dmitigr/pgfe/connection.hpp"
 #include "dmitigr/pgfe/connection_options.hpp"
 #include "dmitigr/pgfe/internal/debug.hxx"
+#include "dmitigr/pgfe/internal/filesystem_experimental.hxx"
 
 #define ASSERT(a) DMITIGR_PGFE_INTERNAL_ASSERT(a)
 
 #include <cstdlib>
-#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>

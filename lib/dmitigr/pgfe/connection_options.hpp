@@ -8,10 +8,10 @@
 #include "dmitigr/pgfe/basics.hpp"
 #include "dmitigr/pgfe/types_fwd.hpp"
 #include "dmitigr/pgfe/internal/dll.hxx"
+#include "dmitigr/pgfe/internal/filesystem_experimental.hxx"
 
 #include <cstdint>
 #include <chrono>
-#include <filesystem>
 #include <memory>
 #include <optional>
 #include <string>

@@ -142,7 +142,7 @@ str::unquoted_substring(const std::string& str, std::string::size_type pos)
     }
 
   finish:
-    if (pos == input_size && str.back() != quote_char || pos < input_size && str[pos] != quote_char)
+    if ((pos == input_size && str.back() != quote_char) || (pos < input_size && str[pos] != quote_char))
       throw std::runtime_error{"no trailing quote found"};
     else
       result.second = pos + 1; // discarding the trailing quote
