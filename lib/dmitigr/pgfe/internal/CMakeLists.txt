@@ -18,6 +18,19 @@ set(dmitigr_pgfe_internal_sources
 configure_file(dll.hxx.in ${CMAKE_CURRENT_SOURCE_DIR}/dll.hxx @ONLY
   NEWLINE_STYLE UNIX)
 
+install(FILES
+  basics.hxx
+  debug.hxx
+  dll.hxx
+  filesystem_experimental.hxx
+  macros.hxx
+  math.hxx
+  memory.hxx
+  net.hxx
+  string.hxx
+
+  DESTINATION ${PGFE_INCLUDES_INSTALL_DIR}/dmitigr/pgfe/internal)
+
 # -----------------------------------------------------------------------------
 
 add_library(dmitigr_pgfe_internal OBJECT ${dmitigr_pgfe_internal_sources})
