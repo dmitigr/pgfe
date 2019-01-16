@@ -3,25 +3,6 @@
 # For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
 # ------------------------------------------------------------------------------
-# Dependencies
-# ------------------------------------------------------------------------------
-
-set(CMAKE_MODULE_PATH ${dmitigr_pgfe_SOURCE_DIR}/cmake)
-
-# FindPq.cmake module will use these settings to find libpq.
-set(LIBPQ_PREFIX "" CACHE PATH
-  "Installation prefix of the libpq library (where headers and binary resides)")
-set(LIBPQ_LIB_PREFIX "${LIBPQ_PREFIX}" CACHE PATH
-  "Installation prefix of the libpq binary (where the binary reside)")
-set(LIBPQ_INCLUDE_PREFIX "${LIBPQ_PREFIX}" CACHE PATH
-  "Installation prefix of the libpq includes (where the headers resides)")
-
-find_package(Pq REQUIRED)
-message("libpq includes to use: ${Pq_INCLUDE_DIRS}")
-message("Suggested libpq binary to use: ${Suggested_Pq_LIBRARIES}")
-include_directories(${Pq_INCLUDE_DIRS})
-
-# ------------------------------------------------------------------------------
 # Sources
 # ------------------------------------------------------------------------------
 
@@ -145,15 +126,43 @@ set_source_files_properties(
   HEADER_FILE_ONLY ON)
 
 # ------------------------------------------------------------------------------
+# Dependencies
+# ------------------------------------------------------------------------------
+
+set(CMAKE_MODULE_PATH ${dmitigr_pgfe_SOURCE_DIR}/cmake)
+
+#
+# libpq
+#
+
+# FindPq.cmake module will use these settings to find libpq.
+set(LIBPQ_PREFIX "" CACHE PATH
+  "Installation prefix of the libpq library (where headers and binary resides)")
+set(LIBPQ_LIB_PREFIX "${LIBPQ_PREFIX}" CACHE PATH
+  "Installation prefix of the libpq binary (where the binary reside)")
+set(LIBPQ_INCLUDE_PREFIX "${LIBPQ_PREFIX}" CACHE PATH
+  "Installation prefix of the libpq includes (where the headers resides)")
+
+find_package(Pq REQUIRED)
+message("libpq includes to use: ${Pq_INCLUDE_DIRS}")
+message("Suggested libpq binary to use: ${Suggested_Pq_LIBRARIES}")
+include_directories(${Pq_INCLUDE_DIRS})
+
+# ------------------------------------------------------------------------------
 # Target tuning
 # ------------------------------------------------------------------------------
 
-# Note: Multi-configuration generators (VS, Xcode) append a per-configuration
+# Note: Multi-configuration generators (VS, Xcode) appends a per-configuration
 # subdirectory to CMAKE_RUNTIME_OUTPUT_DIRECTORY unless a generator expression
 # is used.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 
 add_library(dmitigr_pgfe $<TARGET_OBJECTS:dmitigr_pgfe_internal> ${dmitigr_pgfe_sources})
+set_target_properties(dmitigr_pgfe
+  PROPERTIES
+  LINKER_LANGUAGE "CXX"
+  VERSION ${PGFE_VERSION_PART1}.${PGFE_VERSION_PART2}
+  DEBUG_POSTFIX "d")
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
@@ -188,11 +197,23 @@ elseif (WIN32)
   target_link_libraries(dmitigr_pgfe ${Suggested_Pq_LIBRARIES} Ws2_32.lib)
 endif()
 
-set_target_properties(dmitigr_pgfe
-  PROPERTIES
-  LINKER_LANGUAGE "CXX"
-  VERSION ${PGFE_VERSION_PART1}.${PGFE_VERSION_PART2}
-  DEBUG_POSTFIX "d")
+# ------------------------------------------------------------------------------
+# Preprocessing
+# ------------------------------------------------------------------------------
+
+# Generated headers (.hpp) should go to the CMAKE_CURRENT_SOURCE_DIR, but
+# generated implementations (.cxx) should go to the CMAKE_CURRENT_BINARY_DIR.
+
+include("basics.cmake")
+configure_file(basics.hpp.in ${CMAKE_CURRENT_SOURCE_DIR}/basics.hpp @ONLY
+  NEWLINE_STYLE UNIX)
+
+include("errc.cmake")
+configure_file(errc.hpp.in ${CMAKE_CURRENT_SOURCE_DIR}/errc.hpp @ONLY
+  NEWLINE_STYLE UNIX)
+
+configure_file(connection_options.cxx.in ${CMAKE_CURRENT_BINARY_DIR}/connection_options.cxx @ONLY
+  NEWLINE_STYLE UNIX)
 
 # ------------------------------------------------------------------------------
 # Installations
@@ -264,24 +285,6 @@ install(TARGETS dmitigr_pgfe
 install(EXPORT dmitigr_pgfe_export
   DESTINATION ${PGFE_CMAKE_INSTALL_DIR}
   FILE dmitigr_pgfe-config.cmake)
-
-# ------------------------------------------------------------------------------
-# Preprocessing
-# ------------------------------------------------------------------------------
-
-# Generated headers (.hpp) should go to the CMAKE_CURRENT_SOURCE_DIR, but
-# generated implementations (.cxx) should go to the CMAKE_CURRENT_BINARY_DIR.
-
-include("basics.cmake")
-configure_file(basics.hpp.in ${CMAKE_CURRENT_SOURCE_DIR}/basics.hpp @ONLY
-  NEWLINE_STYLE UNIX)
-
-include("errc.cmake")
-configure_file(errc.hpp.in ${CMAKE_CURRENT_SOURCE_DIR}/errc.hpp @ONLY
-  NEWLINE_STYLE UNIX)
-
-configure_file(connection_options.cxx.in ${CMAKE_CURRENT_BINARY_DIR}/connection_options.cxx @ONLY
-  NEWLINE_STYLE UNIX)
 
 # ------------------------------------------------------------------------------
 

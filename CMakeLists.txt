@@ -2,14 +2,14 @@
 # Copyright (C) Dmitry Igrishin
 # For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
+project(dmitigr_pgfe)
+
 cmake_minimum_required(VERSION 3.10)
 cmake_policy(VERSION 3.10)
 
 if (NOT (UNIX OR WIN32))
   message(FATAL_ERROR "unsupported target platform")
 endif()
-
-project(dmitigr_pgfe)
 
 set(PGFE_VERSION_PART1 1)
 set(PGFE_VERSION_PART2 1)
