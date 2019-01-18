@@ -7,7 +7,7 @@
 
 #include "dmitigr/pgfe/basics.hpp"
 #include "dmitigr/pgfe/parameterizable.hpp"
-#include "dmitigr/pgfe/internal/dll.hxx"
+#include "dmitigr/pgfe/internal/dll.hpp"
 
 #include <memory>
 #include <string>

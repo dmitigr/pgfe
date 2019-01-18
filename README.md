@@ -449,8 +449,9 @@ Installation and consuming
 Dependencies
 ------------
 
-- [CMake] build system version 3.10+;
+- [CMake] build system version 3.13+;
 - C++17 compiler ([GCC] 8+ or [Microsoft Visual C++][Visual_Studio] 15.7+);
+- [dmitigr_internal] library;
 - [libpq] library (the underlying engine).
 
 Build time settings
@@ -511,8 +512,15 @@ Details:
 Installation in common
 ----------------------
 
-The only dependence of Pgfe is [libpq]. By default, [CMake] will try to locate it automatically.
-Anyway, it is possible to manually specify where [libpq] is located by using the following [CMake] variables:
+The only dependences of Pgfe are [dmitigr_internal] and [libpq].
+
+First, [dmitigr_internal] must be installed. The installation is trivial as described on its page.
+
+**WARNING** It's highly recommended to update the dmitigr_internal library (just pull and rebuild)
+before updating the Pgfe libary!
+
+As for [libpq], [CMake] will try to locate it automatically. Although, it's possible to manually
+specify the location of [libpq] by using the following [CMake] variables:
 
   - `LIBPQ_PREFIX` - can be used to speficy a prefix for both binary and headers of [libpq]. For example,
     if [PostgreSQL] installed relocatably into `/usr/local/pgsql`, the value of `LIBPQ_PREFIX`
@@ -527,11 +535,11 @@ Installation on Linux
     $ git clone https://github.com/dmitigr/pgfe.git
     $ mkdir -p pgfe/build
     $ cd pgfe/build
-    $ cmake -DBUILD_TYPE=Debug ..
+    $ cmake -DCMAKE_BUILD_TYPE=Debug ..
     $ make
     $ sudo make install
 
-The value of the `BUILD_TYPE` could be replaced. Also, remember about the possibility to specify location
+The value of the `CMAKE_BUILD_TYPE` could be replaced. Also, remember about the possibility to specify location
 of [libpq] if [CMake] could not detect it automatically (see "Installation in common" section above).
 
 Installation on Microsoft Windows
@@ -574,7 +582,7 @@ Consuming
 If you are using CMake the consuming of the Pgfe library is quite simple. For example:
 
 ```cmake
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.13)
 project(foo)
 find_package(dmitigr_pgfe REQUIRED)
 set(CMAKE_CXX_STANDARD 17)
@@ -616,6 +624,8 @@ Copyright
 =========
 
 Copyright (C) Dmitry Igrishin
+
+[dmitigr_internal]: https://github.com/dmitigr/internal.git
 
 [doc]: http://dmitigr.ru/en/projects/pgfe/doc/
 [doc_diagram]: http://dmitigr.ru/en/projects/pgfe/doc/pgfe.class.violet.html

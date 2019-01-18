@@ -109,6 +109,8 @@ set(dmitigr_pgfe_sources
 
   sql.cxx
   sql.hxx
+
+  internal/dll.hpp.in
   )
 
 if (WIN32)
@@ -122,6 +124,8 @@ set_source_files_properties(
   errc.cmake
   errc.hpp.in
 
+  internal/dll.hpp.in
+
   PROPERTIES
   HEADER_FILE_ONLY ON)
 
@@ -130,6 +134,12 @@ set_source_files_properties(
 # ------------------------------------------------------------------------------
 
 set(CMAKE_MODULE_PATH ${dmitigr_pgfe_SOURCE_DIR}/cmake)
+
+#
+# dmitigr_internal
+#
+
+find_package(dmitigr_internal REQUIRED)
 
 #
 # libpq
@@ -157,7 +167,14 @@ include_directories(${Pq_INCLUDE_DIRS})
 # is used.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 
-add_library(dmitigr_pgfe $<TARGET_OBJECTS:dmitigr_pgfe_internal> ${dmitigr_pgfe_sources})
+add_library(dmitigr_pgfe ${dmitigr_pgfe_sources})
+target_link_libraries(dmitigr_pgfe dmitigr_internal ${Suggested_Pq_LIBRARIES})
+if (UNIX)
+  target_link_libraries(dmitigr_pgfe stdc++fs)
+elseif (WIN32)
+  target_link_libraries(dmitigr_pgfe Ws2_32.lib)
+endif()
+
 set_target_properties(dmitigr_pgfe
   PROPERTIES
   LINKER_LANGUAGE "CXX"
@@ -191,12 +208,6 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
   endif()
 endif()
 
-if (UNIX)
-  target_link_libraries(dmitigr_pgfe ${Suggested_Pq_LIBRARIES} stdc++fs)
-elseif (WIN32)
-  target_link_libraries(dmitigr_pgfe ${Suggested_Pq_LIBRARIES} Ws2_32.lib)
-endif()
-
 # ------------------------------------------------------------------------------
 # Preprocessing
 # ------------------------------------------------------------------------------
@@ -210,6 +221,9 @@ configure_file(basics.hpp.in ${CMAKE_CURRENT_SOURCE_DIR}/basics.hpp @ONLY
 
 include("errc.cmake")
 configure_file(errc.hpp.in ${CMAKE_CURRENT_SOURCE_DIR}/errc.hpp @ONLY
+  NEWLINE_STYLE UNIX)
+
+configure_file(internal/dll.hpp.in ${CMAKE_CURRENT_SOURCE_DIR}/internal/dll.hpp @ONLY
   NEWLINE_STYLE UNIX)
 
 configure_file(connection_options.cxx.in ${CMAKE_CURRENT_BINARY_DIR}/connection_options.cxx @ONLY
@@ -275,6 +289,11 @@ install(FILES
 
   DESTINATION ${PGFE_INCLUDES_INSTALL_DIR}/dmitigr/pgfe)
 
+install(FILES
+  internal/dll.hpp
+
+  DESTINATION ${PGFE_INCLUDES_INSTALL_DIR}/dmitigr/pgfe/internal)
+
 install(TARGETS dmitigr_pgfe
   EXPORT dmitigr_pgfe_export
   ARCHIVE  DESTINATION ${PGFE_LIBRARY_INSTALL_DIR}
@@ -288,5 +307,4 @@ install(EXPORT dmitigr_pgfe_export
 
 # ------------------------------------------------------------------------------
 
-add_subdirectory(internal)
 add_subdirectory(tests)

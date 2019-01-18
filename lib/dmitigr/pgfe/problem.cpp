@@ -6,7 +6,7 @@
 #include "dmitigr/pgfe/problem.hpp"
 #include "dmitigr/pgfe/sql.hxx"
 #include "dmitigr/pgfe/std_system_error.hpp"
-#include "dmitigr/pgfe/internal/debug.hxx"
+#include "dmitigr/internal/debug.hpp"
 
 namespace dmitigr::pgfe {
 
@@ -37,7 +37,7 @@ Problem_severity Problem::severity() const
   else if (severity_string == "PANIC")
     result = Problem_severity::panic;
   else
-    DMITIGR_PGFE_INTERNAL_ASSERT_ALWAYS(!true);
+    DMITIGR_INTERNAL_ASSERT_ALWAYS(!true);
   return result;
 }
 

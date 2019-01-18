@@ -4,7 +4,7 @@
 
 #include "dmitigr/pgfe/errc.hxx"
 #include "dmitigr/pgfe/std_system_error.hpp"
-#include "dmitigr/pgfe/internal/string.hxx"
+#include "dmitigr/internal/string.hpp"
 
 namespace dmitigr::pgfe {
 

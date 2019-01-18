@@ -33,11 +33,11 @@ public:
   {
     const auto& pq_result = info_.pq_result_;
     const int fc = pq_result.field_count();
-    DMITIGR_PGFE_INTERNAL_ASSERT(fc >= 0);
+    DMITIGR_INTERNAL_ASSERT(fc >= 0);
     for (int f = 0; f < fc; ++f)
       datas_[f] = Data_view(pq_result.data_value(0, f),
         std::size_t(pq_result.data_size(0, f)), pq_result.field_format(f));
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
   }
 
   // ---------------------------------------------------------------------------
@@ -85,7 +85,7 @@ public:
 
   const Data* data(const std::size_t index) const override
   {
-    DMITIGR_PGFE_INTERNAL_REQUIRE(index < field_count());
+    DMITIGR_INTERNAL_REQUIRE(index < field_count());
     return data__(index);
   }
 

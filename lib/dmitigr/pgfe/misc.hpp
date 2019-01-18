@@ -5,7 +5,7 @@
 #ifndef DMITIGR_PGFE_MISC_HPP
 #define DMITIGR_PGFE_MISC_HPP
 
-#include "dmitigr/pgfe/internal/dll.hxx"
+#include "dmitigr/pgfe/internal/dll.hpp"
 
 #include <cstdint>
 

@@ -6,7 +6,7 @@
 #define DMITIGR_PGFE_PARAMETERIZABLE_HXX
 
 #include "dmitigr/pgfe/parameterizable.hpp"
-#include "dmitigr/pgfe/internal/debug.hxx"
+#include "dmitigr/internal/debug.hpp"
 
 namespace dmitigr::pgfe::detail {
 

@@ -8,7 +8,7 @@
 #include "dmitigr/pgfe/compositional.hpp"
 #include "dmitigr/pgfe/conversions.hpp"
 #include "dmitigr/pgfe/data.hpp"
-#include "dmitigr/pgfe/internal/dll.hxx"
+#include "dmitigr/pgfe/internal/dll.hpp"
 
 #include <memory>
 #include <string>

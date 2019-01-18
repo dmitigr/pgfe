@@ -8,7 +8,7 @@
 #include "dmitigr/pgfe/data.hxx"
 #include "dmitigr/pgfe/notification.hpp"
 #include "dmitigr/pgfe/pq.hxx"
-#include "dmitigr/pgfe/internal/debug.hxx"
+#include "dmitigr/internal/debug.hpp"
 
 #include <cstring>
 #include <optional>
@@ -32,7 +32,7 @@ public:
   {
     if (pgnotify_->extra)
       payload_ = Data_view(pgnotify_->extra, std::strlen(pgnotify_->extra), Data_format::text);
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
   }
 
   // Non copyable.

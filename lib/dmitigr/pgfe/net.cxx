@@ -4,7 +4,7 @@
 
 #include "dmitigr/pgfe/basics.hpp"
 #include "dmitigr/pgfe/net.hxx"
-#include "dmitigr/pgfe/internal/debug.hxx"
+#include "dmitigr/internal/debug.hpp"
 
 #include <limits>
 #include <system_error>
@@ -23,7 +23,7 @@ namespace pgfe = dmitigr::pgfe;
 // Current implementation is based only on select().
 pgfe::Socket_readiness pgfe::detail::poll_sock(const int sock, const Socket_readiness mask, const std::chrono::microseconds timeout)
 {
-  DMITIGR_PGFE_INTERNAL_ASSERT_ALWAYS(sock >= 0);
+  DMITIGR_INTERNAL_ASSERT_ALWAYS(sock >= 0);
 
   using std::chrono::seconds;
   using std::chrono::microseconds;
@@ -37,9 +37,9 @@ pgfe::Socket_readiness pgfe::detail::poll_sock(const int sock, const Socket_read
     using Tv_usec = decltype (tv.tv_usec);
 
     const auto secs = duration_cast<seconds>(timeout);
-    DMITIGR_PGFE_INTERNAL_ASSERT_ALWAYS(secs.count() <= std::numeric_limits<Tv_sec>::max());
+    DMITIGR_INTERNAL_ASSERT_ALWAYS(secs.count() <= std::numeric_limits<Tv_sec>::max());
     const auto microsecs = duration_cast<microseconds>(timeout - secs);
-    DMITIGR_PGFE_INTERNAL_ASSERT_ALWAYS(microsecs.count() <= std::numeric_limits<Tv_usec>::max());
+    DMITIGR_INTERNAL_ASSERT_ALWAYS(microsecs.count() <= std::numeric_limits<Tv_usec>::max());
 
     tv_p->tv_sec  = static_cast<Tv_sec>(secs.count());
     tv_p->tv_usec = static_cast<Tv_usec>(microsecs.count());

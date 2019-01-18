@@ -7,8 +7,8 @@
 
 #include "dmitigr/pgfe/basics.hpp"
 #include "dmitigr/pgfe/types_fwd.hpp"
-#include "dmitigr/pgfe/internal/dll.hxx"
-#include "dmitigr/pgfe/internal/filesystem_experimental.hxx"
+#include "dmitigr/pgfe/internal/dll.hpp"
+#include "dmitigr/internal/filesystem_experimental.hpp"
 
 #include <cstdint>
 #include <chrono>

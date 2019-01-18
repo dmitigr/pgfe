@@ -6,7 +6,7 @@
 #define DMITIGR_PGFE_COMPLETION_HXX
 
 #include "dmitigr/pgfe/completion.hpp"
-#include "dmitigr/pgfe/internal/debug.hxx"
+#include "dmitigr/internal/debug.hpp"
 
 namespace dmitigr::pgfe::detail {
 
@@ -55,7 +55,7 @@ public:
     } else if (!tag.empty())
       operation_name_ = tag;
 
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
   }
 
   const std::string& operation_name() const override

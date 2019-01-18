@@ -87,7 +87,7 @@ inline bool is_ident_char(const char c) noexcept
 
 auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_string, const char*>
 {
-  DMITIGR_PGFE_INTERNAL_ASSERT(text);
+  DMITIGR_INTERNAL_ASSERT(text);
 
   enum {
     top,
@@ -183,7 +183,7 @@ auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_
         ++depth;
 
       if (depth == 0) {
-        DMITIGR_PGFE_INTERNAL_ASSERT(current_char == ']');
+        DMITIGR_INTERNAL_ASSERT(current_char == ']');
         state = top;
       }
 
@@ -191,7 +191,7 @@ auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_
       continue;
 
     case dollar:
-      DMITIGR_PGFE_INTERNAL_ASSERT(previous_char == '$');
+      DMITIGR_INTERNAL_ASSERT(previous_char == '$');
       if (std::isdigit(current_char, std::locale{})) {
         state = positional_parameter;
         result.push_text(fragment);
@@ -214,7 +214,7 @@ auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_
       continue;
 
     case positional_parameter:
-      DMITIGR_PGFE_INTERNAL_ASSERT(std::isdigit(previous_char, std::locale{}));
+      DMITIGR_INTERNAL_ASSERT(std::isdigit(previous_char, std::locale{}));
       if (!std::isdigit(current_char, std::locale{})) {
         state = top;
         result.push_positional_parameter(fragment);
@@ -228,7 +228,7 @@ auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_
         goto finish;
 
     case dollar_quote_leading_tag:
-      DMITIGR_PGFE_INTERNAL_ASSERT(previous_char != '$' && is_ident_char(previous_char));
+      DMITIGR_INTERNAL_ASSERT(previous_char != '$' && is_ident_char(previous_char));
       if (current_char == '$') {
         state = dollar_quote;
       } else if (is_ident_char(current_char)) {
@@ -262,7 +262,7 @@ auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_
       continue;
 
     case colon:
-      DMITIGR_PGFE_INTERNAL_ASSERT(previous_char == ':');
+      DMITIGR_INTERNAL_ASSERT(previous_char == ':');
       if (is_ident_char(current_char)) {
         state = named_parameter;
         result.push_text(fragment);
@@ -280,7 +280,7 @@ auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_
         goto finish;
 
     case named_parameter:
-      DMITIGR_PGFE_INTERNAL_ASSERT(is_ident_char(previous_char));
+      DMITIGR_INTERNAL_ASSERT(is_ident_char(previous_char));
       if (!is_ident_char(current_char)) {
         state = top;
         result.push_named_parameter(fragment);
@@ -302,7 +302,7 @@ auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_
       continue;
 
     case quote_quote:
-      DMITIGR_PGFE_INTERNAL_ASSERT(previous_char == quote_char);
+      DMITIGR_INTERNAL_ASSERT(previous_char == quote_char);
       if (current_char == quote_char) {
         state = quote;
         // Skip previous quote.
@@ -318,7 +318,7 @@ auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_
         goto finish;
 
     case dash:
-      DMITIGR_PGFE_INTERNAL_ASSERT(previous_char == '-');
+      DMITIGR_INTERNAL_ASSERT(previous_char == '-');
       if (current_char == '-') {
         state = one_line_comment;
         result.push_text(fragment);
@@ -350,7 +350,7 @@ auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_
       continue;
 
     case slash:
-      DMITIGR_PGFE_INTERNAL_ASSERT(previous_char == '/');
+      DMITIGR_INTERNAL_ASSERT(previous_char == '/');
       if (current_char == '*') {
         state = multi_line_comment;
         if (depth > 0) {
@@ -381,7 +381,7 @@ auto dmitigr::pgfe::detail::parse_sql_input(const char* text) -> std::pair<iSql_
       continue;
 
     case multi_line_comment_star:
-      DMITIGR_PGFE_INTERNAL_ASSERT(previous_char == '*');
+      DMITIGR_INTERNAL_ASSERT(previous_char == '*');
       if (current_char == '/') {
         --depth;
         if (depth == 0) {

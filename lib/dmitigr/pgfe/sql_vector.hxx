@@ -27,13 +27,13 @@ public:
       storage_.push_back(std::move(s));
       text = parsed.second;
     }
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
   }
 
   explicit iSql_vector(std::vector<std::unique_ptr<Sql_string>>&& storage)
     : storage_{std::move(storage)}
   {
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
   }
 
   iSql_vector(const iSql_vector& rhs)
@@ -41,7 +41,7 @@ public:
   {
     std::transform(cbegin(rhs.storage_), cend(rhs.storage_), begin(storage_),
       [](const auto& sqlstr) { return sqlstr->to_sql_string(); });
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
   }
 
   iSql_vector& operator=(const iSql_vector& rhs)
@@ -99,7 +99,7 @@ public:
     const std::size_t offset = 0, const std::size_t extra_offset = 0) const override
   {
     const auto index = sql_string_index(extra_name, extra_value, offset, extra_offset);
-    DMITIGR_PGFE_INTERNAL_REQUIRE(index);
+    DMITIGR_INTERNAL_REQUIRE(index);
     return *index;
   }
 
@@ -110,7 +110,7 @@ public:
 
   const Sql_string* sql_string(const std::size_t index) const override
   {
-    DMITIGR_PGFE_INTERNAL_REQUIRE(index < sql_string_count());
+    DMITIGR_INTERNAL_REQUIRE(index < sql_string_count());
     return storage_[index].get();
   }
 
@@ -131,25 +131,25 @@ public:
 
   void set_sql_string(const std::size_t index, std::unique_ptr<Sql_string>&& sql_string) override
   {
-    DMITIGR_PGFE_INTERNAL_REQUIRE(index < sql_string_count() && sql_string != nullptr);
+    DMITIGR_INTERNAL_REQUIRE(index < sql_string_count() && sql_string != nullptr);
     storage_[index] = std::move(sql_string);
   }
 
   void append_sql_string(std::unique_ptr<Sql_string>&& sql_string) override
   {
-    DMITIGR_PGFE_INTERNAL_REQUIRE(sql_string != nullptr);
+    DMITIGR_INTERNAL_REQUIRE(sql_string != nullptr);
     storage_.push_back(std::move(sql_string));
   }
 
   void insert_sql_string(const std::size_t index, std::unique_ptr<Sql_string>&& sql_string) override
   {
-    DMITIGR_PGFE_INTERNAL_REQUIRE(index < sql_string_count() && sql_string != nullptr);
+    DMITIGR_INTERNAL_REQUIRE(index < sql_string_count() && sql_string != nullptr);
     storage_.insert(begin(storage_) + index, std::move(sql_string));
   }
 
   void remove_sql_string(const std::size_t index) override
   {
-    DMITIGR_PGFE_INTERNAL_REQUIRE(index < sql_string_count());
+    DMITIGR_INTERNAL_REQUIRE(index < sql_string_count());
     storage_.erase(begin(storage_) + index);
   }
 
@@ -189,13 +189,13 @@ private:
   std::size_t sql_string_index__(const std::string& extra_name, const std::string& extra_value,
     const std::size_t offset = 0, const std::size_t extra_offset = 0) const
   {
-    DMITIGR_PGFE_INTERNAL_REQUIRE(offset == 0 || offset < sql_string_count());
+    DMITIGR_INTERNAL_REQUIRE(offset == 0 || offset < sql_string_count());
     const auto b = cbegin(storage_);
     const auto e = cend(storage_);
     const auto i = std::find_if(b + offset, e,
       [&](const auto& sql_string)
       {
-        DMITIGR_PGFE_INTERNAL_ASSERT(sql_string);
+        DMITIGR_INTERNAL_ASSERT(sql_string);
         if (const auto* const extra = sql_string->extra()) {
           if (extra_offset < extra->field_count()) {
             const auto index = extra->field_index(extra_name, extra_offset);

@@ -6,8 +6,8 @@
 #define DMITIGR_PGFE_PQ_HXX
 
 #include "dmitigr/pgfe/basics.hpp"
-#include "dmitigr/pgfe/internal/debug.hxx"
-#include "dmitigr/pgfe/internal/string.hxx"
+#include "dmitigr/internal/debug.hpp"
+#include "dmitigr/internal/string.hpp"
 
 #include <libpq-fe.h>
 
@@ -54,7 +54,7 @@ inline int to_int(const Data_format format)
   case Data_format::text:   return 0;
   case Data_format::binary: return 1;
   }
-  DMITIGR_PGFE_INTERNAL_ASSERT_ALWAYS(!true);
+  DMITIGR_INTERNAL_ASSERT_ALWAYS(!true);
 }
 
 /**
@@ -68,7 +68,7 @@ inline Data_format to_data_format(const int format)
   case 0: return Data_format::text;
   case 1: return Data_format::binary;
   }
-  DMITIGR_PGFE_INTERNAL_ASSERT_ALWAYS(!true);
+  DMITIGR_INTERNAL_ASSERT_ALWAYS(!true);
 }
 
 /**

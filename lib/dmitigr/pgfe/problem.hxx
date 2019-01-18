@@ -7,7 +7,7 @@
 
 #include "dmitigr/pgfe/basics.hpp"
 #include "dmitigr/pgfe/problem.hpp"
-#include "dmitigr/pgfe/internal/debug.hxx"
+#include "dmitigr/internal/debug.hpp"
 
 #include <stdexcept>
 
@@ -54,7 +54,7 @@ public:
   , source_line_(std::move(source_line))
   , source_function_(std::move(source_function))
   {
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
   }
 
   std::unique_ptr<Problem> to_problem() const override

@@ -6,7 +6,7 @@
 #define DMITIGR_PGFE_DATA_HXX
 
 #include "dmitigr/pgfe/data.hpp"
-#include "dmitigr/pgfe/internal/debug.hxx"
+#include "dmitigr/internal/debug.hpp"
 
 #include <algorithm>
 #include <cstring>
@@ -78,7 +78,7 @@ public:
   string_Data(std::string storage, const Format format)
     : container_Data(std::move(storage), format)
   {
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
   }
 
   std::unique_ptr<Data> to_data() const override
@@ -113,14 +113,14 @@ public:
   vector_Data(S&& storage, const Format format)
     : container_Data(std::forward<S>(storage), format)
   {
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
   }
 
   vector_Data(const unsigned char* const bytes, const std::size_t size, const Format format)
     : container_Data(std::vector<unsigned char>((format == Data_format::binary) ? size : size + 1), format)
   {
     std::copy(bytes, bytes + size, begin(storage_));
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
   }
 
   std::unique_ptr<Data> to_data() const override
@@ -169,7 +169,7 @@ public:
     , size_(size)
     , storage_(std::move(storage))
   {
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
   }
 
   std::unique_ptr<Data> to_data() const override
@@ -220,7 +220,7 @@ public:
   explicit empty_Data(const Format format)
     : format_(format)
   {
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
   }
 
   std::unique_ptr<Data> to_data() const override
@@ -276,7 +276,7 @@ public:
     , size_(size)
     , bytes_(bytes)
   {
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
   }
 
   // Non copyable.

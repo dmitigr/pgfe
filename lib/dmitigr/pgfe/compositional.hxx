@@ -6,7 +6,7 @@
 #define DMITIGR_PGFE_COMPOSITIONAL_HXX
 
 #include "dmitigr/pgfe/compositional.hpp"
-#include "dmitigr/pgfe/internal/debug.hxx"
+#include "dmitigr/internal/debug.hpp"
 
 #include <functional>
 #include <type_traits>

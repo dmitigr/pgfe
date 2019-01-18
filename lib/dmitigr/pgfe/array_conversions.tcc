@@ -7,8 +7,8 @@
 
 #include "dmitigr/pgfe/conversions_api.hpp"
 #include "dmitigr/pgfe/exceptions.hxx"
-#include "dmitigr/pgfe/internal/debug.hxx"
-#include "dmitigr/pgfe/internal/string.hxx"
+#include "dmitigr/internal/debug.hpp"
+#include "dmitigr/internal/string.hpp"
 
 #include <algorithm>
 #include <locale>
@@ -267,8 +267,8 @@ template<typename T,
 const char* dmitigr::pgfe::detail::fill_container(Container<Optional<T>, Allocator<Optional<T>>>& result, const char* literal,
   const char delimiter, Types&& ... args)
 {
-  DMITIGR_PGFE_INTERNAL_ASSERT(result.empty());
-  DMITIGR_PGFE_INTERNAL_ASSERT(literal);
+  DMITIGR_INTERNAL_ASSERT(result.empty());
+  DMITIGR_INTERNAL_ASSERT(literal);
 
   using internal::string::next_non_space_pointer;
 
@@ -322,7 +322,7 @@ template<class F, typename ... Types>
 const char* dmitigr::pgfe::detail::parse_array_literal(const char* literal,
   const char delimiter, F& handler, Types&& ... args)
 {
-  DMITIGR_PGFE_INTERNAL_ASSERT(literal);
+  DMITIGR_INTERNAL_ASSERT(literal);
 
   /*
    * Syntax of the array literals:
@@ -362,7 +362,7 @@ const char* dmitigr::pgfe::detail::parse_array_literal(const char* literal,
     }
 
     case in_dimension: {
-      DMITIGR_PGFE_INTERNAL_ASSERT(dimension > 0);
+      DMITIGR_INTERNAL_ASSERT(dimension > 0);
 
       if (std::isspace(c, std::locale{})) {
         ;
@@ -415,7 +415,7 @@ const char* dmitigr::pgfe::detail::parse_array_literal(const char* literal,
     }
     } // switch (state)
 
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_element_extracted);
+    DMITIGR_INTERNAL_ASSERT(is_element_extracted);
     {
       if (element.empty())
         throw iClient_exception(Client_errc::malformed_array_literal);

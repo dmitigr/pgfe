@@ -7,7 +7,7 @@
 
 #include "dmitigr/pgfe/prepared_statement.hpp"
 #include "dmitigr/pgfe/types_fwd.hpp"
-#include "dmitigr/pgfe/internal/dll.hxx"
+#include "dmitigr/pgfe/internal/dll.hpp"
 
 #include <cstdint>
 #include <chrono>

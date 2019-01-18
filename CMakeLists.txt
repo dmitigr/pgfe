@@ -4,8 +4,8 @@
 
 project(dmitigr_pgfe)
 
-cmake_minimum_required(VERSION 3.10)
-cmake_policy(VERSION 3.10)
+cmake_minimum_required(VERSION 3.13)
+cmake_policy(VERSION 3.13)
 
 if (NOT (UNIX OR WIN32))
   message(FATAL_ERROR "unsupported target platform")

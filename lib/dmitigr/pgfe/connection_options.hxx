@@ -8,8 +8,8 @@
 #include "dmitigr/pgfe/connection_options.hpp"
 #include "dmitigr/pgfe/connection_options.cxx"
 #include "dmitigr/pgfe/errc.hpp"
-#include "dmitigr/pgfe/internal/debug.hxx"
-#include "dmitigr/pgfe/internal/net.hxx"
+#include "dmitigr/internal/debug.hpp"
+#include "dmitigr/internal/net.hpp"
 
 #include <algorithm>
 #include <stdexcept>
@@ -87,7 +87,7 @@ public:
     , ssl_certificate_revocation_list_file_{btd::ssl_certificate_revocation_list_file}
     , ssl_server_host_name_verification_enabled_{btd::ssl_server_host_name_verification_enabled}
   {
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
   }
 
   std::unique_ptr<Connection> make_connection() const override; // defined in connection.cpp
@@ -100,10 +100,10 @@ public:
   Connection_options* set(const Communication_mode value) override
   {
 #ifdef _WIN32
-    DMITIGR_PGFE_INTERNAL_ASSERT(value == Communication_mode::tcp);
+    DMITIGR_INTERNAL_ASSERT(value == Communication_mode::tcp);
 #endif
     communication_mode_ = value;
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
     return this;
   }
 
@@ -117,10 +117,10 @@ public:
 #ifndef _WIN32
   Connection_options* set_uds_directory(std::filesystem::path value) override
   {
-    DMITIGR_PGFE_INTERNAL_REQUIRE(communication_mode() == Communication_mode::uds);
+    DMITIGR_INTERNAL_REQUIRE(communication_mode() == Communication_mode::uds);
     validate(is_absolute_directory_name(value), "UDS directory");
     uds_directory_ = std::move(value);
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
     return this;
   }
 
@@ -133,10 +133,10 @@ public:
 
   Connection_options* set_uds_file_extension(std::string value) override
   {
-    DMITIGR_PGFE_INTERNAL_REQUIRE(communication_mode() == Communication_mode::uds);
+    DMITIGR_INTERNAL_REQUIRE(communication_mode() == Communication_mode::uds);
     validate(is_non_empty(value), "UDS file extension");
     uds_file_extension_ = std::move(value);
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
     return this;
   }
 
@@ -149,11 +149,11 @@ public:
 
   Connection_options* set_uds_require_server_process_username(std::optional<std::string> value) override
   {
-    DMITIGR_PGFE_INTERNAL_REQUIRE(communication_mode() == Communication_mode::uds);
+    DMITIGR_INTERNAL_REQUIRE(communication_mode() == Communication_mode::uds);
     if (value)
       validate(is_non_empty(*value), "UDS require server process username");
     uds_require_server_process_username_ = std::move(value);
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
     return this;
   }
 
@@ -168,9 +168,9 @@ public:
 
   Connection_options* set_tcp_keepalives_enabled(const bool value) override
   {
-    DMITIGR_PGFE_INTERNAL_REQUIRE(communication_mode() == Communication_mode::tcp);
+    DMITIGR_INTERNAL_REQUIRE(communication_mode() == Communication_mode::tcp);
     tcp_keepalives_enabled_ = value;
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
     return this;
   }
 
@@ -183,11 +183,11 @@ public:
 
   Connection_options* set_tcp_keepalives_idle(const std::optional<std::chrono::seconds> value) override
   {
-    DMITIGR_PGFE_INTERNAL_REQUIRE(communication_mode() == Communication_mode::tcp);
+    DMITIGR_INTERNAL_REQUIRE(communication_mode() == Communication_mode::tcp);
     if (value)
       validate(is_non_negative(value->count()), "TCP keepalives idle");
     tcp_keepalives_idle_ = value;
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
     return this;
   }
 
@@ -200,11 +200,11 @@ public:
 
   Connection_options* set_tcp_keepalives_interval(const std::optional<std::chrono::seconds> value) override
   {
-    DMITIGR_PGFE_INTERNAL_REQUIRE(communication_mode() == Communication_mode::tcp);
+    DMITIGR_INTERNAL_REQUIRE(communication_mode() == Communication_mode::tcp);
     if (value)
       validate(is_non_negative(value->count()), "TCP keepalives interval");
     tcp_keepalives_interval_ = value;
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
     return this;
   }
 
@@ -217,11 +217,11 @@ public:
 
   Connection_options* set_tcp_keepalives_count(const std::optional<int> value) override
   {
-    DMITIGR_PGFE_INTERNAL_REQUIRE(communication_mode() == Communication_mode::tcp);
+    DMITIGR_INTERNAL_REQUIRE(communication_mode() == Communication_mode::tcp);
     if (value)
       validate(is_non_negative(*value), "TCP keepalives count");
     tcp_keepalives_count_ = value;
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
     return this;
   }
 
@@ -234,13 +234,13 @@ public:
 
   Connection_options* set_tcp_host_address(std::optional<std::string> value) override
   {
-    DMITIGR_PGFE_INTERNAL_REQUIRE(communication_mode() == Communication_mode::tcp);
+    DMITIGR_INTERNAL_REQUIRE(communication_mode() == Communication_mode::tcp);
     if (value)
       validate(is_ip_address(*value), "TCP host address");
     else
-      DMITIGR_PGFE_INTERNAL_REQUIRE(tcp_host_name());
+      DMITIGR_INTERNAL_REQUIRE(tcp_host_name());
     tcp_host_address_ = std::move(value);
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
     return this;
   }
 
@@ -253,13 +253,13 @@ public:
 
   Connection_options* set_tcp_host_name(std::optional<std::string> value) override
   {
-    DMITIGR_PGFE_INTERNAL_REQUIRE(communication_mode() == Communication_mode::tcp);
+    DMITIGR_INTERNAL_REQUIRE(communication_mode() == Communication_mode::tcp);
     if (value)
       validate(is_hostname(*value), "TCP host name");
     else
-      DMITIGR_PGFE_INTERNAL_REQUIRE(tcp_host_address());
+      DMITIGR_INTERNAL_REQUIRE(tcp_host_address());
     tcp_host_name_ = std::move(value);
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
     return this;
   }
 
@@ -272,10 +272,10 @@ public:
 
   Connection_options* set_tcp_host_port(const std::int_fast32_t value) override
   {
-    DMITIGR_PGFE_INTERNAL_REQUIRE(communication_mode() == Communication_mode::tcp);
+    DMITIGR_INTERNAL_REQUIRE(communication_mode() == Communication_mode::tcp);
     validate(is_tcp_port(value), "TCP host port");
     tcp_host_port_ = value;
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
     return this;
   }
 
@@ -290,7 +290,7 @@ public:
   {
     validate(is_non_empty(value), "username");
     username_ = std::move(value);
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
     return this;
   }
 
@@ -305,7 +305,7 @@ public:
   {
     validate(is_non_empty(value), "database");
     database_ = std::move(value);
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
     return this;
   }
 
@@ -321,7 +321,7 @@ public:
     if (value)
       validate(is_non_empty(*value), "password");
     password_ = std::move(value);
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
     return this;
   }
 
@@ -337,7 +337,7 @@ public:
     if (value)
       validate(is_non_empty(*value), "Kerberos service name");
     kerberos_service_name_ = std::move(value);
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
     return this;
   }
 
@@ -351,7 +351,7 @@ public:
   Connection_options* set_ssl_enabled(const bool value) override
   {
     is_ssl_enabled_ = value;
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
     return this;
   }
 
@@ -364,9 +364,9 @@ public:
 
   Connection_options* set_ssl_compression_enabled(const bool value) override
   {
-    DMITIGR_PGFE_INTERNAL_REQUIRE(is_ssl_enabled());
+    DMITIGR_INTERNAL_REQUIRE(is_ssl_enabled());
     ssl_compression_enabled_ = value;
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
     return this;
   }
 
@@ -379,11 +379,11 @@ public:
 
   Connection_options* set_ssl_certificate_file(std::optional<std::filesystem::path> value) override
   {
-    DMITIGR_PGFE_INTERNAL_REQUIRE(is_ssl_enabled());
+    DMITIGR_INTERNAL_REQUIRE(is_ssl_enabled());
     if (value)
       validate(is_non_empty(*value), "SSL certificate file");
     ssl_certificate_file_ = std::move(value);
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
     return this;
   }
 
@@ -396,11 +396,11 @@ public:
 
   Connection_options* set_ssl_private_key_file(std::optional<std::filesystem::path> value) override
   {
-    DMITIGR_PGFE_INTERNAL_REQUIRE(is_ssl_enabled());
+    DMITIGR_INTERNAL_REQUIRE(is_ssl_enabled());
     if (value)
       validate(is_non_empty(*value), "SSL private key file");
     ssl_private_key_file_ = std::move(value);
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
     return this;
   }
 
@@ -413,11 +413,11 @@ public:
 
   Connection_options* set_ssl_certificate_authority_file(std::optional<std::filesystem::path> value) override
   {
-    DMITIGR_PGFE_INTERNAL_REQUIRE(is_ssl_enabled());
+    DMITIGR_INTERNAL_REQUIRE(is_ssl_enabled());
     if (value)
       validate(is_non_empty(*value), "SSL certificate authority file");
     ssl_certificate_authority_file_ = std::move(value);
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
     return this;
   }
 
@@ -430,11 +430,11 @@ public:
 
   Connection_options* set_ssl_certificate_revocation_list_file(std::optional<std::filesystem::path> value) override
   {
-    DMITIGR_PGFE_INTERNAL_REQUIRE(is_ssl_enabled());
+    DMITIGR_INTERNAL_REQUIRE(is_ssl_enabled());
     if (value)
       validate(is_non_empty(*value), "SSL certificate revocation list file");
     ssl_certificate_revocation_list_file_ = std::move(value);
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
     return this;
   }
 
@@ -447,9 +447,9 @@ public:
 
   Connection_options* set_ssl_server_host_name_verification_enabled(const bool value) override
   {
-    DMITIGR_PGFE_INTERNAL_REQUIRE(is_ssl_enabled() && ssl_certificate_authority_file());
+    DMITIGR_INTERNAL_REQUIRE(is_ssl_enabled() && ssl_certificate_authority_file());
     ssl_server_host_name_verification_enabled_ = value;
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
     return this;
   }
 
@@ -532,7 +532,7 @@ class pq_Connection_options {
 public:
   pq_Connection_options(const Connection_options* const o)
   {
-    DMITIGR_PGFE_INTERNAL_ASSERT(o);
+    DMITIGR_INTERNAL_ASSERT(o);
 
     switch (o->communication_mode()) {
     case Communication_mode::tcp: {
@@ -711,7 +711,7 @@ private:
     case target_session_attrs: return "target_session_attrs";
     case Keyword_count_:;
     }
-    DMITIGR_PGFE_INTERNAL_ASSERT_ALWAYS(!true);
+    DMITIGR_INTERNAL_ASSERT_ALWAYS(!true);
   }
 
   void update_cache()
@@ -724,7 +724,7 @@ private:
     pq_keywords_[Keyword_count_] = nullptr;
     pq_values_[Keyword_count_] = nullptr;
 
-    DMITIGR_PGFE_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
   }
 
   const char* pq_keywords_[Keyword_count_ + 1];
