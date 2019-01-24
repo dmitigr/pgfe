@@ -63,9 +63,9 @@ target_link_libraries(test-benchmark-array-server dmitigr_pgfe)
 
 # ------------------------------------------------------------------------------
 if (WIN32)
-  set(PGFE_RESOURCE_DESTINATION_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>/unit-sql_vector.sql")
+  set(PGFE_RESOURCE_DESTINATION_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
 elseif (UNIX)
-  set(PGFE_RESOURCE_DESTINATION_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/unit-sql_vector.sql")
+  set(PGFE_RESOURCE_DESTINATION_DIR "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 endif()
 
 add_custom_target(copy_test_resources ALL
