@@ -69,7 +69,10 @@ elseif (UNIX)
 endif()
 
 add_custom_target(copy_test_resources ALL
-  COMMAND cmake -E copy "${CMAKE_CURRENT_SOURCE_DIR}/unit-sql_vector.sql" ${PGFE_RESOURCE_DESTINATION_DIR})
+  COMMAND cmake -E make_directory "${PGFE_RESOURCE_DESTINATION_DIR}"
+
+  COMMAND cmake -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/unit-sql_vector.sql"
+  "${PGFE_RESOURCE_DESTINATION_DIR}")
 # ------------------------------------------------------------------------------
 
 add_test(NAME hello_world COMMAND hello_world)
