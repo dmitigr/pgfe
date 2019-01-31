@@ -516,7 +516,7 @@ The only dependences of Pgfe are [dmitigr_internal] and [libpq].
 
 First, [dmitigr_internal] must be installed. The installation is trivial as described on its page.
 
-**WARNING** It's highly recommended to update the dmitigr_internal library (just pull and rebuild)
+**WARNING** It's highly recommended to update the dmitigr_internal library (just pull and reinstall)
 before updating the Pgfe libary!
 
 As for [libpq], [CMake] will try to locate it automatically. Although, it's possible to manually

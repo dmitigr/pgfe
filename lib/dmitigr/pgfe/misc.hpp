@@ -19,7 +19,7 @@ namespace dmitigr::pgfe {
  * @par Thread safety
  * Thread-safe.
  */
-DMITIGR_PGFE_API std::int_fast32_t APIENTRY version();
+DMITIGR_PGFE_API std::int_fast32_t version();
 
 } // namespace dmitigr::pgfe
 

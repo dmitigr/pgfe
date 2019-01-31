@@ -6,7 +6,7 @@
 
 namespace pgfe = dmitigr::pgfe;
 
-DMITIGR_PGFE_API std::int_fast32_t APIENTRY pgfe::version()
+DMITIGR_PGFE_API std::int_fast32_t pgfe::version()
 {
   // Actual values are set in CMakeLists.txt.
   constexpr std::int_least32_t major = PGFE_VERSION_PART1;

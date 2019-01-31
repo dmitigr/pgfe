@@ -67,42 +67,42 @@ public:
  *
  * @returns The reference to instance of type Client_error_category.
  */
-DMITIGR_PGFE_API const Client_error_category& APIENTRY client_error_category() noexcept;
+DMITIGR_PGFE_API const Client_error_category& client_error_category() noexcept;
 
 /**
  * @ingroup errors
  *
  * @returns The reference to instance of type Server_error_category.
  */
-DMITIGR_PGFE_API const Server_error_category& APIENTRY server_error_category() noexcept;
+DMITIGR_PGFE_API const Server_error_category& server_error_category() noexcept;
 
 /**
  * @ingroup errors
  *
  * @returns `std::error_code(int(errc), client_error_category())`
  */
-DMITIGR_PGFE_API std::error_code APIENTRY make_error_code(Client_errc errc) noexcept;
+DMITIGR_PGFE_API std::error_code make_error_code(Client_errc errc) noexcept;
 
 /**
  * @ingroup errors
  *
  * @returns `std::error_code(int(errc), server_error_category())`
  */
-DMITIGR_PGFE_API std::error_code APIENTRY make_error_code(Server_errc errc) noexcept;
+DMITIGR_PGFE_API std::error_code make_error_code(Server_errc errc) noexcept;
 
 /**
  * @ingroup errors
  *
  * @returns `std::error_condition(int(errc), client_error_category())`
  */
-DMITIGR_PGFE_API std::error_condition APIENTRY make_error_condition(Client_errc errc) noexcept;
+DMITIGR_PGFE_API std::error_condition make_error_condition(Client_errc errc) noexcept;
 
 /**
  * @ingroup errors
  *
  * @returns `std::error_condition(int(errc), server_error_category())`
  */
-DMITIGR_PGFE_API std::error_condition APIENTRY make_error_condition(Server_errc errc) noexcept;
+DMITIGR_PGFE_API std::error_condition make_error_condition(Server_errc errc) noexcept;
 
 } // namespace dmitigr::pgfe
 

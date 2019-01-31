@@ -6,7 +6,7 @@
 
 namespace dmitigr::pgfe {
 
-DMITIGR_PGFE_API std::unique_ptr<Connection_options> APIENTRY Connection_options::make()
+DMITIGR_PGFE_API std::unique_ptr<Connection_options> Connection_options::make()
 {
   return std::make_unique<detail::iConnection_options>();
 }

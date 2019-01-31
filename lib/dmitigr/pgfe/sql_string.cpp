@@ -8,7 +8,7 @@ namespace pgfe = dmitigr::pgfe;
 
 namespace dmitigr::pgfe {
 
-DMITIGR_PGFE_API std::unique_ptr<Sql_string> APIENTRY Sql_string::make(const std::string& input)
+DMITIGR_PGFE_API std::unique_ptr<Sql_string> Sql_string::make(const std::string& input)
 {
   return std::make_unique<detail::iSql_string>(input);
 }

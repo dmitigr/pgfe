@@ -43,13 +43,13 @@ public:
    * @par Requires
    * `(bytes && (format == Data_format::binary || bytes[size] == '\0'))`
    */
-  static DMITIGR_PGFE_API std::unique_ptr<Data> APIENTRY make(const char* bytes,
+  static DMITIGR_PGFE_API std::unique_ptr<Data> make(const char* bytes,
     std::size_t size, Data_format format = Data_format::text);
 
   /**
    * @overload
    */
-  static DMITIGR_PGFE_API std::unique_ptr<Data> APIENTRY make(const char* bytes);
+  static DMITIGR_PGFE_API std::unique_ptr<Data> make(const char* bytes);
 
   /**
    * @overload
@@ -64,7 +64,7 @@ public:
    * @par Effects
    * `(result->memory() == storage.get())`
    */
-  static DMITIGR_PGFE_API std::unique_ptr<Data> APIENTRY make(std::unique_ptr<void, void(*)(void*)>&& storage,
+  static DMITIGR_PGFE_API std::unique_ptr<Data> make(std::unique_ptr<void, void(*)(void*)>&& storage,
     std::size_t size, Data_format format = Data_format::binary);
 
   /**
@@ -76,7 +76,7 @@ public:
    * @par Effects
    * `(result->memory() == storage.get())`
    */
-  static DMITIGR_PGFE_API std::unique_ptr<Data> APIENTRY make(std::string storage,
+  static DMITIGR_PGFE_API std::unique_ptr<Data> make(std::string storage,
     Data_format format = Data_format::text);
 
   /**
@@ -94,7 +94,7 @@ public:
    * @remarks iff (format == Data_format::text) then the result->size()
    * does not count the trailing zero.
    */
-  static DMITIGR_PGFE_API std::unique_ptr<Data> APIENTRY make(std::vector<unsigned char> storage,
+  static DMITIGR_PGFE_API std::unique_ptr<Data> make(std::vector<unsigned char> storage,
     Data_format format = Data_format::binary);
 
   /**
@@ -154,14 +154,14 @@ public:
  *
  * @relates Data
  */
-DMITIGR_PGFE_API std::unique_ptr<Data> APIENTRY to_binary_data(const Data* text_data);
+DMITIGR_PGFE_API std::unique_ptr<Data> to_binary_data(const Data* text_data);
 
 /**
  * @ingroup main
  *
  * @brief Similar to to_binary_data(const Data*).
  */
-DMITIGR_PGFE_API std::unique_ptr<Data> APIENTRY to_binary_data(const std::string& text_data);
+DMITIGR_PGFE_API std::unique_ptr<Data> to_binary_data(const std::string& text_data);
 
 } // namespace dmitigr::pgfe
 

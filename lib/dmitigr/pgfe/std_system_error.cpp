@@ -44,34 +44,34 @@ std::string Server_error_category::message(const int ev) const
 
 namespace pgfe = dmitigr::pgfe;
 
-DMITIGR_PGFE_API auto APIENTRY pgfe::client_error_category() noexcept -> const Client_error_category&
+DMITIGR_PGFE_API auto pgfe::client_error_category() noexcept -> const Client_error_category&
 {
   static const Client_error_category result;
   return result;
 }
 
-DMITIGR_PGFE_API auto APIENTRY pgfe::server_error_category() noexcept -> const Server_error_category&
+DMITIGR_PGFE_API auto pgfe::server_error_category() noexcept -> const Server_error_category&
 {
   static const Server_error_category result;
   return result;
 }
 
-DMITIGR_PGFE_API std::error_code APIENTRY pgfe::make_error_code(Client_errc errc) noexcept
+DMITIGR_PGFE_API std::error_code pgfe::make_error_code(Client_errc errc) noexcept
 {
   return std::error_code(int(errc), client_error_category());
 }
 
-DMITIGR_PGFE_API std::error_code APIENTRY pgfe::make_error_code(Server_errc errc) noexcept
+DMITIGR_PGFE_API std::error_code pgfe::make_error_code(Server_errc errc) noexcept
 {
   return std::error_code(int(errc), server_error_category());
 }
 
-DMITIGR_PGFE_API std::error_condition APIENTRY pgfe::make_error_condition(Client_errc errc) noexcept
+DMITIGR_PGFE_API std::error_condition pgfe::make_error_condition(Client_errc errc) noexcept
 {
   return std::error_condition(int(errc), client_error_category());
 }
 
-DMITIGR_PGFE_API std::error_condition APIENTRY pgfe::make_error_condition(Server_errc errc) noexcept
+DMITIGR_PGFE_API std::error_condition pgfe::make_error_condition(Server_errc errc) noexcept
 {
   return std::error_condition(int(errc), server_error_category());
 }

@@ -37,7 +37,7 @@ public:
   /**
    * @brief Makes an empty SQL vector.
    */
-  static DMITIGR_PGFE_API std::unique_ptr<Sql_vector> APIENTRY make();
+  static DMITIGR_PGFE_API std::unique_ptr<Sql_vector> make();
 
   /**
    * @brief Parses the input to make a SQL vector at once.
@@ -61,12 +61,12 @@ public:
    * In this case the result vector will consists of the three sql string. (The
    * second SQL string includes comments 2 and 3 and the `SELECT 1` statement.)
    */
-  static DMITIGR_PGFE_API std::unique_ptr<Sql_vector> APIENTRY make(const std::string& input);
+  static DMITIGR_PGFE_API std::unique_ptr<Sql_vector> make(const std::string& input);
 
   /**
    * @overload
    */
-  static DMITIGR_PGFE_API std::unique_ptr<Sql_vector> APIENTRY make(std::vector<std::unique_ptr<Sql_string>>&& v);
+  static DMITIGR_PGFE_API std::unique_ptr<Sql_vector> make(std::vector<std::unique_ptr<Sql_string>>&& v);
 
   /**
    * @returns The copy of this instance.

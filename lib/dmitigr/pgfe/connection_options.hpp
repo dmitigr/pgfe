@@ -36,7 +36,7 @@ public:
   /**
    * @returns The new instance of the default connection options.
    */
-  static DMITIGR_PGFE_API std::unique_ptr<Connection_options> APIENTRY make();
+  static DMITIGR_PGFE_API std::unique_ptr<Connection_options> make();
 
   /**
    * @returns The instance of type Connection initialized with this instance.

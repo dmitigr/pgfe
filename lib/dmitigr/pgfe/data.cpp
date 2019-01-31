@@ -12,7 +12,7 @@ namespace pgfe = dmitigr::pgfe;
 
 namespace dmitigr::pgfe {
 
-DMITIGR_PGFE_API std::unique_ptr<Data> APIENTRY
+DMITIGR_PGFE_API std::unique_ptr<Data>
 Data::make(const char* const bytes, const std::size_t size, const Data_format format)
 {
   DMITIGR_INTERNAL_REQUIRE(bytes && (format == Data_format::binary || bytes[size] == '\0'));
@@ -22,13 +22,13 @@ Data::make(const char* const bytes, const std::size_t size, const Data_format fo
     return std::make_unique<detail::empty_Data>(format);
 }
 
-DMITIGR_PGFE_API std::unique_ptr<Data> APIENTRY
+DMITIGR_PGFE_API std::unique_ptr<Data>
 Data::make(const char* const bytes)
 {
   return make(bytes, std::strlen(bytes), Data_format::text);
 }
 
-DMITIGR_PGFE_API std::unique_ptr<Data> APIENTRY
+DMITIGR_PGFE_API std::unique_ptr<Data>
 Data::make(std::unique_ptr<void, void(*)(void*)>&& storage, const std::size_t size, const Data_format format)
 {
   DMITIGR_INTERNAL_REQUIRE(storage &&
@@ -36,13 +36,13 @@ Data::make(std::unique_ptr<void, void(*)(void*)>&& storage, const std::size_t si
   return std::make_unique<detail::custom_memory_Data>(std::move(storage), size, format);
 }
 
-DMITIGR_PGFE_API std::unique_ptr<Data> APIENTRY
+DMITIGR_PGFE_API std::unique_ptr<Data>
 Data::make(std::string storage, const Data_format format)
 {
   return std::make_unique<detail::string_Data>(std::move(storage), format);
 }
 
-DMITIGR_PGFE_API std::unique_ptr<Data> APIENTRY
+DMITIGR_PGFE_API std::unique_ptr<Data>
 Data::make(std::vector<unsigned char> storage, const Data_format format)
 {
   DMITIGR_INTERNAL_REQUIRE(format == Data_format::binary || (!storage.empty() && storage.back() == '\0'));
@@ -67,14 +67,14 @@ std::unique_ptr<pgfe::Data> to_binary_data__(const char* const text)
 
 } // namespace
 
-DMITIGR_PGFE_API auto APIENTRY
+DMITIGR_PGFE_API auto
 pgfe::to_binary_data(const Data* const text_data) -> std::unique_ptr<Data>
 {
   DMITIGR_INTERNAL_REQUIRE(text_data && text_data->format() == Data_format::text);
   return to_binary_data__(text_data->bytes());
 }
 
-DMITIGR_PGFE_API auto APIENTRY
+DMITIGR_PGFE_API auto
 pgfe::to_binary_data(const std::string& text_data) -> std::unique_ptr<Data>
 {
   return to_binary_data__(text_data.c_str());

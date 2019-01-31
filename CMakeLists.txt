@@ -15,6 +15,9 @@ set(PGFE_VERSION_PART1 1)
 set(PGFE_VERSION_PART2 1)
 add_definitions(-DPGFE_VERSION_PART1=${PGFE_VERSION_PART1})
 add_definitions(-DPGFE_VERSION_PART2=${PGFE_VERSION_PART2})
+if(WIN32)
+  add_definitions(-DNOMINMAX)
+endif()
 
 # ------------------------------------------------------------------------------
 

@@ -38,7 +38,7 @@ public:
    *
    * @param options - connection options. The value of `nullptr` means default connection options.
    */
-  static DMITIGR_PGFE_API std::unique_ptr<Connection> APIENTRY make(const Connection_options* options = nullptr);
+  static DMITIGR_PGFE_API std::unique_ptr<Connection> make(const Connection_options* options = nullptr);
 
   /**
    * @returns The copy of this instance.
@@ -908,14 +908,14 @@ private:
  * @remarks This function must be called with the value of `false` if the OpenSSL
  * library is initialized yet before first connection to the PostgreSQL server.
  */
-DMITIGR_PGFE_API void APIENTRY set_openssl_library_initialization_enabled(bool value);
+DMITIGR_PGFE_API void set_openssl_library_initialization_enabled(bool value);
 
 /**
  * @ingroup main
  *
  * @return The value of the obligation of initialization the OpenSSL library when needed.
  */
-DMITIGR_PGFE_API bool APIENTRY is_openssl_library_initialization_enabled();
+DMITIGR_PGFE_API bool is_openssl_library_initialization_enabled();
 
 /**
  * @ingroup main
@@ -925,14 +925,14 @@ DMITIGR_PGFE_API bool APIENTRY is_openssl_library_initialization_enabled();
  * @remarks This function must be called with the value of `false` if the Crypto
  * library is initialized yet before first connection to the PostgreSQL server.
  */
-DMITIGR_PGFE_API void APIENTRY set_crypto_library_initialization_enabled(bool value);
+DMITIGR_PGFE_API void set_crypto_library_initialization_enabled(bool value);
 
 /**
  * @ingroup main
  *
  * @returns The value of the obligation of initialization the Crypto library when needed.
  */
-DMITIGR_PGFE_API bool APIENTRY is_crypto_library_initialization_enabled();
+DMITIGR_PGFE_API bool is_crypto_library_initialization_enabled();
 
 } // namespace dmitigr::pgfe
 

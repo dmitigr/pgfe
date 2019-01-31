@@ -30,12 +30,12 @@ public:
   /**
    * @returns The new instance of the composite.
    */
-  static DMITIGR_PGFE_API std::unique_ptr<Composite> APIENTRY make();
+  static DMITIGR_PGFE_API std::unique_ptr<Composite> make();
 
   /**
    * @overload
    */
-  static DMITIGR_PGFE_API std::unique_ptr<Composite> APIENTRY make(std::vector<std::pair<std::string, std::unique_ptr<Data>>>&& v);
+  static DMITIGR_PGFE_API std::unique_ptr<Composite> make(std::vector<std::pair<std::string, std::unique_ptr<Data>>>&& v);
 
   /**
    * @returns The copy of this instance.

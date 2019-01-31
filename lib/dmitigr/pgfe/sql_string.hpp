@@ -52,7 +52,7 @@ public:
   /// stops on either semicolon or zero character.
   ///
   /// @see extra().
-  static DMITIGR_PGFE_API std::unique_ptr<Sql_string> APIENTRY make(const std::string& input);
+  static DMITIGR_PGFE_API std::unique_ptr<Sql_string> make(const std::string& input);
 
   /**
    * @returns The copy of this instance.
