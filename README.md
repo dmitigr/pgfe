@@ -1,9 +1,10 @@
-Introduction to the C++ client library for PostgreSQL {#mainpage}
-=====================================================
+The C++ client library for PostgreSQL {#mainpage}
+=================================================
 
-The [PostgreSQL] Frontend (Pgfe) is client C++ API to [PostgreSQL] servers. **ATTENTION, this
-software is "beta" quality, and the API is a subject to change**. Any [feedback][mailbox]
-(*especially results of testing*) is highly appreciated! Together we can make Pgfe library
+The Dmitigr Pgfe ([PostgreSQL] Frontend) is a client API to [PostgreSQL] servers written in C++.
+The development is focused on easines and robustness of use rather than super-duper performance.
+**ATTENTION, this software is "beta" quality, and the API is a subject to change**.
+Any [feedback][mailbox] (*especially results of testing*) is highly appreciated! Together we can make Pgfe library
 *really* production-ready!
 
 Please note, this tutorial can also be viewed at [the official Pgfe documentation site][doc].
@@ -265,6 +266,14 @@ Server responses can be *retrieved*:
 
 Data type conversions
 ---------------------
+
+Pgfe ships with support of conversions for *fundamental and standard C++ types*. Conversions for
+special PostgreSQL types such as [Date/Time Types][datatype-datetime] aren't provided out of the box,
+since many implementations of these types are possible at the client side. Instead it's up to the
+user to deside what implementation to use. (If such conversions are needed at all.) For example,
+the template structure dmitigr::pgfe::Conversions can be easily specialized to perform conversions
+between PostgreSQL [Date/Time Types][datatype-datetime] and types from the [Boost.Date_Time][boost-datetime]
+library.
 
 The class dmitigr::pgfe::Data is designed to store:
 
@@ -636,9 +645,12 @@ Copyright (C) Dmitry Igrishin
 
 [PostgreSQL]: https://www.postgresql.org/
 [dollar-quoting]: https://www.postgresql.org/docs/current/static/sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING
+[datatype-datetime]: https://www.postgresql.org/docs/current/datatype-datetime.html
 [errcodes]: https://www.postgresql.org/docs/current/static/errcodes-appendix.html
 [libpq]: https://www.postgresql.org/docs/current/static/libpq.html
 [lob]: https://www.postgresql.org/docs/current/static/largeobjects.html
+
+[boost-datetime]: https://www.boost.org/doc/libs/release/libs/date_time/
 
 [CMake]: https://cmake.org/
 [Doxygen]: http://doxygen.org/
