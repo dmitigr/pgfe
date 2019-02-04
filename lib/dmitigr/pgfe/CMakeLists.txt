@@ -110,7 +110,7 @@ set(dmitigr_pgfe_sources
   sql.cxx
   sql.hxx
 
-  internal/dll.hpp.in
+  internal/dll.hpp
   )
 
 if (WIN32)
@@ -123,8 +123,6 @@ set_source_files_properties(
   connection_options.cxx.in
   errc.cmake
   errc.hpp.in
-
-  internal/dll.hpp.in
 
   PROPERTIES
   HEADER_FILE_ONLY ON)
@@ -139,7 +137,8 @@ set(CMAKE_MODULE_PATH ${dmitigr_pgfe_SOURCE_DIR}/cmake)
 # dmitigr_internal
 #
 
-find_package(dmitigr_internal REQUIRED)
+find_package(Internal REQUIRED)
+message("Using ${dmitigr_internal_library} library")
 
 #
 # libpq
@@ -168,11 +167,15 @@ include_directories(${Pq_INCLUDE_DIRS})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 
 add_library(dmitigr_pgfe ${dmitigr_pgfe_sources})
-target_link_libraries(dmitigr_pgfe dmitigr_internal ${Suggested_Pq_LIBRARIES})
+target_link_libraries(dmitigr_pgfe ${dmitigr_internal_library} ${Suggested_Pq_LIBRARIES})
 if (UNIX)
   target_link_libraries(dmitigr_pgfe stdc++fs)
 elseif (WIN32)
   target_link_libraries(dmitigr_pgfe Ws2_32.lib)
+endif()
+
+if(BUILD_SHARED_LIBS)
+  target_compile_definitions(dmitigr_pgfe PUBLIC -DDMITIGR_PGFE_DLL)
 endif()
 
 set_target_properties(dmitigr_pgfe
@@ -221,9 +224,6 @@ configure_file(basics.hpp.in ${CMAKE_CURRENT_SOURCE_DIR}/basics.hpp @ONLY
 
 include("errc.cmake")
 configure_file(errc.hpp.in ${CMAKE_CURRENT_SOURCE_DIR}/errc.hpp @ONLY
-  NEWLINE_STYLE UNIX)
-
-configure_file(internal/dll.hpp.in ${CMAKE_CURRENT_SOURCE_DIR}/internal/dll.hpp @ONLY
   NEWLINE_STYLE UNIX)
 
 configure_file(connection_options.cxx.in ${CMAKE_CURRENT_BINARY_DIR}/connection_options.cxx @ONLY

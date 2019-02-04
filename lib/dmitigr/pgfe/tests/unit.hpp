@@ -8,6 +8,7 @@
 #include "dmitigr/pgfe/connection.hpp"
 #include "dmitigr/pgfe/connection_options.hpp"
 #include "dmitigr/internal/debug.hpp"
+#include "dmitigr/internal/os.hpp"
 #include "dmitigr/internal/filesystem_experimental.hpp"
 
 #define ASSERT(a) DMITIGR_INTERNAL_ASSERT(a)
@@ -43,21 +44,6 @@ bool is_runtime_throw_works(F f)
   return ok;
 };
 
-inline std::string get_env_var(const std::string& name)
-{
-#ifdef _WIN32
-  const std::unique_ptr<char, void(*)(void*)> buffer{nullptr, &std::free};
-  char* buf = buffer.get();
-  const auto err = _dupenv_s(&buf, nullptr, name.c_str());
-  ASSERT(!err);
-  return buf ? std::string{buf} : std::string{};
-#else
-  const char* const result = std::getenv(name.c_str());
-  ASSERT(result);
-  return result;
-#endif
-}
-
 inline std::unique_ptr<Connection_options> connection_options()
 {
   auto conn_opts = pgfe::Connection_options::make();
@@ -91,14 +77,15 @@ inline std::unique_ptr<Connection> make_ssl_connection()
   const auto conn_opts = connection_options();
   conn_opts->set_ssl_enabled(true);
 
+  namespace os = dmitigr::internal::os;
 #ifdef _WIN32
-  auto appdata = get_env_var("APPDATA");
-  ASSERT(!appdata.empty());
-  const std::filesystem::path certs_dir = appdata + "\\postgresql";
+  auto appdata = os::environment_variable("APPDATA");
+  ASSERT(appdata);
+  const std::filesystem::path certs_dir = *appdata + "\\postgresql";
 #else // Unix
-  auto home = get_env_var("HOME");
-  ASSERT(!home.empty());
-  const std::filesystem::path certs_dir = home + "/.postgresql";
+  auto home = os::environment_variable("HOME");
+  ASSERT(home);
+  const std::filesystem::path certs_dir = *home + "/.postgresql";
 #endif
 
   conn_opts->set_ssl_certificate_authority_file(certs_dir / "root.crt");
