@@ -14,4 +14,3 @@
 lib/dmitigr/pgfe/basics.hpp
 lib/dmitigr/pgfe/connection_options.cxx
 lib/dmitigr/pgfe/errc.hpp
-lib/dmitigr/pgfe/internal/dll.hpp
