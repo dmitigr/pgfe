@@ -10,56 +10,57 @@ remove_definitions(-DDMITIGR_PGFE_DLL_BUILDING)
 
 # ------------------------------------------------------------------------------
 
+set(libraries_to_link dmitigr_pgfe ${dmitigr_internal_library})
 add_executable(hello_world hello_world.cpp)
-target_link_libraries(hello_world dmitigr_pgfe)
+target_link_libraries(hello_world PRIVATE ${libraries_to_link})
 
 add_executable(test-unit-composite unit-composite.cpp unit.hpp)
-target_link_libraries(test-unit-composite dmitigr_pgfe)
+target_link_libraries(test-unit-composite PRIVATE ${libraries_to_link})
 
 add_executable(test-unit-data unit-data.cpp unit.hpp)
-target_link_libraries(test-unit-data dmitigr_pgfe)
+target_link_libraries(test-unit-data PRIVATE ${libraries_to_link})
 
 add_executable(test-unit-problem unit-problem.cpp ../problem.cpp ../sql.cxx unit.hpp)
-target_link_libraries(test-unit-problem dmitigr_pgfe)
+target_link_libraries(test-unit-problem PRIVATE ${libraries_to_link})
 
 add_executable(test-unit-sql_string unit-sql_string.cpp unit.hpp)
-target_link_libraries(test-unit-sql_string dmitigr_pgfe)
+target_link_libraries(test-unit-sql_string PRIVATE ${libraries_to_link})
 
 add_executable(test-unit-sql_vector unit-sql_vector.cpp unit.hpp)
-target_link_libraries(test-unit-sql_vector dmitigr_pgfe)
+target_link_libraries(test-unit-sql_vector PRIVATE ${libraries_to_link})
 
 add_executable(test-unit-conversions unit-conversions.cpp unit.hpp)
-target_link_libraries(test-unit-conversions dmitigr_pgfe)
+target_link_libraries(test-unit-conversions PRIVATE ${libraries_to_link})
 
 add_executable(test-unit-connection_options unit-connection_options.cpp unit.hpp)
-target_link_libraries(test-unit-connection_options dmitigr_pgfe)
+target_link_libraries(test-unit-connection_options PRIVATE ${libraries_to_link})
 
 add_executable(test-unit-connection unit-connection.cpp unit.hpp)
-target_link_libraries(test-unit-connection dmitigr_pgfe)
+target_link_libraries(test-unit-connection PRIVATE ${libraries_to_link})
 
 add_executable(test-unit-connection-ssl unit-connection-ssl.cpp unit.hpp)
-target_link_libraries(test-unit-connection-ssl dmitigr_pgfe)
+target_link_libraries(test-unit-connection-ssl PRIVATE ${libraries_to_link})
 
 add_executable(test-unit-connection-deferrable unit-connection-deferrable.cpp unit.hpp)
-target_link_libraries(test-unit-connection-deferrable dmitigr_pgfe)
+target_link_libraries(test-unit-connection-deferrable PRIVATE ${libraries_to_link})
 
 add_executable(test-unit-connection-err_in_mid unit-connection-err_in_mid.cpp unit.hpp)
-target_link_libraries(test-unit-connection-err_in_mid dmitigr_pgfe)
+target_link_libraries(test-unit-connection-err_in_mid PRIVATE ${libraries_to_link})
 
 add_executable(test-unit-ps unit-ps.cpp unit.hpp)
-target_link_libraries(test-unit-ps dmitigr_pgfe)
+target_link_libraries(test-unit-ps PRIVATE ${libraries_to_link})
 
 add_executable(test-unit-conversions-online unit-conversions-online.cpp unit.hpp)
-target_link_libraries(test-unit-conversions-online dmitigr_pgfe)
+target_link_libraries(test-unit-conversions-online PRIVATE ${libraries_to_link})
 
 add_executable(test-benchmark-sql_string_replace benchmark-sql_string_replace.cpp unit.hpp)
-target_link_libraries(test-benchmark-sql_string_replace dmitigr_pgfe)
+target_link_libraries(test-benchmark-sql_string_replace PRIVATE ${libraries_to_link})
 
 add_executable(test-benchmark-array-client benchmark-array-client.cpp unit.hpp)
-target_link_libraries(test-benchmark-array-client dmitigr_pgfe)
+target_link_libraries(test-benchmark-array-client PRIVATE ${libraries_to_link})
 
 add_executable(test-benchmark-array-server benchmark-array-server.cpp unit.hpp)
-target_link_libraries(test-benchmark-array-server dmitigr_pgfe)
+target_link_libraries(test-benchmark-array-server PRIVATE ${libraries_to_link})
 
 # ------------------------------------------------------------------------------
 if (WIN32)

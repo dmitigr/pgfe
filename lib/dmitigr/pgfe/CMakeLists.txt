@@ -167,11 +167,14 @@ include_directories(${Pq_INCLUDE_DIRS})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 
 add_library(dmitigr_pgfe ${dmitigr_pgfe_sources})
-target_link_libraries(dmitigr_pgfe ${dmitigr_internal_library} ${Suggested_Pq_LIBRARIES})
+target_link_libraries(dmitigr_pgfe
+  PUBLIC ${Suggested_Pq_LIBRARIES}
+  PRIVATE ${dmitigr_internal_library})
+
 if (UNIX)
-  target_link_libraries(dmitigr_pgfe stdc++fs)
+  target_link_libraries(dmitigr_pgfe PRIVATE stdc++fs)
 elseif (WIN32)
-  target_link_libraries(dmitigr_pgfe Ws2_32.lib)
+  target_link_libraries(dmitigr_pgfe PRIVATE Ws2_32.lib)
 endif()
 
 if(BUILD_SHARED_LIBS)
