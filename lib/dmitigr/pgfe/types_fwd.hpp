@@ -8,8 +8,8 @@
 /**
  * @brief Public API.
  *
- * @warning The nested namespace detail contains an implementation details and
- * should not be used in applications.
+ * @warning The nested namespaces `detail` contains implementation details
+ * which are should not be used in applications.
  */
 namespace dmitigr::pgfe {
 

@@ -445,12 +445,12 @@ must be used to work with the same object from several threads.
 Documentation
 =============
 
-The Pgfe documentation is located at the official site [here][doc].
+The Dmitigr Pgfe documentation is located at the official site [here][doc].
 
 Download
 ========
 
-The Pgfe repository is located at Github [here][github].
+The Dmitigr Pgfe repository is located at Github [here][github].
 
 Installation and consuming
 ==========================
@@ -467,9 +467,9 @@ Build time settings
 -------------------
 
 Settings that may be specified at build time by using [CMake] variables are:
-  1. the type of the build;
-  2. the flag of build the shared library;
-  3. the flag of building the tests (default is on);
+  1. the type of the build (only meaningful to single-configuration generators);
+  2. the flag to build the shared library;
+  3. the flag to build the tests (default is on);
   4. dependencies;
   5. installation directories;
   6. default values of the connection options.
@@ -480,9 +480,9 @@ Details:
 |:-------------|:--------------|:--------------|:-----------------|
 |**The type of the build**||||
 |CMAKE_BUILD_TYPE|Debug \| Release \| RelWithDebInfo \| MinSizeRel|Debug|Debug|
-|**The flag of build the shared library**||||
+|**The flag to build the shared library**||||
 |BUILD_SHARED_LIBS|On \| Off|On|On|
-|**The flag of building the tests**||||
+|**The flag to build the tests**||||
 |PGFE_BUILD_TESTS|On \| Off|On|On|
 |**Dependencies**||||
 |LIBPQ_PREFIX|*a path*|*not set (rely on CMake)*|*not set (rely on CMake)*|
@@ -525,8 +525,8 @@ The only dependences of Pgfe are [dmitigr_internal] and [libpq].
 
 First, [dmitigr_internal] must be installed. The installation is trivial as described on its page.
 
-**WARNING** It's highly recommended to update the dmitigr_internal library (just pull and reinstall)
-before updating the Pgfe libary!
+**WARNING** It's highly recommended to update the [dmitigr_internal] library (just pull and reinstall)
+before building the Pgfe library!
 
 As for [libpq], [CMake] will try to locate it automatically. Although, it's possible to manually
 specify the location of [libpq] by using the following [CMake] variables:
@@ -560,7 +560,7 @@ Run the Developer Command Prompt for Visual Studio and type:
     > mkdir pgfe\build
     > cd pgfe\build
     > cmake -G "Visual Studio 15 2017 Win64" ..
-    > cmake --build -DBUILD_TYPE=Debug ..
+    > cmake --build . --config Debug
 
 Next, run the Elevated Command Prompt (i.e. the command prompt with administrator privileges) and type:
 
