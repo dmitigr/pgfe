@@ -30,8 +30,8 @@ const std::optional<std::string>  tcp_host_address{@DMITIGR_PGFE_CONNECTION_TCP_
 const std::optional<std::string>  tcp_host_name{@DMITIGR_PGFE_CONNECTION_TCP_HOST_NAME_CPP@};
 constexpr const std::int_fast32_t tcp_host_port{@DMITIGR_PGFE_CONNECTION_TCP_HOST_PORT@};
 
-const std::string                username{"@DMITIGR_PGFE_CONNECTION_USERNAME@"};
-const std::string                database{"@DMITIGR_PGFE_CONNECTION_DATABASE@"};
+const std::string                username{@DMITIGR_PGFE_CONNECTION_USERNAME_CPP@};
+const std::string                database{@DMITIGR_PGFE_CONNECTION_DATABASE_CPP@};
 const std::optional<std::string> password{@DMITIGR_PGFE_CONNECTION_PASSWORD_CPP@};
 const std::optional<std::string> kerberos_service_name{@DMITIGR_PGFE_CONNECTION_KERBROS_SERVICE_NAME_CPP@};
 
