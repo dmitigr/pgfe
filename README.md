@@ -495,28 +495,28 @@ Details:
 |DMITIGR_PGFE_LIB_INSTALL_DIR|*a path relative to CMAKE_INSTALL_PREFIX*|"lib"|"lib"|
 |DMITIGR_PGFE_INCLUDE_INSTALL_DIR|*a path relative to CMAKE_INSTALL_PREFIX*|"include"|"include"|
 |**Default values of the connection options**||||
-|PGFE_CONNECTION_COMMUNICATION_MODE|uds \| tcp|uds|tcp|
-|PGFE_CONNECTION_UDS_DIRECTORY|*an absolute path*|/tmp|*unavailable*|
-|PGFE_CONNECTION_UDS_FILE_EXTENSION|*a string*|5432|*unavailable*|
-|PGFE_CONNECTION_UDS_REQUIRE_SERVER_PROCESS_USERNAME|*a string*|*not set*|*unavailable*|
-|PGFE_CONNECTION_TCP_KEEPALIVES_ENABLED|On \| Off|Off|Off|
-|PGFE_CONNECTION_TCP_KEEPALIVES_IDLE|*non-negative number*|*null (system default)*|*null (system default)*|
-|PGFE_CONNECTION_TCP_KEEPALIVES_INTERVAL|*non-negative number*|*null (system default)*|*null (system default)*|
-|PGFE_CONNECTION_TCP_KEEPALIVES_COUNT|*non-negative number*|*null (system default)*|*null (system default)*|
-|PGFE_CONNECTION_TCP_HOST_ADDRESS|*IPv4(v6) address*|127.0.0.1|127.0.0.1|
-|PGFE_CONNECTION_TCP_HOST_NAME|*a string*|localhost|localhost|
-|PGFE_CONNECTION_TCP_HOST_PORT|*a number*|5432|5432|
-|PGFE_CONNECTION_USERNAME|*a string*|postgres|postgres|
-|PGFE_CONNECTION_DATABASE|*a string*|postgres|postgres|
-|PGFE_CONNECTION_PASSWORD|*a string*|""|""|
-|PGFE_CONNECTION_KERBEROS_SERVICE_NAME|*a string*|*null (not used)*|*null (not used)*|
-|PGFE_CONNECTION_SSL_ENABLED|On \| Off|Off|Off|
-|PGFE_CONNECTION_SSL_SERVER_HOST_NAME_VERIFICATION_ENABLED|On \| Off|Off|Off|
-|PGFE_CONNECTION_SSL_COMPRESSION_ENABLED|On \| Off|Off|Off|
-|PGFE_CONNECTION_SSL_CERTIFICATE_FILE|*an absolute path*|*null (libpq's default)*|*null (libpq's default)*|
-|PGFE_CONNECTION_SSL_PRIVATE_KEY_FILE|*an absolute path*|*null (libpq's default)*|*null (libpq's default)*|
-|PGFE_CONNECTION_SSL_CERTIFICATE_AUTHORITY_FILE|*an absolute path*|*null (libpq's default)*|*null (libpq's default)*|
-|PGFE_CONNECTION_SSL_CERTIFICATE_REVOCATION_LIST_FILE|*an absolute path*|*null (libpq's default)*|*null (libpq's default)*|
+|DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE|uds \| tcp|uds|tcp|
+|DMITIGR_PGFE_CONNECTION_UDS_DIRECTORY|*an absolute path*|/tmp|*unavailable*|
+|DMITIGR_PGFE_CONNECTION_UDS_FILE_EXTENSION|*a string*|5432|*unavailable*|
+|DMITIGR_PGFE_CONNECTION_UDS_REQUIRE_SERVER_PROCESS_USERNAME|*a string*|*not set*|*unavailable*|
+|DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_ENABLED|On \| Off|Off|Off|
+|DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_IDLE|*non-negative number*|*null (system default)*|*null (system default)*|
+|DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_INTERVAL|*non-negative number*|*null (system default)*|*null (system default)*|
+|DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_COUNT|*non-negative number*|*null (system default)*|*null (system default)*|
+|DMITIGR_PGFE_CONNECTION_TCP_HOST_ADDRESS|*IPv4(v6) address*|127.0.0.1|127.0.0.1|
+|DMITIGR_PGFE_CONNECTION_TCP_HOST_NAME|*a string*|localhost|localhost|
+|DMITIGR_PGFE_CONNECTION_TCP_HOST_PORT|*a number*|5432|5432|
+|DMITIGR_PGFE_CONNECTION_USERNAME|*a string*|postgres|postgres|
+|DMITIGR_PGFE_CONNECTION_DATABASE|*a string*|postgres|postgres|
+|DMITIGR_PGFE_CONNECTION_PASSWORD|*a string*|""|""|
+|DMITIGR_PGFE_CONNECTION_KERBEROS_SERVICE_NAME|*a string*|*null (not used)*|*null (not used)*|
+|DMITIGR_PGFE_CONNECTION_SSL_ENABLED|On \| Off|Off|Off|
+|DMITIGR_PGFE_CONNECTION_SSL_SERVER_HOST_NAME_VERIFICATION_ENABLED|On \| Off|Off|Off|
+|DMITIGR_PGFE_CONNECTION_SSL_COMPRESSION_ENABLED|On \| Off|Off|Off|
+|DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_FILE|*an absolute path*|*null (libpq's default)*|*null (libpq's default)*|
+|DMITIGR_PGFE_CONNECTION_SSL_PRIVATE_KEY_FILE|*an absolute path*|*null (libpq's default)*|*null (libpq's default)*|
+|DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_AUTHORITY_FILE|*an absolute path*|*null (libpq's default)*|*null (libpq's default)*|
+|DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_REVOCATION_LIST_FILE|*an absolute path*|*null (libpq's default)*|*null (libpq's default)*|
 
 Installation in common
 ----------------------

@@ -13,35 +13,35 @@
 
 namespace dmitigr::pgfe::detail::btd {
 
-constexpr const Communication_mode communication_mode{Communication_mode::@PGFE_CONNECTION_COMMUNICATION_MODE@};
+constexpr const Communication_mode communication_mode{Communication_mode::@DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE@};
 
 #ifndef _WIN32
-const std::filesystem::path      uds_directory{"@PGFE_CONNECTION_UDS_DIRECTORY@"};
-const std::string                uds_file_extension{"@PGFE_CONNECTION_UDS_FILE_EXTENSION@"};
-const std::optional<std::string> uds_require_server_process_username{@PGFE_CONNECTION_UDS_REQUIRE_SERVER_PROCESS_USERNAME_CPP@};
+const std::filesystem::path      uds_directory{"@DMITIGR_PGFE_CONNECTION_UDS_DIRECTORY@"};
+const std::string                uds_file_extension{"@DMITIGR_PGFE_CONNECTION_UDS_FILE_EXTENSION@"};
+const std::optional<std::string> uds_require_server_process_username{@DMITIGR_PGFE_CONNECTION_UDS_REQUIRE_SERVER_PROCESS_USERNAME_CPP@};
 #endif
 
-constexpr const bool                                tcp_keepalives_enabled{@PGFE_CONNECTION_TCP_KEEPALIVES_ENABLED_CPP@};
-constexpr const std::optional<std::chrono::seconds> tcp_keepalives_idle{@PGFE_CONNECTION_TCP_KEEPALIVES_IDLE@};
-constexpr const std::optional<std::chrono::seconds> tcp_keepalives_interval{@PGFE_CONNECTION_TCP_KEEPALIVES_INTERVAL@};
-constexpr const std::optional<int>                  tcp_keepalives_count{@PGFE_CONNECTION_TCP_KEEPALIVES_COUNT@};
+constexpr const bool                                tcp_keepalives_enabled{@DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_ENABLED_CPP@};
+constexpr const std::optional<std::chrono::seconds> tcp_keepalives_idle{@DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_IDLE@};
+constexpr const std::optional<std::chrono::seconds> tcp_keepalives_interval{@DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_INTERVAL@};
+constexpr const std::optional<int>                  tcp_keepalives_count{@DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_COUNT@};
 
-const std::optional<std::string>  tcp_host_address{@PGFE_CONNECTION_TCP_HOST_ADDRESS_CPP@};
-const std::optional<std::string>  tcp_host_name{@PGFE_CONNECTION_TCP_HOST_NAME_CPP@};
-constexpr const std::int_fast32_t tcp_host_port{@PGFE_CONNECTION_TCP_HOST_PORT@};
+const std::optional<std::string>  tcp_host_address{@DMITIGR_PGFE_CONNECTION_TCP_HOST_ADDRESS_CPP@};
+const std::optional<std::string>  tcp_host_name{@DMITIGR_PGFE_CONNECTION_TCP_HOST_NAME_CPP@};
+constexpr const std::int_fast32_t tcp_host_port{@DMITIGR_PGFE_CONNECTION_TCP_HOST_PORT@};
 
-const std::string                username{"@PGFE_CONNECTION_USERNAME@"};
-const std::string                database{"@PGFE_CONNECTION_DATABASE@"};
-const std::optional<std::string> password{@PGFE_CONNECTION_PASSWORD_CPP@};
-const std::optional<std::string> kerberos_service_name{@PGFE_CONNECTION_KERBROS_SERVICE_NAME_CPP@};
+const std::string                username{"@DMITIGR_PGFE_CONNECTION_USERNAME@"};
+const std::string                database{"@DMITIGR_PGFE_CONNECTION_DATABASE@"};
+const std::optional<std::string> password{@DMITIGR_PGFE_CONNECTION_PASSWORD_CPP@};
+const std::optional<std::string> kerberos_service_name{@DMITIGR_PGFE_CONNECTION_KERBROS_SERVICE_NAME_CPP@};
 
-constexpr const bool  ssl_enabled{@PGFE_CONNECTION_SSL_ENABLED_CPP@};
-constexpr const bool  ssl_server_host_name_verification_enabled{@PGFE_CONNECTION_SSL_SERVER_HOST_NAME_VERIFICATION_ENABLED_CPP@};
-constexpr const bool  ssl_compression_enabled{@PGFE_CONNECTION_SSL_COMPRESSION_ENABLED_CPP@};
-const std::optional<std::filesystem::path> ssl_certificate_file{@PGFE_CONNECTION_SSL_CERTIFICATE_FILE_CPP@};
-const std::optional<std::filesystem::path> ssl_private_key_file{@PGFE_CONNECTION_SSL_PRIVATE_KEY_FILE_CPP@};
-const std::optional<std::filesystem::path> ssl_certificate_authority_file{@PGFE_CONNECTION_SSL_CERTIFICATE_AUTHORITY_FILE_CPP@};
-const std::optional<std::filesystem::path> ssl_certificate_revocation_list_file{@PGFE_CONNECTION_SSL_CERTIFICATE_REVOCATION_LIST_FILE_CPP@};
+constexpr const bool ssl_enabled{@DMITIGR_PGFE_CONNECTION_SSL_ENABLED_CPP@};
+constexpr const bool ssl_server_host_name_verification_enabled{@DMITIGR_PGFE_CONNECTION_SSL_SERVER_HOST_NAME_VERIFICATION_ENABLED_CPP@};
+constexpr const bool ssl_compression_enabled{@DMITIGR_PGFE_CONNECTION_SSL_COMPRESSION_ENABLED_CPP@};
+const std::optional<std::filesystem::path> ssl_certificate_file{@DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_FILE_CPP@};
+const std::optional<std::filesystem::path> ssl_private_key_file{@DMITIGR_PGFE_CONNECTION_SSL_PRIVATE_KEY_FILE_CPP@};
+const std::optional<std::filesystem::path> ssl_certificate_authority_file{@DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_AUTHORITY_FILE_CPP@};
+const std::optional<std::filesystem::path> ssl_certificate_revocation_list_file{@DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_REVOCATION_LIST_FILE_CPP@};
 
 } // namespace dmitigr::pgfe::detail::btd
 
