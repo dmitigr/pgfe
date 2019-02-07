@@ -6,8 +6,8 @@
 #define DMITIGR_PGFE_SQL_STRING_HPP
 
 #include "dmitigr/pgfe/basics.hpp"
+#include "dmitigr/pgfe/dll.hpp"
 #include "dmitigr/pgfe/parameterizable.hpp"
-#include "dmitigr/pgfe/internal/dll.hpp"
 
 #include <memory>
 #include <string>

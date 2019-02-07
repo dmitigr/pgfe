@@ -11,6 +11,9 @@ if (NOT (UNIX OR WIN32))
   message(FATAL_ERROR "unsupported target platform")
 endif()
 
+list(APPEND CMAKE_MODULE_PATH ${dmitigr_pgfe_SOURCE_DIR}/cmake)
+include(dmitigr)
+
 set(dmitigr_pgfe_version_part1 1)
 set(dmitigr_pgfe_version_part2 1)
 add_definitions(-DDMITIGR_PGFE_VERSION_PART1=${dmitigr_pgfe_version_part1})
@@ -20,38 +23,37 @@ if(WIN32)
 endif()
 
 # ------------------------------------------------------------------------------
-
-if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Debug CACHE
-    STRING "Build type: Debug Release RelWithDebInfo MinSizeRel."
-    FORCE)
-endif()
-message("Build type is ${CMAKE_BUILD_TYPE}")
-
+# Build options
 # ------------------------------------------------------------------------------
 
-set(BUILD_SHARED_LIBS ON CACHE BOOL "Build shared library")
-
-if(BUILD_SHARED_LIBS)
-  message("Building shared library enabled.")
-  add_definitions(-DDMITIGR_PGFE_DLL_BUILDING)
-  set(DMITIGR_PGFE_DLL 1)
-else()
-  message("Building shared library disabled.")
-  set(DMITIGR_PGFE_DLL 0)
-endif()
-
-# ------------------------------------------------------------------------------
-
+option(BUILD_SHARED_LIBS "Build shared library?" ON)
+set(DMITIGR_PGFE_HEADER_ONLY OFF) # TODO
 option(DMITIGR_PGFE_BUILD_TESTS "Build tests?" ON)
+
+if(NOT DMITIGR_PGFE_HEADER_ONLY)
+  if(BUILD_SHARED_LIBS)
+    message("Building of shared library is enabled.")
+    add_definitions(-DDMITIGR_PGFE_DLL_BUILDING)
+  else()
+    message("Building of static library is enabled.")
+  endif()
+
+  if(NOT DEFINED CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Debug CACHE STRING
+      "Build type: Debug Release RelWithDebInfo MinSizeRel.")
+  endif()
+  message("Build type is ${CMAKE_BUILD_TYPE}")
+else()
+  message("Header-only mode is enabled")
+endif()
 
 if(DMITIGR_PGFE_BUILD_TESTS)
   enable_testing()
-  message("Building tests enabled.")
-else()
-  message("Building tests disabled.")
+  message("Building of tests is enabled")
 endif()
 
+# ------------------------------------------------------------------------------
+# Installation options
 # ------------------------------------------------------------------------------
 
 if(UNIX)
@@ -291,21 +293,322 @@ if (NOT "${DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_REVOCATION_LIST_FILE}" STREQU
 endif()
 
 # ------------------------------------------------------------------------------
+# Languages
+# ------------------------------------------------------------------------------
+
+enable_language(CXX)
+set(CMAKE_CXX_STANDARD 17)
+set(CXX_STANDARD_REQUIRED ON)
+
+include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/lib)
+include_directories(BEFORE ${CMAKE_CURRENT_BINARY_DIR}/lib)
+
+# ------------------------------------------------------------------------------
+# Preprocessing of the sources
+# ------------------------------------------------------------------------------
+
+# Generated headers (.hpp) should go to the CMAKE_CURRENT_SOURCE_DIR, but
+# generated implementations (.cxx) should go to the CMAKE_CURRENT_BINARY_DIR.
+
+include("lib/dmitigr/pgfe/basics.cmake")
+configure_file(lib/dmitigr/pgfe/basics.hpp.in ${CMAKE_CURRENT_SOURCE_DIR}/lib/dmitigr/pgfe/basics.hpp @ONLY
+  NEWLINE_STYLE UNIX)
+
+include("lib/dmitigr/pgfe/errc.cmake")
+configure_file(lib/dmitigr/pgfe/errc.hpp.in ${CMAKE_CURRENT_SOURCE_DIR}/lib/dmitigr/pgfe/errc.hpp @ONLY
+  NEWLINE_STYLE UNIX)
+
+configure_file(lib/dmitigr/pgfe/connection_options.cxx.in ${CMAKE_CURRENT_BINARY_DIR}/lib/dmitigr/pgfe/connection_options.cxx @ONLY
+  NEWLINE_STYLE UNIX)
+
+set(dmitigr_pgfe_preprocessed_headers
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/dmitigr/pgfe/basics.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/dmitigr/pgfe/errc.hpp
+  ${CMAKE_CURRENT_BINARY_DIR}/lib/dmitigr/pgfe/connection_options.cxx
+  )
+# ------------------------------------------------------------------------------
+# Sources
+# ------------------------------------------------------------------------------
+
+set(dmitigr_pgfe_root_headers
+  lib/dmitigr/pgfe.hpp
+  )
+
+# set(dmitigr_pgfe_header_only_headers
+#   lib/dmitigr/pgfe/header_only.hpp
+#   )
+
+set(dmitigr_pgfe_headers
+  lib/dmitigr/pgfe/array_conversions.hpp
+  lib/dmitigr/pgfe/array_conversions.hxx
+  lib/dmitigr/pgfe/array_conversions.tcc
+  lib/dmitigr/pgfe/basic_conversions.hpp
+
+  lib/dmitigr/pgfe/completion.hpp
+  lib/dmitigr/pgfe/completion.hxx
+
+  lib/dmitigr/pgfe/compositional.hpp
+  lib/dmitigr/pgfe/compositional.hxx
+
+  lib/dmitigr/pgfe/composite.hpp
+  lib/dmitigr/pgfe/composite.hxx
+
+  lib/dmitigr/pgfe/connection.hpp
+  lib/dmitigr/pgfe/connection.hxx
+
+  lib/dmitigr/pgfe/connection_options.hpp
+  lib/dmitigr/pgfe/connection_options.hxx
+
+  lib/dmitigr/pgfe/conversions_api.hpp
+  lib/dmitigr/pgfe/conversions.hpp
+  lib/dmitigr/pgfe/conversions.hxx
+
+  lib/dmitigr/pgfe/data.hpp
+  lib/dmitigr/pgfe/data.hxx
+
+  lib/dmitigr/pgfe/dll.hpp
+
+  lib/dmitigr/pgfe/errc.hxx
+
+  lib/dmitigr/pgfe/error.hpp
+  lib/dmitigr/pgfe/error.hxx
+
+  lib/dmitigr/pgfe/exceptions.hpp
+  lib/dmitigr/pgfe/exceptions.hxx
+
+  lib/dmitigr/pgfe/message.hpp
+
+  lib/dmitigr/pgfe/misc.hpp
+
+  lib/dmitigr/pgfe/net.hxx
+
+  lib/dmitigr/pgfe/notice.hpp
+  lib/dmitigr/pgfe/notice.hxx
+
+  lib/dmitigr/pgfe/notification.hpp
+  lib/dmitigr/pgfe/notification.hxx
+
+  lib/dmitigr/pgfe/parameterizable.hpp
+  lib/dmitigr/pgfe/parameterizable.hxx
+
+  lib/dmitigr/pgfe/pq.hxx
+
+  lib/dmitigr/pgfe/prepared_statement.hpp
+  lib/dmitigr/pgfe/prepared_statement.hxx
+
+  lib/dmitigr/pgfe/problem.hpp
+  lib/dmitigr/pgfe/problem.hxx
+
+  lib/dmitigr/pgfe/response.hpp
+
+  lib/dmitigr/pgfe/row.hpp
+  lib/dmitigr/pgfe/row.hxx
+
+  lib/dmitigr/pgfe/row_info.hpp
+  lib/dmitigr/pgfe/row_info.hxx
+
+  lib/dmitigr/pgfe/server_message.hpp
+
+  lib/dmitigr/pgfe/signal.hpp
+
+  lib/dmitigr/pgfe/sql.hxx
+
+  lib/dmitigr/pgfe/sql_string.hpp
+  lib/dmitigr/pgfe/sql_string.hxx
+
+  lib/dmitigr/pgfe/sql_vector.hpp
+  lib/dmitigr/pgfe/sql_vector.hxx
+
+  lib/dmitigr/pgfe/std_system_error.hpp
+
+  lib/dmitigr/pgfe/types_fwd.hpp
+  )
+
+set(dmitigr_pgfe_cmake_sources
+  lib/dmitigr/pgfe/basics.cmake
+  lib/dmitigr/pgfe/errc.cmake
+  )
+
+set(dmitigr_pgfe_cmake_unpreprocessed
+  lib/dmitigr/pgfe/basics.hpp.in
+  lib/dmitigr/pgfe/connection_options.cxx.in
+  lib/dmitigr/pgfe/errc.hpp.in
+  )
+
+set(dmitigr_pgfe_transunits
+  lib/dmitigr/pgfe/basics.cpp
+  lib/dmitigr/pgfe/composite.cpp
+  lib/dmitigr/pgfe/connection.cpp
+  lib/dmitigr/pgfe/connection_options.cpp
+  lib/dmitigr/pgfe/data.cpp
+  lib/dmitigr/pgfe/errc.cxx
+  lib/dmitigr/pgfe/misc.cpp
+  lib/dmitigr/pgfe/net.cxx
+  lib/dmitigr/pgfe/prepared_statement.cxx
+  lib/dmitigr/pgfe/problem.cpp
+  lib/dmitigr/pgfe/sql.cxx
+  lib/dmitigr/pgfe/sql_string.cpp
+  lib/dmitigr/pgfe/sql_string.cxx
+  lib/dmitigr/pgfe/sql_vector.cpp
+  lib/dmitigr/pgfe/std_system_error.cpp
+  )
+
+set(dmitigr_pgfe_sources
+  ${dmitigr_pgfe_root_headers}
+  #${dmitigr_pgfe_header_only_headers}
+  ${dmitigr_pgfe_headers}
+  ${dmitigr_pgfe_cmake_sources}
+  ${dmitigr_pgfe_cmake_unpreprocessed}
+  ${dmitigr_pgfe_transunits}
+  )
+
+if (WIN32)
+  list(APPEND dmitigr_pgfe_sources lib/dmitigr/pgfe/version.rc)
+endif()
+
+set_source_files_properties(
+  ${dmitigr_pgfe_cmake_sources}
+  ${dmitigr_pgfe_cmake_unpreprocessed}
+
+  PROPERTIES
+  HEADER_FILE_ONLY ON)
+
+# ------------------------------------------------------------------------------
+# Dependencies
+# ------------------------------------------------------------------------------
+
+#
+# dmitigr_internal
+#
+
+find_package(Internal REQUIRED)
+message("Using ${dmitigr_internal_library} library")
+
+#
+# libpq
+#
+
+# FindPq.cmake module will use these settings to find libpq.
+set(LIBPQ_PREFIX "" CACHE PATH
+  "Installation prefix of the libpq library (where headers and binary resides)")
+set(LIBPQ_LIB_PREFIX "${LIBPQ_PREFIX}" CACHE PATH
+  "Installation prefix of the libpq binary (where the binary reside)")
+set(LIBPQ_INCLUDE_PREFIX "${LIBPQ_PREFIX}" CACHE PATH
+  "Installation prefix of the libpq includes (where the headers resides)")
+
+find_package(Pq REQUIRED)
+message("libpq includes to use: ${Pq_INCLUDE_DIRS}")
+message("Suggested libpq binary to use: ${Suggested_Pq_LIBRARIES}")
+include_directories(${Pq_INCLUDE_DIRS})
+
+# ------------------------------------------------------------------------------
+# Targets
+# ------------------------------------------------------------------------------
+
+# Note: Multi-configuration generators (VS, Xcode) appends a per-configuration
+# subdirectory to CMAKE_RUNTIME_OUTPUT_DIRECTORY unless a generator expression
+# is used.
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
+
+if(NOT DMITIGR_PGFE_HEADER_ONLY)
+  if(BUILD_SHARED_LIBS)
+    set(dmitigr_pgfe_target "dmitigr_pgfe")
+  else()
+    set(dmitigr_pgfe_target "dmitigr_pgfe_static")
+  endif()
+
+  add_library(${dmitigr_pgfe_target} ${dmitigr_pgfe_sources})
+
+  if(BUILD_SHARED_LIBS)
+    target_compile_definitions(dmitigr_pgfe PUBLIC -DDMITIGR_PGFE_DLL)
+  endif()
+
+  set_target_properties(${dmitigr_pgfe_target}
+    PROPERTIES
+    LINKER_LANGUAGE "CXX"
+    POSITION_INDEPENDENT_CODE True
+    VERSION ${dmitigr_pgfe_version_part1}.${dmitigr_pgfe_version_part2}
+    DEBUG_POSTFIX "d")
+
+  dmitigr_target_compile_options(${dmitigr_pgfe_target})
+
+  target_link_libraries(${dmitigr_pgfe_target}
+    PUBLIC  ${Suggested_Pq_LIBRARIES}
+    PRIVATE ${dmitigr_internal_library})
+
+  if (UNIX)
+    target_link_libraries(${dmitigr_pgfe_target} PRIVATE stdc++fs)
+  elseif (WIN32)
+    target_link_libraries(${dmitigr_pgfe_target} PRIVATE Ws2_32.lib)
+  endif()
+else() # for header-only
+  set(dmitigr_pgfe_target "dmitigr_pgfe_interface")
+
+  add_library(dmitigr_pgfe_interface INTERFACE)
+
+  target_compile_definitions(dmitigr_pgfe_interface INTERFACE -DDMITIGR_PGFE_HEADER_ONLY)
+  target_link_libraries(dmitigr_pgfe_interface INTERFACE ${dmitigr_internal_library})
+endif()
+
+# ------------------------------------------------------------------------------
+# Installing
+# ------------------------------------------------------------------------------
+
+install(FILES ${dmitigr_pgfe_root_headers}
+  DESTINATION ${DMITIGR_PGFE_INCLUDE_INSTALL_DIR}/dmitigr)
+
+install(FILES ${dmitigr_pgfe_headers}
+  DESTINATION ${DMITIGR_PGFE_INCLUDE_INSTALL_DIR}/dmitigr/pgfe)
+
+if(DMITIGR_PGFE_HEADER_ONLY)
+  install(FILES ${dmitigr_pgfe_header_only_headers}
+    DESTINATION ${DMITIGR_PGFE_INCLUDE_INSTALL_DIR}/dmitigr/pgfe)
+endif()
+
+if(NOT DMITIGR_PGFE_HEADER_ONLY)
+  install(TARGETS ${dmitigr_pgfe_target}
+    EXPORT ${dmitigr_pgfe_target}_export
+    ARCHIVE  DESTINATION ${DMITIGR_PGFE_LIB_INSTALL_DIR}
+    LIBRARY  DESTINATION ${DMITIGR_PGFE_LIB_INSTALL_DIR}
+    RUNTIME  DESTINATION ${DMITIGR_PGFE_LIB_INSTALL_DIR}
+    INCLUDES DESTINATION ${DMITIGR_PGFE_INCLUDE_INSTALL_DIR})
+else()
+  install(TARGETS dmitigr_pgfe_interface
+    EXPORT dmitigr_pgfe_interface_export
+    INCLUDES DESTINATION ${DMITIGR_PGFE_INCLUDE_INSTALL_DIR})
+
+  install(FILES ${dmitigr_pgfe_transunits}
+    DESTINATION ${DMITIGR_PGFE_INCLUDE_INSTALL_DIR}/dmitigr/pgfe)
+endif()
+
+install(EXPORT ${dmitigr_pgfe_target}_export
+  DESTINATION ${DMITIGR_PGFE_CMAKE_INSTALL_DIR}
+  FILE ${dmitigr_pgfe_target}-config.cmake)
+
+# --------------------------------------
+
+install(FILES
+  doc/dmitigr_pgfe.class.violet.html
+
+  DESTINATION ${DMITIGR_PGFE_DOC_INSTALL_DIR})
+
+# ------------------------------------------------------------------------------
+# Uninstalling
+# ------------------------------------------------------------------------------
 
 add_custom_target(uninstall)
 
 add_custom_command(TARGET uninstall PRE_BUILD
+  COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_CMAKE_INSTALL_DIR}/dmitigr_pgfe*
+  COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_DOC_INSTALL_DIR}/dmitigr_pgfe*
+  COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_LIB_INSTALL_DIR}/dmitigr_pgfe*
   COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_LIB_INSTALL_DIR}/libdmitigr_pgfe*
-  COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_LIB_INSTALL_DIR}/dmitigr_pgfe*.dll
-  COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_LIB_INSTALL_DIR}/dmitigr_pgfe*.lib
-
-  COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_INCLUDE_INSTALL_DIR}/dmitigr/pgfe.hpp
+  COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_INCLUDE_INSTALL_DIR}/dmitigr/pgfe*
   COMMAND cmake -E remove_directory ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_INCLUDE_INSTALL_DIR}/dmitigr/pgfe
-  COMMAND cmake -E remove_directory ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_CMAKE_INSTALL_DIR}
-  COMMAND cmake -E remove_directory ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_DOC_INSTALL_DIR}
   )
 
-# -------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
-add_subdirectory(doc)
-add_subdirectory(lib)
+if(DMITIGR_PGFE_BUILD_TESTS)
+  add_subdirectory(tests)
+endif()

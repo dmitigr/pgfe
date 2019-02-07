@@ -2,12 +2,12 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
-#ifndef DMITIGR_PGFE_INTERNAL_DLL_HPP
-#define DMITIGR_PGFE_INTERNAL_DLL_HPP
-
 /*
  * This file must be adapted for every API individually!
  */
+
+#ifndef DMITIGR_PGFE_DLL_HPP
+#define DMITIGR_PGFE_DLL_HPP
 
 #ifdef _WIN32
   #ifdef DMITIGR_PGFE_DLL_BUILDING
@@ -23,4 +23,4 @@
   #define DMITIGR_PGFE_API
 #endif
 
-#endif // DMITIGR_PGFE_INTERNAL_DLL_HPP
+#endif // DMITIGR_PGFE_DLL_HPP

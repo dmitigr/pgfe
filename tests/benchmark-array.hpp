@@ -5,7 +5,7 @@
 #ifndef DMITIGR_PGFE_TESTS_BENCHMARK_ARRAY_HPP
 #define DMITIGR_PGFE_TESTS_BENCHMARK_ARRAY_HPP
 
-#include "dmitigr/pgfe/tests/unit.hpp"
+#include "unit.hpp"
 
 #include <fstream>
 #include <tuple>

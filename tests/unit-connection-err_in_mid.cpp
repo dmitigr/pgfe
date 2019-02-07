@@ -2,11 +2,12 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
+#include "unit.hpp"
+
 #include "dmitigr/pgfe/completion.hpp"
 #include "dmitigr/pgfe/conversions.hpp"
 #include "dmitigr/pgfe/exceptions.hpp"
 #include "dmitigr/pgfe/row.hpp"
-#include "dmitigr/pgfe/tests/unit.hpp"
 
 int main(int argc, char* argv[])
 {

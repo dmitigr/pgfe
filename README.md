@@ -474,7 +474,7 @@ Settings that may be specified at build time by using [CMake] variables are:
   5. installation directories;
   6. default values of the connection options.
 
-Details:
+Details (may need to use horizontal scrolling for full view):
 
 |CMake variable|Possible values|Default on Unix|Default on Windows|
 |:-------------|:--------------|:--------------|:-----------------|

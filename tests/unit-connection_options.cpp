@@ -2,7 +2,8 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
-#include "dmitigr/pgfe/tests/unit.hpp"
+#include "unit.hpp"
+
 #include "dmitigr/pgfe/connection_options.hxx"
 
 #include <cstring>

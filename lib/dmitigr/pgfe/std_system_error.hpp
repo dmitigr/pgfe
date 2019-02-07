@@ -5,8 +5,8 @@
 #ifndef DMITIGR_PGFE_STD_SYSTEM_ERROR_HPP
 #define DMITIGR_PGFE_STD_SYSTEM_ERROR_HPP
 
+#include "dmitigr/pgfe/dll.hpp"
 #include "dmitigr/pgfe/errc.hpp"
-#include "dmitigr/pgfe/internal/dll.hpp"
 
 #include <system_error>
 

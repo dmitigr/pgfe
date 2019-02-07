@@ -5,9 +5,9 @@
 #ifndef DMITIGR_PGFE_SQL_VECTOR_HPP
 #define DMITIGR_PGFE_SQL_VECTOR_HPP
 
+#include "dmitigr/pgfe/dll.hpp"
 #include "dmitigr/pgfe/sql_string.hpp"
 #include "dmitigr/pgfe/types_fwd.hpp"
-#include "dmitigr/pgfe/internal/dll.hpp"
 
 #include <memory>
 #include <optional>

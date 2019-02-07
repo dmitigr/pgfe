@@ -2,9 +2,10 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
+#include "benchmark-array.hpp"
+
 #include "dmitigr/pgfe/conversions.hpp"
 #include "dmitigr/pgfe/row.hpp"
-#include "dmitigr/pgfe/tests/benchmark-array.hpp"
 
 #include <optional>
 #include <vector>

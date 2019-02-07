@@ -5,9 +5,9 @@
 #ifndef DMITIGR_PGFE_CONNECTION_HPP
 #define DMITIGR_PGFE_CONNECTION_HPP
 
+#include "dmitigr/pgfe/dll.hpp"
 #include "dmitigr/pgfe/prepared_statement.hpp"
 #include "dmitigr/pgfe/types_fwd.hpp"
-#include "dmitigr/pgfe/internal/dll.hpp"
 
 #include <cstdint>
 #include <chrono>

@@ -6,8 +6,8 @@
 #define DMITIGR_PGFE_DATA_HPP
 
 #include "dmitigr/pgfe/basics.hpp"
+#include "dmitigr/pgfe/dll.hpp"
 #include "dmitigr/pgfe/types_fwd.hpp"
-#include "dmitigr/pgfe/internal/dll.hpp"
 
 #include <cstddef>
 #include <memory>
