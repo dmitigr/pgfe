@@ -57,7 +57,7 @@ public:
     : cont_(c)
   {}
 
-  void operator()(int /*dimension*/)
+  constexpr void operator()(int /*dimension*/)
   {}
 
   template<typename ... Types>
@@ -68,8 +68,11 @@ public:
         cont_.push_back(Optional_type());
       else
         cont_.push_back(Conversions<Value_type>::to_type(std::move(value), std::forward<Types>(args)...));
-    } else
-      throw detail::iClient_exception(Client_errc::excessive_array_dimensionality);
+    } else {
+      (void)value;   // dummy usage
+      (void)is_null; // dummy usage
+      throw detail::iClient_exception{Client_errc::excessive_array_dimensionality};
+    }
   }
 
 private:

@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-int main(int argc, char* argv[])
+int main(int, char* argv[])
 {
   namespace pgfe = dmitigr::pgfe;
   using namespace pgfe::tests;

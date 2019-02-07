@@ -7,7 +7,7 @@
 #include "dmitigr/pgfe/completion.hpp"
 #include "dmitigr/pgfe/exceptions.hpp"
 
-int main(int argc, char* argv[])
+int main(int, char* argv[])
 {
   namespace pgfe = dmitigr::pgfe;
   using namespace pgfe::tests;

@@ -88,7 +88,7 @@ public:
     while (current_status != Communication_status::connected) {
       timepoint1 = system_clock::now();
 
-      Socket_readiness current_socket_readiness;
+      Socket_readiness current_socket_readiness{};
       switch (current_status) {
       case Communication_status::establishment_reading:
         current_socket_readiness = wait_socket_readiness(Socket_readiness::read_ready, timeout);
@@ -105,7 +105,7 @@ public:
         DMITIGR_INTERNAL_ASSERT_ALWAYS(!true);
 
       case Communication_status::failure:
-        throw std::runtime_error(error_message());
+        throw std::runtime_error{error_message()};
       }
 
       if (!ignore_timeout) {
@@ -433,7 +433,8 @@ public:
 
       const pq_Connection_options pq_options(&options_);
       constexpr int expand_dbname{0};
-      if ((conn_ = ::PQconnectStartParams(pq_options.keywords(), pq_options.values(), expand_dbname))) {
+      conn_ = ::PQconnectStartParams(pq_options.keywords(), pq_options.values(), expand_dbname);
+      if (conn_) {
         const auto conn_status = ::PQstatus(conn_);
         if (conn_status == CONNECTION_BAD)
           throw std::runtime_error(error_message());

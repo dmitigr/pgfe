@@ -11,7 +11,7 @@
 #include "dmitigr/pgfe/sql_vector.hpp"
 #include "dmitigr/internal/filesystem.hpp"
 
-int main(int argc, char* argv[])
+int main(int, char* argv[])
 {
   namespace pgfe = dmitigr::pgfe;
   namespace internal = dmitigr::internal;

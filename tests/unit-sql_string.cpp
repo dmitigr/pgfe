@@ -8,7 +8,7 @@
 #include "dmitigr/pgfe/exceptions.hpp"
 #include "dmitigr/pgfe/sql_string.hpp"
 
-int main(int argc, char* argv[])
+int main(int, char* argv[])
 {
   namespace pgfe = dmitigr::pgfe;
   using namespace pgfe::tests;

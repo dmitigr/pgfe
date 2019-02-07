@@ -161,8 +161,11 @@ public:
   std::unique_ptr<Data> release_data(const std::size_t index) override
   {
     DMITIGR_INTERNAL_REQUIRE(index < field_count());
-    return std::move(datas_[index].second);
+    auto& data = datas_[index].second;
+    auto result = std::move(data); // As described in 14882:2014 20.8.1/4, u.p is equal to nullptr after transfer ownership...
+    data.reset(); // but just in case...
     DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    return result;
   }
 
   std::unique_ptr<Data> release_data(const std::string& name, const std::size_t offset = 0) override

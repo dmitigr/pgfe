@@ -133,7 +133,7 @@ struct Numeric_string_conversions<short int>
     constexpr auto max = std::numeric_limits<short int>::max();
     if (result > max)
       throw std::runtime_error("numeric value " + text + " > " + std::to_string(max));
-    return result;
+    return Type(result);
   }
 };
 

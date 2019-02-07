@@ -58,7 +58,7 @@ using List_array = Array<T, std::list>;
 template<typename T>
 using Vector_array = Array<T, std::vector>;
 
-int main(int argc, char* argv[])
+int main(int, char* argv[])
 {
   namespace pgfe = dmitigr::pgfe;
   using namespace pgfe::tests;

@@ -6,10 +6,10 @@
 #include "dmitigr/internal/debug.hpp"
 
 #include <atomic>
-#include <cctype> // std::tolower(), std::isalnum()
 #include <cerrno>
 #include <cstdint>
 #include <limits>
+#include <locale>
 
 namespace {
 
@@ -60,7 +60,7 @@ std::string dmitigr::pgfe::detail::unquote_identifier(const std::string& identif
     const char c = identifier[i];
     if (state == top) {
       if (c != '"') {
-        result += std::tolower(c);
+        result += std::tolower(c, std::locale{});
       } else
         state = double_quote;
     } else if (state == double_quote) {
@@ -79,11 +79,11 @@ std::string dmitigr::pgfe::detail::unquote_identifier(const std::string& identif
 int dmitigr::pgfe::detail::sqlstate_to_int(const char* const code)
 {
   DMITIGR_INTERNAL_ASSERT(code &&
-    (std::isalnum(code[0]) &&
-      std::isalnum(code[1]) &&
-      std::isalnum(code[2]) &&
-      std::isalnum(code[3]) &&
-      std::isalnum(code[4]) && code[5] == '\0'));
+    ( std::isalnum(code[0], std::locale{}) &&
+      std::isalnum(code[1], std::locale{}) &&
+      std::isalnum(code[2], std::locale{}) &&
+      std::isalnum(code[3], std::locale{}) &&
+      std::isalnum(code[4], std::locale{}) && code[5] == '\0'));
 
   const long int result_candidate = std::strtol(code, NULL, 36);
   DMITIGR_INTERNAL_ASSERT(errno == 0);
