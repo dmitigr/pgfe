@@ -65,7 +65,7 @@ Current API allows to work with:
   - [SQLSTATE][errcodes] codes (as simple as with enums);
   - extensible data type conversions (including support of [PostgreSQL] arrays to/from STL containers conversions);
   - dynamic SQL;
-  - SQL queries separately of C++ code (**!!!NEW!!!**).
+  - SQL queries separately of C++ code.
 
 Features of the near future
 ---------------------------
@@ -483,7 +483,7 @@ Details:
 |**The flag to build the shared library**||||
 |BUILD_SHARED_LIBS|On \| Off|On|On|
 |**The flag to build the tests**||||
-|PGFE_BUILD_TESTS|On \| Off|On|On|
+|DMITIGR_PGFE_BUILD_TESTS|On \| Off|On|On|
 |**Dependencies**||||
 |LIBPQ_PREFIX|*a path*|*not set (rely on CMake)*|*not set (rely on CMake)*|
 |LIBPQ_LIB_PREFIX|*a path*|${LIBPQ_PREFIX}|${LIBPQ_PREFIX}|

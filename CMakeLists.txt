@@ -43,13 +43,13 @@ endif()
 
 # ------------------------------------------------------------------------------
 
-set(PGFE_BUILD_TESTS ON CACHE BOOL "Build library tests")
+option(DMITIGR_PGFE_BUILD_TESTS "Build tests?" ON)
 
-if(PGFE_BUILD_TESTS)
+if(DMITIGR_PGFE_BUILD_TESTS)
   enable_testing()
-  message("Building library tests enabled.")
+  message("Building tests enabled.")
 else()
-  message("Building library tests disabled.")
+  message("Building tests disabled.")
 endif()
 
 # ------------------------------------------------------------------------------

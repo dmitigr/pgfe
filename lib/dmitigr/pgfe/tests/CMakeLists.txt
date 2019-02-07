@@ -2,7 +2,7 @@
 # Copyright (C) Dmitry Igrishin
 # For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
-if(NOT PGFE_BUILD_TESTS)
+if(NOT DMITIGR_PGFE_BUILD_TESTS)
   return()
 endif()
 
