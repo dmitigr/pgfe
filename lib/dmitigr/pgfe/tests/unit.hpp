@@ -81,11 +81,11 @@ inline std::unique_ptr<Connection> make_ssl_connection()
 #ifdef _WIN32
   auto appdata = os::environment_variable("APPDATA");
   ASSERT(appdata);
-  const std::filesystem::path certs_dir = *appdata + "\\postgresql";
+  const auto certs_dir = std::filesystem::path{*appdata} / "postgresql";
 #else // Unix
   auto home = os::environment_variable("HOME");
   ASSERT(home);
-  const std::filesystem::path certs_dir = *home + "/.postgresql";
+  const auto certs_dir = std::filesystem::path{*home} / ".postgresql";
 #endif
 
   conn_opts->set_ssl_certificate_authority_file(certs_dir / "root.crt");
