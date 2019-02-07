@@ -5,4 +5,4 @@
 install(FILES
   pgfe.class.violet.html
 
-  DESTINATION ${PGFE_DOC_INSTALL_DIR})
+  DESTINATION ${DMITIGR_PGFE_DOC_INSTALL_DIR})

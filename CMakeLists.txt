@@ -54,27 +54,27 @@ endif()
 
 # ------------------------------------------------------------------------------
 
-if (UNIX)
-  set(PGFE_CMAKE_INSTALL_DIR "share/dmitigr_pgfe/cmake" CACHE
-    STRING "Name of the cmake directory relative to ${CMAKE_INSTALL_PREFIX}")
-  set(PGFE_DOC_INSTALL_DIR "share/dmitigr_pgfe/doc" CACHE
-    STRING "Name of the documentation directory relative to ${CMAKE_INSTALL_PREFIX}")
-  set(PGFE_LIBRARY_INSTALL_DIR "lib" CACHE
-    STRING "Name of the library directory relative to ${CMAKE_INSTALL_PREFIX}")
-  set(PGFE_INCLUDES_INSTALL_DIR "include" CACHE
-    STRING "Name of includes directory relative to ${CMAKE_INSTALL_PREFIX}")
+if(UNIX)
+  set(DMITIGR_PGFE_CMAKE_INSTALL_DIR "share/dmitigr_pgfe/cmake" CACHE
+    STRING "Name of the installation directory for the CMake stuff relative to ${CMAKE_INSTALL_PREFIX}")
+  set(DMITIGR_PGFE_DOC_INSTALL_DIR "share/dmitigr_pgfe/doc" CACHE
+    STRING "Name of the installation directory for the documentation relative to ${CMAKE_INSTALL_PREFIX}")
+  set(DMITIGR_PGFE_LIB_INSTALL_DIR "lib" CACHE
+    STRING "Name of the installation directory for the libraries relative to ${CMAKE_INSTALL_PREFIX}")
+  set(DMITIGR_PGFE_INCLUDE_INSTALL_DIR "include" CACHE
+    STRING "Name of the installation directory for the includes relative to ${CMAKE_INSTALL_PREFIX}")
 elseif(WIN32)
   # On Windows, CMAKE_INSTALL_PREFIX is $ENV{ProgramFiles}\\${CMAKE_PROJECT_NAME} by default. In turn:
   #   - on AMD64: ProgramFiles=%ProgramFiles%
   #   - on   x86: ProgramFiles=%ProgramFiles(x86)%
   # See: https://msdn.microsoft.com/en-us/library/aa384274.aspx
-  set(PGFE_CMAKE_INSTALL_DIR "cmake" CACHE
+  set(DMITIGR_PGFE_CMAKE_INSTALL_DIR "cmake" CACHE
     STRING "Name of share directory relative to ${CMAKE_INSTALL_PREFIX}")
-  set(PGFE_DOC_INSTALL_DIR "doc" CACHE
+  set(DMITIGR_PGFE_DOC_INSTALL_DIR "doc" CACHE
     STRING "Name of the documentation directory relative to ${CMAKE_INSTALL_PREFIX}")
-  set(PGFE_LIBRARY_INSTALL_DIR "lib" CACHE
+  set(DMITIGR_PGFE_LIB_INSTALL_DIR "lib" CACHE
     STRING "Name of the library directory relative to ${CMAKE_INSTALL_PREFIX}")
-  set(PGFE_INCLUDES_INSTALL_DIR "include" CACHE
+  set(DMITIGR_PGFE_INCLUDE_INSTALL_DIR "include" CACHE
     STRING "Name of includes directory relative to ${CMAKE_INSTALL_PREFIX}")
 endif()
 
@@ -287,14 +287,14 @@ endif()
 add_custom_target(uninstall)
 
 add_custom_command(TARGET uninstall PRE_BUILD
-  COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${PGFE_LIBRARY_INSTALL_DIR}/libdmitigr_pgfe*
-  COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${PGFE_LIBRARY_INSTALL_DIR}/dmitigr_pgfe*.dll
-  COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${PGFE_LIBRARY_INSTALL_DIR}/dmitigr_pgfe*.lib
+  COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_LIB_INSTALL_DIR}/libdmitigr_pgfe*
+  COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_LIB_INSTALL_DIR}/dmitigr_pgfe*.dll
+  COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_LIB_INSTALL_DIR}/dmitigr_pgfe*.lib
 
-  COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${PGFE_INCLUDES_INSTALL_DIR}/dmitigr/pgfe.hpp
-  COMMAND cmake -E remove_directory ${CMAKE_INSTALL_PREFIX}/${PGFE_INCLUDES_INSTALL_DIR}/dmitigr/pgfe
-  COMMAND cmake -E remove_directory ${CMAKE_INSTALL_PREFIX}/${PGFE_CMAKE_INSTALL_DIR}
-  COMMAND cmake -E remove_directory ${CMAKE_INSTALL_PREFIX}/${PGFE_DOC_INSTALL_DIR}
+  COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_INCLUDE_INSTALL_DIR}/dmitigr/pgfe.hpp
+  COMMAND cmake -E remove_directory ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_INCLUDE_INSTALL_DIR}/dmitigr/pgfe
+  COMMAND cmake -E remove_directory ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_CMAKE_INSTALL_DIR}
+  COMMAND cmake -E remove_directory ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_DOC_INSTALL_DIR}
   )
 
 # -------------------------------------------------------------------------------
