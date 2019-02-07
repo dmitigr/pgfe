@@ -184,7 +184,7 @@ endif()
 set_target_properties(dmitigr_pgfe
   PROPERTIES
   LINKER_LANGUAGE "CXX"
-  VERSION ${PGFE_VERSION_PART1}.${PGFE_VERSION_PART2}
+  VERSION ${dmitigr_pgfe_version_part1}.${dmitigr_pgfe_version_part2}
   DEBUG_POSTFIX "d")
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

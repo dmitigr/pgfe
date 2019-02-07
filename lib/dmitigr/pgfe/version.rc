@@ -5,11 +5,11 @@
 #include <winres.h>
 
 #ifdef NDEBUG
-#define PGFE_VERSION_DEBUG 0
-#define PGFE_VERSION_ORIGINAL_FILENAME "dmitigr_pgfe.dll\0"
+#define DMITIGR_PGFE_VERSION_DEBUG 0
+#define DMITIGR_PGFE_VERSION_ORIGINAL_FILENAME "dmitigr_pgfe.dll\0"
 #else
-#define PGFE_VERSION_DEBUG VS_FF_DEBUG
-#define PGFE_VERSION_ORIGINAL_FILENAME "dmitigr_pgfed.dll\0"
+#define DMITIGR_PGFE_VERSION_DEBUG VS_FF_DEBUG
+#define DMITIGR_PGFE_VERSION_ORIGINAL_FILENAME "dmitigr_pgfed.dll\0"
 #endif
 
 VS_VERSION_INFO VERSIONINFO
@@ -17,7 +17,7 @@ VS_VERSION_INFO VERSIONINFO
 FILEVERSION     1,0,1,0
 PRODUCTVERSION  1,0,1,0
 FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
-FILEFLAGS       (PGFE_VERSION_DEBUG)
+FILEFLAGS       (DMITIGR_PGFE_VERSION_DEBUG)
 FILEOS          VOS__WINDOWS32
 FILETYPE        VFT_DLL
 FILESUBTYPE     0x0L
@@ -32,7 +32,7 @@ BEGIN
       VALUE "InternalName",     "dmitigr_pgfe\0"
       VALUE "LegalCopyright",   "Copyright (C) Dmitry Igrishin\0"
       VALUE "LegalTrademarks",  "\0"
-      VALUE "OriginalFilename", PGFE_VERSION_ORIGINAL_FILENAME
+      VALUE "OriginalFilename", DMITIGR_PGFE_VERSION_ORIGINAL_FILENAME
       VALUE "ProductName",      "Dmitigr Pgfe\0"
       VALUE "ProductVersion",   "1.1beta\0"
     END
