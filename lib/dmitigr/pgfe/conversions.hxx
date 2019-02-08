@@ -104,10 +104,9 @@ protected:
   {
     Type result;
     std::size_t idx;
-    static const char* const error_message{"invalid numeric text representation"};
     result = converter(text, &idx);
     if (idx != text.size())
-      throw std::runtime_error("the input string contains symbols not convertible to numeric");
+      throw std::runtime_error{"the input string contains symbols not convertible to numeric"};
 
     return result;
   }

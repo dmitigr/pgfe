@@ -30,7 +30,7 @@ bool is_logic_throw_works(F f)
     ok = true;
   }
   return ok;
-};
+}
 
 template<typename F>
 bool is_runtime_throw_works(F f)
@@ -42,7 +42,7 @@ bool is_runtime_throw_works(F f)
     ok = true;
   }
   return ok;
-};
+}
 
 inline std::unique_ptr<Connection_options> connection_options()
 {
