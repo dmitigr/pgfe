@@ -534,7 +534,7 @@ if(NOT DMITIGR_PGFE_HEADER_ONLY)
   dmitigr_target_compile_options(${dmitigr_pgfe_target})
 
   target_link_libraries(${dmitigr_pgfe_target}
-    PUBLIC  ${Suggested_Pq_LIBRARIES}
+    PRIVATE ${Suggested_Pq_LIBRARIES}
     PRIVATE ${dmitigr_internal_library})
 
   if (UNIX)
