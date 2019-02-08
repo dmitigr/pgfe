@@ -38,9 +38,9 @@ if(NOT DMITIGR_PGFE_HEADER_ONLY)
     message("Building of static library is enabled.")
   endif()
 
-  if(NOT DEFINED CMAKE_BUILD_TYPE)
+  if(NOT DEFINED CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING
-      "Build type: Debug Release RelWithDebInfo MinSizeRel.")
+      "Build type: Debug Release RelWithDebInfo MinSizeRel." FORCE)
   endif()
   message("Build type is ${CMAKE_BUILD_TYPE}")
 else()
