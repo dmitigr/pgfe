@@ -321,17 +321,18 @@ configure_file(lib/dmitigr/pgfe/errc.hpp.in ${CMAKE_CURRENT_SOURCE_DIR}/lib/dmit
 configure_file(lib/dmitigr/pgfe/connection_options.cxx.in ${CMAKE_CURRENT_BINARY_DIR}/lib/dmitigr/pgfe/connection_options.cxx @ONLY
   NEWLINE_STYLE UNIX)
 
-set(dmitigr_pgfe_preprocessed_headers
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/dmitigr/pgfe/basics.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/dmitigr/pgfe/errc.hpp
-  ${CMAKE_CURRENT_BINARY_DIR}/lib/dmitigr/pgfe/connection_options.cxx
-  )
 # ------------------------------------------------------------------------------
 # Sources
 # ------------------------------------------------------------------------------
 
 set(dmitigr_pgfe_root_headers
   lib/dmitigr/pgfe.hpp
+  )
+
+set(dmitigr_pgfe_preprocessed_headers
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/dmitigr/pgfe/basics.hpp
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib/dmitigr/pgfe/errc.hpp
+  ${CMAKE_CURRENT_BINARY_DIR}/lib/dmitigr/pgfe/connection_options.cxx
   )
 
 # set(dmitigr_pgfe_header_only_headers
@@ -557,13 +558,16 @@ endif()
 install(FILES ${dmitigr_pgfe_root_headers}
   DESTINATION ${DMITIGR_PGFE_INCLUDE_INSTALL_DIR}/dmitigr)
 
-install(FILES ${dmitigr_pgfe_headers}
+install(FILES ${dmitigr_pgfe_preprocessed_headers}
   DESTINATION ${DMITIGR_PGFE_INCLUDE_INSTALL_DIR}/dmitigr/pgfe)
 
 if(DMITIGR_PGFE_HEADER_ONLY)
   install(FILES ${dmitigr_pgfe_header_only_headers}
     DESTINATION ${DMITIGR_PGFE_INCLUDE_INSTALL_DIR}/dmitigr/pgfe)
 endif()
+
+install(FILES ${dmitigr_pgfe_headers}
+  DESTINATION ${DMITIGR_PGFE_INCLUDE_INSTALL_DIR}/dmitigr/pgfe)
 
 if(NOT DMITIGR_PGFE_HEADER_ONLY)
   install(TARGETS ${dmitigr_pgfe_target}
