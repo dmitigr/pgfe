@@ -475,34 +475,6 @@ set_source_files_properties(
   HEADER_FILE_ONLY ON)
 
 # ------------------------------------------------------------------------------
-# Dependencies
-# ------------------------------------------------------------------------------
-
-#
-# dmitigr_internal
-#
-
-find_package(Internal REQUIRED)
-message("Using ${dmitigr_internal_library} library")
-
-#
-# libpq
-#
-
-# FindPq.cmake module will use these settings to find libpq.
-set(LIBPQ_PREFIX "" CACHE PATH
-  "Installation prefix of the libpq library (where headers and binary resides)")
-set(LIBPQ_LIB_PREFIX "${LIBPQ_PREFIX}" CACHE PATH
-  "Installation prefix of the libpq binary (where the binary reside)")
-set(LIBPQ_INCLUDE_PREFIX "${LIBPQ_PREFIX}" CACHE PATH
-  "Installation prefix of the libpq includes (where the headers resides)")
-
-find_package(Pq REQUIRED)
-message("libpq includes to use: ${Pq_INCLUDE_DIRS}")
-message("Suggested libpq binary to use: ${Suggested_Pq_LIBRARIES}")
-include_directories(${Pq_INCLUDE_DIRS})
-
-# ------------------------------------------------------------------------------
 # Targets
 # ------------------------------------------------------------------------------
 
@@ -532,23 +504,62 @@ if(NOT DMITIGR_PGFE_HEADER_ONLY)
     DEBUG_POSTFIX "d")
 
   dmitigr_target_compile_options(${dmitigr_pgfe_target})
-
-  target_link_libraries(${dmitigr_pgfe_target}
-    PRIVATE ${Suggested_Pq_LIBRARIES}
-    PRIVATE ${dmitigr_internal_library})
-
-  if (UNIX)
-    target_link_libraries(${dmitigr_pgfe_target} PRIVATE stdc++fs)
-  elseif (WIN32)
-    target_link_libraries(${dmitigr_pgfe_target} PRIVATE Ws2_32.lib)
-  endif()
 else() # for header-only
   set(dmitigr_pgfe_target "dmitigr_pgfe_interface")
 
   add_library(dmitigr_pgfe_interface INTERFACE)
 
   target_compile_definitions(dmitigr_pgfe_interface INTERFACE -DDMITIGR_PGFE_HEADER_ONLY)
-  target_link_libraries(dmitigr_pgfe_interface INTERFACE ${dmitigr_internal_library})
+endif()
+
+# ------------------------------------------------------------------------------
+# Dependencies
+# ------------------------------------------------------------------------------
+
+#
+# dmitigr_internal
+#
+
+find_package(Internal REQUIRED)
+message("Using ${dmitigr_internal_library} library")
+
+#
+# libpq
+#
+
+# FindPq.cmake module will use these settings to find libpq.
+set(LIBPQ_PREFIX "" CACHE PATH
+  "Installation prefix of the libpq library (where headers and binary resides)")
+set(LIBPQ_LIB_PREFIX "${LIBPQ_PREFIX}" CACHE PATH
+  "Installation prefix of the libpq binary (where the binary reside)")
+set(LIBPQ_INCLUDE_PREFIX "${LIBPQ_PREFIX}" CACHE PATH
+  "Installation prefix of the libpq includes (where the headers resides)")
+
+find_package(Pq REQUIRED)
+message("libpq includes to use: ${Pq_INCLUDE_DIRS}")
+message("Suggested libpq binary to use: ${Suggested_Pq_LIBRARIES}")
+include_directories(${Pq_INCLUDE_DIRS})
+
+# --------------------------------------
+
+if(NOT DMITIGR_INTERNAL_HEADER_ONLY)
+  target_link_libraries(${dmitigr_pgfe_target}
+    PRIVATE ${Suggested_Pq_LIBRARIES} ${dmitigr_internal_library})
+
+  if (UNIX)
+    target_link_libraries(${dmitigr_pgfe_target} PRIVATE stdc++fs)
+  elseif (WIN32)
+    target_link_libraries(${dmitigr_pgfe_target} PRIVATE Ws2_32.lib)
+  endif()
+else()
+  target_link_libraries(dmitigr_pgfe_interface
+    INTERFACE ${Suggested_Pq_LIBRARIES} ${dmitigr_internal_library})
+
+  if (UNIX)
+    target_link_libraries(dmitigr_pgfe_interface INTERFACE stdc++fs)
+  elseif (WIN32)
+    target_link_libraries(dmitigr_pgfe_interface INTERFACE Ws2_32.lib)
+  endif()
 endif()
 
 # ------------------------------------------------------------------------------
