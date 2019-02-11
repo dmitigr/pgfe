@@ -575,6 +575,8 @@ public:
       case PGRES_COMMAND_OK:
         switch (op_id) {
         case Request_id::perform:
+          [[fallthrough]];
+
         case Request_id::execute:
           response_ = simple_Completion(r.command_tag());
           goto almost_done;
