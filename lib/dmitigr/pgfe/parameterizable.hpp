@@ -55,7 +55,7 @@ public:
   virtual std::optional<std::size_t> parameter_index(const std::string& name) const = 0;
 
   /**
-   * @returns `parameter_index(name)`
+   * @returns `parameter_index(name).value()`
    *
    * @par Requires
    * `(has_parameter(name))`

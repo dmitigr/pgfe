@@ -58,7 +58,7 @@ public:
   virtual std::optional<std::size_t> field_index(const std::string& name, std::size_t offset = 0) const = 0;
 
   /**
-   * @brief Similar to field_index(const std::string&, std::size_t) except the requirement.
+   * @returns `field_index(name, offset).value()`
    *
    * @par Requires:
    * `(has_field(name, offset))`
