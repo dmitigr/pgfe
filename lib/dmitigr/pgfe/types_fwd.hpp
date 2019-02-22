@@ -9,7 +9,7 @@
  * @brief Public API.
  *
  * @warning The nested namespaces `detail` contains implementation details
- * which are should not be used in applications.
+ * which should not be used in the client code.
  */
 namespace dmitigr::pgfe {
 

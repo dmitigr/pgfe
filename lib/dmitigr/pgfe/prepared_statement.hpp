@@ -214,7 +214,7 @@ public:
    *
    * @par Requires
    * -# Each value of `values` must be Data-convertible.
-   * -# `((! is_preparsed() && ! is_described()
+   * -# `((!is_preparsed() && !is_described()
    *       &&
    *       sizeof ... (Types) < maximum_parameter_count()) || sizeof ... (Types) < parameter_count())`
    *

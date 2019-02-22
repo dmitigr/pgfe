@@ -60,7 +60,7 @@ public:
   /**
    * @returns `field_index(name, offset).value()`
    *
-   * @par Requires:
+   * @par Requires
    * `(has_field(name, offset))`
    */
   virtual std::size_t field_index_throw(const std::string& name, std::size_t offset = 0) const = 0;
@@ -68,7 +68,7 @@ public:
   /**
    * @returns `true` if the field named by `name` is presents, or `false` otherwise.
    *
-   * @par Requires:
+   * @par Requires
    * `(offset < field_count())`
    */
   virtual bool has_field(const std::string& name, std::size_t offset = 0) const = 0;
