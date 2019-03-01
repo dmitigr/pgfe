@@ -3,7 +3,8 @@
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
 #include "dmitigr/pgfe/sql.hxx"
-#include "dmitigr/internal/debug.hpp"
+
+#include <dmitigr/internal/debug.hpp>
 
 #include <atomic>
 #include <cerrno>

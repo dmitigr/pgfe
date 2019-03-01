@@ -7,8 +7,9 @@
 
 #include "dmitigr/pgfe/conversions_api.hpp"
 #include "dmitigr/pgfe/exceptions.hxx"
-#include "dmitigr/internal/debug.hpp"
-#include "dmitigr/internal/string.hpp"
+
+#include <dmitigr/internal/debug.hpp>
+#include <dmitigr/internal/string.hpp>
 
 #include <algorithm>
 #include <locale>

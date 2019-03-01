@@ -6,7 +6,8 @@
 #define DMITIGR_PGFE_DATA_HXX
 
 #include "dmitigr/pgfe/data.hpp"
-#include "dmitigr/internal/debug.hpp"
+
+#include <dmitigr/internal/debug.hpp>
 
 #include <algorithm>
 #include <cstring>

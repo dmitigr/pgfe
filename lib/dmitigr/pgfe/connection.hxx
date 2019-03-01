@@ -20,7 +20,8 @@
 #include "dmitigr/pgfe/row.hxx"
 #include "dmitigr/pgfe/row_info.hxx"
 #include "dmitigr/pgfe/sql_string.hxx"
-#include "dmitigr/internal/debug.hpp"
+
+#include <dmitigr/internal/debug.hpp>
 
 #include <list>
 #include <optional>

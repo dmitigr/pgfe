@@ -10,7 +10,8 @@
 #include "dmitigr/pgfe/pq.hxx"
 #include "dmitigr/pgfe/prepared_statement.hpp"
 #include "dmitigr/pgfe/row_info.hxx"
-#include "dmitigr/internal/memory.hpp"
+
+#include <dmitigr/internal/memory.hpp>
 
 #include <algorithm>
 #include <chrono>

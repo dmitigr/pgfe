@@ -9,7 +9,8 @@
 #include "dmitigr/pgfe/compositional.hxx"
 #include "dmitigr/pgfe/data.hpp"
 #include "dmitigr/pgfe/sql.hxx"
-#include "dmitigr/internal/debug.hpp"
+
+#include <dmitigr/internal/debug.hpp>
 
 #include <algorithm>
 #include <utility>

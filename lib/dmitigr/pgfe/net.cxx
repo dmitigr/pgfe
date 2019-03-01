@@ -4,7 +4,8 @@
 
 #include "dmitigr/pgfe/basics.hpp"
 #include "dmitigr/pgfe/net.hxx"
-#include "dmitigr/internal/debug.hpp"
+
+#include <dmitigr/internal/debug.hpp>
 
 #include <limits>
 #include <system_error>

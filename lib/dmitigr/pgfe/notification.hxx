@@ -8,7 +8,8 @@
 #include "dmitigr/pgfe/data.hxx"
 #include "dmitigr/pgfe/notification.hpp"
 #include "dmitigr/pgfe/pq.hxx"
-#include "dmitigr/internal/debug.hpp"
+
+#include <dmitigr/internal/debug.hpp>
 
 #include <cstring>
 #include <optional>

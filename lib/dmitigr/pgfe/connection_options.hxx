@@ -8,8 +8,9 @@
 #include "dmitigr/pgfe/connection_options.hpp"
 #include "dmitigr/pgfe/connection_options.cxx"
 #include "dmitigr/pgfe/errc.hpp"
-#include "dmitigr/internal/debug.hpp"
-#include "dmitigr/internal/net.hpp"
+
+#include <dmitigr/internal/debug.hpp>
+#include <dmitigr/internal/net.hpp>
 
 #include <algorithm>
 #include <stdexcept>

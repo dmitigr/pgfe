@@ -7,9 +7,10 @@
 
 #include "dmitigr/pgfe/connection.hpp"
 #include "dmitigr/pgfe/connection_options.hpp"
-#include "dmitigr/internal/debug.hpp"
-#include "dmitigr/internal/os.hpp"
-#include "dmitigr/internal/filesystem_experimental.hpp"
+
+#include <dmitigr/internal/debug.hpp>
+#include <dmitigr/internal/os.hpp>
+#include <dmitigr/internal/filesystem_experimental.hpp>
 
 #define ASSERT(a) DMITIGR_INTERNAL_ASSERT(a)
 

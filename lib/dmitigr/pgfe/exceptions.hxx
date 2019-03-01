@@ -7,7 +7,8 @@
 
 #include "dmitigr/pgfe/error.hpp"
 #include "dmitigr/pgfe/exceptions.hpp"
-#include "dmitigr/internal/debug.hpp"
+
+#include <dmitigr/internal/debug.hpp>
 
 #include <memory>
 

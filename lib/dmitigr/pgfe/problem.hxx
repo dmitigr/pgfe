@@ -7,7 +7,8 @@
 
 #include "dmitigr/pgfe/basics.hpp"
 #include "dmitigr/pgfe/problem.hpp"
-#include "dmitigr/internal/debug.hpp"
+
+#include <dmitigr/internal/debug.hpp>
 
 #include <stdexcept>
 

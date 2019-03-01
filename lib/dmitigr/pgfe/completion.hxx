@@ -6,7 +6,8 @@
 #define DMITIGR_PGFE_COMPLETION_HXX
 
 #include "dmitigr/pgfe/completion.hpp"
-#include "dmitigr/internal/debug.hpp"
+
+#include <dmitigr/internal/debug.hpp>
 
 namespace dmitigr::pgfe::detail {
 

@@ -6,8 +6,9 @@
 #define DMITIGR_PGFE_PQ_HXX
 
 #include "dmitigr/pgfe/basics.hpp"
-#include "dmitigr/internal/debug.hpp"
-#include "dmitigr/internal/string.hpp"
+
+#include <dmitigr/internal/debug.hpp>
+#include <dmitigr/internal/string.hpp>
 
 #include <libpq-fe.h>
 

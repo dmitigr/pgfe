@@ -6,7 +6,8 @@
 #include "dmitigr/pgfe/problem.hpp"
 #include "dmitigr/pgfe/sql.hxx"
 #include "dmitigr/pgfe/std_system_error.hpp"
-#include "dmitigr/internal/debug.hpp"
+
+#include <dmitigr/internal/debug.hpp>
 
 namespace dmitigr::pgfe {
 

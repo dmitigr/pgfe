@@ -9,7 +9,8 @@
 #include "dmitigr/pgfe/data.hpp"
 #include "dmitigr/pgfe/parameterizable.hxx"
 #include "dmitigr/pgfe/sql_string.hpp"
-#include "dmitigr/internal/debug.hpp"
+
+#include <dmitigr/internal/debug.hpp>
 
 #include <algorithm>
 #include <list>
