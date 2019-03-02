@@ -34,10 +34,9 @@ int main()
 
     conn->connect();
     conn->execute("SELECT generate_series($1::int, $2::int) AS natural", 1, 3);
-    conn->for_each([](const auto* const row)
-      {
-        std::cout << pgfe::to<int>(row->data("natural")) << "\n";
-      });
+    conn->for_each([](const auto* const row) {
+      std::cout << pgfe::to<int>(row->data("natural")) << "\n";
+    });
     std::cout << "The " << conn->completion()->operation_name() << " query is done.\n";
 
     // As a sample of error handling let's provoke syntax error and handle it away.
@@ -49,7 +48,7 @@ int main()
       else
         throw;
     }
-  }  catch (const std::exception& e) {
+  } catch (const std::exception& e) {
     std::cerr << "Oops: " << e.what() << "\n";
   }
 }
