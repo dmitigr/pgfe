@@ -91,9 +91,9 @@ Logically Pgfe library consists of the following parts:
   - Utilities.
 
 **WARNING** Headers other than `dmitigr/pgfe.hpp` should be *avoided* to use in
-applications since that headers are subject to reorganize. Also, namespaces
-`dmitigr::pgfe::detail` and `dmitigr::pgfe::internal` contains implementation
-details and an internal stuff and *should not* be used in applications.
+applications since that headers are subject to reorganize. Also the namespaces
+`dmitigr::pgfe::detail` and `dmitigr::internal` consists of the implementation
+details and internal stuff and *should not* be used in the client code.
 
 Connecting to a server
 ----------------------
