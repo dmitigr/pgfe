@@ -48,7 +48,7 @@ void pq_Prepared_statement::init_connection__(pq_Connection* const connection)
 
 void pq_Prepared_statement::execute_async()
 {
-  DMITIGR_INTERNAL_REQUIRE(connection()->is_ready_for_async_request());
+  DMITIGR_INTERNAL_REQUIRE(connection()->is_ready_for_async_request(), std::logic_error);
 
   // All values are NULLs. (can throw)
   const int param_count = int(parameter_count());
@@ -86,7 +86,7 @@ void pq_Prepared_statement::execute_async()
 
 void pq_Prepared_statement::execute()
 {
-  DMITIGR_INTERNAL_REQUIRE(connection()->is_ready_for_request());
+  DMITIGR_INTERNAL_REQUIRE(connection()->is_ready_for_request(), std::logic_error);
   execute_async();
   connection_->wait_response_throw();
   DMITIGR_INTERNAL_ASSERT(is_invariant_ok());

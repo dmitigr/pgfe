@@ -112,7 +112,7 @@ public:
   std::size_t parameter_index_throw(const std::string& name) const override
   {
     const auto i = named_parameter_index__(name);
-    DMITIGR_INTERNAL_REQUIRE(i < parameter_count());
+    DMITIGR_INTERNAL_REQUIRE(i < parameter_count(), std::out_of_range);
     return i;
   }
 
@@ -159,7 +159,7 @@ public:
 
   bool is_parameter_missing(const std::size_t index) const override
   {
-    DMITIGR_INTERNAL_REQUIRE(index < positional_parameter_count());
+    DMITIGR_INTERNAL_REQUIRE(index < positional_parameter_count(), std::out_of_range);
     return !positional_parameters_[index];
   }
 
@@ -170,7 +170,7 @@ public:
 
   void append(const Sql_string* const appendix) override
   {
-    DMITIGR_INTERNAL_REQUIRE(appendix);
+    DMITIGR_INTERNAL_REQUIRE(appendix, std::invalid_argument);
     const auto* const iappendix = dynamic_cast<const iSql_string*>(appendix);
     DMITIGR_INTERNAL_ASSERT_ALWAYS(iappendix);
 
@@ -200,7 +200,8 @@ public:
 
   void replace_parameter(const std::string& name, const Sql_string* const replacement) override
   {
-    DMITIGR_INTERNAL_REQUIRE(has_parameter(name) && replacement);
+    DMITIGR_INTERNAL_REQUIRE(has_parameter(name), std::out_of_range);
+    DMITIGR_INTERNAL_REQUIRE(replacement, std::invalid_argument);
     const auto* const ireplacement = dynamic_cast<const iSql_string*>(replacement);
     DMITIGR_INTERNAL_ASSERT_ALWAYS(ireplacement);
 

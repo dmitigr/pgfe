@@ -150,7 +150,7 @@ public:
    *
    * @see connect_async().
    */
-  virtual void connect(std::chrono::microseconds timeout = std::chrono::microseconds{-1}) = 0;
+  virtual void connect(std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) = 0;
 
   /**
    * @brief Attempts to disconnect from the server.
@@ -181,14 +181,14 @@ public:
    *    (communication_status() != Communication_status::disconnected))`
    */
   virtual Socket_readiness wait_socket_readiness(Socket_readiness mask,
-    std::chrono::microseconds timeout = std::chrono::microseconds{-1}) const = 0;
+    std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) const = 0;
 
   /**
    * @brief Polls the readiness of the connection socket.
    *
    * @param mask - similar to wait_socket_readiness().
    *
-   * @returns wait_socket_readiness(mask, std::chrono::microseconds{});
+   * @returns wait_socket_readiness(mask, std::chrono::milliseconds{});
    *
    * @see wait_socket_readiness().
    */
@@ -385,12 +385,12 @@ public:
    *
    * @see is_response_available().
    */
-  virtual void wait_response(std::chrono::microseconds timeout = std::chrono::microseconds{-1}) = 0;
+  virtual void wait_response(std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) = 0;
 
   /**
    * @brief Similar to wait_response(), but throws Server_exception if `(error() != nullptr)` after awaiting.
    */
-  virtual void wait_response_throw(std::chrono::microseconds timeout = std::chrono::microseconds{-1}) = 0;
+  virtual void wait_response_throw(std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) = 0;
 
   /**
    * @brief Waits for the Completion or the Error.
@@ -403,12 +403,12 @@ public:
    * @par Exception safety guarantee
    * Basic.
    */
-  virtual void wait_last_response(std::chrono::microseconds timeout = std::chrono::microseconds{-1}) = 0;
+  virtual void wait_last_response(std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) = 0;
 
   /**
    * @brief Similar to wait_last_response(), but throws Server_exception if `(error() != nullptr)` after awaiting.
    */
-  virtual void wait_last_response_throw(std::chrono::microseconds timeout = std::chrono::microseconds{-1}) = 0;
+  virtual void wait_last_response_throw(std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) = 0;
 
   /**
    * @returns `(error() || row() || completion() || prepared_statement())`

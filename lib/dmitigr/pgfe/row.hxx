@@ -85,7 +85,7 @@ public:
 
   const Data* data(const std::size_t index) const override
   {
-    DMITIGR_INTERNAL_REQUIRE(index < field_count());
+    DMITIGR_INTERNAL_REQUIRE(index < field_count(), std::out_of_range);
     return data__(index);
   }
 

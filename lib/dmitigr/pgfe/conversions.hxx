@@ -62,7 +62,7 @@ struct Generic_data_conversions {
   template<typename ... Types>
   static Type to_type(const Data* const data, Types&& ... args)
   {
-    DMITIGR_INTERNAL_REQUIRE(data);
+    DMITIGR_INTERNAL_REQUIRE(data, std::invalid_argument);
     return StringConversions::to_type(std::string(data->bytes(), data->size()), std::forward<Types>(args)...);
   }
 
@@ -260,10 +260,10 @@ struct Numeric_data_conversions {
   template<typename ... Types>
   static Type to_type(const Data* const data, Types&& ... args)
   {
-    DMITIGR_INTERNAL_REQUIRE(data);
+    DMITIGR_INTERNAL_REQUIRE(data, std::invalid_argument);
     if (data->format() == Data_format::binary) {
       const auto data_size = data->size();
-      DMITIGR_INTERNAL_REQUIRE(data_size <= sizeof(Type));
+      DMITIGR_INTERNAL_REQUIRE(data_size <= sizeof(Type), std::invalid_argument);
       Type result{};
       const auto data_ubytes = reinterpret_cast<const unsigned char*>(data->bytes());
       const auto result_ubytes = reinterpret_cast<unsigned char*>(&result);
@@ -351,7 +351,7 @@ struct Char_string_conversions {
   template<typename ... Types>
   static Type to_type(const std::string& text, Types&& ...)
   {
-    DMITIGR_INTERNAL_REQUIRE(text.size() == 1);
+    DMITIGR_INTERNAL_REQUIRE(text.size() == 1, std::invalid_argument);
     return text[0];
   }
 
@@ -368,7 +368,7 @@ struct Char_data_conversions {
   template<typename ... Types>
   static Type to_type(const Data* const data, Types&& ...)
   {
-    DMITIGR_INTERNAL_REQUIRE(data && (data->size() == 1));
+    DMITIGR_INTERNAL_REQUIRE(data && (data->size() == 1), std::invalid_argument);
     return data->bytes()[0];
   }
 
@@ -437,9 +437,9 @@ struct Bool_data_conversions {
   template<typename ... Types>
   static Type to_type(const Data* const data, Types&& ...)
   {
-    DMITIGR_INTERNAL_REQUIRE(data);
+    DMITIGR_INTERNAL_REQUIRE(data, std::invalid_argument);
     if (data->format() == Data_format::binary) {
-      DMITIGR_INTERNAL_REQUIRE(data->size() == 1);
+      DMITIGR_INTERNAL_REQUIRE(data->size() == 1, std::invalid_argument);
       return data->bytes()[0];
     } else
       return Bool_string_conversions::to_type__(data->bytes(), data->size());

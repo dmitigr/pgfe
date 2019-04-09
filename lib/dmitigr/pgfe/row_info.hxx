@@ -127,7 +127,7 @@ public:
 
   const std::string& field_name(const std::size_t index) const override
   {
-    DMITIGR_INTERNAL_REQUIRE(index < field_count());
+    DMITIGR_INTERNAL_REQUIRE(index < field_count(), std::out_of_range);
     return (*shared_field_names_)[index];
   }
 
@@ -142,7 +142,7 @@ public:
   std::size_t field_index_throw(const std::string& name, std::size_t offset) const override
   {
     const auto i = field_index__(name, offset);
-    DMITIGR_INTERNAL_REQUIRE(i < field_count());
+    DMITIGR_INTERNAL_REQUIRE(i < field_count(), std::out_of_range);
     return i;
   }
 
@@ -164,37 +164,37 @@ public:
 
   std::uint_fast32_t table_oid(const std::size_t index) const override
   {
-    DMITIGR_INTERNAL_REQUIRE(index < field_count());
+    DMITIGR_INTERNAL_REQUIRE(index < field_count(), std::out_of_range);
     return pq_result_.field_table_oid(int(index));
   }
 
   std::int_fast32_t table_column_number(const std::size_t index) const override
   {
-    DMITIGR_INTERNAL_REQUIRE(index < field_count());
+    DMITIGR_INTERNAL_REQUIRE(index < field_count(), std::out_of_range);
     return pq_result_.field_table_column(int(index));
   }
 
   std::uint_fast32_t type_oid(const std::size_t index) const override
   {
-    DMITIGR_INTERNAL_REQUIRE(index < field_count());
+    DMITIGR_INTERNAL_REQUIRE(index < field_count(), std::out_of_range);
     return pq_result_.field_type_oid(int(index));
   }
 
   std::int_fast32_t type_size(const std::size_t index) const override
   {
-    DMITIGR_INTERNAL_REQUIRE(index < field_count());
+    DMITIGR_INTERNAL_REQUIRE(index < field_count(), std::out_of_range);
     return pq_result_.field_type_size(int(index));
   }
 
   std::int_fast32_t type_modifier(const std::size_t index) const override
   {
-    DMITIGR_INTERNAL_REQUIRE(index < field_count());
+    DMITIGR_INTERNAL_REQUIRE(index < field_count(), std::out_of_range);
     return pq_result_.field_type_modifier(int(index));
   }
 
   Data_format data_format(const std::size_t index) const override
   {
-    DMITIGR_INTERNAL_REQUIRE(index < field_count());
+    DMITIGR_INTERNAL_REQUIRE(index < field_count(), std::out_of_range);
     return pq_result_.field_format(int(index));
   }
 

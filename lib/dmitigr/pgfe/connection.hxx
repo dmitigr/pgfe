@@ -51,13 +51,13 @@ public:
     return (transaction_block_status() == Transaction_block_status::uncommitted);
   }
 
-  void connect(std::chrono::microseconds timeout = std::chrono::microseconds(-1)) override
+  void connect(std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) override
   {
-    using std::chrono::microseconds;
+    using std::chrono::milliseconds;
     using std::chrono::system_clock;
     using std::chrono::duration_cast;
 
-    DMITIGR_INTERNAL_REQUIRE(timeout >= microseconds(-1));
+    DMITIGR_INTERNAL_REQUIRE(timeout >= milliseconds{-1}, std::invalid_argument);
 
     if (is_connected())
       return; // No need to check invariant. Just return.
@@ -68,7 +68,7 @@ public:
     connect_async();
     auto current_status = communication_status();
 
-    const bool ignore_timeout = (timeout == microseconds(-1));
+    const bool ignore_timeout = (timeout == milliseconds{-1});
     const auto is_timeout = [&timeout]()
     {
       return timeout <= std::decay_t<decltype (timeout)>::zero();
@@ -80,7 +80,7 @@ public:
     };
 
     if (!ignore_timeout) {
-      timeout -= duration_cast<microseconds>(system_clock::now() - timepoint1);
+      timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
       if (is_timeout())
         throw_timeout();
     }
@@ -110,7 +110,7 @@ public:
       }
 
       if (!ignore_timeout) {
-        timeout -= duration_cast<microseconds>(system_clock::now() - timepoint1);
+        timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
         DMITIGR_INTERNAL_ASSERT(current_socket_readiness != Socket_readiness::unready || is_timeout());
         if (is_timeout())
           throw_timeout();
@@ -124,19 +124,22 @@ public:
   }
 
   Socket_readiness wait_socket_readiness(Socket_readiness mask,
-    std::chrono::microseconds timeout = std::chrono::microseconds{-1}) const override
+    std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) const override
   {
     using std::chrono::system_clock;
-    using std::chrono::microseconds;
+    using std::chrono::milliseconds;
     using std::chrono::duration_cast;
 
-    DMITIGR_INTERNAL_REQUIRE(timeout >= microseconds(-1) &&
-      communication_status() != Communication_status::failure &&
-      communication_status() != Communication_status::disconnected);
+    DMITIGR_INTERNAL_REQUIRE(timeout >= milliseconds{-1}, std::invalid_argument);
+
+    {
+      const auto cs = communication_status();
+      DMITIGR_INTERNAL_REQUIRE(cs != Communication_status::failure && cs != Communication_status::disconnected, std::logic_error);
+    }
 
     DMITIGR_INTERNAL_ASSERT(socket() >= 0);
 
-    const bool ignore_timeout = (timeout == microseconds(-1));
+    const bool ignore_timeout = (timeout == milliseconds{-1});
 
     while (true) {
       const auto timepoint1 = system_clock::now();
@@ -146,7 +149,7 @@ public:
         // Retry on EINTR.
         if (e.code() == std::errc::interrupted) {
           if (!ignore_timeout) {
-            timeout -= duration_cast<microseconds>(system_clock::now() - timepoint1);
+            timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
             if (timeout <= decltype (timeout)::zero())
               // Timeout.
               return Socket_readiness::unready;
@@ -160,7 +163,7 @@ public:
 
   Socket_readiness socket_readiness(const Socket_readiness mask) const override
   {
-    constexpr std::chrono::microseconds no_wait_just_poll{};
+    constexpr std::chrono::milliseconds no_wait_just_poll{};
     return wait_socket_readiness(mask, no_wait_just_poll);
   }
 
@@ -173,18 +176,19 @@ public:
     return is_signal_available() || is_response_available();
   }
 
-  void wait_response(std::chrono::microseconds timeout = std::chrono::microseconds(-1)) override
+  void wait_response(std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) override
   {
     using std::chrono::system_clock;
-    using std::chrono::microseconds;
+    using std::chrono::milliseconds;
     using std::chrono::duration_cast;
 
-    DMITIGR_INTERNAL_REQUIRE(timeout >= microseconds(-1) && is_connected() && is_awaiting_response());
+    DMITIGR_INTERNAL_REQUIRE(timeout >= milliseconds{-1}, std::invalid_argument);
+    DMITIGR_INTERNAL_REQUIRE(is_connected() && is_awaiting_response(), std::logic_error);
 
     if (is_response_available())
       return;
 
-    const bool ignore_timeout = (timeout == microseconds(-1));
+    const bool ignore_timeout = (timeout == milliseconds{-1});
 
     while (true) {
       collect_server_messages();
@@ -194,7 +198,7 @@ public:
       const auto timepoint1 = system_clock::now();
       if (wait_socket_readiness(Socket_readiness::read_ready, timeout) == Socket_readiness::read_ready) {
         if (!ignore_timeout)
-          timeout -= duration_cast<microseconds>(system_clock::now() - timepoint1);
+          timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
       } else
         // Timeout.
         break;
@@ -203,19 +207,19 @@ public:
     DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
   }
 
-  void wait_response_throw(const std::chrono::microseconds timeout = std::chrono::microseconds{-1}) override
+  void wait_response_throw(const std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) override
   {
     wait_response(timeout);
     throw_if_error();
   }
 
-  void wait_last_response(std::chrono::microseconds timeout = std::chrono::microseconds{-1}) override
+  void wait_last_response(std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) override
   {
     using std::chrono::system_clock;
-    using std::chrono::microseconds;
+    using std::chrono::milliseconds;
     using std::chrono::duration_cast;
 
-    const bool ignore_timeout = (timeout == microseconds(-1));
+    const bool ignore_timeout = (timeout == milliseconds{-1});
 
     while (true) {
       const auto timepoint1 = system_clock::now();
@@ -228,14 +232,14 @@ public:
         break;
 
       if (!ignore_timeout) {
-        timeout -= duration_cast<microseconds>(system_clock::now() - timepoint1);
+        timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
         if (timeout <= decltype (timeout)::zero())
           break;
       }
     }
   }
 
-  void wait_last_response_throw(std::chrono::microseconds timeout = std::chrono::microseconds{-1}) override
+  void wait_last_response_throw(std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) override
   {
     wait_last_response(timeout);
     throw_if_error();
@@ -245,7 +249,7 @@ private:
   template<typename T>
   Prepared_statement* prepare_statement__(T&& statement, const std::string& name)
   {
-    DMITIGR_INTERNAL_REQUIRE(is_ready_for_request());
+    DMITIGR_INTERNAL_REQUIRE(is_ready_for_request(), std::logic_error);
     prepare_statement_async(std::forward<T>(statement), name);
     wait_response_throw();
     return prepared_statement();
@@ -264,7 +268,7 @@ public:
 
   Prepared_statement* describe_prepared_statement(const std::string& name) override
   {
-    DMITIGR_INTERNAL_REQUIRE(is_ready_for_request());
+    DMITIGR_INTERNAL_REQUIRE(is_ready_for_request(), std::logic_error);
     describe_prepared_statement_async(name);
     wait_response_throw();
     return prepared_statement();
@@ -272,7 +276,7 @@ public:
 
   void unprepare_statement(const std::string& name) override
   {
-    DMITIGR_INTERNAL_REQUIRE(is_ready_for_request());
+    DMITIGR_INTERNAL_REQUIRE(is_ready_for_request(), std::logic_error);
     unprepare_statement_async(name);
     wait_response_throw(); // Checking invariant.
   }
@@ -463,7 +467,7 @@ protected:
 public:
   void collect_server_messages() override
   {
-    DMITIGR_INTERNAL_REQUIRE(is_connected());
+    DMITIGR_INTERNAL_REQUIRE(is_connected(), std::logic_error);
 
     const auto consume_input = [this]()
     {
@@ -790,7 +794,7 @@ public:
 
   void perform_async(const std::string& queries) override
   {
-    DMITIGR_INTERNAL_REQUIRE(is_ready_for_async_request());
+    DMITIGR_INTERNAL_REQUIRE(is_ready_for_async_request(), std::logic_error);
 
     requests_.push(Request_id::perform); // can throw
     try {
@@ -811,7 +815,7 @@ public:
 
   void perform(const std::string& queries) override
   {
-    DMITIGR_INTERNAL_REQUIRE(is_ready_for_request());
+    DMITIGR_INTERNAL_REQUIRE(is_ready_for_request(), std::logic_error);
     perform_async(queries);
     wait_response_throw();
   }
@@ -821,7 +825,7 @@ private:
   void prepare_statement_async__(const char* const query, const char* const name, const iSql_string* const preparsed)
   {
     DMITIGR_INTERNAL_ASSERT(query && name);
-    DMITIGR_INTERNAL_REQUIRE(is_ready_for_async_request());
+    DMITIGR_INTERNAL_REQUIRE(is_ready_for_async_request(), std::logic_error);
     DMITIGR_INTERNAL_ASSERT(!request_prepared_statement_);
 
     requests_.push(Request_id::prepare_statement); // can throw
@@ -845,7 +849,7 @@ private:
 public:
   void prepare_statement_async(const Sql_string* const statement, const std::string& name = {}) override
   {
-    DMITIGR_INTERNAL_REQUIRE(statement && !statement->has_missing_parameters());
+    DMITIGR_INTERNAL_REQUIRE(statement && !statement->has_missing_parameters(), std::invalid_argument);
     const auto* const s = dynamic_cast<const iSql_string*>(statement);
     DMITIGR_INTERNAL_ASSERT(s);
     prepare_statement_async__(s->to_query_string().c_str(), name.c_str(), s); // can throw
@@ -858,7 +862,7 @@ public:
 
   void describe_prepared_statement_async(const std::string& name) override
   {
-    DMITIGR_INTERNAL_REQUIRE(is_ready_for_async_request());
+    DMITIGR_INTERNAL_REQUIRE(is_ready_for_async_request(), std::logic_error);
     DMITIGR_INTERNAL_ASSERT(!request_prepared_statement_name_);
 
     requests_.push(Request_id::describe_prepared_statement); // can throw
@@ -879,7 +883,7 @@ public:
 
   void unprepare_statement_async(const std::string& name) override
   {
-    DMITIGR_INTERNAL_REQUIRE(!name.empty());
+    DMITIGR_INTERNAL_REQUIRE(!name.empty(), std::invalid_argument);
     DMITIGR_INTERNAL_ASSERT(!request_prepared_statement_name_);
 
     auto name_copy = name; // can throw
@@ -907,7 +911,7 @@ public:
 
   void for_each(const std::function<void(const Row*)>& body) override
   {
-    DMITIGR_INTERNAL_REQUIRE(body);
+    DMITIGR_INTERNAL_REQUIRE(body, std::invalid_argument);
 
     while (const auto* const r = row()) {
       body(r);
@@ -918,7 +922,7 @@ public:
 
   void for_each(const std::function<void(std::unique_ptr<Row>&&)>& body) override
   {
-    DMITIGR_INTERNAL_REQUIRE(body);
+    DMITIGR_INTERNAL_REQUIRE(body, std::invalid_argument);
 
     while (auto r = release_row()) {
       body(std::move(r));
@@ -951,7 +955,7 @@ public:
 
   std::string to_quoted_literal(const std::string& literal) const override
   {
-    DMITIGR_INTERNAL_REQUIRE(is_connected());
+    DMITIGR_INTERNAL_REQUIRE(is_connected(), std::logic_error);
 
     using Uptr = std::unique_ptr<char, void(*)(void*)>;
     if (const auto p = Uptr{::PQescapeLiteral(conn_, literal.data(), literal.size()), &::PQfreemem})
@@ -964,7 +968,7 @@ public:
 
   std::string to_quoted_identifier(const std::string& identifier) const override
   {
-    DMITIGR_INTERNAL_REQUIRE(is_connected());
+    DMITIGR_INTERNAL_REQUIRE(is_connected(), std::logic_error);
 
     using Uptr = std::unique_ptr<char, void(*)(void*)>;
     if (const auto p = Uptr{::PQescapeIdentifier(conn_, identifier.data(), identifier.size()), &::PQfreemem})
@@ -1322,7 +1326,8 @@ private:
 
   std::pair<std::unique_ptr<void, void(*)(void*)>, std::size_t> to_hex_storage(const pgfe::Data* const binary_data) const
   {
-    DMITIGR_INTERNAL_REQUIRE(is_connected() && binary_data && binary_data->format() == pgfe::Data_format::binary);
+    DMITIGR_INTERNAL_REQUIRE(binary_data && binary_data->format() == pgfe::Data_format::binary, std::invalid_argument);
+    DMITIGR_INTERNAL_REQUIRE(is_connected(), std::logic_error);
 
     const auto from_length = binary_data->size();
     const auto* from = reinterpret_cast<const unsigned char*>(binary_data->bytes());
