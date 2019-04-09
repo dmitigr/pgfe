@@ -26,7 +26,7 @@ enum class Socket_readiness {
   /** Write operation on a socket would not block. */
   write_ready = @PGFE_SOCKET_READINESS_WRITE_READY@,
 
-  /** Exceptions available. */
+  /** Exceptions are available. */
   exceptions = @PGFE_SOCKET_READINESS_EXCEPTIONS@
 };
 
