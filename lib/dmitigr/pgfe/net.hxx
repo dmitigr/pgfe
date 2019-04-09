@@ -14,13 +14,9 @@ namespace dmitigr::pgfe::detail {
 /**
  * @internal
  *
- * @par Requires
- * `(sock >= 0)`
- *
- * @par Remarks
- * `(timeout < 0)` means *no timeout* and the function can block indefinitely!
+ * @brief A wrapper around internal::net::poll().
  */
-Socket_readiness poll_sock(int sock, Socket_readiness goal, std::chrono::microseconds timeout);
+Socket_readiness poll_sock(int socket, Socket_readiness mask, std::chrono::milliseconds timeout);
 
 } // namespace dmitigr::pgfe::detail
 
