@@ -33,7 +33,7 @@ constexpr const std::int_fast32_t tcp_host_port{@DMITIGR_PGFE_CONNECTION_TCP_HOS
 const std::string                username{@DMITIGR_PGFE_CONNECTION_USERNAME_CPP@};
 const std::string                database{@DMITIGR_PGFE_CONNECTION_DATABASE_CPP@};
 const std::optional<std::string> password{@DMITIGR_PGFE_CONNECTION_PASSWORD_CPP@};
-const std::optional<std::string> kerberos_service_name{@DMITIGR_PGFE_CONNECTION_KERBROS_SERVICE_NAME_CPP@};
+const std::optional<std::string> kerberos_service_name{@DMITIGR_PGFE_CONNECTION_KERBEROS_SERVICE_NAME_CPP@};
 
 constexpr const bool ssl_enabled{@DMITIGR_PGFE_CONNECTION_SSL_ENABLED_CPP@};
 constexpr const bool ssl_server_host_name_verification_enabled{@DMITIGR_PGFE_CONNECTION_SSL_SERVER_HOST_NAME_VERIFICATION_ENABLED_CPP@};
