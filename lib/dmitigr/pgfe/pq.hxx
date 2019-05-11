@@ -7,8 +7,8 @@
 
 #include "dmitigr/pgfe/basics.hpp"
 
-#include <dmitigr/internal/debug.hpp>
-#include <dmitigr/internal/string.hpp>
+#include <dmitigr/common/debug.hpp>
+#include <dmitigr/common/string.hpp>
 
 #include <libpq-fe.h>
 
@@ -55,7 +55,7 @@ inline int to_int(const Data_format format)
   case Data_format::text:   return 0;
   case Data_format::binary: return 1;
   }
-  DMITIGR_INTERNAL_ASSERT_ALWAYS(!true);
+  DMITIGR_ASSERT_ALWAYS(!true);
 }
 
 /**
@@ -69,7 +69,7 @@ inline Data_format to_data_format(const int format)
   case 0: return Data_format::text;
   case 1: return Data_format::binary;
   }
-  DMITIGR_INTERNAL_ASSERT_ALWAYS(!true);
+  DMITIGR_ASSERT_ALWAYS(!true);
 }
 
 /**
@@ -157,7 +157,7 @@ public:
    */
   const char* er_severity_localized() const noexcept
   {
-    return internal::string::literal(::PQresultErrorField(pg_result(), PG_DIAG_SEVERITY));
+    return string::literal(::PQresultErrorField(pg_result(), PG_DIAG_SEVERITY));
   }
 
   /**
@@ -165,7 +165,7 @@ public:
    */
   const char* er_severity_non_localized() const noexcept
   {
-    return internal::string::literal(::PQresultErrorField(pg_result(), PG_DIAG_SEVERITY_NONLOCALIZED));
+    return string::literal(::PQresultErrorField(pg_result(), PG_DIAG_SEVERITY_NONLOCALIZED));
   }
 
   /**
@@ -173,7 +173,7 @@ public:
    */
   const char* er_code() const noexcept
   {
-    return internal::string::literal(::PQresultErrorField(pg_result(), PG_DIAG_SQLSTATE));
+    return string::literal(::PQresultErrorField(pg_result(), PG_DIAG_SQLSTATE));
   }
 
   /**
@@ -181,7 +181,7 @@ public:
    */
   const char* er_brief() const noexcept
   {
-    return internal::string::literal(::PQresultErrorField(pg_result(), PG_DIAG_MESSAGE_PRIMARY));
+    return string::literal(::PQresultErrorField(pg_result(), PG_DIAG_MESSAGE_PRIMARY));
   }
 
   /**
@@ -189,7 +189,7 @@ public:
    */
   const char* er_detail() const noexcept
   {
-    return internal::string::literal(::PQresultErrorField(pg_result(), PG_DIAG_MESSAGE_DETAIL));
+    return string::literal(::PQresultErrorField(pg_result(), PG_DIAG_MESSAGE_DETAIL));
   }
 
   /**
@@ -197,7 +197,7 @@ public:
    */
   const char* er_hint() const noexcept
   {
-    return internal::string::literal(::PQresultErrorField(pg_result(), PG_DIAG_MESSAGE_HINT));
+    return string::literal(::PQresultErrorField(pg_result(), PG_DIAG_MESSAGE_HINT));
   }
 
   /**
@@ -205,7 +205,7 @@ public:
    */
   const char* er_query_position() const noexcept
   {
-    return internal::string::literal(::PQresultErrorField(pg_result(), PG_DIAG_STATEMENT_POSITION));
+    return string::literal(::PQresultErrorField(pg_result(), PG_DIAG_STATEMENT_POSITION));
   }
 
   /**
@@ -213,7 +213,7 @@ public:
    */
   const char* er_internal_query_position() const noexcept
   {
-    return internal::string::literal(::PQresultErrorField(pg_result(), PG_DIAG_INTERNAL_POSITION));
+    return string::literal(::PQresultErrorField(pg_result(), PG_DIAG_INTERNAL_POSITION));
   }
 
   /**
@@ -221,7 +221,7 @@ public:
    */
   const char* er_internal_query() const noexcept
   {
-    return internal::string::literal(::PQresultErrorField(pg_result(), PG_DIAG_INTERNAL_QUERY));
+    return string::literal(::PQresultErrorField(pg_result(), PG_DIAG_INTERNAL_QUERY));
   }
 
   /**
@@ -229,7 +229,7 @@ public:
    */
   const char* er_context() const noexcept
   {
-    return internal::string::literal(::PQresultErrorField(pg_result(), PG_DIAG_CONTEXT));
+    return string::literal(::PQresultErrorField(pg_result(), PG_DIAG_CONTEXT));
   }
 
   /**
@@ -237,7 +237,7 @@ public:
    */
   const char* er_schema_name() const noexcept
   {
-    return internal::string::literal(::PQresultErrorField(pg_result(), PG_DIAG_SCHEMA_NAME));
+    return string::literal(::PQresultErrorField(pg_result(), PG_DIAG_SCHEMA_NAME));
   }
 
   /**
@@ -245,7 +245,7 @@ public:
    */
   const char* er_table_name() const noexcept
   {
-    return internal::string::literal(::PQresultErrorField(pg_result(), PG_DIAG_TABLE_NAME));
+    return string::literal(::PQresultErrorField(pg_result(), PG_DIAG_TABLE_NAME));
   }
 
   /**
@@ -253,7 +253,7 @@ public:
    */
   const char* er_column_name() const noexcept
   {
-    return internal::string::literal(::PQresultErrorField(pg_result(), PG_DIAG_COLUMN_NAME));
+    return string::literal(::PQresultErrorField(pg_result(), PG_DIAG_COLUMN_NAME));
   }
 
   /**
@@ -261,7 +261,7 @@ public:
    */
   const char* er_datatype_name() const noexcept
   {
-    return internal::string::literal(::PQresultErrorField(pg_result(), PG_DIAG_DATATYPE_NAME));
+    return string::literal(::PQresultErrorField(pg_result(), PG_DIAG_DATATYPE_NAME));
   }
 
   /**
@@ -269,7 +269,7 @@ public:
    */
   const char* er_constraint_name() const noexcept
   {
-    return internal::string::literal(::PQresultErrorField(pg_result(), PG_DIAG_CONSTRAINT_NAME));
+    return string::literal(::PQresultErrorField(pg_result(), PG_DIAG_CONSTRAINT_NAME));
   }
 
   /**
@@ -277,7 +277,7 @@ public:
    */
   const char* er_source_file() const noexcept
   {
-    return internal::string::literal(::PQresultErrorField(pg_result(), PG_DIAG_SOURCE_FILE));
+    return string::literal(::PQresultErrorField(pg_result(), PG_DIAG_SOURCE_FILE));
   }
 
   /**
@@ -285,7 +285,7 @@ public:
    */
   const char* er_source_line() const noexcept
   {
-    return internal::string::literal(::PQresultErrorField(pg_result(), PG_DIAG_SOURCE_LINE));
+    return string::literal(::PQresultErrorField(pg_result(), PG_DIAG_SOURCE_LINE));
   }
 
   /**
@@ -293,7 +293,7 @@ public:
    */
   const char* er_source_function() const noexcept
   {
-    return internal::string::literal(::PQresultErrorField(pg_result(), PG_DIAG_SOURCE_FUNCTION));
+    return string::literal(::PQresultErrorField(pg_result(), PG_DIAG_SOURCE_FUNCTION));
   }
 
   // ---------------------------------------------------------------------------

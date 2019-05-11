@@ -10,12 +10,12 @@
 #include "dmitigr/pgfe/sql_string.hpp"
 #include "dmitigr/pgfe/sql_vector.hpp"
 
-#include <dmitigr/internal/filesystem.hpp>
+#include <dmitigr/common/filesystem.hpp>
 
 int main(int, char* argv[])
 {
   namespace pgfe = dmitigr::pgfe;
-  namespace internal = dmitigr::internal;
+  namespace fs = dmitigr::filesystem;
   using namespace pgfe::tests;
 
   try {
@@ -49,7 +49,7 @@ int main(int, char* argv[])
 
     const std::filesystem::path this_exe_file_name{argv[0]};
     const auto this_exe_dir_name = this_exe_file_name.parent_path();
-    const auto input = internal::filesystem::read_to_string(this_exe_dir_name / "unit-sql_vector.sql");
+    const auto input = fs::read_to_string(this_exe_dir_name / "unit-sql_vector.sql");
     bunch = pgfe::Sql_vector::make(input);
     ASSERT(bunch->sql_string_count() == 2);
     ASSERT(bunch->sql_string(0)->extra());

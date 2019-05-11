@@ -4,7 +4,7 @@
 
 #include "dmitigr/pgfe/sql.hxx"
 
-#include <dmitigr/internal/debug.hpp>
+#include <dmitigr/common/debug.hpp>
 
 #include <atomic>
 #include <cerrno>
@@ -79,7 +79,7 @@ std::string dmitigr::pgfe::detail::unquote_identifier(const std::string& identif
 
 int dmitigr::pgfe::detail::sqlstate_to_int(const char* const code)
 {
-  DMITIGR_INTERNAL_ASSERT(code &&
+  DMITIGR_ASSERT(code &&
     ( std::isalnum(code[0], std::locale{}) &&
       std::isalnum(code[1], std::locale{}) &&
       std::isalnum(code[2], std::locale{}) &&
@@ -87,7 +87,7 @@ int dmitigr::pgfe::detail::sqlstate_to_int(const char* const code)
       std::isalnum(code[4], std::locale{}) && code[5] == '\0'));
 
   const long int result_candidate = std::strtol(code, NULL, 36);
-  DMITIGR_INTERNAL_ASSERT(errno == 0);
-  DMITIGR_INTERNAL_ASSERT(result_candidate >= 0 && result_candidate <= std::numeric_limits<int>::max());
+  DMITIGR_ASSERT(errno == 0);
+  DMITIGR_ASSERT(result_candidate >= 0 && result_candidate <= std::numeric_limits<int>::max());
   return result_candidate;
 }

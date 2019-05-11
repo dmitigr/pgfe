@@ -22,7 +22,7 @@ pq_Prepared_statement::pq_Prepared_statement(std::string name, pq_Connection* co
   } else
     parameters_.reserve(8);
 
-  DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+  DMITIGR_ASSERT(is_invariant_ok());
 }
 
 pq_Prepared_statement::pq_Prepared_statement(std::string name, pq_Connection* const connection, const std::size_t parameters_count)
@@ -30,7 +30,7 @@ pq_Prepared_statement::pq_Prepared_statement(std::string name, pq_Connection* co
   , parameters_(parameters_count)
 {
   init_connection__(connection);
-  DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+  DMITIGR_ASSERT(is_invariant_ok());
 }
 
 void pq_Prepared_statement::init_connection__(pq_Connection* const connection)
@@ -40,7 +40,7 @@ void pq_Prepared_statement::init_connection__(pq_Connection* const connection)
    * constants at the moment. But in the future they could be initialized here.
    */
 
-  DMITIGR_INTERNAL_ASSERT(connection && connection->session_start_time());
+  DMITIGR_ASSERT(connection && connection->session_start_time());
   connection_ = connection;
   session_start_time_ = *connection_->session_start_time();
   result_format_ = connection_->result_format();
@@ -48,7 +48,7 @@ void pq_Prepared_statement::init_connection__(pq_Connection* const connection)
 
 void pq_Prepared_statement::execute_async()
 {
-  DMITIGR_INTERNAL_REQUIRE(connection()->is_ready_for_async_request(), std::logic_error);
+  DMITIGR_REQUIRE(connection()->is_ready_for_async_request(), std::logic_error);
 
   // All values are NULLs. (can throw)
   const int param_count = int(parameter_count());
@@ -74,22 +74,22 @@ void pq_Prepared_statement::execute_async()
       throw std::runtime_error(connection_->error_message());
 
     const auto set_ok = ::PQsetSingleRowMode(connection_->conn_);
-    DMITIGR_INTERNAL_ASSERT_ALWAYS(set_ok);
+    DMITIGR_ASSERT_ALWAYS(set_ok);
     connection_->dismiss_response(); // cannot throw
   } catch (...) {
     connection_->requests_.pop(); // rollback
     throw;
   }
 
-  DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+  DMITIGR_ASSERT(is_invariant_ok());
 }
 
 void pq_Prepared_statement::execute()
 {
-  DMITIGR_INTERNAL_REQUIRE(connection()->is_ready_for_request(), std::logic_error);
+  DMITIGR_REQUIRE(connection()->is_ready_for_request(), std::logic_error);
   execute_async();
   connection_->wait_response_throw();
-  DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+  DMITIGR_ASSERT(is_invariant_ok());
 }
 
 Connection* pq_Prepared_statement::connection()
@@ -105,13 +105,13 @@ const Connection* pq_Prepared_statement::connection() const
 void pq_Prepared_statement::describe_async()
 {
   connection_->describe_prepared_statement_async(name_);
-  DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+  DMITIGR_ASSERT(is_invariant_ok());
 }
 
 void pq_Prepared_statement::describe()
 {
   connection_->describe_prepared_statement(name_);
-  DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+  DMITIGR_ASSERT(is_invariant_ok());
 }
 
 bool pq_Prepared_statement::is_invariant_ok()

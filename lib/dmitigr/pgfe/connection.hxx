@@ -21,7 +21,7 @@
 #include "dmitigr/pgfe/row_info.hxx"
 #include "dmitigr/pgfe/sql_string.hxx"
 
-#include <dmitigr/internal/debug.hpp>
+#include <dmitigr/common/debug.hpp>
 
 #include <list>
 #include <optional>
@@ -57,7 +57,7 @@ public:
     using std::chrono::system_clock;
     using std::chrono::duration_cast;
 
-    DMITIGR_INTERNAL_REQUIRE(timeout >= milliseconds{-1}, std::invalid_argument);
+    DMITIGR_REQUIRE(timeout >= milliseconds{-1}, std::invalid_argument);
 
     if (is_connected())
       return; // No need to check invariant. Just return.
@@ -103,7 +103,7 @@ public:
         break;
 
       case Communication_status::disconnected:
-        DMITIGR_INTERNAL_ASSERT_ALWAYS(!true);
+        DMITIGR_ASSERT_ALWAYS(!true);
 
       case Communication_status::failure:
         throw std::runtime_error{error_message()};
@@ -111,7 +111,7 @@ public:
 
       if (!ignore_timeout) {
         timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
-        DMITIGR_INTERNAL_ASSERT(current_socket_readiness != Socket_readiness::unready || is_timeout());
+        DMITIGR_ASSERT(current_socket_readiness != Socket_readiness::unready || is_timeout());
         if (is_timeout())
           throw_timeout();
       }
@@ -120,7 +120,7 @@ public:
       current_status = communication_status();
     } // while
 
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   Socket_readiness wait_socket_readiness(Socket_readiness mask,
@@ -130,14 +130,14 @@ public:
     using std::chrono::milliseconds;
     using std::chrono::duration_cast;
 
-    DMITIGR_INTERNAL_REQUIRE(timeout >= milliseconds{-1}, std::invalid_argument);
+    DMITIGR_REQUIRE(timeout >= milliseconds{-1}, std::invalid_argument);
 
     {
       const auto cs = communication_status();
-      DMITIGR_INTERNAL_REQUIRE(cs != Communication_status::failure && cs != Communication_status::disconnected, std::logic_error);
+      DMITIGR_REQUIRE(cs != Communication_status::failure && cs != Communication_status::disconnected, std::logic_error);
     }
 
-    DMITIGR_INTERNAL_ASSERT(socket() >= 0);
+    DMITIGR_ASSERT(socket() >= 0);
 
     const bool ignore_timeout = (timeout == milliseconds{-1});
 
@@ -182,8 +182,8 @@ public:
     using std::chrono::milliseconds;
     using std::chrono::duration_cast;
 
-    DMITIGR_INTERNAL_REQUIRE(timeout >= milliseconds{-1}, std::invalid_argument);
-    DMITIGR_INTERNAL_REQUIRE(is_connected() && is_awaiting_response(), std::logic_error);
+    DMITIGR_REQUIRE(timeout >= milliseconds{-1}, std::invalid_argument);
+    DMITIGR_REQUIRE(is_connected() && is_awaiting_response(), std::logic_error);
 
     if (is_response_available())
       return;
@@ -204,7 +204,7 @@ public:
         break;
     }
 
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   void wait_response_throw(const std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) override
@@ -249,7 +249,7 @@ private:
   template<typename T>
   Prepared_statement* prepare_statement__(T&& statement, const std::string& name)
   {
-    DMITIGR_INTERNAL_REQUIRE(is_ready_for_request(), std::logic_error);
+    DMITIGR_REQUIRE(is_ready_for_request(), std::logic_error);
     prepare_statement_async(std::forward<T>(statement), name);
     wait_response_throw();
     return prepared_statement();
@@ -268,7 +268,7 @@ public:
 
   Prepared_statement* describe_prepared_statement(const std::string& name) override
   {
-    DMITIGR_INTERNAL_REQUIRE(is_ready_for_request(), std::logic_error);
+    DMITIGR_REQUIRE(is_ready_for_request(), std::logic_error);
     describe_prepared_statement_async(name);
     wait_response_throw();
     return prepared_statement();
@@ -276,7 +276,7 @@ public:
 
   void unprepare_statement(const std::string& name) override
   {
-    DMITIGR_INTERNAL_REQUIRE(is_ready_for_request(), std::logic_error);
+    DMITIGR_REQUIRE(is_ready_for_request(), std::logic_error);
     unprepare_statement_async(name);
     wait_response_throw(); // Checking invariant.
   }
@@ -340,7 +340,7 @@ public:
     using Status = Communication_status;
 
     if (polling_status_) {
-      DMITIGR_INTERNAL_ASSERT(conn_);
+      DMITIGR_ASSERT(conn_);
       return *polling_status_;
     } else if (conn_) {
       return (::PQstatus(conn_) == CONNECTION_OK) ? Status::connected : Status::failure;
@@ -388,9 +388,9 @@ public:
 
     ::PQfinish(conn_); // Discarding unhandled notifications btw.
     conn_ = nullptr;
-    DMITIGR_INTERNAL_ASSERT(communication_status() == Communication_status::disconnected);
+    DMITIGR_ASSERT(communication_status() == Communication_status::disconnected);
 
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   void connect_async() override
@@ -401,21 +401,21 @@ public:
     if (s == Status::connected) {
       return;
     } else if (s == Status::establishment_reading || s == Status::establishment_writing) {
-      DMITIGR_INTERNAL_ASSERT(conn_);
+      DMITIGR_ASSERT(conn_);
       switch (::PQconnectPoll(conn_)) {
       case PGRES_POLLING_READING:
         polling_status_ = Status::establishment_reading;
-        DMITIGR_INTERNAL_ASSERT(communication_status() == Status::establishment_reading);
+        DMITIGR_ASSERT(communication_status() == Status::establishment_reading);
         goto done;
 
       case PGRES_POLLING_WRITING:
         polling_status_ = Status::establishment_writing;
-        DMITIGR_INTERNAL_ASSERT(communication_status() == Status::establishment_writing);
+        DMITIGR_ASSERT(communication_status() == Status::establishment_writing);
         goto done;
 
       case PGRES_POLLING_FAILED:
         polling_status_.reset();
-        DMITIGR_INTERNAL_ASSERT(communication_status() == Status::failure);
+        DMITIGR_ASSERT(communication_status() == Status::failure);
         goto done;
 
       case PGRES_POLLING_OK:
@@ -425,16 +425,16 @@ public:
          * We cannot assert here that communication_status() is "connected", because it can
          * become "failure" at *any* time, even just after successful connection establishment.
          */
-        DMITIGR_INTERNAL_ASSERT(communication_status() == Status::connected || communication_status() == Status::failure);
+        DMITIGR_ASSERT(communication_status() == Status::connected || communication_status() == Status::failure);
         goto done;
 
-      default: DMITIGR_INTERNAL_ASSERT_ALWAYS(!true);
+      default: DMITIGR_ASSERT_ALWAYS(!true);
       } // switch
     } else /* failure or disconnected */ {
       if (s == Status::failure)
         disconnect();
 
-      DMITIGR_INTERNAL_ASSERT(communication_status() == Status::disconnected);
+      DMITIGR_ASSERT(communication_status() == Status::disconnected);
 
       const pq_Connection_options pq_options(&options_);
       constexpr int expand_dbname{0};
@@ -447,7 +447,7 @@ public:
           polling_status_ = Status::establishment_writing;
 
         // Caution: until now we cannot use communication_status()!
-        DMITIGR_INTERNAL_ASSERT(communication_status() == Status::establishment_writing);
+        DMITIGR_ASSERT(communication_status() == Status::establishment_writing);
 
         ::PQsetNoticeReceiver(conn_, &notice_receiver, this);
       } else
@@ -455,7 +455,7 @@ public:
     }
 
   done:
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
 protected:
@@ -467,7 +467,7 @@ protected:
 public:
   void collect_server_messages() override
   {
-    DMITIGR_INTERNAL_REQUIRE(is_connected(), std::logic_error);
+    DMITIGR_REQUIRE(is_connected(), std::logic_error);
 
     const auto consume_input = [this]()
     {
@@ -523,11 +523,11 @@ public:
            * nullptr (because it's logical and because the libpq documentation says nothing
            * about what to do when the result is not null in this case).
            */
-          DMITIGR_INTERNAL_ASSERT(!tmp && !response_);
+          DMITIGR_ASSERT(!tmp && !response_);
           response_ = problem<simple_Error>(pending_result_.pg_result());
           pending_result_.reset();
         } else {
-          DMITIGR_INTERNAL_ASSERT(!pending_result_);
+          DMITIGR_ASSERT(!pending_result_);
           pending_result_ = std::move(tmp);
         }
         return !bool(pending_result_);
@@ -537,7 +537,7 @@ public:
 
     const auto next_result = [&]()
     {
-      DMITIGR_INTERNAL_ASSERT(!is_pending_result_error());
+      DMITIGR_ASSERT(!is_pending_result_error());
       if (pending_result_)
         return std::move(pending_result_);
       else
@@ -554,22 +554,22 @@ public:
       goto done;
 
     if (auto r = next_result(); !r) {
-      DMITIGR_INTERNAL_ASSERT(::PQisBusy(conn_) || requests_.empty());
+      DMITIGR_ASSERT(::PQisBusy(conn_) || requests_.empty());
       goto done;
     } else /* processing the new result */ {
-      DMITIGR_INTERNAL_ASSERT(!pending_result_ && r && (r.status() != PGRES_NONFATAL_ERROR) && !response_ && !requests_.empty());
+      DMITIGR_ASSERT(!pending_result_ && r && (r.status() != PGRES_NONFATAL_ERROR) && !response_ && !requests_.empty());
       const auto s = r.status();
       const auto op_id = requests_.front();
       switch (s) {
       case PGRES_SINGLE_TUPLE:
-        DMITIGR_INTERNAL_ASSERT(op_id == Request_id::perform || op_id == Request_id::execute);
+        DMITIGR_ASSERT(op_id == Request_id::perform || op_id == Request_id::execute);
         if (!shared_field_names_)
           shared_field_names_ = pq_Row_info::make_shared_field_names(r);
         response_ = pq_Row(pq_Row_info(std::move(r), shared_field_names_));
         goto done;
 
       case PGRES_TUPLES_OK:
-        DMITIGR_INTERNAL_ASSERT(op_id == Request_id::perform || op_id == Request_id::execute);
+        DMITIGR_ASSERT(op_id == Request_id::perform || op_id == Request_id::execute);
         response_ = simple_Completion(r.command_tag());
         goto almost_done;
 
@@ -587,12 +587,12 @@ public:
           goto almost_done;
 
         case Request_id::prepare_statement:
-          DMITIGR_INTERNAL_ASSERT(request_prepared_statement_);
+          DMITIGR_ASSERT(request_prepared_statement_);
           response_ = register_ps(std::move(*request_prepared_statement_));
           goto almost_done;
 
         case Request_id::describe_prepared_statement: {
-          DMITIGR_INTERNAL_ASSERT(request_prepared_statement_name_);
+          DMITIGR_ASSERT(request_prepared_statement_name_);
           auto* p = ps(*request_prepared_statement_name_);
           if (!p)
             p = register_ps(pq_Prepared_statement(std::move(*request_prepared_statement_name_), this, r.field_count()));
@@ -602,12 +602,12 @@ public:
         }
 
         case Request_id::unprepare_statement:
-          DMITIGR_INTERNAL_ASSERT(request_prepared_statement_name_ && std::strcmp(r.command_tag(), "DEALLOCATE") == 0);
+          DMITIGR_ASSERT(request_prepared_statement_name_ && std::strcmp(r.command_tag(), "DEALLOCATE") == 0);
           unregister_ps(*request_prepared_statement_name_);
           response_ = simple_Completion("unprepare_statement");
           goto almost_done;
 
-        default: DMITIGR_INTERNAL_ASSERT(!true);
+        default: DMITIGR_ASSERT(!true);
         } // PGRES_COMMAND_OK
 
       case PGRES_EMPTY_QUERY:
@@ -618,7 +618,7 @@ public:
         response_ = simple_Completion("invalid response");
         goto almost_done;
 
-      default: DMITIGR_INTERNAL_ASSERT(!true);
+      default: DMITIGR_ASSERT(!true);
       } // switch (status)
     } // if (next result)
 
@@ -635,7 +635,7 @@ public:
     }
 
   done:
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   bool is_signal_available() const noexcept override
@@ -677,7 +677,7 @@ public:
   {
     notice_handler_ = handler;
 
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   std::function<void(std::unique_ptr<Notice>&&)> notice_handler() const override
@@ -689,7 +689,7 @@ public:
   {
     notification_handler_ = handler;
 
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   std::function<void(std::unique_ptr<Notification>&&)> notification_handler() const override
@@ -713,7 +713,7 @@ public:
             else if constexpr (std::is_same_v<T, pq_Notification>)
               handle_notification(std::move(signal_ptr));
             else
-              DMITIGR_INTERNAL_ASSERT(!true);
+              DMITIGR_ASSERT(!true);
           }, signals_.front());
         signals_.pop_front();
       }
@@ -794,7 +794,7 @@ public:
 
   void perform_async(const std::string& queries) override
   {
-    DMITIGR_INTERNAL_REQUIRE(is_ready_for_async_request(), std::logic_error);
+    DMITIGR_REQUIRE(is_ready_for_async_request(), std::logic_error);
 
     requests_.push(Request_id::perform); // can throw
     try {
@@ -803,19 +803,19 @@ public:
         throw std::runtime_error(error_message());
 
       const auto set_ok = ::PQsetSingleRowMode(conn_);
-      DMITIGR_INTERNAL_ASSERT_ALWAYS(set_ok);
+      DMITIGR_ASSERT_ALWAYS(set_ok);
       dismiss_response(); // cannot throw
     } catch (...) {
       requests_.pop(); // rollback
       throw;
     }
 
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   void perform(const std::string& queries) override
   {
-    DMITIGR_INTERNAL_REQUIRE(is_ready_for_request(), std::logic_error);
+    DMITIGR_REQUIRE(is_ready_for_request(), std::logic_error);
     perform_async(queries);
     wait_response_throw();
   }
@@ -824,9 +824,9 @@ private:
   // Exception safety guarantee: strong.
   void prepare_statement_async__(const char* const query, const char* const name, const iSql_string* const preparsed)
   {
-    DMITIGR_INTERNAL_ASSERT(query && name);
-    DMITIGR_INTERNAL_REQUIRE(is_ready_for_async_request(), std::logic_error);
-    DMITIGR_INTERNAL_ASSERT(!request_prepared_statement_);
+    DMITIGR_ASSERT(query && name);
+    DMITIGR_REQUIRE(is_ready_for_async_request(), std::logic_error);
+    DMITIGR_ASSERT(!request_prepared_statement_);
 
     requests_.push(Request_id::prepare_statement); // can throw
     try {
@@ -843,15 +843,15 @@ private:
       throw;
     }
 
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
 public:
   void prepare_statement_async(const Sql_string* const statement, const std::string& name = {}) override
   {
-    DMITIGR_INTERNAL_REQUIRE(statement && !statement->has_missing_parameters(), std::invalid_argument);
+    DMITIGR_REQUIRE(statement && !statement->has_missing_parameters(), std::invalid_argument);
     const auto* const s = dynamic_cast<const iSql_string*>(statement);
-    DMITIGR_INTERNAL_ASSERT(s);
+    DMITIGR_ASSERT(s);
     prepare_statement_async__(s->to_query_string().c_str(), name.c_str(), s); // can throw
   }
 
@@ -862,8 +862,8 @@ public:
 
   void describe_prepared_statement_async(const std::string& name) override
   {
-    DMITIGR_INTERNAL_REQUIRE(is_ready_for_async_request(), std::logic_error);
-    DMITIGR_INTERNAL_ASSERT(!request_prepared_statement_name_);
+    DMITIGR_REQUIRE(is_ready_for_async_request(), std::logic_error);
+    DMITIGR_ASSERT(!request_prepared_statement_name_);
 
     requests_.push(Request_id::describe_prepared_statement); // can throw
     try {
@@ -878,30 +878,30 @@ public:
       throw;
     }
 
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   void unprepare_statement_async(const std::string& name) override
   {
-    DMITIGR_INTERNAL_REQUIRE(!name.empty(), std::invalid_argument);
-    DMITIGR_INTERNAL_ASSERT(!request_prepared_statement_name_);
+    DMITIGR_REQUIRE(!name.empty(), std::invalid_argument);
+    DMITIGR_ASSERT(!request_prepared_statement_name_);
 
     auto name_copy = name; // can throw
     const auto query = "DEALLOCATE " + to_quoted_identifier(name); // can throw
 
     perform_async(query); // can throw
-    DMITIGR_INTERNAL_ASSERT(requests_.front() == Request_id::perform);
+    DMITIGR_ASSERT(requests_.front() == Request_id::perform);
     requests_.front() = Request_id::unprepare_statement; // cannot throw
     request_prepared_statement_name_ = std::move(name_copy); // cannot throw
 
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   void set_result_format(const Data_format format) override
   {
     default_result_format_ = format;
 
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   Data_format result_format() const noexcept override
@@ -911,7 +911,7 @@ public:
 
   void for_each(const std::function<void(const Row*)>& body) override
   {
-    DMITIGR_INTERNAL_REQUIRE(body, std::invalid_argument);
+    DMITIGR_REQUIRE(body, std::invalid_argument);
 
     while (const auto* const r = row()) {
       body(r);
@@ -922,7 +922,7 @@ public:
 
   void for_each(const std::function<void(std::unique_ptr<Row>&&)>& body) override
   {
-    DMITIGR_INTERNAL_REQUIRE(body, std::invalid_argument);
+    DMITIGR_REQUIRE(body, std::invalid_argument);
 
     while (auto r = release_row()) {
       body(std::move(r));
@@ -955,7 +955,7 @@ public:
 
   std::string to_quoted_literal(const std::string& literal) const override
   {
-    DMITIGR_INTERNAL_REQUIRE(is_connected(), std::logic_error);
+    DMITIGR_REQUIRE(is_connected(), std::logic_error);
 
     using Uptr = std::unique_ptr<char, void(*)(void*)>;
     if (const auto p = Uptr{::PQescapeLiteral(conn_, literal.data(), literal.size()), &::PQfreemem})
@@ -968,7 +968,7 @@ public:
 
   std::string to_quoted_identifier(const std::string& identifier) const override
   {
-    DMITIGR_INTERNAL_REQUIRE(is_connected(), std::logic_error);
+    DMITIGR_REQUIRE(is_connected(), std::logic_error);
 
     using Uptr = std::unique_ptr<char, void(*)(void*)>;
     if (const auto p = Uptr{::PQescapeIdentifier(conn_, identifier.data(), identifier.size()), &::PQfreemem})
@@ -1051,7 +1051,7 @@ protected:
      * If nullptr passed to ::PQerrorMessage() it returns
      * something like "connection pointer is NULL\n".
      */
-    return conn_ ? internal::string::literal(::PQerrorMessage(conn_)) : std::string{};
+    return conn_ ? string::literal(::PQerrorMessage(conn_)) : std::string{};
   }
 
 private:
@@ -1116,15 +1116,15 @@ private:
 
   static void notice_receiver(void* const arg, const ::PGresult* const r)
   {
-    DMITIGR_INTERNAL_ASSERT(arg);
-    DMITIGR_INTERNAL_ASSERT(r);
+    DMITIGR_ASSERT(arg);
+    DMITIGR_ASSERT(r);
     auto const cn = static_cast<pq_Connection*>(arg);
     cn->signals_.push_back(problem<simple_Notice>(r));
   }
 
   static void default_notice_handler(std::unique_ptr<Notice>&& n)
   {
-    DMITIGR_INTERNAL_ASSERT(n);
+    DMITIGR_ASSERT(n);
     std::fprintf(stderr, "PostgreSQL Notice: %s\n", n->brief().c_str());
   }
 
@@ -1284,10 +1284,10 @@ private:
   template<class Problem>
   static Problem problem(const ::PGresult* const r)
   {
-    using internal::string::literal;
-    using internal::string::coalesce;
+    using string::literal;
+    using string::coalesce;
 
-    DMITIGR_INTERNAL_ASSERT(::PQresultStatus(r) == PGRES_NONFATAL_ERROR || ::PQresultStatus(r) == PGRES_FATAL_ERROR);
+    DMITIGR_ASSERT(::PQresultStatus(r) == PGRES_NONFATAL_ERROR || ::PQresultStatus(r) == PGRES_FATAL_ERROR);
 
     const auto oef = [](const char* const data)
     {
@@ -1326,8 +1326,8 @@ private:
 
   std::pair<std::unique_ptr<void, void(*)(void*)>, std::size_t> to_hex_storage(const pgfe::Data* const binary_data) const
   {
-    DMITIGR_INTERNAL_REQUIRE(binary_data && binary_data->format() == pgfe::Data_format::binary, std::invalid_argument);
-    DMITIGR_INTERNAL_REQUIRE(is_connected(), std::logic_error);
+    DMITIGR_REQUIRE(binary_data && binary_data->format() == pgfe::Data_format::binary, std::invalid_argument);
+    DMITIGR_REQUIRE(is_connected(), std::logic_error);
 
     const auto from_length = binary_data->size();
     const auto* from = reinterpret_cast<const unsigned char*>(binary_data->bytes());

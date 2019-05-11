@@ -10,7 +10,7 @@
 #include "dmitigr/pgfe/parameterizable.hxx"
 #include "dmitigr/pgfe/sql_string.hpp"
 
-#include <dmitigr/internal/debug.hpp>
+#include <dmitigr/common/debug.hpp>
 
 #include <algorithm>
 #include <list>
@@ -28,7 +28,7 @@ class iSql_string : public Sql_string {
 public:
   iSql_string()
   {
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   iSql_string(const iSql_string& rhs)
@@ -69,13 +69,13 @@ public:
   explicit iSql_string(const char* const text)
     : iSql_string(parse_sql_input(text).first)
   {
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   explicit iSql_string(const std::string& text)
     : iSql_string(text.c_str())
   {
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   // ---------------------------------------------------------------------------
@@ -97,7 +97,7 @@ public:
 
   const std::string& parameter_name(const std::size_t index) const override
   {
-    DMITIGR_INTERNAL_ASSERT(positional_parameter_count() <= index && index < parameter_count());
+    DMITIGR_ASSERT(positional_parameter_count() <= index && index < parameter_count());
     return (named_parameters_[index - positional_parameter_count()])->str;
   }
 
@@ -112,7 +112,7 @@ public:
   std::size_t parameter_index_throw(const std::string& name) const override
   {
     const auto i = named_parameter_index__(name);
-    DMITIGR_INTERNAL_REQUIRE(i < parameter_count(), std::out_of_range);
+    DMITIGR_REQUIRE(i < parameter_count(), std::out_of_range);
     return i;
   }
 
@@ -159,7 +159,7 @@ public:
 
   bool is_parameter_missing(const std::size_t index) const override
   {
-    DMITIGR_INTERNAL_REQUIRE(index < positional_parameter_count(), std::out_of_range);
+    DMITIGR_REQUIRE(index < positional_parameter_count(), std::out_of_range);
     return !positional_parameters_[index];
   }
 
@@ -170,9 +170,9 @@ public:
 
   void append(const Sql_string* const appendix) override
   {
-    DMITIGR_INTERNAL_REQUIRE(appendix, std::invalid_argument);
+    DMITIGR_REQUIRE(appendix, std::invalid_argument);
     const auto* const iappendix = dynamic_cast<const iSql_string*>(appendix);
-    DMITIGR_INTERNAL_ASSERT_ALWAYS(iappendix);
+    DMITIGR_ASSERT_ALWAYS(iappendix);
 
     const bool was_query_empty = is_query_empty();
 
@@ -189,7 +189,7 @@ public:
       throw;
     }
 
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   void append(const std::string& appendix) override
@@ -200,10 +200,10 @@ public:
 
   void replace_parameter(const std::string& name, const Sql_string* const replacement) override
   {
-    DMITIGR_INTERNAL_REQUIRE(has_parameter(name), std::out_of_range);
-    DMITIGR_INTERNAL_REQUIRE(replacement, std::invalid_argument);
+    DMITIGR_REQUIRE(has_parameter(name), std::out_of_range);
+    DMITIGR_REQUIRE(replacement, std::invalid_argument);
     const auto* const ireplacement = dynamic_cast<const iSql_string*>(replacement);
-    DMITIGR_INTERNAL_ASSERT_ALWAYS(ireplacement);
+    DMITIGR_ASSERT_ALWAYS(ireplacement);
 
     // Updating fragments
     auto old_fragments = fragments_;
@@ -224,7 +224,7 @@ public:
       throw;
     }
 
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   void replace_parameter(const std::string& name, const std::string& replacement) override
@@ -281,7 +281,7 @@ public:
         break;
       case Fragment::Type::named_parameter: {
         const auto idx = named_parameter_index__(fragment.str);
-        DMITIGR_INTERNAL_ASSERT(idx < parameter_count());
+        DMITIGR_ASSERT(idx < parameter_count());
         result += '$';
         result += std::to_string(idx + 1);
         break;
@@ -307,7 +307,7 @@ public:
     else if (is_extra_data_should_be_extracted_from_comments_)
       extra_->append(heap_data_Composite(Extra::extract(fragments_)));
     is_extra_data_should_be_extracted_from_comments_ = false;
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
     return &*extra_;
   }
 
@@ -369,19 +369,19 @@ private:
   void push_text(const std::string& str)
   {
     push_back_fragment__(Fragment::Type::text, str);
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   void push_one_line_comment(const std::string& str)
   {
     push_back_fragment__(Fragment::Type::one_line_comment, str);
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   void push_multi_line_comment(const std::string& str)
   {
     push_back_fragment__(Fragment::Type::multi_line_comment, str);
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   void push_positional_parameter(const std::string& str)
@@ -396,7 +396,7 @@ private:
       positional_parameters_.resize(position, false);
 
     positional_parameters_[Size(position) - 1] = true; // set parameter presence flag
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   void push_named_parameter(const std::string& str)
@@ -411,7 +411,7 @@ private:
     } else
       throw std::runtime_error("maximum parameters count (" + std::to_string(maximum_parameter_count_) + ") exceeded");
 
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   // ---------------------------------------------------------------------------
@@ -429,7 +429,7 @@ private:
 
     try {
       const auto new_pos_params_size = positional_parameters_.size();
-      DMITIGR_INTERNAL_ASSERT(new_pos_params_size >= rhs_pos_params_size);
+      DMITIGR_ASSERT(new_pos_params_size >= rhs_pos_params_size);
 
       // Creating the cache for named parameters.
       decltype (named_parameters_) new_named_parameters = named_parameters(); // can throw
@@ -453,7 +453,7 @@ private:
       throw;
     }
 
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   // ---------------------------------------------------------------------------
@@ -729,7 +729,7 @@ private:
         return min_indent_to_content ? (*min_indent_to_content == 0 ? 0 : 1) : 1;
       }
 
-      DMITIGR_INTERNAL_ASSERT_ALWAYS(!true);
+      DMITIGR_ASSERT_ALWAYS(!true);
     }
 
     /**
@@ -833,7 +833,7 @@ private:
         result.second = i;
         do {
           --i;
-          DMITIGR_INTERNAL_ASSERT(is_comment(*i) || (is_text(*i) && is_blank_string(i->str)));
+          DMITIGR_ASSERT(is_comment(*i) || (is_text(*i) && is_blank_string(i->str)));
           if (i->type == Fragment::Type::text) {
             if (!is_nearby_string(i->str))
               break;
@@ -856,7 +856,7 @@ private:
     std::pair<std::pair<std::string, Extra::Comment_type>, Fragment_list::const_iterator>
     static joined_comments_of_same_type(Fragment_list::const_iterator i, const Fragment_list::const_iterator e)
     {
-      DMITIGR_INTERNAL_ASSERT(is_comment(*i));
+      DMITIGR_ASSERT(is_comment(*i));
       std::string result;
       const auto fragment_type = i->type;
       for (; i->type == fragment_type && i != e; ++i) {
@@ -869,7 +869,7 @@ private:
         switch (ft) {
         case Fragment::Type::one_line_comment: return Extra::Comment_type::one_line;
         case Fragment::Type::multi_line_comment: return Extra::Comment_type::multi_line;
-        default: DMITIGR_INTERNAL_ASSERT_ALWAYS(!true);
+        default: DMITIGR_ASSERT_ALWAYS(!true);
         }
       };
       return std::make_pair(std::make_pair(result, comment_type(fragment_type)), i);

@@ -20,7 +20,7 @@ foreach(t
       ${dmitigr_pgfe_SOURCE_DIR}/lib/dmitigr/pgfe/sql.cxx)
   endif()
   add_executable(${t} ${test_sources})
-  target_link_libraries(${t} PRIVATE ${dmitigr_pgfe_target} ${dmitigr_internal_library})
+  target_link_libraries(${t} PRIVATE ${dmitigr_pgfe_target} ${dmitigr_common_library})
   dmitigr_target_compile_options(${t})
   add_test(NAME ${t} COMMAND ${t})
 endforeach()

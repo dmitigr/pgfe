@@ -10,7 +10,7 @@
 #include "dmitigr/pgfe/data.hpp"
 #include "dmitigr/pgfe/sql.hxx"
 
-#include <dmitigr/internal/debug.hpp>
+#include <dmitigr/common/debug.hpp>
 
 #include <algorithm>
 #include <utility>
@@ -46,7 +46,7 @@ public:
   explicit heap_data_Composite(std::vector<std::pair<std::string, std::unique_ptr<Data>>>&& datas)
     : datas_{std::move(datas)}
   {
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   heap_data_Composite(const heap_data_Composite& rhs)
@@ -54,7 +54,7 @@ public:
   {
     std::transform(cbegin(rhs.datas_), cend(rhs.datas_), begin(datas_),
       [&](const auto& pair) { return std::make_pair(pair.first, pair.second->to_data()); });
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   heap_data_Composite& operator=(const heap_data_Composite& rhs)
@@ -89,7 +89,7 @@ public:
 
   const std::string& field_name(const std::size_t index) const override
   {
-    DMITIGR_INTERNAL_REQUIRE(index < field_count(), std::out_of_range);
+    DMITIGR_REQUIRE(index < field_count(), std::out_of_range);
     return datas_[index].first;
   }
 
@@ -104,7 +104,7 @@ public:
   std::size_t field_index_throw(const std::string& name, const std::size_t offset = 0) const override
   {
     const auto i = field_index__(name, offset);
-    DMITIGR_INTERNAL_REQUIRE(i < field_count(), std::out_of_range);
+    DMITIGR_REQUIRE(i < field_count(), std::out_of_range);
     return i;
   }
 
@@ -126,7 +126,7 @@ public:
 
   const Data* data(const std::size_t index) const override
   {
-    DMITIGR_INTERNAL_REQUIRE(index < field_count(), std::out_of_range);
+    DMITIGR_REQUIRE(index < field_count(), std::out_of_range);
     return datas_[index].second.get();
   }
 
@@ -139,9 +139,9 @@ public:
 
   void set_data(const std::size_t index, std::unique_ptr<Data>&& data) override
   {
-    DMITIGR_INTERNAL_REQUIRE(index < field_count(), std::out_of_range);
+    DMITIGR_REQUIRE(index < field_count(), std::out_of_range);
     datas_[index].second = std::move(data);
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   void set_data(const std::size_t index, std::nullptr_t) override
@@ -161,11 +161,11 @@ public:
 
   std::unique_ptr<Data> release_data(const std::size_t index) override
   {
-    DMITIGR_INTERNAL_REQUIRE(index < field_count(), std::out_of_range);
+    DMITIGR_REQUIRE(index < field_count(), std::out_of_range);
     auto& data = datas_[index].second;
     auto result = std::move(data); // As described in 14882:2014 20.8.1/4, u.p is equal to nullptr after transfer ownership...
     data.reset(); // but just in case...
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
     return result;
   }
 
@@ -177,14 +177,14 @@ public:
   void append_field(const std::string& name, std::unique_ptr<Data>&& data = {}) override
   {
     datas_.emplace_back(name, std::move(data));
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   void insert_field(const std::size_t index, const std::string& name, std::unique_ptr<Data>&& data = {}) override
   {
-    DMITIGR_INTERNAL_REQUIRE(index < field_count(), std::out_of_range);
+    DMITIGR_REQUIRE(index < field_count(), std::out_of_range);
     datas_.insert(begin(datas_) + index, std::make_pair(name, std::move(data)));
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   void insert_field(const std::string& name, const std::string& new_field_name, std::unique_ptr<Data>&& data) override
@@ -194,9 +194,9 @@ public:
 
   void remove_field(const std::size_t index) override
   {
-    DMITIGR_INTERNAL_REQUIRE(index < field_count(), std::out_of_range);
+    DMITIGR_REQUIRE(index < field_count(), std::out_of_range);
     datas_.erase(cbegin(datas_) + index);
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   void remove_field(const std::string& name, std::size_t offset = 0) override
@@ -226,7 +226,7 @@ public:
   void append(heap_data_Composite&& rhs)
   {
     datas_.insert(cend(datas_), std::make_move_iterator(begin(rhs.datas_)), std::make_move_iterator(end(rhs.datas_)));
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
 protected:
@@ -238,7 +238,7 @@ protected:
 private:
   std::size_t field_index__(const std::string& name, std::size_t offset) const
   {
-    DMITIGR_INTERNAL_REQUIRE(offset < field_count(), std::out_of_range);
+    DMITIGR_REQUIRE(offset < field_count(), std::out_of_range);
     const auto b = cbegin(datas_);
     const auto e = cend(datas_);
     const auto ident = unquote_identifier(name);

@@ -9,7 +9,7 @@
 #include "dmitigr/pgfe/dll.hpp"
 #include "dmitigr/pgfe/types_fwd.hpp"
 
-#include <dmitigr/internal/filesystem_experimental.hpp>
+#include <dmitigr/common/filesystem_experimental.hpp>
 
 #include <cstdint>
 #include <chrono>

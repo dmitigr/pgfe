@@ -9,7 +9,7 @@
 #include "dmitigr/pgfe/conversions_api.hpp"
 #include "dmitigr/pgfe/data.hpp"
 
-#include <dmitigr/internal/debug.hpp>
+#include <dmitigr/common/debug.hpp>
 
 #include <memory>
 #include <optional>
@@ -209,7 +209,7 @@ struct Array_data_conversions_opts<Container<Optional<T>, Allocator<Optional<T>>
   template<typename ... Types>
   static Type to_type(const Data* const data, Types&& ... args)
   {
-    DMITIGR_INTERNAL_REQUIRE(data && data->format() == Data_format::text, std::invalid_argument);
+    DMITIGR_REQUIRE(data && data->format() == Data_format::text, std::invalid_argument);
     return to_container<Type>(data->bytes(), ',', std::forward<Types>(args)...);
   }
 

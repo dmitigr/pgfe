@@ -4,7 +4,7 @@
 
 #include "dmitigr/pgfe/errc.hxx"
 
-#include <dmitigr/internal/debug.hpp>
+#include <dmitigr/common/debug.hpp>
 
 namespace pgfe = dmitigr::pgfe;
 
@@ -24,7 +24,7 @@ const char* pgfe::detail::to_literal(const Client_errc errc)
   case Client_errc::timed_out:
     return "timed_out";
   }
-  DMITIGR_INTERNAL_ASSERT_ALWAYS(!true);
+  DMITIGR_ASSERT_ALWAYS(!true);
 }
 
 const char* pgfe::detail::to_literal(const Server_errc errc)
@@ -513,5 +513,5 @@ const char* pgfe::detail::to_literal(const Server_errc errc)
   case Server_errc::cxx_index_corrupted:
     return "cxx_index_corrupted";
   }
-  DMITIGR_INTERNAL_ASSERT_ALWAYS(!true);
+  DMITIGR_ASSERT_ALWAYS(!true);
 }

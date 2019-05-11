@@ -7,7 +7,7 @@
 
 #include "dmitigr/pgfe/completion.hpp"
 
-#include <dmitigr/internal/debug.hpp>
+#include <dmitigr/common/debug.hpp>
 
 namespace dmitigr::pgfe::detail {
 
@@ -56,7 +56,7 @@ public:
     } else if (!tag.empty())
       operation_name_ = tag;
 
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   const std::string& operation_name() const override

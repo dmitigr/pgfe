@@ -8,7 +8,7 @@
 #include "dmitigr/pgfe/error.hpp"
 #include "dmitigr/pgfe/exceptions.hpp"
 
-#include <dmitigr/internal/debug.hpp>
+#include <dmitigr/common/debug.hpp>
 
 #include <memory>
 
@@ -31,7 +31,7 @@ public:
     : Server_exception(error->code())
     , error_(std::move(error))
   {
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   const Error* error() const noexcept override

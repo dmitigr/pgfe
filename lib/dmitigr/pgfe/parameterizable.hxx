@@ -7,7 +7,7 @@
 
 #include "dmitigr/pgfe/parameterizable.hpp"
 
-#include <dmitigr/internal/debug.hpp>
+#include <dmitigr/common/debug.hpp>
 
 namespace dmitigr::pgfe::detail {
 

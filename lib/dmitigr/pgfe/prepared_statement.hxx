@@ -11,7 +11,7 @@
 #include "dmitigr/pgfe/prepared_statement.hpp"
 #include "dmitigr/pgfe/row_info.hxx"
 
-#include <dmitigr/internal/memory.hpp>
+#include <dmitigr/common/memory.hpp>
 
 #include <algorithm>
 #include <chrono>
@@ -77,7 +77,7 @@ public:
 
   const std::string& parameter_name(const std::size_t index) const override
   {
-    DMITIGR_INTERNAL_REQUIRE(positional_parameter_count() <= index && index < parameter_count(), std::out_of_range);
+    DMITIGR_REQUIRE(positional_parameter_count() <= index && index < parameter_count(), std::out_of_range);
     return parameters_[index].name;
   }
 
@@ -92,7 +92,7 @@ public:
   std::size_t parameter_index_throw(const std::string& name) const override
   {
     const auto i = parameter_index__(name);
-    DMITIGR_INTERNAL_REQUIRE(i < parameter_count(), std::out_of_range);
+    DMITIGR_REQUIRE(i < parameter_count(), std::out_of_range);
     return i;
   }
 
@@ -142,7 +142,7 @@ public:
 
   const Data* parameter(const std::size_t index) const override
   {
-    DMITIGR_INTERNAL_REQUIRE(index < parameter_count(), std::out_of_range);
+    DMITIGR_REQUIRE(index < parameter_count(), std::out_of_range);
     return parameters_[index].data.get();
   }
 
@@ -188,7 +188,7 @@ public:
   void set_result_format(const Data_format format) override
   {
     result_format_ = format;
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   Data_format result_format() const noexcept override
@@ -215,7 +215,7 @@ public:
 
   std::optional<std::uint_fast32_t> parameter_type_oid(const std::size_t index) const override
   {
-    DMITIGR_INTERNAL_REQUIRE(index < parameter_count(), std::out_of_range);
+    DMITIGR_REQUIRE(index < parameter_count(), std::out_of_range);
     if (is_described()) {
       return std::visit(
         [&](const auto& descr) -> std::uint_fast32_t
@@ -254,7 +254,7 @@ public:
 private:
   friend pq_Connection;
 
-  using Data_deletion_required = internal::memory::Conditional_delete<const Data>;
+  using Data_deletion_required = memory::Conditional_delete<const Data>;
   using Data_ptr = std::unique_ptr<const Data, Data_deletion_required>;
 
   struct Parameter {
@@ -266,15 +266,15 @@ private:
 
   void set_parameter(const std::size_t index, Data_ptr&& data)
   {
-    DMITIGR_INTERNAL_REQUIRE(!data || data->size() <= maximum_data_size(), std::invalid_argument);
+    DMITIGR_REQUIRE(!data || data->size() <= maximum_data_size(), std::invalid_argument);
     if (!is_preparsed() && !is_described()) {
-      DMITIGR_INTERNAL_REQUIRE(index < maximum_parameter_count(), std::out_of_range);
+      DMITIGR_REQUIRE(index < maximum_parameter_count(), std::out_of_range);
       if (index >= parameters_.size())
         parameters_.resize(index + 1);
     } else
-      DMITIGR_INTERNAL_REQUIRE(index < parameter_count(), std::out_of_range);
+      DMITIGR_REQUIRE(index < parameter_count(), std::out_of_range);
     parameters_[index].data = std::move(data);
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   void set_description(pq::Result&& r)
@@ -287,7 +287,7 @@ private:
     else
       description_ = std::move(r);
 
-    DMITIGR_INTERNAL_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT(is_invariant_ok());
   }
 
   void init_connection__(pq_Connection* const connection);

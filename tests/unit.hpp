@@ -8,11 +8,11 @@
 #include "dmitigr/pgfe/connection.hpp"
 #include "dmitigr/pgfe/connection_options.hpp"
 
-#include <dmitigr/internal/debug.hpp>
-#include <dmitigr/internal/os.hpp>
-#include <dmitigr/internal/filesystem_experimental.hpp>
+#include <dmitigr/common/debug.hpp>
+#include <dmitigr/common/os.hpp>
+#include <dmitigr/common/filesystem_experimental.hpp>
 
-#define ASSERT(a) DMITIGR_INTERNAL_ASSERT(a)
+#define ASSERT(a) DMITIGR_ASSERT(a)
 
 #include <cstdlib>
 #include <fstream>
@@ -78,7 +78,7 @@ inline std::unique_ptr<Connection> make_ssl_connection()
   const auto conn_opts = connection_options();
   conn_opts->set_ssl_enabled(true);
 
-  namespace os = dmitigr::internal::os;
+  namespace os = dmitigr::os;
 #ifdef _WIN32
   auto appdata = os::environment_variable("APPDATA");
   ASSERT(appdata);

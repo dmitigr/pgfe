@@ -4,16 +4,16 @@
 
 #include "dmitigr/pgfe/basics.hpp"
 
-#include <dmitigr/internal/basics.hpp>
+#include <dmitigr/common/basics.hpp>
 
 #include <cstring>
 
 namespace pgfe = dmitigr::pgfe;
 
-namespace dmitigr::internal {
+namespace dmitigr {
 
 template<> struct Is_bitmask_enum<pgfe::Socket_readiness> : std::true_type {};
 
-} // namespace dmitigr::internal
+} // namespace dmitigr
 
-DMITIGR_INTERNAL_DEFINE_ENUM_BITMASK_OPERATORS(pgfe, pgfe::Socket_readiness)
+DMITIGR_DEFINE_ENUM_BITMASK_OPERATORS(pgfe, pgfe::Socket_readiness)

@@ -18,27 +18,27 @@
 # 3. This notice may not be removed or altered from any source distribution.
 
 # This module defines the following variables:
-#   dmitigr_internal_library - the actual name of the dmitigr_internal library.
-#     Possible names in order of preference are:
-#       "dmitigr_internal_interface" (header-only);
-#       "dmitigr_internal_static" (static);
-#       "dmitigr_internal" (shared).
+#   ${lib}_library - the actual name of the ${lib} library. Possible names in
+#   order of preference are:
+#     "${lib}_interface" (header-only);
+#     "${lib}_static" (static);
+#     "${lib}" (shared).
 
-find_package(dmitigr_internal CONFIGS dmitigr_internal_interface-config.cmake)
-if(NOT dmitigr_internal_FOUND)
-  find_package(dmitigr_internal CONFIGS dmitigr_internal_static-config.cmake)
-  if(NOT dmitigr_internal_FOUND)
-    find_package(dmitigr_internal)
-    if(NOT dmitigr_internal_FOUND)
-      if (dmitigr_internal_FIND_REQUIRED)
-        message(FATAL_ERROR "No Dmitigr Internal library found")
+find_package(${lib} CONFIGS ${lib}_interface-config.cmake)
+if(NOT ${lib}_FOUND)
+  find_package(${lib} CONFIGS ${lib}_static-config.cmake)
+  if(NOT ${lib}_FOUND)
+    find_package(${lib})
+    if(NOT ${lib}_FOUND)
+      if (${lib}_FIND_REQUIRED)
+        message(FATAL_ERROR "No ${lib} library found")
       endif()
     else()
-      set(dmitigr_internal_library dmitigr_internal)
+      set(${lib}_library ${lib})
     endif()
   else()
-    set(dmitigr_internal_library dmitigr_internal_static)
+    set(${lib}_library ${lib}_static)
   endif()
 else()
-  set(dmitigr_internal_library dmitigr_internal_interface)
+  set(${lib}_library ${lib}_interface)
 endif()

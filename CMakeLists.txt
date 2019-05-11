@@ -517,11 +517,11 @@ endif()
 # ------------------------------------------------------------------------------
 
 #
-# dmitigr_internal
+# dmitigr_common
 #
 
-find_package(Internal REQUIRED)
-message("Using ${dmitigr_internal_library} library")
+find_package(Common REQUIRED)
+message("Using ${dmitigr_common_library} library")
 
 #
 # libpq
@@ -542,9 +542,9 @@ include_directories(${Pq_INCLUDE_DIRS})
 
 # --------------------------------------
 
-if(NOT DMITIGR_INTERNAL_HEADER_ONLY)
+if(NOT DMITIGR_PGFE_HEADER_ONLY)
   target_link_libraries(${dmitigr_pgfe_target}
-    PRIVATE ${Suggested_Pq_LIBRARIES} ${dmitigr_internal_library})
+    PRIVATE ${Suggested_Pq_LIBRARIES} ${dmitigr_common_library})
 
   if (UNIX)
     target_link_libraries(${dmitigr_pgfe_target} PRIVATE stdc++fs)
@@ -553,7 +553,7 @@ if(NOT DMITIGR_INTERNAL_HEADER_ONLY)
   endif()
 else()
   target_link_libraries(dmitigr_pgfe_interface
-    INTERFACE ${Suggested_Pq_LIBRARIES} ${dmitigr_internal_library})
+    INTERFACE ${Suggested_Pq_LIBRARIES} ${dmitigr_common_library})
 
   if (UNIX)
     target_link_libraries(dmitigr_pgfe_interface INTERFACE stdc++fs)
