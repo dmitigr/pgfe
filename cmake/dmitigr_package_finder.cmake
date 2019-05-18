@@ -24,13 +24,13 @@
 #     "${lib}_static" (static);
 #     "${lib}" (shared).
 
-find_package(${lib} CONFIGS ${lib}_interface-config.cmake)
+find_package(${lib} CONFIGS ${lib}_interface-config.cmake QUIET)
 if(NOT ${lib}_FOUND)
-  find_package(${lib} CONFIGS ${lib}_static-config.cmake)
+  find_package(${lib} CONFIGS ${lib}_static-config.cmake QUIET)
   if(NOT ${lib}_FOUND)
-    find_package(${lib})
+    find_package(${lib} CONFIGS ${lib}-config.cmake QUIET)
     if(NOT ${lib}_FOUND)
-      if (${lib}_FIND_REQUIRED)
+      if (${pkg}_FIND_REQUIRED)
         message(FATAL_ERROR "No ${lib} library found")
       endif()
     else()
