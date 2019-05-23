@@ -1,6 +1,21 @@
 # -*- cmake -*-
-# Copyright (C) Dmitry Igrishin
-# For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
+# Copyright (C) 2019 Dmitry Igrishin
+#
+# This software is provided 'as-is', without any express or implied
+# warranty. In no event will the authors be held liable for any damages
+# arising from the use of this software.
+
+# Permission is granted to anyone to use this software for any purpose,
+# including commercial applications, and to alter it and redistribute it
+# freely, subject to the following restrictions:
+
+# 1. The origin of this software must not be misrepresented; you must not
+#    claim that you wrote the original software. If you use this software
+#    in a product, an acknowledgment in the product documentation would be
+#    appreciated but is not required.
+# 2. Altered source versions must be plainly marked as such, and must not be
+#    misrepresented as being the original software.
+# 3. This notice may not be removed or altered from any source distribution.
 
 # Find specified include directories and libraries.
 #
@@ -10,10 +25,10 @@
 # ${lib}_include_names - names of the headers to find
 # ${lib}_release_library_names - names of the release libraries to find
 # ${lib}_debug_library_names - names of the debug libraries to find
-# ${lib}_include_path_suffixes - PATH_SUFFIXES for headers. By default - include.
-# ${lib}_library_path_suffixes - PATH_SUFFIXES for libraries. By default - lib.
-# ${lib}_include_paths - PATHS for headers. Empty by default.
-# ${lib}_library_paths - PATHS for libraries. Empty by default.
+# ${lib}_include_path_suffixes - PATH_SUFFIXES of headers. By default - include.
+# ${lib}_library_path_suffixes - PATH_SUFFIXES of libraries. By default - lib.
+# ${lib}_include_paths - PATHS of headers. Empty by default.
+# ${lib}_library_paths - PATHS of libraries. Empty by default.
 # ${lib}_FIND_REQUIRED - true or false
 # CMAKE_BUILD_TYPE - to determine the preferred library for suggestion to link.
 #

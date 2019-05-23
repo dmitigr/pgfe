@@ -18,27 +18,27 @@
 # 3. This notice may not be removed or altered from any source distribution.
 
 # This module defines the following variables:
-#   ${lib}_library - the actual name of the ${lib} library. Possible names in
-#   order of preference are:
-#     "${lib}_interface" (header-only);
-#     "${lib}_static" (static);
-#     "${lib}" (shared).
+#   ${pkg}_library - the actual name of the package found. Possible names
+#   in order of preference are:
+#     "${pkg}_interface" (header-only library);
+#     "${pkg}_static" (static library);
+#     "${pkg}" (shared library).
 
-find_package(${lib} CONFIGS ${lib}_interface-config.cmake QUIET)
-if(NOT ${lib}_FOUND)
-  find_package(${lib} CONFIGS ${lib}_static-config.cmake QUIET)
-  if(NOT ${lib}_FOUND)
-    find_package(${lib} CONFIGS ${lib}-config.cmake QUIET)
-    if(NOT ${lib}_FOUND)
+find_package(${pkg} CONFIGS ${pkg}_interface-config.cmake QUIET)
+if(NOT ${pkg}_FOUND)
+  find_package(${pkg} CONFIGS ${pkg}_static-config.cmake QUIET)
+  if(NOT ${pkg}_FOUND)
+    find_package(${pkg} CONFIGS ${pkg}-config.cmake QUIET)
+    if(NOT ${pkg}_FOUND)
       if (${pkg}_FIND_REQUIRED)
-        message(FATAL_ERROR "No ${lib} library found")
+        message(FATAL_ERROR "No ${pkg} package found")
       endif()
     else()
-      set(${lib}_library ${lib})
+      set(${pkg}_library ${pkg})
     endif()
   else()
-    set(${lib}_library ${lib}_static)
+    set(${pkg}_library ${pkg}_static)
   endif()
 else()
-  set(${lib}_library ${lib}_interface)
+  set(${pkg}_library ${pkg}_interface)
 endif()

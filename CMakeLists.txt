@@ -520,7 +520,7 @@ endif()
 # dmitigr_common
 #
 
-find_package(Common REQUIRED)
+find_package(dmitigr_common REQUIRED)
 message("Using ${dmitigr_common_library} library")
 
 #
