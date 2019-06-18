@@ -458,7 +458,7 @@ Dependencies
 ------------
 
 - [CMake] build system version 3.13+;
-- C++17 compiler ([GCC] 8+ or [Microsoft Visual C++][Visual_Studio] 15.7+);
+- C++17 compiler ([GCC] 7.4+ or [Microsoft Visual C++][Visual_Studio] 15.7+);
 - [dmitigr_common] library;
 - [libpq] library (the underlying engine).
 
