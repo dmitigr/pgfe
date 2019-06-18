@@ -194,6 +194,36 @@ const char* pgfe::detail::to_literal(const Server_errc errc)
     return "c22_invalid_xml_comment";
   case Server_errc::c22_invalid_xml_processing_instruction:
     return "c22_invalid_xml_processing_instruction";
+  case Server_errc::c22_duplicate_json_object_key_value:
+    return "c22_duplicate_json_object_key_value";
+  case Server_errc::c22_invalid_json_text:
+    return "c22_invalid_json_text";
+  case Server_errc::c22_invalid_json_subscript:
+    return "c22_invalid_json_subscript";
+  case Server_errc::c22_more_than_one_json_item:
+    return "c22_more_than_one_json_item";
+  case Server_errc::c22_no_json_item:
+    return "c22_no_json_item";
+  case Server_errc::c22_non_numeric_json_item:
+    return "c22_non_numeric_json_item";
+  case Server_errc::c22_non_unique_keys_in_json_object:
+    return "c22_non_unique_keys_in_json_object";
+  case Server_errc::c22_singleton_json_item_required:
+    return "c22_singleton_json_item_required";
+  case Server_errc::c22_json_array_not_found:
+    return "c22_json_array_not_found";
+  case Server_errc::c22_json_member_not_found:
+    return "c22_json_member_not_found";
+  case Server_errc::c22_json_number_not_found:
+    return "c22_json_number_not_found";
+  case Server_errc::c22_object_not_found:
+    return "c22_object_not_found";
+  case Server_errc::c22_json_scalar_required:
+    return "c22_json_scalar_required";
+  case Server_errc::c22_too_many_json_array_elements:
+    return "c22_too_many_json_array_elements";
+  case Server_errc::c22_too_many_json_object_members:
+    return "c22_too_many_json_object_members";
   case Server_errc::c23_integrity_constraint_violation:
     return "c23_integrity_constraint_violation";
   case Server_errc::c23_restrict_violation:
@@ -416,6 +446,8 @@ const char* pgfe::detail::to_literal(const Server_errc errc)
     return "c55_cant_change_runtime_param";
   case Server_errc::c55_lock_not_available:
     return "c55_lock_not_available";
+  case Server_errc::c55_unsafe_new_enum_value_usage:
+    return "c55_unsafe_new_enum_value_usage";
   case Server_errc::c57_operator_intervention:
     return "c57_operator_intervention";
   case Server_errc::c57_query_canceled:

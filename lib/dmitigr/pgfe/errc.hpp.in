@@ -348,6 +348,51 @@ enum class Server_errc {
   /** 2200T */
   c22_invalid_xml_processing_instruction = @PGFE_SERVER_ERRC_C22_INVALID_XML_PROCESSING_INSTRUCTION@,
 
+  /** 22030 */
+  c22_duplicate_json_object_key_value = @PGFE_SERVER_ERRC_C22_DUPLICATE_JSON_OBJECT_KEY_VALUE@,
+
+  /** 22032 */
+  c22_invalid_json_text = @PGFE_SERVER_ERRC_C22_INVALID_JSON_TEXT@,
+
+  /** 22033 */
+  c22_invalid_json_subscript = @PGFE_SERVER_ERRC_C22_INVALID_JSON_SUBSCRIPT@,
+
+  /** 22034 */
+  c22_more_than_one_json_item = @PGFE_SERVER_ERRC_C22_MORE_THAN_ONE_JSON_ITEM@,
+
+  /** 22035 */
+  c22_no_json_item = @PGFE_SERVER_ERRC_C22_NO_JSON_ITEM@,
+
+  /** 22036 */
+  c22_non_numeric_json_item = @PGFE_SERVER_ERRC_C22_NON_NUMERIC_JSON_ITEM@,
+
+  /** 22037 */
+  c22_non_unique_keys_in_json_object = @PGFE_SERVER_ERRC_C22_NON_UNIQUE_KEYS_IN_JSON_OBJECT@,
+
+  /** 22038 */
+  c22_singleton_json_item_required = @PGFE_SERVER_ERRC_C22_SINGLETON_JSON_ITEM_REQUIRED@,
+
+  /** 22039 */
+  c22_json_array_not_found = @PGFE_SERVER_ERRC_C22_JSON_ARRAY_NOT_FOUND@,
+
+  /** 2203A */
+  c22_json_member_not_found = @PGFE_SERVER_ERRC_C22_JSON_MEMBER_NOT_FOUND@,
+
+  /** 2203B */
+  c22_json_number_not_found = @PGFE_SERVER_ERRC_C22_JSON_NUMBER_NOT_FOUND@,
+
+  /** 2203C */
+  c22_object_not_found = @PGFE_SERVER_ERRC_C22_OBJECT_NOT_FOUND@,
+
+  /** 2203F */
+  c22_json_scalar_required = @PGFE_SERVER_ERRC_C22_JSON_SCALAR_REQUIRED@,
+
+  /** 2203D */
+  c22_too_many_json_array_elements = @PGFE_SERVER_ERRC_C22_TOO_MANY_JSON_ARRAY_ELEMENTS@,
+
+  /** 2203E */
+  c22_too_many_json_object_members = @PGFE_SERVER_ERRC_C22_TOO_MANY_JSON_OBJECT_MEMBERS@,
+
   /*
    * Class 23 - Integrity Constraint Violation
    */
@@ -764,6 +809,9 @@ enum class Server_errc {
 
   /** 55P03 */
   c55_lock_not_available = @PGFE_SERVER_ERRC_C55_LOCK_NOT_AVAILABLE@,
+
+  /** 55P04 */
+  c55_unsafe_new_enum_value_usage = @PGFE_SERVER_ERRC_C55_UNSAFE_NEW_ENUM_VALUE_USAGE@,
 
   /*
    * Class 57 - Operator Intervention
