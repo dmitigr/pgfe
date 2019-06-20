@@ -64,12 +64,16 @@ inline void validate(const bool condition, const std::string& option_name)
 
 class iConnection_options : public Connection_options {
 public:
+  iConnection_options()
+    : iConnection_options{btd::communication_mode}
+  {}
+
   /*
    * It is better to provide an initializers in the members declarations, but
    * due to the bug in Microsoft Visual Studio 15.7, all of them are here.
    */
-  iConnection_options()
-    : communication_mode_{btd::communication_mode}
+  explicit iConnection_options(const Communication_mode communication_mode)
+    : communication_mode_{communication_mode}
 #ifndef _WIN32
     , uds_directory_{btd::uds_directory}
     , uds_file_extension_{btd::uds_file_extension}

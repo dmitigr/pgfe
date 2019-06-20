@@ -17,7 +17,15 @@ int main(int, char* argv[])
   using namespace pgfe::tests;
 
   try {
-    auto co = pgfe::Connection_options::make();
+    auto co = pgfe::Connection_options::make(pgfe::Communication_mode::tcp);
+    ASSERT(co->communication_mode() == pgfe::Communication_mode::tcp);
+
+#ifndef _WIN32
+    co = pgfe::Connection_options::make(pgfe::Communication_mode::uds);
+    ASSERT(co->communication_mode() == pgfe::Communication_mode::uds);
+#endif
+
+    co = pgfe::Connection_options::make();
 
     ASSERT(co->communication_mode() == btd::communication_mode);
     {

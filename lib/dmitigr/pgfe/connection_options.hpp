@@ -40,6 +40,14 @@ public:
   static DMITIGR_PGFE_API std::unique_ptr<Connection_options> make();
 
   /**
+   * @returns The new instance of the default connection options.
+   *
+   * @par Effects
+   * `(communication_mode() == value)`
+   */
+  static DMITIGR_PGFE_API std::unique_ptr<Connection_options> make(Communication_mode value);
+
+  /**
    * @returns The instance of type Connection initialized with this instance.
    *
    * @see Connection::make()
