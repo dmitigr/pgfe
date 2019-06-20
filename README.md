@@ -71,11 +71,11 @@ Features of the near future
 
 The urgent TODO-list includes support of:
 
+  - header-only mode;
   - [Large Objects][lob] via IO streams of the Standard C++ library;
+  - the COPY command;
   - conversions for `dmitigr::pgfe::Composite` data type;
-  - yet more convenient work with arrays of variable dimensions at runtime;
-  - COPY command;
-  - C API.
+  - yet more convenient work with arrays of variable dimensions at runtime.
 
 Tutorial
 ========
