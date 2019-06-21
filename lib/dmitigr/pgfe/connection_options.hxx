@@ -110,7 +110,7 @@ public:
   Connection_options* set(const Communication_mode value) override
   {
 #ifdef _WIN32
-    DMITIGR_ASSERT(value == Communication_mode::tcp);
+    DMITIGR_ASSERT(value == Communication_mode::net);
 #endif
     communication_mode_ = value;
     DMITIGR_ASSERT(is_invariant_ok());
@@ -177,7 +177,7 @@ public:
 
   Connection_options* set_tcp_keepalives_enabled(const bool value) override
   {
-    DMITIGR_REQUIRE(communication_mode() == Communication_mode::tcp, std::logic_error);
+    DMITIGR_REQUIRE(communication_mode() == Communication_mode::net, std::logic_error);
     tcp_keepalives_enabled_ = value;
     DMITIGR_ASSERT(is_invariant_ok());
     return this;
@@ -192,7 +192,7 @@ public:
 
   Connection_options* set_tcp_keepalives_idle(const std::optional<std::chrono::seconds> value) override
   {
-    DMITIGR_REQUIRE(communication_mode() == Communication_mode::tcp, std::logic_error);
+    DMITIGR_REQUIRE(communication_mode() == Communication_mode::net, std::logic_error);
     if (value)
       validate(is_non_negative(value->count()), "TCP keepalives idle");
     tcp_keepalives_idle_ = value;
@@ -209,7 +209,7 @@ public:
 
   Connection_options* set_tcp_keepalives_interval(const std::optional<std::chrono::seconds> value) override
   {
-    DMITIGR_REQUIRE(communication_mode() == Communication_mode::tcp, std::logic_error);
+    DMITIGR_REQUIRE(communication_mode() == Communication_mode::net, std::logic_error);
     if (value)
       validate(is_non_negative(value->count()), "TCP keepalives interval");
     tcp_keepalives_interval_ = value;
@@ -226,7 +226,7 @@ public:
 
   Connection_options* set_tcp_keepalives_count(const std::optional<int> value) override
   {
-    DMITIGR_REQUIRE(communication_mode() == Communication_mode::tcp, std::logic_error);
+    DMITIGR_REQUIRE(communication_mode() == Communication_mode::net, std::logic_error);
     if (value)
       validate(is_non_negative(*value), "TCP keepalives count");
     tcp_keepalives_count_ = value;
@@ -243,7 +243,7 @@ public:
 
   Connection_options* set_tcp_address(std::optional<std::string> value) override
   {
-    DMITIGR_REQUIRE(communication_mode() == Communication_mode::tcp, std::logic_error);
+    DMITIGR_REQUIRE(communication_mode() == Communication_mode::net, std::logic_error);
     if (value)
       validate(is_ip_address(*value), "TCP address");
     else
@@ -262,7 +262,7 @@ public:
 
   Connection_options* set_tcp_hostname(std::optional<std::string> value) override
   {
-    DMITIGR_REQUIRE(communication_mode() == Communication_mode::tcp, std::logic_error);
+    DMITIGR_REQUIRE(communication_mode() == Communication_mode::net, std::logic_error);
     if (value)
       validate(is_hostname(*value), "TCP host name");
     else
@@ -455,7 +455,7 @@ private:
   virtual bool is_invariant_ok()
   {
 #ifdef _WIN32
-    const bool communication_mode_ok = (communication_mode_ == Communication_mode::tcp);
+    const bool communication_mode_ok = (communication_mode_ == Communication_mode::net);
     constexpr bool uds_ok = true;
 #else
     constexpr bool communication_mode_ok = true;
@@ -464,7 +464,7 @@ private:
         is_valid_port(port_) &&
         (!uds_require_server_process_username_ || !uds_require_server_process_username_->empty()));
 #endif
-    const bool tcp_ok = !(communication_mode_ == Communication_mode::tcp) ||
+    const bool tcp_ok = !(communication_mode_ == Communication_mode::net) ||
       ((!tcp_keepalives_idle_ || is_non_negative(tcp_keepalives_idle_->count())) &&
         (!tcp_keepalives_interval_ || is_non_negative(tcp_keepalives_interval_->count())) &&
         (!tcp_keepalives_count_ || is_non_negative(tcp_keepalives_count_)) &&
@@ -521,7 +521,7 @@ public:
     DMITIGR_ASSERT(o);
 
     switch (o->communication_mode()) {
-    case Communication_mode::tcp: {
+    case Communication_mode::net: {
       constexpr auto z = std::chrono::seconds::zero();
       values_[host] = o->tcp_hostname().value_or("");
       values_[hostaddr] = o->tcp_address().value_or("");

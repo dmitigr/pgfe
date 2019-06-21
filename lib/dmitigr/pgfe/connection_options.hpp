@@ -22,7 +22,7 @@ namespace dmitigr::pgfe {
 /**
  * @ingroup main
  *
- * @brief Defines an interface to work with Connection options.
+ * @brief Defines an abstraction to work with Connection options.
  */
 class Connection_options {
 public:
@@ -91,7 +91,7 @@ public:
   /**
    * @brief Sets server's port number.
    *
-   * When `(communication_mode() == Communication_mode::tcp)` it will be used as
+   * When `(communication_mode() == Communication_mode::net)` it will be used as
    * the TCP port number. Otherwise, it will be used as extension of the
    * Unix-domain socket file, which is named `.s.PGSQL.port` and located in the
    * directory `uds_directory()`.
@@ -197,7 +197,7 @@ public:
    * @param value - the value of `std::nullopt` means *system default*.
    *
    * @par Requires
-   * `(communication_mode() == Communication_mode::tcp)`
+   * `(communication_mode() == Communication_mode::net)`
    *
    * @par Exception safety guarantee
    * Strong.
@@ -224,7 +224,7 @@ public:
    * @param value - the value of `std::nullopt` means *system default*.
    *
    * @par Requires
-   * `(communication_mode() == Communication_mode::tcp)`
+   * `(communication_mode() == Communication_mode::net)`
    *
    * @par Exception safety guarantee
    * Strong.
@@ -251,7 +251,7 @@ public:
    * @param value - the value of `std::nullopt` means *system default*.
    *
    * @par Requires
-   * `(communication_mode() == Communication_mode::tcp)`.
+   * `(communication_mode() == Communication_mode::net)`.
    *
    * @par Exception safety guarantee
    * Strong.
@@ -280,7 +280,7 @@ public:
    * @param value - must be a valid address in either IPv4 or IPv6 format.
    *
    * @par Requires
-   * `((communication_mode() == Communication_mode::tcp) && (value || tcp_hostname()))`.
+   * `((communication_mode() == Communication_mode::net) && (value || tcp_hostname()))`.
    *
    * @par Exception safety guarantee
    * Strong.
@@ -309,7 +309,7 @@ public:
    * @param value - must be a valid host name.
    *
    * @par Requires
-   * `((communication_mode() == Communication_mode::tcp) && (value || tcp_address()))`.
+   * `((communication_mode() == Communication_mode::net) && (value || tcp_address()))`.
    *
    * @par Exception safety guarantee
    * strong.

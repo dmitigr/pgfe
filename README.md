@@ -24,7 +24,7 @@ int main()
 {
   namespace pgfe = dmitigr::pgfe;
   try {
-    const auto conn = pgfe::Connection_options::make(pgfe::Communication_mode::tcp)->
+    const auto conn = pgfe::Connection_options::make(pgfe::Communication_mode::net)->
       set_tcp_hostname("localhost")->
       set_database("pgfe_test")->
       set_username("pgfe_test")->
@@ -114,9 +114,8 @@ Example 1. Creation of the connection with customized options:
 ```cpp
 std::unique_ptr<dmitigr::pgfe::Connection> create_customized_connection()
 {
-  return pgfe::Connection_options::make()->
-    set(Communication_mode::tcp)->
-    set_tcp_host_name("localhost")->
+  return pgfe::Connection_options::make(Communication_mode::net)->
+    set_tcp_hostname("localhost")->
     set_database("db")->
     set_username("user")->
     set_password("password")->
@@ -493,7 +492,7 @@ Details (may need to use horizontal scrolling for full view):
 |DMITIGR_PGFE_LIB_INSTALL_DIR|*a path relative to CMAKE_INSTALL_PREFIX*|"lib"|"lib"|
 |DMITIGR_PGFE_INCLUDE_INSTALL_DIR|*a path relative to CMAKE_INSTALL_PREFIX*|"include"|"include"|
 |**Default values of the connection options**||||
-|DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE|uds \| tcp|uds|tcp|
+|DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE|uds \| net|uds|net|
 |DMITIGR_PGFE_CONNECTION_UDS_DIRECTORY|*an absolute path*|/tmp|*unavailable*|
 |DMITIGR_PGFE_CONNECTION_UDS_REQUIRE_SERVER_PROCESS_USERNAME|*a string*|*not set*|*unavailable*|
 |DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_ENABLED|On \| Off|Off|Off|

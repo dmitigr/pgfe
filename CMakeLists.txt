@@ -87,10 +87,10 @@ endif()
 if (UNIX)
   if(NOT DEFINED DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE)
     set(DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE "uds" CACHE
-      STRING "The connection communication mode: \"uds\" or \"tcp\"")
+      STRING "The connection communication mode: \"uds\" or \"net\"")
   endif()
   if(NOT "${DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE}" STREQUAL "uds" AND
-      NOT "${DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE}" STREQUAL "tcp")
+      NOT "${DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE}" STREQUAL "net")
     message(FATAL_ERROR "Invalid value of DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE")
   endif()
 
@@ -112,7 +112,7 @@ if (UNIX)
   endif()
 else()
   # The PostgreSQL server doesn't support Unix Domain Sockets on Windows.
-  set(DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE "tcp")
+  set(DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE "net")
 endif()
 
 if(NOT DEFINED DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_ENABLED)

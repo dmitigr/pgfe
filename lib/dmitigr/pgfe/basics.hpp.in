@@ -92,8 +92,8 @@ enum class Communication_mode {
   uds = @PGFE_COMMUNICATION_MODE_UDS@,
 #endif
 
-  /** Denotes that TCP sockets is used for communication. */
-  tcp = @PGFE_COMMUNICATION_MODE_TCP@
+  /** Denotes that a network is used for communication. */
+  net = @PGFE_COMMUNICATION_MODE_NET@
 };
 
 // -----------------------------------------------------------------------------

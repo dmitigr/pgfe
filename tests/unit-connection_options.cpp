@@ -17,8 +17,8 @@ int main(int, char* argv[])
   using namespace pgfe::tests;
 
   try {
-    auto co = pgfe::Connection_options::make(pgfe::Communication_mode::tcp);
-    ASSERT(co->communication_mode() == pgfe::Communication_mode::tcp);
+    auto co = pgfe::Connection_options::make(pgfe::Communication_mode::net);
+    ASSERT(co->communication_mode() == pgfe::Communication_mode::net);
 
 #ifndef _WIN32
     co = pgfe::Connection_options::make(pgfe::Communication_mode::uds);
@@ -29,7 +29,7 @@ int main(int, char* argv[])
 
     ASSERT(co->communication_mode() == btd::communication_mode);
     {
-      const auto value = pgfe::Communication_mode::tcp;
+      const auto value = pgfe::Communication_mode::net;
       co->set(value);
       ASSERT(co->communication_mode() == value);
     }
@@ -63,7 +63,7 @@ int main(int, char* argv[])
 
     // Testing the protection against the improper usage.
     {
-      co->set(pgfe::Communication_mode::tcp);
+      co->set(pgfe::Communication_mode::net);
       ASSERT(is_logic_throw_works([&]() { co->set_uds_directory(""); }));
       ASSERT(!is_logic_throw_works([&]() { co->uds_directory(); }));
       ASSERT(is_logic_throw_works([&]() { co->set_uds_file_extension(""); }));

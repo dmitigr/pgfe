@@ -41,7 +41,7 @@ set(PGFE_DATA_FORMAT_BINARY 1)
 # ------------------------------------------------------------------------------
 
 set(PGFE_COMMUNICATION_MODE_UDS   0)
-set(PGFE_COMMUNICATION_MODE_TCP 100)
+set(PGFE_COMMUNICATION_MODE_NET 100)
 
 # ------------------------------------------------------------------------------
 # Problem_severity
