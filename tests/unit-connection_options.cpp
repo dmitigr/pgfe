@@ -134,14 +134,14 @@ int main(int, char* argv[])
       ASSERT(is_runtime_throw_works([&]() { co->set_tcp_host_name(invalid_value); }));
     }
 
-    ASSERT(co->tcp_host_port() == btd::tcp_host_port);
+    ASSERT(co->port() == btd::port);
     {
       const auto valid_value = 5432;
-      co->set_tcp_host_port(valid_value);
-      ASSERT(co->tcp_host_port() == valid_value);
+      co->set_port(valid_value);
+      ASSERT(co->port() == valid_value);
 
       const auto invalid_value = 65536;
-      ASSERT(is_runtime_throw_works([&]() { co->set_tcp_host_port(invalid_value); }));
+      ASSERT(is_runtime_throw_works([&]() { co->set_port(invalid_value); }));
     }
 
 #ifndef _WIN32
@@ -161,8 +161,8 @@ int main(int, char* argv[])
       ASSERT(!is_logic_throw_works([&]() { co->tcp_host_address(); }));
       ASSERT(is_logic_throw_works([&]() { co->set_tcp_host_name(""); }));
       ASSERT(!is_logic_throw_works([&]() { co->tcp_host_name(); }));
-      ASSERT(is_logic_throw_works([&]() { co->set_tcp_host_port(0); }));
-      ASSERT(!is_logic_throw_works([&]() { co->tcp_host_port(); }));
+      ASSERT(is_logic_throw_works([&]() { co->set_port(0); }));
+      ASSERT(!is_logic_throw_works([&]() { co->tcp_port(); }));
     }
 #endif
 

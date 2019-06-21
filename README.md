@@ -496,7 +496,6 @@ Details (may need to use horizontal scrolling for full view):
 |**Default values of the connection options**||||
 |DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE|uds \| tcp|uds|tcp|
 |DMITIGR_PGFE_CONNECTION_UDS_DIRECTORY|*an absolute path*|/tmp|*unavailable*|
-|DMITIGR_PGFE_CONNECTION_UDS_FILE_EXTENSION|*a string*|5432|*unavailable*|
 |DMITIGR_PGFE_CONNECTION_UDS_REQUIRE_SERVER_PROCESS_USERNAME|*a string*|*not set*|*unavailable*|
 |DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_ENABLED|On \| Off|Off|Off|
 |DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_IDLE|*non-negative number*|*null (system default)*|*null (system default)*|
@@ -504,7 +503,7 @@ Details (may need to use horizontal scrolling for full view):
 |DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_COUNT|*non-negative number*|*null (system default)*|*null (system default)*|
 |DMITIGR_PGFE_CONNECTION_TCP_HOST_ADDRESS|*IPv4(v6) address*|127.0.0.1|127.0.0.1|
 |DMITIGR_PGFE_CONNECTION_TCP_HOST_NAME|*a string*|localhost|localhost|
-|DMITIGR_PGFE_CONNECTION_TCP_HOST_PORT|*a number*|5432|5432|
+|DMITIGR_PGFE_CONNECTION_PORT|*a number*|5432|5432|
 |DMITIGR_PGFE_CONNECTION_USERNAME|*a string*|postgres|postgres|
 |DMITIGR_PGFE_CONNECTION_DATABASE|*a string*|postgres|postgres|
 |DMITIGR_PGFE_CONNECTION_PASSWORD|*a string*|""|""|

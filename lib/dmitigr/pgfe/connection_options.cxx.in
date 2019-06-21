@@ -17,7 +17,6 @@ constexpr const Communication_mode communication_mode{Communication_mode::@DMITI
 
 #ifndef _WIN32
 const std::filesystem::path      uds_directory{"@DMITIGR_PGFE_CONNECTION_UDS_DIRECTORY@"};
-const std::string                uds_file_extension{"@DMITIGR_PGFE_CONNECTION_UDS_FILE_EXTENSION@"};
 const std::optional<std::string> uds_require_server_process_username{@DMITIGR_PGFE_CONNECTION_UDS_REQUIRE_SERVER_PROCESS_USERNAME_CPP@};
 #endif
 
@@ -28,7 +27,7 @@ constexpr const std::optional<int>                  tcp_keepalives_count{@DMITIG
 
 const std::optional<std::string>  tcp_host_address{@DMITIGR_PGFE_CONNECTION_TCP_HOST_ADDRESS_CPP@};
 const std::optional<std::string>  tcp_host_name{@DMITIGR_PGFE_CONNECTION_TCP_HOST_NAME_CPP@};
-constexpr const std::int_fast32_t tcp_host_port{@DMITIGR_PGFE_CONNECTION_TCP_HOST_PORT@};
+constexpr const std::int_fast32_t port{@DMITIGR_PGFE_CONNECTION_PORT@};
 
 const std::string                username{@DMITIGR_PGFE_CONNECTION_USERNAME_CPP@};
 const std::string                database{@DMITIGR_PGFE_CONNECTION_DATABASE_CPP@};

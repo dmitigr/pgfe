@@ -120,28 +120,6 @@ public:
   // ---------------------------------------------------------------------------
 
   /**
-   * @brief Sets a Unix-domain socket file extension.
-   *
-   * @par Requires
-   * `(communication_mode() == Communication_mode::uds && !value.empty())`
-   *
-   * @par Exception safety guarantee
-   * Strong.
-   *
-   * @see uds_file_extension()
-   */
-  virtual Connection_options* set_uds_file_extension(std::string value) = 0;
-
-  /**
-   * @returns The current value of the option.
-   *
-   * @see set_uds_file_extension()
-   */
-  virtual const std::string& uds_file_extension() const = 0;
-
-  // ---------------------------------------------------------------------------
-
-  /**
    * @brief Sets obligation of verification that the server process is running
    * under the specified username for successful authentication.
    *
@@ -332,22 +310,24 @@ public:
   /**
    * @brief Sets server's port number.
    *
+   * When `(communication_mode() == Communication_mode::tcp)` it will be used as
+   * the TCP port number. Otherwise, it will be used as extension of the
+   * Unix-domain socket file, which is named `.s.PGSQL.port` and located in the
+   * directory `uds_directory()`.
+   *
    * @par Exception safety guarantee
    * Strong.
    *
-   * @par Requires
-   * `(communication_mode() == Communication_mode::tcp)`
-   *
-   * @see tcp_host_port()
+   * @see port()
    */
-  virtual Connection_options* set_tcp_host_port(const std::int_fast32_t value) = 0;
+  virtual Connection_options* set_port(const std::int_fast32_t value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_tcp_host_port()
+   * @see set_port()
    */
-  virtual std::int_fast32_t tcp_host_port() const = 0;
+  virtual std::int_fast32_t port() const = 0;
 
   /// @}
 

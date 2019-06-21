@@ -32,7 +32,7 @@ bool is_non_empty(const T& value)
 }
 
 template<typename T>
-bool is_tcp_port(const T value)
+bool is_valid_port(const T value)
 {
   return (value > 0 && value < 65536);
 }
@@ -76,7 +76,6 @@ public:
     : communication_mode_{communication_mode}
 #ifndef _WIN32
     , uds_directory_{btd::uds_directory}
-    , uds_file_extension_{btd::uds_file_extension}
     , uds_require_server_process_username_{btd::uds_require_server_process_username}
 #endif
     , tcp_keepalives_enabled_{btd::tcp_keepalives_enabled}
@@ -85,7 +84,7 @@ public:
     , tcp_keepalives_count_{btd::tcp_keepalives_count}
     , tcp_host_address_{btd::tcp_host_address}
     , tcp_host_name_{btd::tcp_host_name}
-    , tcp_host_port_{btd::tcp_host_port}
+    , port_{btd::port}
     , username_{btd::username}
     , database_{btd::database}
     , password_{btd::password}
@@ -138,22 +137,6 @@ public:
   const std::filesystem::path& uds_directory() const override
   {
     return uds_directory_;
-  }
-
-  // ---------------------------------------------------------------------------
-
-  Connection_options* set_uds_file_extension(std::string value) override
-  {
-    DMITIGR_REQUIRE(communication_mode() == Communication_mode::uds, std::logic_error);
-    validate(is_non_empty(value), "UDS file extension");
-    uds_file_extension_ = std::move(value);
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
-
-  const std::string& uds_file_extension() const override
-  {
-    return uds_file_extension_;
   }
 
   // ---------------------------------------------------------------------------
@@ -281,18 +264,17 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_tcp_host_port(const std::int_fast32_t value) override
+  Connection_options* set_port(const std::int_fast32_t value) override
   {
-    DMITIGR_REQUIRE(communication_mode() == Communication_mode::tcp, std::logic_error);
-    validate(is_tcp_port(value), "TCP host port");
-    tcp_host_port_ = value;
+    validate(is_valid_port(value), "server port");
+    port_ = value;
     DMITIGR_ASSERT(is_invariant_ok());
     return this;
   }
 
-  std::int_fast32_t tcp_host_port() const override
+  std::int_fast32_t port() const override
   {
-    return tcp_host_port_;
+    return port_;
   }
 
   // ---------------------------------------------------------------------------
@@ -479,7 +461,7 @@ private:
     constexpr bool communication_mode_ok = true;
     const bool uds_ok = !(communication_mode_ == Communication_mode::uds) ||
       (is_absolute_directory_name(uds_directory_) &&
-        !uds_file_extension_.empty() &&
+        is_valid_port(port_) &&
         (!uds_require_server_process_username_ || !uds_require_server_process_username_->empty()));
 #endif
     const bool tcp_ok = !(communication_mode_ == Communication_mode::tcp) ||
@@ -489,7 +471,7 @@ private:
         (tcp_host_address_ || tcp_host_name_) &&
         (!tcp_host_address_ || is_ip_address(*tcp_host_address_)) &&
         (!tcp_host_name_ || is_hostname(*tcp_host_name_)) &&
-        is_tcp_port(tcp_host_port_));
+        is_valid_port(port_));
     const bool auth_ok =
       !username_.empty() &&
       !database_.empty() &&
@@ -508,7 +490,6 @@ private:
   Communication_mode communication_mode_;
 #ifndef _WIN32
   std::filesystem::path uds_directory_;
-  std::string uds_file_extension_;
   std::optional<std::string> uds_require_server_process_username_;
 #endif
   bool tcp_keepalives_enabled_;
@@ -517,7 +498,7 @@ private:
   std::optional<int> tcp_keepalives_count_;
   std::optional<std::string> tcp_host_address_;
   std::optional<std::string> tcp_host_name_;
-  std::int_fast32_t tcp_host_port_;
+  std::int_fast32_t port_;
   std::string username_;
   std::string database_;
   std::optional<std::string> password_;
@@ -544,7 +525,7 @@ public:
       constexpr auto z = std::chrono::seconds::zero();
       values_[host] = o->tcp_host_name().value_or("");
       values_[hostaddr] = o->tcp_host_address().value_or("");
-      values_[port] = std::to_string(o->tcp_host_port());
+      values_[port] = std::to_string(o->port());
       values_[keepalives] = std::to_string(o->is_tcp_keepalives_enabled());
       values_[keepalives_idle] = std::to_string(o->tcp_keepalives_idle().value_or(z).count());
       values_[keepalives_interval] = std::to_string(o->tcp_keepalives_interval().value_or(z).count());
@@ -554,7 +535,7 @@ public:
 #ifndef _WIN32
     case Communication_mode::uds:
       values_[host] = o->uds_directory().generic_string();
-      values_[port] = o->uds_file_extension();
+      values_[port] = std::to_string(o->port());
       values_[requirepeer] = o->uds_require_server_process_username().value_or("");
       break;
 #endif
