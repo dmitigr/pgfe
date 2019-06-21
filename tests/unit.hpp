@@ -90,7 +90,7 @@ inline std::unique_ptr<Connection> make_ssl_connection()
 
   conn_opts->set_ssl_certificate_authority_file(certs_dir / "root.crt");
   conn_opts->set_ssl_certificate_file(certs_dir / "postgresql.crt");
-  conn_opts->set_ssl_server_host_name_verification_enabled(true);
+  conn_opts->set_ssl_server_hostname_verification_enabled(true);
 
   return pgfe::Connection::make(conn_opts.get());
 }

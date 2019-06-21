@@ -280,17 +280,17 @@ public:
    * @param value - must be a valid address in either IPv4 or IPv6 format.
    *
    * @par Requires
-   * `((communication_mode() == Communication_mode::tcp) && (value || tcp_host_name()))`.
+   * `((communication_mode() == Communication_mode::tcp) && (value || tcp_hostname()))`.
    *
    * @par Exception safety guarantee
    * Strong.
    *
    * @remarks When using SSL or some authentication methods (such as Kerberos)
-   * the option `tcp_host_name` is mandatory even if using this option. If
-   * both `tcp_address` and `tcp_host_name` are set, the value of `tcp_address`
+   * the option `tcp_hostname` is mandatory even if using this option. If
+   * both `tcp_address` and `tcp_hostname` are set, the value of `tcp_address`
    * will be treated as PostgreSQL server address to connect.
    *
-   * @see tcp_address(), set_tcp_host_name()
+   * @see tcp_address(), set_tcp_hostname()
    */
   virtual Connection_options* set_tcp_address(std::optional<std::string> value) = 0;
 
@@ -318,16 +318,16 @@ public:
    * occurs even if this option is also set. However, the value of this option may
    * be required for some authentication methods or SSL certificate verification.
    *
-   * @see tcp_host_name(), set_tcp_address()
+   * @see tcp_hostname(), set_tcp_address()
    */
-  virtual Connection_options* set_tcp_host_name(std::optional<std::string> value) = 0;
+  virtual Connection_options* set_tcp_hostname(std::optional<std::string> value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_tcp_host_name()
+   * @see set_tcp_hostname()
    */
-  virtual const std::optional<std::string>& tcp_host_name() const = 0;
+  virtual const std::optional<std::string>& tcp_hostname() const = 0;
 
   /// @}
 
@@ -569,16 +569,16 @@ public:
    * @par Exception safety guarantee
    * Strong.
    *
-   * @see is_ssl_server_host_name_verification_enabled()
+   * @see is_ssl_server_hostname_verification_enabled()
    */
-  virtual Connection_options* set_ssl_server_host_name_verification_enabled(bool value) = 0;
+  virtual Connection_options* set_ssl_server_hostname_verification_enabled(bool value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_ssl_server_host_name_verification_enabled()
+   * @see set_ssl_server_hostname_verification_enabled()
    */
-  virtual bool is_ssl_server_host_name_verification_enabled() const = 0;
+  virtual bool is_ssl_server_hostname_verification_enabled() const = 0;
 
   /// @}
 private:

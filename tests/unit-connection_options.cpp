@@ -124,14 +124,14 @@ int main(int, char* argv[])
       ASSERT(is_runtime_throw_works([&]() { co->set_tcp_address(invalid_value_ipv6); }));
     }
 
-    ASSERT(co->tcp_host_name() == btd::tcp_host_name);
+    ASSERT(co->tcp_hostname() == btd::tcp_hostname);
     {
       const auto valid_value = "localhost";
-      co->set_tcp_host_name(valid_value);
-      ASSERT(co->tcp_host_name() == valid_value);
+      co->set_tcp_hostname(valid_value);
+      ASSERT(co->tcp_hostname() == valid_value);
 
       const auto invalid_value = "local host";
-      ASSERT(is_runtime_throw_works([&]() { co->set_tcp_host_name(invalid_value); }));
+      ASSERT(is_runtime_throw_works([&]() { co->set_tcp_hostname(invalid_value); }));
     }
 
     ASSERT(co->port() == btd::port);
@@ -159,8 +159,8 @@ int main(int, char* argv[])
       ASSERT(!is_logic_throw_works([&]() { co->tcp_keepalives_count(); }));
       ASSERT(is_logic_throw_works([&]() { co->set_tcp_address(""); }));
       ASSERT(!is_logic_throw_works([&]() { co->tcp_address(); }));
-      ASSERT(is_logic_throw_works([&]() { co->set_tcp_host_name(""); }));
-      ASSERT(!is_logic_throw_works([&]() { co->tcp_host_name(); }));
+      ASSERT(is_logic_throw_works([&]() { co->set_tcp_hostname(""); }));
+      ASSERT(!is_logic_throw_works([&]() { co->tcp_hostname(); }));
       ASSERT(is_logic_throw_works([&]() { co->set_port(0); }));
       ASSERT(!is_logic_throw_works([&]() { co->tcp_port(); }));
     }
@@ -209,13 +209,13 @@ int main(int, char* argv[])
     }
 
     // Note: this options is depends on "ssl_certificate_authority_file".
-    ASSERT(co->is_ssl_server_host_name_verification_enabled() == btd::ssl_server_host_name_verification_enabled);
+    ASSERT(co->is_ssl_server_hostname_verification_enabled() == btd::ssl_server_hostname_verification_enabled);
     {
       const auto value = true;
-      co->set_ssl_server_host_name_verification_enabled(value);
-      ASSERT(co->is_ssl_server_host_name_verification_enabled() == value);
-      co->set_ssl_server_host_name_verification_enabled(!value);
-      ASSERT(co->is_ssl_server_host_name_verification_enabled() == !value);
+      co->set_ssl_server_hostname_verification_enabled(value);
+      ASSERT(co->is_ssl_server_hostname_verification_enabled() == value);
+      co->set_ssl_server_hostname_verification_enabled(!value);
+      ASSERT(co->is_ssl_server_hostname_verification_enabled() == !value);
     }
 
     ASSERT(co->is_ssl_compression_enabled() == btd::ssl_compression_enabled);
@@ -251,8 +251,8 @@ int main(int, char* argv[])
     // Testing the protection against the improper usage.
     {
       co->set_ssl_enabled(false);
-      ASSERT(is_logic_throw_works([&]() { co->set_ssl_server_host_name_verification_enabled(false); }));
-      ASSERT(!is_logic_throw_works([&]() { co->is_ssl_server_host_name_verification_enabled(); }));
+      ASSERT(is_logic_throw_works([&]() { co->set_ssl_server_hostname_verification_enabled(false); }));
+      ASSERT(!is_logic_throw_works([&]() { co->is_ssl_server_hostname_verification_enabled(); }));
       ASSERT(is_logic_throw_works([&]() { co->set_ssl_compression_enabled(false); }));
       ASSERT(!is_logic_throw_works([&]() { co->is_ssl_compression_enabled(); }));
       ASSERT(is_logic_throw_works([&]() { co->set_ssl_certificate_file(""); }));

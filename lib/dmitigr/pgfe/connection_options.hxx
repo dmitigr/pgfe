@@ -83,7 +83,7 @@ public:
     , tcp_keepalives_interval_{btd::tcp_keepalives_interval}
     , tcp_keepalives_count_{btd::tcp_keepalives_count}
     , tcp_address_{btd::tcp_address}
-    , tcp_host_name_{btd::tcp_host_name}
+    , tcp_hostname_{btd::tcp_hostname}
     , port_{btd::port}
     , username_{btd::username}
     , database_{btd::database}
@@ -95,7 +95,7 @@ public:
     , ssl_private_key_file_{btd::ssl_private_key_file}
     , ssl_certificate_authority_file_{btd::ssl_certificate_authority_file}
     , ssl_certificate_revocation_list_file_{btd::ssl_certificate_revocation_list_file}
-    , ssl_server_host_name_verification_enabled_{btd::ssl_server_host_name_verification_enabled}
+    , ssl_server_hostname_verification_enabled_{btd::ssl_server_hostname_verification_enabled}
   {
     DMITIGR_ASSERT(is_invariant_ok());
   }
@@ -247,7 +247,7 @@ public:
     if (value)
       validate(is_ip_address(*value), "TCP address");
     else
-      DMITIGR_REQUIRE(tcp_host_name(), std::logic_error);
+      DMITIGR_REQUIRE(tcp_hostname(), std::logic_error);
     tcp_address_ = std::move(value);
     DMITIGR_ASSERT(is_invariant_ok());
     return this;
@@ -260,21 +260,21 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_tcp_host_name(std::optional<std::string> value) override
+  Connection_options* set_tcp_hostname(std::optional<std::string> value) override
   {
     DMITIGR_REQUIRE(communication_mode() == Communication_mode::tcp, std::logic_error);
     if (value)
       validate(is_hostname(*value), "TCP host name");
     else
       DMITIGR_REQUIRE(tcp_address(), std::logic_error);
-    tcp_host_name_ = std::move(value);
+    tcp_hostname_ = std::move(value);
     DMITIGR_ASSERT(is_invariant_ok());
     return this;
   }
 
-  const std::optional<std::string>& tcp_host_name() const override
+  const std::optional<std::string>& tcp_hostname() const override
   {
-    return tcp_host_name_;
+    return tcp_hostname_;
   }
 
   // ---------------------------------------------------------------------------
@@ -438,17 +438,17 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_ssl_server_host_name_verification_enabled(const bool value) override
+  Connection_options* set_ssl_server_hostname_verification_enabled(const bool value) override
   {
     DMITIGR_REQUIRE(is_ssl_enabled() && ssl_certificate_authority_file(), std::logic_error);
-    ssl_server_host_name_verification_enabled_ = value;
+    ssl_server_hostname_verification_enabled_ = value;
     DMITIGR_ASSERT(is_invariant_ok());
     return this;
   }
 
-  bool is_ssl_server_host_name_verification_enabled() const override
+  bool is_ssl_server_hostname_verification_enabled() const override
   {
-    return ssl_server_host_name_verification_enabled_;
+    return ssl_server_hostname_verification_enabled_;
   }
 
 private:
@@ -468,9 +468,9 @@ private:
       ((!tcp_keepalives_idle_ || is_non_negative(tcp_keepalives_idle_->count())) &&
         (!tcp_keepalives_interval_ || is_non_negative(tcp_keepalives_interval_->count())) &&
         (!tcp_keepalives_count_ || is_non_negative(tcp_keepalives_count_)) &&
-        (tcp_address_ || tcp_host_name_) &&
+        (tcp_address_ || tcp_hostname_) &&
         (!tcp_address_ || is_ip_address(*tcp_address_)) &&
-        (!tcp_host_name_ || is_hostname(*tcp_host_name_)) &&
+        (!tcp_hostname_ || is_hostname(*tcp_hostname_)) &&
         is_valid_port(port_));
     const bool auth_ok =
       !username_.empty() &&
@@ -482,7 +482,7 @@ private:
       (!ssl_private_key_file_ || !ssl_private_key_file_->empty()) &&
       (!ssl_certificate_authority_file_ || !ssl_certificate_authority_file_->empty()) &&
       (!ssl_certificate_revocation_list_file_ || !ssl_certificate_revocation_list_file_->empty()) &&
-      (!ssl_server_host_name_verification_enabled_ || ssl_certificate_authority_file_);
+      (!ssl_server_hostname_verification_enabled_ || ssl_certificate_authority_file_);
 
     return communication_mode_ok && uds_ok && tcp_ok && auth_ok && ssl_ok;
   }
@@ -497,7 +497,7 @@ private:
   std::optional<std::chrono::seconds> tcp_keepalives_interval_;
   std::optional<int> tcp_keepalives_count_;
   std::optional<std::string> tcp_address_;
-  std::optional<std::string> tcp_host_name_;
+  std::optional<std::string> tcp_hostname_;
   std::int_fast32_t port_;
   std::string username_;
   std::string database_;
@@ -509,7 +509,7 @@ private:
   std::optional<std::filesystem::path> ssl_private_key_file_;
   std::optional<std::filesystem::path> ssl_certificate_authority_file_;
   std::optional<std::filesystem::path> ssl_certificate_revocation_list_file_;
-  bool ssl_server_host_name_verification_enabled_;
+  bool ssl_server_hostname_verification_enabled_;
 };
 
 // =============================================================================
@@ -523,7 +523,7 @@ public:
     switch (o->communication_mode()) {
     case Communication_mode::tcp: {
       constexpr auto z = std::chrono::seconds::zero();
-      values_[host] = o->tcp_host_name().value_or("");
+      values_[host] = o->tcp_hostname().value_or("");
       values_[hostaddr] = o->tcp_address().value_or("");
       values_[port] = std::to_string(o->port());
       values_[keepalives] = std::to_string(o->is_tcp_keepalives_enabled());
@@ -546,7 +546,7 @@ public:
     values_[password] = o->password().value_or("");
 
     if (o->is_ssl_enabled()) {
-      if (o->is_ssl_server_host_name_verification_enabled()) {
+      if (o->is_ssl_server_hostname_verification_enabled()) {
         values_[sslmode] = "verify-full";
       } else {
         if (o->ssl_certificate_authority_file())

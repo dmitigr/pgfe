@@ -5,9 +5,8 @@ int main()
 {
   namespace pgfe = dmitigr::pgfe;
   try {
-    const auto conn = pgfe::Connection_options::make()->
-      set(pgfe::Communication_mode::tcp)->
-      set_tcp_host_name("localhost")->
+    const auto conn = pgfe::Connection_options::make(pgfe::Communication_mode::tcp)->
+      set_tcp_hostname("localhost")->
       set_database("pgfe_test")->
       set_username("pgfe_test")->
       set_password("pgfe_test")->
