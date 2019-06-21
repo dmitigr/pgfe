@@ -67,7 +67,7 @@ inline std::unique_ptr<Connection> make_uds_connection()
   const auto conn_opts = connection_options();
   conn_opts->set(pgfe::Communication_mode::uds);
   conn_opts->set_uds_directory("/tmp");
-  conn_opts->set_uds_file_extension("5432");
+  conn_opts->set_port(5432);
   return pgfe::Connection::make(conn_opts.get());
 }
 #endif

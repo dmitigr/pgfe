@@ -44,14 +44,7 @@ int main(int, char* argv[])
       ASSERT(co->uds_directory() == valid_value);
 
       const auto invalid_value = "invalid directory name";
-      ASSERT(is_runtime_throw_works([&](){ co->set_uds_directory(invalid_value); }));
-    }
-
-    ASSERT(co->uds_file_extension() == btd::uds_file_extension);
-    {
-      const auto value = "some extension";
-      co->set_uds_file_extension(value);
-      ASSERT(co->uds_file_extension() == value);
+      ASSERT(is_logic_throw_works([&](){ co->set_uds_directory(invalid_value); }));
     }
 
     ASSERT(co->uds_require_server_process_username() == btd::uds_require_server_process_username);
@@ -66,8 +59,6 @@ int main(int, char* argv[])
       co->set(pgfe::Communication_mode::net);
       ASSERT(is_logic_throw_works([&]() { co->set_uds_directory(""); }));
       ASSERT(!is_logic_throw_works([&]() { co->uds_directory(); }));
-      ASSERT(is_logic_throw_works([&]() { co->set_uds_file_extension(""); }));
-      ASSERT(!is_logic_throw_works([&]() { co->uds_file_extension(); }));
       ASSERT(is_logic_throw_works([&]() { co->set_uds_require_server_process_username(""); }));
       ASSERT(!is_logic_throw_works([&]() { co->uds_require_server_process_username(); }));
     }
@@ -106,7 +97,7 @@ int main(int, char* argv[])
       ASSERT(co->tcp_keepalives_count() == valid_value);
 
       const auto invalid_value = -100;
-      ASSERT(is_runtime_throw_works([&]() { co->set_tcp_keepalives_count(invalid_value); }));
+      ASSERT(is_logic_throw_works([&]() { co->set_tcp_keepalives_count(invalid_value); }));
     }
 
     ASSERT(co->net_address() == btd::net_address);
@@ -119,9 +110,9 @@ int main(int, char* argv[])
       ASSERT(co->net_address() == valid_value_ipv6);
 
       const auto invalid_value_ipv4 = "127.257.0.1";
-      ASSERT(is_runtime_throw_works([&]() { co->set_net_address(invalid_value_ipv4); }));
+      ASSERT(is_logic_throw_works([&]() { co->set_net_address(invalid_value_ipv4); }));
       const auto invalid_value_ipv6 = "::zz";
-      ASSERT(is_runtime_throw_works([&]() { co->set_net_address(invalid_value_ipv6); }));
+      ASSERT(is_logic_throw_works([&]() { co->set_net_address(invalid_value_ipv6); }));
     }
 
     ASSERT(co->net_hostname() == btd::net_hostname);
@@ -131,7 +122,7 @@ int main(int, char* argv[])
       ASSERT(co->net_hostname() == valid_value);
 
       const auto invalid_value = "local host";
-      ASSERT(is_runtime_throw_works([&]() { co->set_net_hostname(invalid_value); }));
+      ASSERT(is_logic_throw_works([&]() { co->set_net_hostname(invalid_value); }));
     }
 
     ASSERT(co->port() == btd::port);
@@ -141,7 +132,7 @@ int main(int, char* argv[])
       ASSERT(co->port() == valid_value);
 
       const auto invalid_value = 65536;
-      ASSERT(is_runtime_throw_works([&]() { co->set_port(invalid_value); }));
+      ASSERT(is_logic_throw_works([&]() { co->set_port(invalid_value); }));
     }
 
 #ifndef _WIN32
@@ -162,7 +153,7 @@ int main(int, char* argv[])
       ASSERT(is_logic_throw_works([&]() { co->set_net_hostname(""); }));
       ASSERT(!is_logic_throw_works([&]() { co->net_hostname(); }));
       ASSERT(is_logic_throw_works([&]() { co->set_port(0); }));
-      ASSERT(!is_logic_throw_works([&]() { co->tcp_port(); }));
+      ASSERT(!is_logic_throw_works([&]() { co->port(); }));
     }
 #endif
 

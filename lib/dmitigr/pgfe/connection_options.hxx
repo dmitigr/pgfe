@@ -55,7 +55,7 @@ inline bool is_absolute_directory_name(const std::filesystem::path& value)
 inline void validate(const bool condition, const std::string& option_name)
 {
   if (!condition)
-    throw std::runtime_error{"invalid value of \"" + option_name + "\" connection option"};
+    throw std::logic_error{"invalid value of \"" + option_name + "\" connection option"};
 }
 
 } // namespace validators
