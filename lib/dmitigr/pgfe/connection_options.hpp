@@ -273,11 +273,11 @@ public:
   // ---------------------------------------------------------------------------
 
   /**
-   * @brief Sets numeric IP address of the host to connect to.
+   * @brief Sets numeric IP address of the PostgreSQL server.
    *
    * With this option a host name lookup can be avoided.
    *
-   * @param value - must be a valid host address in either IPv4 or IPv6 format.
+   * @param value - must be a valid address in either IPv4 or IPv6 format.
    *
    * @par Requires
    * `((communication_mode() == Communication_mode::tcp) && (value || tcp_host_name()))`.
@@ -287,19 +287,19 @@ public:
    *
    * @remarks When using SSL or some authentication methods (such as Kerberos)
    * the option `tcp_host_name` is mandatory even if using this option. If
-   * both `tcp_host_address` and `tcp_host_name` are set, the value of
-   * `tcp_host_address` will be treated as PostgreSQL server address to connect.
+   * both `tcp_address` and `tcp_host_name` are set, the value of `tcp_address`
+   * will be treated as PostgreSQL server address to connect.
    *
-   * @see tcp_host_address(), set_tcp_host_name()
+   * @see tcp_address(), set_tcp_host_name()
    */
-  virtual Connection_options* set_tcp_host_address(std::optional<std::string> value) = 0;
+  virtual Connection_options* set_tcp_address(std::optional<std::string> value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_tcp_host_address()
+   * @see set_tcp_address()
    */
-  virtual const std::optional<std::string>& tcp_host_address() const = 0;
+  virtual const std::optional<std::string>& tcp_address() const = 0;
 
   // ---------------------------------------------------------------------------
 
@@ -309,16 +309,16 @@ public:
    * @param value - must be a valid host name.
    *
    * @par Requires
-   * `((communication_mode() == Communication_mode::tcp) && (value || tcp_host_address()))`.
+   * `((communication_mode() == Communication_mode::tcp) && (value || tcp_address()))`.
    *
    * @par Exception safety guarantee
    * strong.
    *
-   * @remarks If the option `tcp_host_address` is set, host name lookup will not
+   * @remarks If the option `tcp_address` is set, host name lookup will not
    * occurs even if this option is also set. However, the value of this option may
    * be required for some authentication methods or SSL certificate verification.
    *
-   * @see tcp_host_name(), set_tcp_host_address()
+   * @see tcp_host_name(), set_tcp_address()
    */
   virtual Connection_options* set_tcp_host_name(std::optional<std::string> value) = 0;
 

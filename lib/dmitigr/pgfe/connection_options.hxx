@@ -82,7 +82,7 @@ public:
     , tcp_keepalives_idle_{btd::tcp_keepalives_idle}
     , tcp_keepalives_interval_{btd::tcp_keepalives_interval}
     , tcp_keepalives_count_{btd::tcp_keepalives_count}
-    , tcp_host_address_{btd::tcp_host_address}
+    , tcp_address_{btd::tcp_address}
     , tcp_host_name_{btd::tcp_host_name}
     , port_{btd::port}
     , username_{btd::username}
@@ -241,21 +241,21 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_tcp_host_address(std::optional<std::string> value) override
+  Connection_options* set_tcp_address(std::optional<std::string> value) override
   {
     DMITIGR_REQUIRE(communication_mode() == Communication_mode::tcp, std::logic_error);
     if (value)
-      validate(is_ip_address(*value), "TCP host address");
+      validate(is_ip_address(*value), "TCP address");
     else
       DMITIGR_REQUIRE(tcp_host_name(), std::logic_error);
-    tcp_host_address_ = std::move(value);
+    tcp_address_ = std::move(value);
     DMITIGR_ASSERT(is_invariant_ok());
     return this;
   }
 
-  const std::optional<std::string>& tcp_host_address() const override
+  const std::optional<std::string>& tcp_address() const override
   {
-    return tcp_host_address_;
+    return tcp_address_;
   }
 
   // ---------------------------------------------------------------------------
@@ -266,7 +266,7 @@ public:
     if (value)
       validate(is_hostname(*value), "TCP host name");
     else
-      DMITIGR_REQUIRE(tcp_host_address(), std::logic_error);
+      DMITIGR_REQUIRE(tcp_address(), std::logic_error);
     tcp_host_name_ = std::move(value);
     DMITIGR_ASSERT(is_invariant_ok());
     return this;
@@ -468,8 +468,8 @@ private:
       ((!tcp_keepalives_idle_ || is_non_negative(tcp_keepalives_idle_->count())) &&
         (!tcp_keepalives_interval_ || is_non_negative(tcp_keepalives_interval_->count())) &&
         (!tcp_keepalives_count_ || is_non_negative(tcp_keepalives_count_)) &&
-        (tcp_host_address_ || tcp_host_name_) &&
-        (!tcp_host_address_ || is_ip_address(*tcp_host_address_)) &&
+        (tcp_address_ || tcp_host_name_) &&
+        (!tcp_address_ || is_ip_address(*tcp_address_)) &&
         (!tcp_host_name_ || is_hostname(*tcp_host_name_)) &&
         is_valid_port(port_));
     const bool auth_ok =
@@ -496,7 +496,7 @@ private:
   std::optional<std::chrono::seconds> tcp_keepalives_idle_;
   std::optional<std::chrono::seconds> tcp_keepalives_interval_;
   std::optional<int> tcp_keepalives_count_;
-  std::optional<std::string> tcp_host_address_;
+  std::optional<std::string> tcp_address_;
   std::optional<std::string> tcp_host_name_;
   std::int_fast32_t port_;
   std::string username_;
@@ -524,7 +524,7 @@ public:
     case Communication_mode::tcp: {
       constexpr auto z = std::chrono::seconds::zero();
       values_[host] = o->tcp_host_name().value_or("");
-      values_[hostaddr] = o->tcp_host_address().value_or("");
+      values_[hostaddr] = o->tcp_address().value_or("");
       values_[port] = std::to_string(o->port());
       values_[keepalives] = std::to_string(o->is_tcp_keepalives_enabled());
       values_[keepalives_idle] = std::to_string(o->tcp_keepalives_idle().value_or(z).count());

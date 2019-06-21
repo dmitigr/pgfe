@@ -109,19 +109,19 @@ int main(int, char* argv[])
       ASSERT(is_runtime_throw_works([&]() { co->set_tcp_keepalives_count(invalid_value); }));
     }
 
-    ASSERT(co->tcp_host_address() == btd::tcp_host_address);
+    ASSERT(co->tcp_address() == btd::tcp_address);
     {
       const auto valid_value_ipv4 = "127.0.0.1";
-      co->set_tcp_host_address(valid_value_ipv4);
-      ASSERT(co->tcp_host_address() == valid_value_ipv4);
+      co->set_tcp_address(valid_value_ipv4);
+      ASSERT(co->tcp_address() == valid_value_ipv4);
       const auto valid_value_ipv6 = "::1";
-      co->set_tcp_host_address(valid_value_ipv6);
-      ASSERT(co->tcp_host_address() == valid_value_ipv6);
+      co->set_tcp_address(valid_value_ipv6);
+      ASSERT(co->tcp_address() == valid_value_ipv6);
 
       const auto invalid_value_ipv4 = "127.257.0.1";
-      ASSERT(is_runtime_throw_works([&]() { co->set_tcp_host_address(invalid_value_ipv4); }));
+      ASSERT(is_runtime_throw_works([&]() { co->set_tcp_address(invalid_value_ipv4); }));
       const auto invalid_value_ipv6 = "::zz";
-      ASSERT(is_runtime_throw_works([&]() { co->set_tcp_host_address(invalid_value_ipv6); }));
+      ASSERT(is_runtime_throw_works([&]() { co->set_tcp_address(invalid_value_ipv6); }));
     }
 
     ASSERT(co->tcp_host_name() == btd::tcp_host_name);
@@ -157,8 +157,8 @@ int main(int, char* argv[])
       ASSERT(!is_logic_throw_works([&]() { co->tcp_keepalives_interval(); }));
       ASSERT(is_logic_throw_works([&]() { co->set_tcp_keepalives_count(0); }));
       ASSERT(!is_logic_throw_works([&]() { co->tcp_keepalives_count(); }));
-      ASSERT(is_logic_throw_works([&]() { co->set_tcp_host_address(""); }));
-      ASSERT(!is_logic_throw_works([&]() { co->tcp_host_address(); }));
+      ASSERT(is_logic_throw_works([&]() { co->set_tcp_address(""); }));
+      ASSERT(!is_logic_throw_works([&]() { co->tcp_address(); }));
       ASSERT(is_logic_throw_works([&]() { co->set_tcp_host_name(""); }));
       ASSERT(!is_logic_throw_works([&]() { co->tcp_host_name(); }));
       ASSERT(is_logic_throw_works([&]() { co->set_port(0); }));

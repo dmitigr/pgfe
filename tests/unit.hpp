@@ -47,13 +47,12 @@ bool is_runtime_throw_works(F f)
 
 inline std::unique_ptr<Connection_options> connection_options()
 {
-  auto conn_opts = pgfe::Connection_options::make();
-  conn_opts->set(pgfe::Communication_mode::tcp);
-  conn_opts->set_tcp_host_address("127.0.0.1");
-  conn_opts->set_database("pgfe_test");
-  conn_opts->set_username("pgfe_test");
-  conn_opts->set_password("pgfe_test");
-  return conn_opts;
+  auto result = pgfe::Connection_options::make(pgfe::Communication_mode::tcp);
+  result->set_tcp_address("127.0.0.1")
+    ->set_database("pgfe_test")
+    ->set_username("pgfe_test")
+    ->set_password("pgfe_test");
+  return result;
 }
 
 inline std::unique_ptr<Connection> make_connection()
