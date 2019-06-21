@@ -25,8 +25,8 @@ constexpr const std::optional<std::chrono::seconds> tcp_keepalives_idle{@DMITIGR
 constexpr const std::optional<std::chrono::seconds> tcp_keepalives_interval{@DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_INTERVAL@};
 constexpr const std::optional<int>                  tcp_keepalives_count{@DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_COUNT@};
 
-const std::optional<std::string>  tcp_address{@DMITIGR_PGFE_CONNECTION_TCP_ADDRESS_CPP@};
-const std::optional<std::string>  tcp_hostname{@DMITIGR_PGFE_CONNECTION_TCP_HOSTNAME_CPP@};
+const std::optional<std::string>  net_address{@DMITIGR_PGFE_CONNECTION_NET_ADDRESS_CPP@};
+const std::optional<std::string>  net_hostname{@DMITIGR_PGFE_CONNECTION_NET_HOSTNAME_CPP@};
 constexpr const std::int_fast32_t port{@DMITIGR_PGFE_CONNECTION_PORT@};
 
 const std::string                username{@DMITIGR_PGFE_CONNECTION_USERNAME_CPP@};

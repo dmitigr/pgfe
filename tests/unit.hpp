@@ -48,7 +48,7 @@ bool is_runtime_throw_works(F f)
 inline std::unique_ptr<Connection_options> connection_options()
 {
   auto result = pgfe::Connection_options::make(pgfe::Communication_mode::net);
-  result->set_tcp_address("127.0.0.1")
+  result->set_net_address("127.0.0.1")
     ->set_database("pgfe_test")
     ->set_username("pgfe_test")
     ->set_password("pgfe_test");

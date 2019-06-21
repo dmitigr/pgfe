@@ -82,8 +82,8 @@ public:
     , tcp_keepalives_idle_{btd::tcp_keepalives_idle}
     , tcp_keepalives_interval_{btd::tcp_keepalives_interval}
     , tcp_keepalives_count_{btd::tcp_keepalives_count}
-    , tcp_address_{btd::tcp_address}
-    , tcp_hostname_{btd::tcp_hostname}
+    , net_address_{btd::net_address}
+    , net_hostname_{btd::net_hostname}
     , port_{btd::port}
     , username_{btd::username}
     , database_{btd::database}
@@ -241,40 +241,40 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_tcp_address(std::optional<std::string> value) override
+  Connection_options* set_net_address(std::optional<std::string> value) override
   {
     DMITIGR_REQUIRE(communication_mode() == Communication_mode::net, std::logic_error);
     if (value)
-      validate(is_ip_address(*value), "TCP address");
+      validate(is_ip_address(*value), "Network address");
     else
-      DMITIGR_REQUIRE(tcp_hostname(), std::logic_error);
-    tcp_address_ = std::move(value);
+      DMITIGR_REQUIRE(net_hostname(), std::logic_error);
+    net_address_ = std::move(value);
     DMITIGR_ASSERT(is_invariant_ok());
     return this;
   }
 
-  const std::optional<std::string>& tcp_address() const override
+  const std::optional<std::string>& net_address() const override
   {
-    return tcp_address_;
+    return net_address_;
   }
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_tcp_hostname(std::optional<std::string> value) override
+  Connection_options* set_net_hostname(std::optional<std::string> value) override
   {
     DMITIGR_REQUIRE(communication_mode() == Communication_mode::net, std::logic_error);
     if (value)
-      validate(is_hostname(*value), "TCP host name");
+      validate(is_hostname(*value), "Network host name");
     else
-      DMITIGR_REQUIRE(tcp_address(), std::logic_error);
-    tcp_hostname_ = std::move(value);
+      DMITIGR_REQUIRE(net_address(), std::logic_error);
+    net_hostname_ = std::move(value);
     DMITIGR_ASSERT(is_invariant_ok());
     return this;
   }
 
-  const std::optional<std::string>& tcp_hostname() const override
+  const std::optional<std::string>& net_hostname() const override
   {
-    return tcp_hostname_;
+    return net_hostname_;
   }
 
   // ---------------------------------------------------------------------------
@@ -468,9 +468,9 @@ private:
       ((!tcp_keepalives_idle_ || is_non_negative(tcp_keepalives_idle_->count())) &&
         (!tcp_keepalives_interval_ || is_non_negative(tcp_keepalives_interval_->count())) &&
         (!tcp_keepalives_count_ || is_non_negative(tcp_keepalives_count_)) &&
-        (tcp_address_ || tcp_hostname_) &&
-        (!tcp_address_ || is_ip_address(*tcp_address_)) &&
-        (!tcp_hostname_ || is_hostname(*tcp_hostname_)) &&
+        (net_address_ || net_hostname_) &&
+        (!net_address_ || is_ip_address(*net_address_)) &&
+        (!net_hostname_ || is_hostname(*net_hostname_)) &&
         is_valid_port(port_));
     const bool auth_ok =
       !username_.empty() &&
@@ -496,8 +496,8 @@ private:
   std::optional<std::chrono::seconds> tcp_keepalives_idle_;
   std::optional<std::chrono::seconds> tcp_keepalives_interval_;
   std::optional<int> tcp_keepalives_count_;
-  std::optional<std::string> tcp_address_;
-  std::optional<std::string> tcp_hostname_;
+  std::optional<std::string> net_address_;
+  std::optional<std::string> net_hostname_;
   std::int_fast32_t port_;
   std::string username_;
   std::string database_;
@@ -523,8 +523,8 @@ public:
     switch (o->communication_mode()) {
     case Communication_mode::net: {
       constexpr auto z = std::chrono::seconds::zero();
-      values_[host] = o->tcp_hostname().value_or("");
-      values_[hostaddr] = o->tcp_address().value_or("");
+      values_[host] = o->net_hostname().value_or("");
+      values_[hostaddr] = o->net_address().value_or("");
       values_[port] = std::to_string(o->port());
       values_[keepalives] = std::to_string(o->is_tcp_keepalives_enabled());
       values_[keepalives_idle] = std::to_string(o->tcp_keepalives_idle().value_or(z).count());

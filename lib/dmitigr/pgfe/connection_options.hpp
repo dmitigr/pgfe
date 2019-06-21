@@ -280,26 +280,26 @@ public:
    * @param value - must be a valid address in either IPv4 or IPv6 format.
    *
    * @par Requires
-   * `((communication_mode() == Communication_mode::net) && (value || tcp_hostname()))`.
+   * `((communication_mode() == Communication_mode::net) && (value || net_hostname()))`.
    *
    * @par Exception safety guarantee
    * Strong.
    *
    * @remarks When using SSL or some authentication methods (such as Kerberos)
-   * the option `tcp_hostname` is mandatory even if using this option. If
-   * both `tcp_address` and `tcp_hostname` are set, the value of `tcp_address`
+   * the option `net_hostname` is mandatory even if using this option. If
+   * both `net_address` and `net_hostname` are set, the value of `net_address`
    * will be treated as PostgreSQL server address to connect.
    *
-   * @see tcp_address(), set_tcp_hostname()
+   * @see net_address(), set_net_hostname()
    */
-  virtual Connection_options* set_tcp_address(std::optional<std::string> value) = 0;
+  virtual Connection_options* set_net_address(std::optional<std::string> value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_tcp_address()
+   * @see set_net_address()
    */
-  virtual const std::optional<std::string>& tcp_address() const = 0;
+  virtual const std::optional<std::string>& net_address() const = 0;
 
   // ---------------------------------------------------------------------------
 
@@ -309,25 +309,25 @@ public:
    * @param value - must be a valid host name.
    *
    * @par Requires
-   * `((communication_mode() == Communication_mode::net) && (value || tcp_address()))`.
+   * `((communication_mode() == Communication_mode::net) && (value || net_address()))`.
    *
    * @par Exception safety guarantee
    * strong.
    *
-   * @remarks If the option `tcp_address` is set, host name lookup will not
+   * @remarks If the option `net_address` is set, host name lookup will not
    * occurs even if this option is also set. However, the value of this option may
    * be required for some authentication methods or SSL certificate verification.
    *
-   * @see tcp_hostname(), set_tcp_address()
+   * @see net_hostname(), set_net_address()
    */
-  virtual Connection_options* set_tcp_hostname(std::optional<std::string> value) = 0;
+  virtual Connection_options* set_net_hostname(std::optional<std::string> value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_tcp_hostname()
+   * @see set_net_hostname()
    */
-  virtual const std::optional<std::string>& tcp_hostname() const = 0;
+  virtual const std::optional<std::string>& net_hostname() const = 0;
 
   /// @}
 

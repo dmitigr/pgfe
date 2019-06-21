@@ -25,7 +25,7 @@ int main()
   namespace pgfe = dmitigr::pgfe;
   try {
     const auto conn = pgfe::Connection_options::make(pgfe::Communication_mode::net)->
-      set_tcp_hostname("localhost")->
+      set_net_hostname("localhost")->
       set_database("pgfe_test")->
       set_username("pgfe_test")->
       set_password("pgfe_test")->
@@ -115,7 +115,7 @@ Example 1. Creation of the connection with customized options:
 std::unique_ptr<dmitigr::pgfe::Connection> create_customized_connection()
 {
   return pgfe::Connection_options::make(Communication_mode::net)->
-    set_tcp_hostname("localhost")->
+    set_net_hostname("localhost")->
     set_database("db")->
     set_username("user")->
     set_password("password")->
@@ -499,8 +499,8 @@ Details (may need to use horizontal scrolling for full view):
 |DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_IDLE|*non-negative number*|*null (system default)*|*null (system default)*|
 |DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_INTERVAL|*non-negative number*|*null (system default)*|*null (system default)*|
 |DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_COUNT|*non-negative number*|*null (system default)*|*null (system default)*|
-|DMITIGR_PGFE_CONNECTION_TCP_ADDRESS|*IPv4 or IPv6 address*|127.0.0.1|127.0.0.1|
-|DMITIGR_PGFE_CONNECTION_TCP_HOSTNAME|*a string*|localhost|localhost|
+|DMITIGR_PGFE_CONNECTION_NET_ADDRESS|*IPv4 or IPv6 address*|127.0.0.1|127.0.0.1|
+|DMITIGR_PGFE_CONNECTION_NET_HOSTNAME|*a string*|localhost|localhost|
 |DMITIGR_PGFE_CONNECTION_PORT|*a number*|5432|5432|
 |DMITIGR_PGFE_CONNECTION_USERNAME|*a string*|postgres|postgres|
 |DMITIGR_PGFE_CONNECTION_DATABASE|*a string*|postgres|postgres|

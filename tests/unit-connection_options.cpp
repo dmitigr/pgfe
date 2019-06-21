@@ -109,29 +109,29 @@ int main(int, char* argv[])
       ASSERT(is_runtime_throw_works([&]() { co->set_tcp_keepalives_count(invalid_value); }));
     }
 
-    ASSERT(co->tcp_address() == btd::tcp_address);
+    ASSERT(co->net_address() == btd::net_address);
     {
       const auto valid_value_ipv4 = "127.0.0.1";
-      co->set_tcp_address(valid_value_ipv4);
-      ASSERT(co->tcp_address() == valid_value_ipv4);
+      co->set_net_address(valid_value_ipv4);
+      ASSERT(co->net_address() == valid_value_ipv4);
       const auto valid_value_ipv6 = "::1";
-      co->set_tcp_address(valid_value_ipv6);
-      ASSERT(co->tcp_address() == valid_value_ipv6);
+      co->set_net_address(valid_value_ipv6);
+      ASSERT(co->net_address() == valid_value_ipv6);
 
       const auto invalid_value_ipv4 = "127.257.0.1";
-      ASSERT(is_runtime_throw_works([&]() { co->set_tcp_address(invalid_value_ipv4); }));
+      ASSERT(is_runtime_throw_works([&]() { co->set_net_address(invalid_value_ipv4); }));
       const auto invalid_value_ipv6 = "::zz";
-      ASSERT(is_runtime_throw_works([&]() { co->set_tcp_address(invalid_value_ipv6); }));
+      ASSERT(is_runtime_throw_works([&]() { co->set_net_address(invalid_value_ipv6); }));
     }
 
-    ASSERT(co->tcp_hostname() == btd::tcp_hostname);
+    ASSERT(co->net_hostname() == btd::net_hostname);
     {
       const auto valid_value = "localhost";
-      co->set_tcp_hostname(valid_value);
-      ASSERT(co->tcp_hostname() == valid_value);
+      co->set_net_hostname(valid_value);
+      ASSERT(co->net_hostname() == valid_value);
 
       const auto invalid_value = "local host";
-      ASSERT(is_runtime_throw_works([&]() { co->set_tcp_hostname(invalid_value); }));
+      ASSERT(is_runtime_throw_works([&]() { co->set_net_hostname(invalid_value); }));
     }
 
     ASSERT(co->port() == btd::port);
@@ -157,10 +157,10 @@ int main(int, char* argv[])
       ASSERT(!is_logic_throw_works([&]() { co->tcp_keepalives_interval(); }));
       ASSERT(is_logic_throw_works([&]() { co->set_tcp_keepalives_count(0); }));
       ASSERT(!is_logic_throw_works([&]() { co->tcp_keepalives_count(); }));
-      ASSERT(is_logic_throw_works([&]() { co->set_tcp_address(""); }));
-      ASSERT(!is_logic_throw_works([&]() { co->tcp_address(); }));
-      ASSERT(is_logic_throw_works([&]() { co->set_tcp_hostname(""); }));
-      ASSERT(!is_logic_throw_works([&]() { co->tcp_hostname(); }));
+      ASSERT(is_logic_throw_works([&]() { co->set_net_address(""); }));
+      ASSERT(!is_logic_throw_works([&]() { co->net_address(); }));
+      ASSERT(is_logic_throw_works([&]() { co->set_net_hostname(""); }));
+      ASSERT(!is_logic_throw_works([&]() { co->net_hostname(); }));
       ASSERT(is_logic_throw_works([&]() { co->set_port(0); }));
       ASSERT(!is_logic_throw_works([&]() { co->tcp_port(); }));
     }
