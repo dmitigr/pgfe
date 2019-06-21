@@ -124,6 +124,21 @@ public:
 
   // ---------------------------------------------------------------------------
 
+  Connection_options* set_port(const std::int_fast32_t value) override
+  {
+    validate(is_valid_port(value), "server port");
+    port_ = value;
+    DMITIGR_ASSERT(is_invariant_ok());
+    return this;
+  }
+
+  std::int_fast32_t port() const override
+  {
+    return port_;
+  }
+
+  // ---------------------------------------------------------------------------
+
 #ifndef _WIN32
   Connection_options* set_uds_directory(std::filesystem::path value) override
   {
@@ -260,21 +275,6 @@ public:
   const std::optional<std::string>& tcp_host_name() const override
   {
     return tcp_host_name_;
-  }
-
-  // ---------------------------------------------------------------------------
-
-  Connection_options* set_port(const std::int_fast32_t value) override
-  {
-    validate(is_valid_port(value), "server port");
-    port_ = value;
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
-
-  std::int_fast32_t port() const override
-  {
-    return port_;
   }
 
   // ---------------------------------------------------------------------------

@@ -86,6 +86,30 @@ public:
    */
   virtual Communication_mode communication_mode() const = 0;
 
+  // ---------------------------------------------------------------------------
+
+  /**
+   * @brief Sets server's port number.
+   *
+   * When `(communication_mode() == Communication_mode::tcp)` it will be used as
+   * the TCP port number. Otherwise, it will be used as extension of the
+   * Unix-domain socket file, which is named `.s.PGSQL.port` and located in the
+   * directory `uds_directory()`.
+   *
+   * @par Exception safety guarantee
+   * Strong.
+   *
+   * @see port()
+   */
+  virtual Connection_options* set_port(const std::int_fast32_t value) = 0;
+
+  /**
+   * @returns The current value of the option.
+   *
+   * @see set_port()
+   */
+  virtual std::int_fast32_t port() const = 0;
+
   /// @}
 
   // --------------------------------------------------------------------------
@@ -304,30 +328,6 @@ public:
    * @see set_tcp_host_name()
    */
   virtual const std::optional<std::string>& tcp_host_name() const = 0;
-
-  // ---------------------------------------------------------------------------
-
-  /**
-   * @brief Sets server's port number.
-   *
-   * When `(communication_mode() == Communication_mode::tcp)` it will be used as
-   * the TCP port number. Otherwise, it will be used as extension of the
-   * Unix-domain socket file, which is named `.s.PGSQL.port` and located in the
-   * directory `uds_directory()`.
-   *
-   * @par Exception safety guarantee
-   * Strong.
-   *
-   * @see port()
-   */
-  virtual Connection_options* set_port(const std::int_fast32_t value) = 0;
-
-  /**
-   * @returns The current value of the option.
-   *
-   * @see set_port()
-   */
-  virtual std::int_fast32_t port() const = 0;
 
   /// @}
 
