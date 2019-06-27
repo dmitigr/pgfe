@@ -80,6 +80,30 @@ struct Conversions<Container<T, Allocator<T>>>
     detail::Array_string_conversions_vals<Container<T, Allocator<T>>>,
     detail::Array_data_conversions_vals<Container<T, Allocator<T>>>> {};
 
+/**
+ * @internal
+ *
+ * @brief Partial specialization of Conversions for containers (arrays) with mandatory values.
+ *
+ * This is a workaround for GCC. When using multidimensional STL-containers GCC (at least version 8.1)
+ * incorrectly choises the specialization of Conversions<Container<Optional<T>, Allocator<Optional<T>>>>
+ * by deducing Optional as an STL container, insead of choising Conversions<Container<T>, Allocator<T>>.
+ * For example, the nested vector in `std::vector<std::vector<int>>` treated as Optional.
+ */
+template<typename T,
+  template<class, class> class Container,
+  template<class, class> class Subcontainer,
+  template<class> class ContainerAllocator,
+  template<class> class SubcontainerAllocator>
+struct Conversions<Container<Subcontainer<T, SubcontainerAllocator<T>>,
+                     ContainerAllocator<Subcontainer<T, SubcontainerAllocator<T>>>>>
+  : public Basic_conversions<Container<Subcontainer<T, SubcontainerAllocator<T>>,
+    ContainerAllocator<Subcontainer<T, SubcontainerAllocator<T>>>>,
+    detail::Array_string_conversions_vals<Container<Subcontainer<T, SubcontainerAllocator<T>>,
+      ContainerAllocator<Subcontainer<T, SubcontainerAllocator<T>>>>>,
+    detail::Array_data_conversions_vals<Container<Subcontainer<T, SubcontainerAllocator<T>>,
+      ContainerAllocator<Subcontainer<T, SubcontainerAllocator<T>>>>>> {};
+
 } // namespace dmitigr::pgfe
 
 #endif  // DMITIGR_PGFE_ARRAY_CONVERSIONS_HPP
