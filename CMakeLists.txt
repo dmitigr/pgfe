@@ -333,8 +333,6 @@ set(dmitigr_pgfe_preprocessed_headers
 
 set(dmitigr_pgfe_headers
   lib/dmitigr/pgfe/array_conversions.hpp
-  lib/dmitigr/pgfe/array_conversions.hxx
-  lib/dmitigr/pgfe/array_conversions.tcc
   lib/dmitigr/pgfe/basic_conversions.hpp
 
   lib/dmitigr/pgfe/completion.hpp
