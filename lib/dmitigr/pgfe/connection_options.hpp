@@ -589,4 +589,8 @@ private:
 
 } // namespace dmitigr::pgfe
 
+#ifdef DMITIGR_PGFE_HEADER_ONLY
+#include "dmitigr/pgfe/connection_options.cpp"
+#endif
+
 #endif  // DMITIGR_PGFE_CONNECTION_OPTIONS_HPP

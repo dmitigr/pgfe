@@ -8,7 +8,7 @@
 #include "dmitigr/pgfe/basic_conversions.hpp"
 #include "dmitigr/pgfe/conversions_api.hpp"
 #include "dmitigr/pgfe/data.hpp"
-#include "dmitigr/pgfe/exceptions.hxx"
+#include "dmitigr/pgfe/exceptions.hpp"
 
 #include <dmitigr/common/debug.hpp>
 #include <dmitigr/common/string.hpp>
@@ -52,7 +52,7 @@ Container to_container(const char* literal, char delimiter = ',', Types&& ... ar
  * @brief The compile-time converter from the "container of values" type to the "container of optionals" type.
  */
 template<typename T>
-struct Cont_of_opts {
+struct Cont_of_opts final {
   using Type = T;
 };
 
@@ -69,7 +69,7 @@ struct Cont_of_opts {
  * std::basic_string<CharT, Traits, Allocator> (see below) does not works.
  */
 template<>
-struct Cont_of_opts<std::string> {
+struct Cont_of_opts<std::string> final {
   using Type = std::string;
 };
 
@@ -86,7 +86,7 @@ struct Cont_of_opts<std::string> {
  * Thus, this specialization is not required at all. But let it be just in case.
  */
 template<class CharT, class Traits, class Allocator>
-struct Cont_of_opts<std::basic_string<CharT, Traits, Allocator>> {
+struct Cont_of_opts<std::basic_string<CharT, Traits, Allocator>> final {
   using Type = std::basic_string<CharT, Traits, Allocator>;
 };
 
@@ -98,7 +98,7 @@ struct Cont_of_opts<std::basic_string<CharT, Traits, Allocator>> {
 template<typename T,
   template<class, class> class Container,
   template<class> class Allocator>
-struct Cont_of_opts<Container<T, Allocator<T>>> {
+struct Cont_of_opts<Container<T, Allocator<T>>> final {
 private:
   using Elem = typename Cont_of_opts<T>::Type;
 public:
@@ -121,7 +121,7 @@ using Cont_of_opts_t = typename Cont_of_opts<T>::Type;
  * @brief The compile-time converter from the "container of optionals" type to the "container of values" type.
  */
 template<typename T>
-struct Cont_of_vals {
+struct Cont_of_vals final {
   using Type = T;
 };
 
@@ -134,7 +134,7 @@ template<typename T,
   template<class> class Optional,
   template<class, class> class Container,
   template<class> class Allocator>
-struct Cont_of_vals<Container<Optional<T>, Allocator<Optional<T>>>> {
+struct Cont_of_vals<Container<Optional<T>, Allocator<Optional<T>>>> final {
 private:
   using Elem = typename Cont_of_vals<T>::Type;
 public:
@@ -187,7 +187,7 @@ template<typename T,
   template<class> class Optional,
   template<class, class> class Container,
   template<class> class Allocator>
-struct Array_string_conversions_opts<Container<Optional<T>, Allocator<Optional<T>>>> {
+struct Array_string_conversions_opts<Container<Optional<T>, Allocator<Optional<T>>>> final {
   using Type = Container<Optional<T>, Allocator<Optional<T>>>;
 
   template<typename ... Types>
@@ -207,7 +207,7 @@ template<typename T,
   template<class> class Optional,
   template<class, class> class Container,
   template<class> class Allocator>
-struct Array_data_conversions_opts<Container<Optional<T>, Allocator<Optional<T>>>> {
+struct Array_data_conversions_opts<Container<Optional<T>, Allocator<Optional<T>>>> final {
   using Type = Container<Optional<T>, Allocator<Optional<T>>>;
 
   template<typename ... Types>
@@ -239,7 +239,7 @@ template<typename> struct Array_data_conversions_vals;
 template<typename T,
   template<class, class> class Container,
   template<class> class Allocator>
-struct Array_string_conversions_vals<Container<T, Allocator<T>>> {
+struct Array_string_conversions_vals<Container<T, Allocator<T>>> final {
   using Type = Container<T, Allocator<T>>;
 
   template<typename ... Types>
@@ -262,7 +262,7 @@ private:
 template<typename T,
   template<class, class> class Container,
   template<class> class Allocator>
-struct Array_data_conversions_vals<Container<T, Allocator<T>>> {
+struct Array_data_conversions_vals<Container<T, Allocator<T>>> final {
   using Type = Container<T, Allocator<T>>;
 
   template<typename ... Types>
@@ -310,16 +310,16 @@ template<typename T,
   template<class> class Optional,
   template<class, class> class Container,
   template<class> class Allocator>
-class Filler_of_deepest_container {
+class Filler_of_deepest_container final {
 private:
   template<typename U>
-  struct Is_container : std::false_type{};
+  struct Is_container final : std::false_type{};
 
   template<typename U,
     template<class> class Opt,
     template<class, class> class Cont,
     template<class> class Alloc>
-  struct Is_container<Cont<Opt<U>, Alloc<Opt<U>>>> : std::true_type{};
+  struct Is_container<Cont<Opt<U>, Alloc<Opt<U>>>> final : std::true_type{};
 
 public:
   using Value_type     = T;
@@ -840,7 +840,7 @@ template<typename T,
   template<class> class Optional,
   template<class, class> class Container,
   template<class> class Allocator>
-struct Conversions<Container<Optional<T>, Allocator<Optional<T>>>>
+struct Conversions<Container<Optional<T>, Allocator<Optional<T>>>> final
   : public Basic_conversions<Container<Optional<T>, Allocator<Optional<T>>>,
       detail::Array_string_conversions_opts<Container<Optional<T>, Allocator<Optional<T>>>>,
       detail::Array_data_conversions_opts<Container<Optional<T>, Allocator<Optional<T>>>>> {};

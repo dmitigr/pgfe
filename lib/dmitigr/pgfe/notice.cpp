@@ -2,11 +2,9 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
-#ifndef DMITIGR_PGFE_NOTICE_HXX
-#define DMITIGR_PGFE_NOTICE_HXX
-
 #include "dmitigr/pgfe/notice.hpp"
-#include "dmitigr/pgfe/problem.hxx"
+#include "dmitigr/pgfe/problem.hpp"
+#include "dmitigr/pgfe/implementation_header.hpp"
 
 namespace dmitigr::pgfe::detail {
 
@@ -30,4 +28,4 @@ using simple_Notice = basic_Problem<iNotice>;
 
 } // namespace dmitigr::pgfe::detail
 
-#endif  // DMITIGR_PGFE_NOTICE_HXX
+#include "dmitigr/pgfe/implementation_footer.hpp"

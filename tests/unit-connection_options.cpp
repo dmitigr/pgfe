@@ -4,7 +4,25 @@
 
 #include "unit.hpp"
 
-#include "dmitigr/pgfe/connection_options.hxx"
+// -----------------------------------------------------------------------------
+#ifndef DMITIGR_PGFE_HEADER_ONLY
+
+#ifdef WIN32
+#define DMITIGR_PGFE_INLINE inline // avoid warning C4273: inconsistent dll linkage
+#endif
+#include "dmitigr/pgfe/connection_options.cpp"
+
+namespace dmitigr::pgfe::detail {
+
+std::unique_ptr<Connection> iConnection_options::make_connection() const
+{
+  throw std::logic_error{"iConnection_options::make_connection(): dummy implementation"};
+}
+
+} // namespace dmitigr::pgfe::detail
+
+#endif
+// -----------------------------------------------------------------------------
 
 #include <cstring>
 #include <iostream>

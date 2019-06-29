@@ -2,13 +2,19 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
-#include "dmitigr/pgfe/errc.hxx"
+#include "dmitigr/pgfe/errc.hpp"
+#include "dmitigr/pgfe/implementation_header.hpp"
 
 #include <dmitigr/common/debug.hpp>
 
-namespace pgfe = dmitigr::pgfe;
+namespace dmitigr::pgfe::detail {
 
-const char* pgfe::detail::to_literal(const Client_errc errc)
+/**
+ * @internal
+ *
+ * @returns The literal representation of the `errc`.
+ */
+DMITIGR_PGFE_INLINE const char* to_literal(const Client_errc errc)
 {
   switch (errc) {
   case Client_errc::success:
@@ -27,7 +33,12 @@ const char* pgfe::detail::to_literal(const Client_errc errc)
   DMITIGR_ASSERT_ALWAYS(!true);
 }
 
-const char* pgfe::detail::to_literal(const Server_errc errc)
+/**
+ * @internal
+ *
+ * @returns The literal representation of the `errc`.
+ */
+DMITIGR_PGFE_INLINE const char* to_literal(const Server_errc errc)
 {
   switch (errc) {
   case Server_errc::c00_successful_completion:
@@ -547,3 +558,7 @@ const char* pgfe::detail::to_literal(const Server_errc errc)
   }
   DMITIGR_ASSERT_ALWAYS(!true);
 }
+
+} // namespace dmitigr::pgfe::detail
+
+#include "dmitigr/pgfe/implementation_footer.hpp"

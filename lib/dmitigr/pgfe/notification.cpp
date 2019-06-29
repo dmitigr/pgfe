@@ -2,12 +2,10 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
-#ifndef DMITIGR_PGFE_NOTIFICATION_HXX
-#define DMITIGR_PGFE_NOTIFICATION_HXX
-
-#include "dmitigr/pgfe/data.hxx"
+#include "dmitigr/pgfe/data.hpp"
 #include "dmitigr/pgfe/notification.hpp"
-#include "dmitigr/pgfe/pq.hxx"
+#include "dmitigr/pgfe/pq.hpp"
+#include "dmitigr/pgfe/implementation_header.hpp"
 
 #include <dmitigr/common/debug.hpp>
 
@@ -24,7 +22,7 @@ protected:
   }
 };
 
-class pq_Notification : public iNotification {
+class pq_Notification final : public iNotification {
 public:
   explicit pq_Notification(::PGnotify* const pgnotify)
     : pgnotify_(pgnotify)
@@ -76,4 +74,4 @@ private:
 
 } // namespace dmitigr::pgfe::detail
 
-#endif  // DMITIGR_PGFE_NOTIFICATION_HXX
+#include "dmitigr/pgfe/implementation_footer.hpp"

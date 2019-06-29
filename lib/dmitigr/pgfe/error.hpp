@@ -39,4 +39,8 @@ private:
 
 } // namespace dmitigr::pgfe
 
+#ifdef DMITIGR_PGFE_HEADER_ONLY
+#include "dmitigr/pgfe/error.cpp"
+#endif
+
 #endif  // DMITIGR_PGFE_ERROR_HPP

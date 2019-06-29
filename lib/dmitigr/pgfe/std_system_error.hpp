@@ -19,7 +19,7 @@ namespace dmitigr::pgfe {
  *
  * @see Client_exception.
  */
-class Client_error_category : public std::error_category {
+class Client_error_category final : public std::error_category {
 public:
   /**
    * @returns The literal `dmitigr_pgfe_client_error`.
@@ -44,7 +44,7 @@ public:
  *
  * @see Server_exception.
  */
-class Server_error_category : public std::error_category {
+class Server_error_category final : public std::error_category {
 public:
   /**
    * @returns The literal `dmitigr_pgfe_server_error`.
@@ -113,15 +113,19 @@ namespace std {
  *
  * @brief The full specialization for integration with `<system_error>`.
  */
-template<> struct is_error_code_enum<dmitigr::pgfe::Client_errc> : true_type {};
+template<> struct is_error_code_enum<dmitigr::pgfe::Client_errc> final : true_type {};
 
 /**
  * @ingroup errors
  *
  * @brief The full specialization for integration with `<system_error>`.
  */
-template<> struct is_error_code_enum<dmitigr::pgfe::Server_errc> : true_type {};
+template<> struct is_error_code_enum<dmitigr::pgfe::Server_errc> final : true_type {};
 
 } // namespace std
+
+#ifdef DMITIGR_PGFE_HEADER_ONLY
+#include "dmitigr/pgfe/std_system_error.cpp"
+#endif
 
 #endif  // DMITIGR_PGFE_STD_SYSTEM_ERROR_HPP

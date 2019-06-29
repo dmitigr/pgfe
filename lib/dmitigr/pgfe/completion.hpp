@@ -49,4 +49,8 @@ private:
 
 } // namespace dmitigr::pgfe
 
+#ifdef DMITIGR_PGFE_HEADER_ONLY
+#include "dmitigr/pgfe/completion.cpp"
+#endif
+
 #endif  // DMITIGR_PGFE_COMPLETION_HPP

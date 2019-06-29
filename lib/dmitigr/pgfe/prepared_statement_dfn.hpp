@@ -2,8 +2,8 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
-#ifndef DMITIGR_PGFE_PREPARED_STATEMENT_HPP
-#define DMITIGR_PGFE_PREPARED_STATEMENT_HPP
+#ifndef DMITIGR_PGFE_PREPARED_STATEMENT_DFN_HPP
+#define DMITIGR_PGFE_PREPARED_STATEMENT_DFN_HPP
 
 #include "dmitigr/pgfe/basics.hpp"
 #include "dmitigr/pgfe/conversions.hpp"
@@ -355,4 +355,4 @@ private:
 
 } // namespace dmitigr::pgfe
 
-#endif  // DMITIGR_PGFE_PREPARED_STATEMENT_HPP
+#endif  // DMITIGR_PGFE_PREPARED_STATEMENT_DFN_HPP

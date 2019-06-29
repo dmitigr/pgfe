@@ -43,4 +43,8 @@ private:
 
 } // namespace dmitigr::pgfe
 
+#ifdef DMITIGR_PGFE_HEADER_ONLY
+#include "dmitigr/pgfe/notice.cpp"
+#endif
+
 #endif  // DMITIGR_PGFE_NOTICE_HPP

@@ -277,4 +277,8 @@ private:
 
 } // namespace dmitigr::pgfe
 
+#ifdef DMITIGR_PGFE_HEADER_ONLY
+#include "dmitigr/pgfe/composite.cpp"
+#endif
+
 #endif  // DMITIGR_PGFE_COMPOSITE_HPP

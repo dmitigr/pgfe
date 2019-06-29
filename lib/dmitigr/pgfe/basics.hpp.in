@@ -5,8 +5,10 @@
 #ifndef DMITIGR_PGFE_BASICS_HPP
 #define DMITIGR_PGFE_BASICS_HPP
 
+#include "dmitigr/pgfe/dll.hpp"
+
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// This file was generated automatically. There is no sense to edit!
+// This file was generated automatically. Edit basics.hpp.in instead!!!!!!!!!!!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 namespace dmitigr::pgfe {
@@ -35,49 +37,49 @@ enum class Socket_readiness {
  *
  * Bitwise AND for Socket_readiness.
  */
-Socket_readiness operator&(Socket_readiness lhs, Socket_readiness rhs) noexcept;
+DMITIGR_PGFE_API Socket_readiness operator&(Socket_readiness lhs, Socket_readiness rhs) noexcept;
 
 /**
  * @ingroup main
  *
  * @brief Bitwise OR for Socket_readiness.
  */
-Socket_readiness operator|(Socket_readiness lhs, Socket_readiness rhs) noexcept;
+DMITIGR_PGFE_API Socket_readiness operator|(Socket_readiness lhs, Socket_readiness rhs) noexcept;
 
 /**
  * @ingroup main
  *
  * @brief Bitwise XOR for Socket_readiness.
  */
-Socket_readiness operator^(Socket_readiness lhs, Socket_readiness rhs) noexcept;
+DMITIGR_PGFE_API Socket_readiness operator^(Socket_readiness lhs, Socket_readiness rhs) noexcept;
 
 /**
  * @ingroup main
  *
  * @brief Bitwise NOT for Socket_readiness.
  */
-Socket_readiness operator~(Socket_readiness lhs) noexcept;
+DMITIGR_PGFE_API Socket_readiness operator~(Socket_readiness lhs) noexcept;
 
 /**
  * @ingroup main
  *
  * @brief Bitwise AND for Socket_readiness with assignment to lvalue.
  */
-Socket_readiness& operator&=(Socket_readiness& lhs, Socket_readiness rhs) noexcept;
+DMITIGR_PGFE_API Socket_readiness& operator&=(Socket_readiness& lhs, Socket_readiness rhs) noexcept;
 
 /**
  * @ingroup main
  *
  * @brief Bitwise OR for Socket_readiness with assignment to lvalue.
  */
-Socket_readiness& operator|=(Socket_readiness& lhs, Socket_readiness rhs) noexcept;
+DMITIGR_PGFE_API Socket_readiness& operator|=(Socket_readiness& lhs, Socket_readiness rhs) noexcept;
 
 /**
  * @ingroup main
  *
  * @brief Bitwise XOR for Socket_readiness with assignment to lvalue.
  */
-Socket_readiness& operator^=(Socket_readiness& lhs, Socket_readiness rhs) noexcept;
+DMITIGR_PGFE_API Socket_readiness& operator^=(Socket_readiness& lhs, Socket_readiness rhs) noexcept;
 
 // -----------------------------------------------------------------------------
 
@@ -203,6 +205,74 @@ enum class Problem_severity {
   panic = @PGFE_PROBLEM_SEVERITY_PANIC@
 };
 
+// -----------------------------------------------------------------------------
+
+/**
+ * @ingroup main
+ *
+ * @brief Represents an external library.
+ */
+enum class External_library {
+  /** Denotes the OpenSSL library. */
+  libssl = @PGFE_EXTERNAL_LIBRARY_LIBSSL@,
+
+  /** Denotes the libcrypto library. */
+  libcrypto = @PGFE_EXTERNAL_LIBRARY_LIBCRYPTO@
+};
+
+/**
+ * @ingroup main
+ *
+ * Bitwise AND for External_library.
+ */
+DMITIGR_PGFE_API External_library operator&(External_library lhs, External_library rhs) noexcept;
+
+/**
+ * @ingroup main
+ *
+ * @brief Bitwise OR for External_library.
+ */
+DMITIGR_PGFE_API External_library operator|(External_library lhs, External_library rhs) noexcept;
+
+/**
+ * @ingroup main
+ *
+ * @brief Bitwise XOR for External_library.
+ */
+DMITIGR_PGFE_API External_library operator^(External_library lhs, External_library rhs) noexcept;
+
+/**
+ * @ingroup main
+ *
+ * @brief Bitwise NOT for External_library.
+ */
+DMITIGR_PGFE_API External_library operator~(External_library lhs) noexcept;
+
+/**
+ * @ingroup main
+ *
+ * @brief Bitwise AND for External_library with assignment to lvalue.
+ */
+DMITIGR_PGFE_API External_library& operator&=(External_library& lhs, External_library rhs) noexcept;
+
+/**
+ * @ingroup main
+ *
+ * @brief Bitwise OR for External_library with assignment to lvalue.
+ */
+DMITIGR_PGFE_API External_library& operator|=(External_library& lhs, External_library rhs) noexcept;
+
+/**
+ * @ingroup main
+ *
+ * @brief Bitwise XOR for External_library with assignment to lvalue.
+ */
+DMITIGR_PGFE_API External_library& operator^=(External_library& lhs, External_library rhs) noexcept;
+
 } // namespace dmitigr::pgfe
+
+#ifdef DMITIGR_PGFE_HEADER_ONLY
+#include "dmitigr/pgfe/basics.cpp"
+#endif
 
 #endif // DMITIGR_PGFE_BASICS_HPP

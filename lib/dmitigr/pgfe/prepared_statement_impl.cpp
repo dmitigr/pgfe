@@ -2,12 +2,14 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
-#include "dmitigr/pgfe/connection.hxx"
-#include "dmitigr/pgfe/prepared_statement.hxx"
+#include "dmitigr/pgfe/connection.hpp"
+#include "dmitigr/pgfe/prepared_statement_impl.hpp"
+#include "dmitigr/pgfe/implementation_header.hpp"
 
 namespace dmitigr::pgfe::detail {
 
-pq_Prepared_statement::pq_Prepared_statement(std::string name, pq_Connection* const connection, const Sql_string* const preparsed)
+inline pq_Prepared_statement::pq_Prepared_statement(std::string name,
+  pq_Connection* const connection, const Sql_string* const preparsed)
   : name_(std::move(name))
   , preparsed_(bool(preparsed))
 {
@@ -25,7 +27,8 @@ pq_Prepared_statement::pq_Prepared_statement(std::string name, pq_Connection* co
   DMITIGR_ASSERT(is_invariant_ok());
 }
 
-pq_Prepared_statement::pq_Prepared_statement(std::string name, pq_Connection* const connection, const std::size_t parameters_count)
+inline pq_Prepared_statement::pq_Prepared_statement(std::string name,
+  pq_Connection* const connection, const std::size_t parameters_count)
   : name_(std::move(name))
   , parameters_(parameters_count)
 {
@@ -33,7 +36,7 @@ pq_Prepared_statement::pq_Prepared_statement(std::string name, pq_Connection* co
   DMITIGR_ASSERT(is_invariant_ok());
 }
 
-void pq_Prepared_statement::init_connection__(pq_Connection* const connection)
+inline void pq_Prepared_statement::init_connection__(pq_Connection* const connection)
 {
   /*
    * The maximum parameter count and the maximum data size are defined as a static
@@ -46,7 +49,7 @@ void pq_Prepared_statement::init_connection__(pq_Connection* const connection)
   result_format_ = connection_->result_format();
 }
 
-void pq_Prepared_statement::execute_async()
+inline void pq_Prepared_statement::execute_async()
 {
   DMITIGR_REQUIRE(connection()->is_ready_for_async_request(), std::logic_error);
 
@@ -84,7 +87,7 @@ void pq_Prepared_statement::execute_async()
   DMITIGR_ASSERT(is_invariant_ok());
 }
 
-void pq_Prepared_statement::execute()
+inline void pq_Prepared_statement::execute()
 {
   DMITIGR_REQUIRE(connection()->is_ready_for_request(), std::logic_error);
   execute_async();
@@ -92,29 +95,29 @@ void pq_Prepared_statement::execute()
   DMITIGR_ASSERT(is_invariant_ok());
 }
 
-Connection* pq_Prepared_statement::connection()
+inline Connection* pq_Prepared_statement::connection()
 {
   return connection_;
 }
 
-const Connection* pq_Prepared_statement::connection() const
+inline const Connection* pq_Prepared_statement::connection() const
 {
   return connection_;
 }
 
-void pq_Prepared_statement::describe_async()
+inline void pq_Prepared_statement::describe_async()
 {
   connection_->describe_prepared_statement_async(name_);
   DMITIGR_ASSERT(is_invariant_ok());
 }
 
-void pq_Prepared_statement::describe()
+inline void pq_Prepared_statement::describe()
 {
   connection_->describe_prepared_statement(name_);
   DMITIGR_ASSERT(is_invariant_ok());
 }
 
-bool pq_Prepared_statement::is_invariant_ok()
+inline bool pq_Prepared_statement::is_invariant_ok()
 {
   const bool params_ok = (parameter_count() <= maximum_parameter_count());
   const bool preparsed_ok = is_preparsed() || !has_named_parameters();
@@ -124,3 +127,5 @@ bool pq_Prepared_statement::is_invariant_ok()
 }
 
 } // namespace dmitigr::pgfe::detail
+
+#include "dmitigr/pgfe/implementation_footer.hpp"

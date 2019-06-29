@@ -2,11 +2,9 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
-#ifndef DMITIGR_PGFE_EXCEPTIONS_HXX
-#define DMITIGR_PGFE_EXCEPTIONS_HXX
-
 #include "dmitigr/pgfe/error.hpp"
 #include "dmitigr/pgfe/exceptions.hpp"
+#include "dmitigr/pgfe/implementation_header.hpp"
 
 #include <dmitigr/common/debug.hpp>
 
@@ -14,7 +12,7 @@
 
 namespace dmitigr::pgfe::detail {
 
-class iClient_exception : public Client_exception {
+class iClient_exception final : public Client_exception {
 public:
   explicit iClient_exception(const Client_errc errc)
     : Client_exception(errc)
@@ -25,7 +23,7 @@ public:
   {}
 };
 
-class iServer_exception : public Server_exception {
+class iServer_exception final : public Server_exception {
 public:
   explicit iServer_exception(std::shared_ptr<Error> error)
     : Server_exception(error->code())
@@ -50,4 +48,4 @@ private:
 
 } // namespace dmitigr::pgfe::detail
 
-#endif  // DMITIGR_PGFE_EXCEPTIONS_HXX
+#include "dmitigr/pgfe/implementation_footer.hpp"

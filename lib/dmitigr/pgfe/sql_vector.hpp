@@ -275,4 +275,8 @@ private:
 
 } // namespace dmitigr::pgfe
 
+#ifdef DMITIGR_PGFE_HEADER_ONLY
+#include "dmitigr/pgfe/sql_vector.cpp"
+#endif
+
 #endif  // DMITIGR_PGFE_SQL_VECTOR_HPP

@@ -2,13 +2,11 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
-#ifndef DMITIGR_PGFE_ROW_INFO_HXX
-#define DMITIGR_PGFE_ROW_INFO_HXX
-
-#include "dmitigr/pgfe/compositional.hxx"
-#include "dmitigr/pgfe/pq.hxx"
+#include "dmitigr/pgfe/compositional.hpp"
+#include "dmitigr/pgfe/pq.hpp"
 #include "dmitigr/pgfe/row_info.hpp"
-#include "dmitigr/pgfe/sql.hxx"
+#include "dmitigr/pgfe/util.hpp"
+#include "dmitigr/pgfe/implementation_header.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -75,7 +73,7 @@ inline bool iRow_info::is_invariant_ok()
 
 // -----------------------------------------------------------------------------
 
-class pq_Row_info : public iRow_info {
+class pq_Row_info final : public iRow_info {
 public:
   explicit pq_Row_info(pq::Result&& pq_result)
     : pq_result_(std::move(pq_result))
@@ -242,4 +240,4 @@ private:
 
 } // namespace dmitigr::pgfe::detail
 
-#endif  // DMITIGR_PGFE_ROW_INFO_HXX
+#include "dmitigr/pgfe/implementation_footer.hpp"

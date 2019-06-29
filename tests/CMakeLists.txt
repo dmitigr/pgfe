@@ -14,11 +14,6 @@ foreach(t
     unit-connection-deferrable unit-connection-err_in_mid unit-ps unit-conversions-online
     benchmark-sql_string_replace benchmark-array-client benchmark-array-server)
   set(test_sources ${t}.cpp unit.hpp)
-  if("${t}" STREQUAL "unit-problem")
-    list(APPEND test_sources
-      ${dmitigr_pgfe_SOURCE_DIR}/lib/dmitigr/pgfe/problem.cpp
-      ${dmitigr_pgfe_SOURCE_DIR}/lib/dmitigr/pgfe/sql.cxx)
-  endif()
   add_executable(${t} ${test_sources})
   target_link_libraries(${t} PRIVATE ${dmitigr_pgfe_target} ${dmitigr_common_library})
   dmitigr_target_compile_options(${t})

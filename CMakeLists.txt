@@ -18,16 +18,13 @@ set(dmitigr_pgfe_version_part1 1)
 set(dmitigr_pgfe_version_part2 1)
 add_definitions(-DDMITIGR_PGFE_VERSION_PART1=${dmitigr_pgfe_version_part1})
 add_definitions(-DDMITIGR_PGFE_VERSION_PART2=${dmitigr_pgfe_version_part2})
-if(WIN32)
-  add_definitions(-DNOMINMAX)
-endif()
 
 # ------------------------------------------------------------------------------
 # Build options
 # ------------------------------------------------------------------------------
 
 option(BUILD_SHARED_LIBS "Build shared library?" ON)
-set(DMITIGR_PGFE_HEADER_ONLY OFF) # TODO
+option(DMITIGR_PGFE_HEADER_ONLY "Header-only library?" OFF)
 option(DMITIGR_PGFE_BUILD_TESTS "Build tests?" ON)
 
 if(NOT DMITIGR_PGFE_HEADER_ONLY)
@@ -296,7 +293,7 @@ include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 include_directories(BEFORE ${CMAKE_CURRENT_BINARY_DIR}/lib)
 
 # ------------------------------------------------------------------------------
-# Preprocessing of the sources
+# Preprocessing
 # ------------------------------------------------------------------------------
 
 # Generated headers (.hpp) should go to the CMAKE_CURRENT_SOURCE_DIR, but
@@ -327,92 +324,69 @@ set(dmitigr_pgfe_preprocessed_headers
   ${CMAKE_CURRENT_BINARY_DIR}/lib/dmitigr/pgfe/connection_options.cxx
   )
 
-# set(dmitigr_pgfe_header_only_headers
-#   lib/dmitigr/pgfe/header_only.hpp
-#   )
+set(dmitigr_pgfe_header_only_headers
+  lib/dmitigr/pgfe/implementation_footer.hpp
+  lib/dmitigr/pgfe/implementation_header.hpp
+  )
 
 set(dmitigr_pgfe_headers
   lib/dmitigr/pgfe/array_conversions.hpp
   lib/dmitigr/pgfe/basic_conversions.hpp
-
   lib/dmitigr/pgfe/completion.hpp
-  lib/dmitigr/pgfe/completion.hxx
-
   lib/dmitigr/pgfe/compositional.hpp
-  lib/dmitigr/pgfe/compositional.hxx
-
   lib/dmitigr/pgfe/composite.hpp
-  lib/dmitigr/pgfe/composite.hxx
-
   lib/dmitigr/pgfe/connection.hpp
-  lib/dmitigr/pgfe/connection.hxx
-
   lib/dmitigr/pgfe/connection_options.hpp
-  lib/dmitigr/pgfe/connection_options.hxx
-
   lib/dmitigr/pgfe/conversions_api.hpp
   lib/dmitigr/pgfe/conversions.hpp
-  lib/dmitigr/pgfe/conversions.hxx
-
   lib/dmitigr/pgfe/data.hpp
-  lib/dmitigr/pgfe/data.hxx
-
   lib/dmitigr/pgfe/dll.hpp
-
-  lib/dmitigr/pgfe/errc.hxx
-
   lib/dmitigr/pgfe/error.hpp
-  lib/dmitigr/pgfe/error.hxx
-
   lib/dmitigr/pgfe/exceptions.hpp
-  lib/dmitigr/pgfe/exceptions.hxx
-
   lib/dmitigr/pgfe/message.hpp
-
   lib/dmitigr/pgfe/misc.hpp
-
-  lib/dmitigr/pgfe/net.hxx
-
   lib/dmitigr/pgfe/notice.hpp
-  lib/dmitigr/pgfe/notice.hxx
-
   lib/dmitigr/pgfe/notification.hpp
-  lib/dmitigr/pgfe/notification.hxx
-
   lib/dmitigr/pgfe/parameterizable.hpp
-  lib/dmitigr/pgfe/parameterizable.hxx
-
-  lib/dmitigr/pgfe/pq.hxx
-
-  lib/dmitigr/pgfe/prepared_statement.hpp
-  lib/dmitigr/pgfe/prepared_statement.hxx
-
+  lib/dmitigr/pgfe/pq.hpp
+  lib/dmitigr/pgfe/prepared_statement_dfn.hpp
+  lib/dmitigr/pgfe/prepared_statement_impl.hpp
   lib/dmitigr/pgfe/problem.hpp
-  lib/dmitigr/pgfe/problem.hxx
-
   lib/dmitigr/pgfe/response.hpp
-
   lib/dmitigr/pgfe/row.hpp
-  lib/dmitigr/pgfe/row.hxx
-
   lib/dmitigr/pgfe/row_info.hpp
-  lib/dmitigr/pgfe/row_info.hxx
-
   lib/dmitigr/pgfe/server_message.hpp
-
   lib/dmitigr/pgfe/signal.hpp
-
-  lib/dmitigr/pgfe/sql.hxx
-
   lib/dmitigr/pgfe/sql_string.hpp
-  lib/dmitigr/pgfe/sql_string.hxx
-
   lib/dmitigr/pgfe/sql_vector.hpp
-  lib/dmitigr/pgfe/sql_vector.hxx
-
   lib/dmitigr/pgfe/std_system_error.hpp
-
+  lib/dmitigr/pgfe/util.hpp
   lib/dmitigr/pgfe/types_fwd.hpp
+  )
+
+set(dmitigr_pgfe_implementations
+  lib/dmitigr/pgfe/basics.cpp
+  lib/dmitigr/pgfe/completion.cpp
+  lib/dmitigr/pgfe/composite.cpp
+  lib/dmitigr/pgfe/compositional.cpp
+  lib/dmitigr/pgfe/connection.cpp
+  lib/dmitigr/pgfe/connection_options.cpp
+  lib/dmitigr/pgfe/data.cpp
+  lib/dmitigr/pgfe/errc.cpp
+  lib/dmitigr/pgfe/error.cpp
+  lib/dmitigr/pgfe/exceptions.cpp
+  lib/dmitigr/pgfe/misc.cpp
+  lib/dmitigr/pgfe/notice.cpp
+  lib/dmitigr/pgfe/notification.cpp
+  lib/dmitigr/pgfe/parameterizable.cpp
+  lib/dmitigr/pgfe/prepared_statement_impl.cpp
+  lib/dmitigr/pgfe/problem.cpp
+  lib/dmitigr/pgfe/row.cpp
+  lib/dmitigr/pgfe/row_info.cpp
+  lib/dmitigr/pgfe/sql_string.cpp
+  lib/dmitigr/pgfe/sql_vector.cpp
+  lib/dmitigr/pgfe/std_system_error.cpp
+  lib/dmitigr/pgfe/util.cpp
   )
 
 set(dmitigr_pgfe_cmake_sources
@@ -427,27 +401,14 @@ set(dmitigr_pgfe_cmake_unpreprocessed
   )
 
 set(dmitigr_pgfe_transunits
-  lib/dmitigr/pgfe/basics.cpp
-  lib/dmitigr/pgfe/composite.cpp
-  lib/dmitigr/pgfe/connection.cpp
-  lib/dmitigr/pgfe/connection_options.cpp
-  lib/dmitigr/pgfe/data.cpp
-  lib/dmitigr/pgfe/errc.cxx
-  lib/dmitigr/pgfe/misc.cpp
-  lib/dmitigr/pgfe/net.cxx
-  lib/dmitigr/pgfe/prepared_statement.cxx
-  lib/dmitigr/pgfe/problem.cpp
-  lib/dmitigr/pgfe/sql.cxx
-  lib/dmitigr/pgfe/sql_string.cpp
-  lib/dmitigr/pgfe/sql_string.cxx
-  lib/dmitigr/pgfe/sql_vector.cpp
-  lib/dmitigr/pgfe/std_system_error.cpp
+  lib/dmitigr/pgfe.cpp
   )
 
 set(dmitigr_pgfe_sources
   ${dmitigr_pgfe_root_headers}
-  #${dmitigr_pgfe_header_only_headers}
+  ${dmitigr_pgfe_header_only_headers}
   ${dmitigr_pgfe_headers}
+  ${dmitigr_pgfe_implementations}
   ${dmitigr_pgfe_cmake_sources}
   ${dmitigr_pgfe_cmake_unpreprocessed}
   ${dmitigr_pgfe_transunits}
@@ -458,6 +419,7 @@ if (WIN32)
 endif()
 
 set_source_files_properties(
+  ${dmitigr_pgfe_implementations}
   ${dmitigr_pgfe_cmake_sources}
   ${dmitigr_pgfe_cmake_unpreprocessed}
 
@@ -534,7 +496,7 @@ include_directories(${Pq_INCLUDE_DIRS})
 
 if(NOT DMITIGR_PGFE_HEADER_ONLY)
   target_link_libraries(${dmitigr_pgfe_target}
-    PRIVATE ${Suggested_Pq_LIBRARIES} ${dmitigr_common_library})
+    PUBLIC ${Suggested_Pq_LIBRARIES} ${dmitigr_common_library})
 
   if (UNIX)
     target_link_libraries(${dmitigr_pgfe_target} PRIVATE stdc++fs)

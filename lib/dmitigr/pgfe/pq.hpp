@@ -2,8 +2,8 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
-#ifndef DMITIGR_PGFE_PQ_HXX
-#define DMITIGR_PGFE_PQ_HXX
+#ifndef DMITIGR_PGFE_PQ_HPP
+#define DMITIGR_PGFE_PQ_HPP
 
 #include "dmitigr/pgfe/basics.hpp"
 
@@ -21,7 +21,7 @@ namespace std {
  *
  * @brief The default deleter for ::PGnotify.
  */
-template<> struct default_delete<::PGnotify> {
+template<> struct default_delete<::PGnotify> final {
   void operator()(::PGnotify* const ptr) const
   {
     ::PQfreemem(ptr);
@@ -33,7 +33,7 @@ template<> struct default_delete<::PGnotify> {
  *
  * @brief The default deleter for `::PGresult`.
  */
-template<> struct default_delete<::PGresult> {
+template<> struct default_delete<::PGresult> final {
   void operator()(::PGresult* const ptr) const
   {
     ::PQclear(ptr);
@@ -496,4 +496,4 @@ inline Result make_empty_single_tuple(const Data_format fmt)
 
 } // namespace dmitigr::pgfe::detail::pq
 
-#endif  // DMITIGR_PGFE_PQ_HXX
+#endif  // DMITIGR_PGFE_PQ_HPP

@@ -91,4 +91,8 @@ private:
 
 } // namespace dmitigr::pgfe
 
+#ifdef DMITIGR_PGFE_HEADER_ONLY
+#include "dmitigr/pgfe/parameterizable.cpp"
+#endif
+
 #endif  // DMITIGR_PGFE_PARAMETERIZABLE_HPP

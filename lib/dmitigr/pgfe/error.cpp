@@ -2,11 +2,9 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
-#ifndef DMITIGR_PGFE_ERROR_HXX
-#define DMITIGR_PGFE_ERROR_HXX
-
 #include "dmitigr/pgfe/error.hpp"
-#include "dmitigr/pgfe/problem.hxx"
+#include "dmitigr/pgfe/problem.hpp"
+#include "dmitigr/pgfe/implementation_header.hpp"
 
 namespace dmitigr::pgfe::detail {
 
@@ -30,4 +28,4 @@ using simple_Error = basic_Problem<iError>;
 
 } // namespace dmitigr::pgfe::detail
 
-#endif  // DMITIGR_PGFE_ERROR_HXX
+#include "dmitigr/pgfe/implementation_footer.hpp"

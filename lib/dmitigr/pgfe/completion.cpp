@@ -2,10 +2,8 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
-#ifndef DMITIGR_PGFE_COMPLETION_HXX
-#define DMITIGR_PGFE_COMPLETION_HXX
-
 #include "dmitigr/pgfe/completion.hpp"
+#include "dmitigr/pgfe/implementation_header.hpp"
 
 #include <dmitigr/common/debug.hpp>
 
@@ -23,7 +21,7 @@ inline bool iCompletion::is_invariant_ok()
 
 // -----------------------------------------------------------------------------
 
-class simple_Completion : public iCompletion {
+class simple_Completion final : public iCompletion {
 public:
   explicit simple_Completion(const std::string& tag)
   {
@@ -84,4 +82,4 @@ private:
 
 } // namespace dmitigr::pgfe::detail
 
-#endif  // DMITIGR_PGFE_COMPLETION_HXX
+#include "dmitigr/pgfe/implementation_footer.hpp"

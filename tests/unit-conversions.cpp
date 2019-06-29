@@ -4,6 +4,12 @@
 
 #include "unit.hpp"
 
+#ifndef DMITIGR_PGFE_HEADER_ONLY
+#include "dmitigr/pgfe/exceptions.cpp"
+#else
+#include "dmitigr/pgfe/exceptions.hpp"
+#endif
+
 #include "dmitigr/pgfe/conversions.hpp"
 
 #include <limits>

@@ -2,14 +2,14 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
-#ifndef DMITIGR_PGFE_PREPARED_STATEMENT_HXX
-#define DMITIGR_PGFE_PREPARED_STATEMENT_HXX
+#ifndef DMITIGR_PGFE_PREPARED_STATEMENT_IMPL_HPP
+#define DMITIGR_PGFE_PREPARED_STATEMENT_IMPL_HPP
 
-#include "dmitigr/pgfe/exceptions.hxx"
-#include "dmitigr/pgfe/parameterizable.hxx"
-#include "dmitigr/pgfe/pq.hxx"
-#include "dmitigr/pgfe/prepared_statement.hpp"
-#include "dmitigr/pgfe/row_info.hxx"
+#include "dmitigr/pgfe/exceptions.hpp"
+#include "dmitigr/pgfe/parameterizable.hpp"
+#include "dmitigr/pgfe/pq.hpp"
+#include "dmitigr/pgfe/prepared_statement_dfn.hpp"
+#include "dmitigr/pgfe/row_info.hpp"
 
 #include <dmitigr/common/memory.hpp>
 
@@ -37,7 +37,7 @@ inline bool iPrepared_statement::is_invariant_ok()
 
 class pq_Connection;
 
-class pq_Prepared_statement : public iPrepared_statement {
+class pq_Prepared_statement final : public iPrepared_statement {
 public:
   // Construct prepared statement when preparing.
   pq_Prepared_statement(std::string name, pq_Connection* connection, const Sql_string* preparsed);
@@ -257,7 +257,7 @@ private:
   using Data_deletion_required = memory::Conditional_delete<const Data>;
   using Data_ptr = std::unique_ptr<const Data, Data_deletion_required>;
 
-  struct Parameter {
+  struct Parameter final {
     Data_ptr data;
     std::string name;
   };
@@ -313,4 +313,4 @@ private:
 
 } // namespace dmitigr::pgfe::detail
 
-#endif  // DMITIGR_PGFE_PREPARED_STATEMENT_HXX
+#endif  // DMITIGR_PGFE_PREPARED_STATEMENT_IMPL_HPP

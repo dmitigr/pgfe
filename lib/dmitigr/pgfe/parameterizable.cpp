@@ -2,10 +2,8 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
-#ifndef DMITIGR_PGFE_PARAMETERIZABLE_HXX
-#define DMITIGR_PGFE_PARAMETERIZABLE_HXX
-
 #include "dmitigr/pgfe/parameterizable.hpp"
+#include "dmitigr/pgfe/implementation_header.hpp"
 
 #include <dmitigr/common/debug.hpp>
 
@@ -29,4 +27,4 @@ inline bool is_invariant_ok(const Parameterizable& o)
 
 } // namespace dmitigr::pgfe::detail
 
-#endif  // DMITIGR_PGFE_PARAMETERIZABLE_HXX
+#include "dmitigr/pgfe/implementation_footer.hpp"

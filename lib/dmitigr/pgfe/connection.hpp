@@ -6,7 +6,7 @@
 #define DMITIGR_PGFE_CONNECTION_HPP
 
 #include "dmitigr/pgfe/dll.hpp"
-#include "dmitigr/pgfe/prepared_statement.hpp"
+#include "dmitigr/pgfe/prepared_statement_dfn.hpp"
 #include "dmitigr/pgfe/types_fwd.hpp"
 
 #include <cstdint>
@@ -900,40 +900,11 @@ private:
   Connection() = default;
 };
 
-/**
- * @ingroup main
- *
- * @brief Sets the obligation of initialization the OpenSSL library when needed.
- *
- * @remarks This function must be called with the value of `false` if the OpenSSL
- * library is initialized yet before first connection to the PostgreSQL server.
- */
-DMITIGR_PGFE_API void set_openssl_library_initialization_enabled(bool value);
-
-/**
- * @ingroup main
- *
- * @return The value of the obligation of initialization the OpenSSL library when needed.
- */
-DMITIGR_PGFE_API bool is_openssl_library_initialization_enabled();
-
-/**
- * @ingroup main
- *
- * @brief Sets the obligation of initialization the Crypto library when needed.
- *
- * @remarks This function must be called with the value of `false` if the Crypto
- * library is initialized yet before first connection to the PostgreSQL server.
- */
-DMITIGR_PGFE_API void set_crypto_library_initialization_enabled(bool value);
-
-/**
- * @ingroup main
- *
- * @returns The value of the obligation of initialization the Crypto library when needed.
- */
-DMITIGR_PGFE_API bool is_crypto_library_initialization_enabled();
-
 } // namespace dmitigr::pgfe
+
+#ifdef DMITIGR_PGFE_HEADER_ONLY
+#include "dmitigr/pgfe/connection.cpp"
+#include "dmitigr/pgfe/prepared_statement_impl.cpp"
+#endif
 
 #endif  // DMITIGR_PGFE_CONNECTION_HPP

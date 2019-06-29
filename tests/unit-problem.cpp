@@ -4,8 +4,17 @@
 
 #include "unit.hpp"
 
-#include "dmitigr/pgfe/error.hxx"
-#include "dmitigr/pgfe/notice.hxx"
+#ifndef DMITIGR_PGFE_HEADER_ONLY
+#include "dmitigr/pgfe/problem.cpp"
+#include "dmitigr/pgfe/error.cpp"
+#include "dmitigr/pgfe/notice.cpp"
+#include "dmitigr/pgfe/util.cpp"
+#else
+#include "dmitigr/pgfe/problem.hpp"
+#include "dmitigr/pgfe/error.hpp"
+#include "dmitigr/pgfe/notice.hpp"
+#include "dmitigr/pgfe/util.hpp"
+#endif
 
 int main(int, char* argv[])
 {

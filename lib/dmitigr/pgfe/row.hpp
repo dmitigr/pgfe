@@ -55,4 +55,8 @@ private:
 
 } // namespace dmitigr::pgfe
 
+#ifdef DMITIGR_PGFE_HEADER_ONLY
+#include "dmitigr/pgfe/row.cpp"
+#endif
+
 #endif  // DMITIGR_PGFE_ROW_HPP

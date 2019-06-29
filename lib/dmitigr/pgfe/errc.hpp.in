@@ -6,7 +6,7 @@
 #define DMITIGR_PGFE_ERRC_HPP
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// This file was generated automatically. There is no sense to edit!
+// This file was generated automatically. Edit errc.hpp.in instead !!!!!!!!!!!!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 namespace dmitigr::pgfe {
@@ -987,5 +987,9 @@ enum class Server_errc {
 };
 
 } // namespace dmitigr::pgfe
+
+#ifdef DMITIGR_PGFE_HEADER_ONLY
+#include "dmitigr/pgfe/errc.cpp"
+#endif
 
 #endif  // DMITIGR_PGFE_ERRC_HPP

@@ -83,4 +83,8 @@ private:
 
 } // namespace dmitigr::pgfe
 
+#ifdef DMITIGR_PGFE_HEADER_ONLY
+#include "dmitigr/pgfe/compositional.cpp"
+#endif
+
 #endif  // DMITIGR_PGFE_COMPOSITIONAL_HPP

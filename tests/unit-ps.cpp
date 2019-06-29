@@ -6,7 +6,7 @@
 
 #include "dmitigr/pgfe/conversions.hpp"
 #include "dmitigr/pgfe/exceptions.hpp"
-#include "dmitigr/pgfe/prepared_statement.hpp"
+#include "dmitigr/pgfe/prepared_statement_dfn.hpp"
 #include "dmitigr/pgfe/row.hpp"
 #include "dmitigr/pgfe/row_info.hpp"
 #include "dmitigr/pgfe/sql_string.hpp"

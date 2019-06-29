@@ -165,4 +165,8 @@ DMITIGR_PGFE_API std::unique_ptr<Data> to_binary_data(const std::string& text_da
 
 } // namespace dmitigr::pgfe
 
+#ifdef DMITIGR_PGFE_HEADER_ONLY
+#include "dmitigr/pgfe/data.cpp"
+#endif
+
 #endif  // DMITIGR_PGFE_DATA_HPP

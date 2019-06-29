@@ -55,3 +55,10 @@ set(PGFE_PROBLEM_SEVERITY_WARNING 400)
 set(PGFE_PROBLEM_SEVERITY_ERROR   500)
 set(PGFE_PROBLEM_SEVERITY_FATAL   600)
 set(PGFE_PROBLEM_SEVERITY_PANIC   700)
+
+# ------------------------------------------------------------------------------
+# External_library
+# ------------------------------------------------------------------------------
+
+set(PGFE_EXTERNAL_LIBRARY_LIBSSL    2)
+set(PGFE_EXTERNAL_LIBRARY_LIBCRYPTO 4)
