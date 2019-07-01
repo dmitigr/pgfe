@@ -50,7 +50,7 @@ DMITIGR_PGFE_INLINE const Client_error_category& client_error_category() noexcep
   return result;
 }
 
-DMITIGR_PGFE_INLINE const Server_error_category& pgfe::server_error_category() noexcept
+DMITIGR_PGFE_INLINE const Server_error_category& server_error_category() noexcept
 {
   static const Server_error_category result;
   return result;

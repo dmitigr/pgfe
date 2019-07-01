@@ -355,6 +355,143 @@ private:
   Container_type& cont_;
 };
 
+// -------------------------------------
+
+/**
+ * @internal
+ *
+ * @brief Special overloads.
+ */
+namespace arrays {
+
+/**
+ * @internal
+ *
+ * Used by: fill_container()
+ */
+template<typename T, typename ... Types>
+const char* fill_container(T& /*result*/, const char* /*literal*/,
+  const char /*delimiter*/, Types&& ... /*args*/)
+{
+  throw iClient_exception(Client_errc::insufficient_array_dimensionality);
+}
+
+/**
+ * @internal
+ *
+ * Used by: to_array_literal()
+ */
+template<typename T>
+const char* quote_for_array_element(const T&)
+{
+  return "\"";
+}
+
+/**
+ * @internal
+ *
+ * Used by: to_array_literal()
+ */
+template<typename T,
+  template<class> class Optional,
+  template<class, class> class Container,
+  template<class> class Allocator>
+const char* quote_for_array_element(const Container<Optional<T>, Allocator<Optional<T>>>&)
+{
+  return "";
+}
+
+/**
+ * @internal
+ *
+ * Used by: to_array_literal()
+ */
+template<typename T, typename ... Types>
+std::string to_array_literal(const T& element,
+  const char /*delimiter*/, Types&& ... args)
+{
+  return Conversions<T>::to_string(element, std::forward<Types>(args)...);
+}
+
+/**
+ * @internal
+ *
+ * Used by: to_array_literal()
+ */
+template<class CharT, class Traits, class Allocator, typename ... Types>
+std::string to_array_literal(const std::basic_string<CharT, Traits, Allocator>& element,
+  const char /*delimiter*/, Types&& ... args)
+{
+  using String = std::basic_string<CharT, Traits, Allocator>;
+
+  std::string result{Conversions<String>::to_string(element, std::forward<Types>(args)...)};
+
+  // Escaping quotes.
+  typename String::size_type i = result.find("\"");
+  while (i != String::npos) {
+    result.replace(i, 1, "\\\"");
+    i = result.find("\"", i + 2);
+  }
+
+  return result;
+}
+
+/**
+ * @internal
+ *
+ * Used by: to_container_of_values()
+ */
+template<typename T>
+T to_container_of_values(T&& element)
+{
+  return std::move(element);
+}
+
+/**
+ * @internal
+ *
+ * Used by: to_container_of_optionals()
+ *
+ * @remarks Workaround for GCC.
+ */
+template<template<class> class Optional>
+Optional<std::string> to_container_of_optionals(std::string&& element)
+{
+  return Optional<std::string>{std::move(element)};
+}
+
+/**
+ * @internal
+ *
+ * @overload
+ *
+ * @remarks It does not works with GCC. (And it does not needs to MSVC.)
+ * Thus, this specialization is not required at all. But let it be just in case.
+ */
+template<template<class> class Optional, class CharT, class Traits, class Allocator>
+Optional<std::basic_string<CharT, Traits, Allocator>> to_container_of_optionals(std::basic_string<CharT, Traits, Allocator>&& element)
+{
+  using String = std::basic_string<CharT, Traits, Allocator>;
+  return Optional<String>{std::move(element)};
+}
+
+/**
+ * @internal
+ *
+ * @overload
+ *
+ * Used by: to_container_of_optionals()
+ */
+template<template<class> class Optional, typename T>
+Optional<T> to_container_of_optionals(T&& element)
+{
+  return Optional<T>{std::move(element)};
+}
+
+} // namespace arrays
+
+// -------------------------------------
+
 /**
  * @internal
  *
@@ -589,139 +726,6 @@ const char* fill_container(Container<Optional<T>, Allocator<Optional<T>>>& resul
     return parse_array_literal(literal, delimiter, handler, std::forward<Types>(args)...);
   }
 }
-
-/**
- * @internal
- *
- * @brief Special overloads.
- */
-namespace arrays {
-
-/**
- * @internal
- *
- * Used by: fill_container()
- */
-template<typename T, typename ... Types>
-const char* fill_container(T& /*result*/, const char* /*literal*/,
-  const char /*delimiter*/, Types&& ... /*args*/)
-{
-  throw iClient_exception(Client_errc::insufficient_array_dimensionality);
-}
-
-/**
- * @internal
- *
- * Used by: to_array_literal()
- */
-template<typename T>
-const char* quote_for_array_element(const T&)
-{
-  return "\"";
-}
-
-/**
- * @internal
- *
- * Used by: to_array_literal()
- */
-template<typename T,
-  template<class> class Optional,
-  template<class, class> class Container,
-  template<class> class Allocator>
-const char* quote_for_array_element(const Container<Optional<T>, Allocator<Optional<T>>>&)
-{
-  return "";
-}
-
-/**
- * @internal
- *
- * Used by: to_array_literal()
- */
-template<typename T, typename ... Types>
-std::string to_array_literal(const T& element,
-  const char /*delimiter*/, Types&& ... args)
-{
-  return Conversions<T>::to_string(element, std::forward<Types>(args)...);
-}
-
-/**
- * @internal
- *
- * Used by: to_array_literal()
- */
-template<class CharT, class Traits, class Allocator, typename ... Types>
-std::string to_array_literal(const std::basic_string<CharT, Traits, Allocator>& element,
-  const char /*delimiter*/, Types&& ... args)
-{
-  using String = std::basic_string<CharT, Traits, Allocator>;
-
-  std::string result{Conversions<String>::to_string(element, std::forward<Types>(args)...)};
-
-  // Escaping quotes.
-  typename String::size_type i = result.find("\"");
-  while (i != String::npos) {
-    result.replace(i, 1, "\\\"");
-    i = result.find("\"", i + 2);
-  }
-
-  return result;
-}
-
-/**
- * @internal
- *
- * Used by: to_container_of_values()
- */
-template<typename T>
-T to_container_of_values(T&& element)
-{
-  return std::move(element);
-}
-
-/**
- * @internal
- *
- * Used by: to_container_of_optionals()
- *
- * @remarks Workaround for GCC.
- */
-template<template<class> class Optional>
-Optional<std::string> to_container_of_optionals(std::string&& element)
-{
-  return Optional<std::string>{std::move(element)};
-}
-
-/**
- * @internal
- *
- * @overload
- *
- * @remarks It does not works with GCC. (And it does not needs to MSVC.)
- * Thus, this specialization is not required at all. But let it be just in case.
- */
-template<template<class> class Optional, class CharT, class Traits, class Allocator>
-Optional<std::basic_string<CharT, Traits, Allocator>> to_container_of_optionals(std::basic_string<CharT, Traits, Allocator>&& element)
-{
-  using String = std::basic_string<CharT, Traits, Allocator>;
-  return Optional<String>{std::move(element)};
-}
-
-/**
- * @internal
- *
- * @overload
- *
- * Used by: to_container_of_optionals()
- */
-template<template<class> class Optional, typename T>
-Optional<T> to_container_of_optionals(T&& element)
-{
-  return Optional<T>{std::move(element)};
-}
-
-} // namespace arrays
 
 template<typename T,
   template<class> class Optional,
