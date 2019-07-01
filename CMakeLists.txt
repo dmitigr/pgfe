@@ -544,7 +544,7 @@ else()
     EXPORT dmitigr_pgfe_interface_export
     INCLUDES DESTINATION ${DMITIGR_PGFE_INCLUDE_INSTALL_DIR})
 
-  install(FILES ${dmitigr_pgfe_transunits}
+  install(FILES ${dmitigr_pgfe_implementations}
     DESTINATION ${DMITIGR_PGFE_INCLUDE_INSTALL_DIR}/dmitigr/pgfe)
 endif()
 

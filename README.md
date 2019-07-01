@@ -1,9 +1,11 @@
 The C++ client library for PostgreSQL {#mainpage}
 =================================================
 
-The Dmitigr Pgfe ([PostgreSQL] Frontend) is a client API to [PostgreSQL] servers written in C++.
-The development is focused on easines and robustness of use rather than super-duper performance.
-**ATTENTION, this software is "beta" quality, and the API is a subject to change**.
+The Dmitigr Pgfe ([PostgreSQL] Frontend, hereinafter referred to as Pgfe) is a client API to
+[PostgreSQL] servers written in C++.
+The development is focused on easines and robustness of use. At the same time, everything possible
+is being done to ensure that the performance is at its best.
+**ATTENTION, this software is "beta" quality, and the API is a subject to change**!
 Any [feedback][mailbox] (*especially results of testing*) is highly appreciated! Together we can
 make Pgfe library *really* production-ready!
 
@@ -56,6 +58,12 @@ int main()
 Features
 ========
 
+The Pgfe library can be used as:
+
+  - a header-only library;
+  - a static library;
+  - shared library (default).
+
 Current API allows to work with:
 
   - database connections (in both blocking and non-blocking IO manner);
@@ -70,7 +78,7 @@ Features of the near future
 
 The urgent TODO-list includes support of:
 
-  - header-only mode;
+  - exception class for each [SQLSTATE] code;
   - [Large Objects][lob] via IO streams of the Standard C++ library;
   - the COPY command;
   - conversions for `dmitigr::pgfe::Composite` data type;
@@ -442,12 +450,12 @@ must be used to work with the same object from several threads.
 Documentation
 =============
 
-The Dmitigr Pgfe documentation is located at the official site [here][doc].
+The Pgfe documentation is located at the official site [here][doc].
 
 Download
 ========
 
-The Dmitigr Pgfe repository is located at Github [here][github].
+The Pgfe repository is located at Github [here][github].
 
 Installation and consuming
 ==========================
@@ -465,11 +473,12 @@ Build time settings
 
 Settings that may be specified at build time by using [CMake] variables are:
   1. the type of the build (only meaningful to single-configuration generators);
-  2. the flag to build the shared library;
-  3. the flag to build the tests (default is on);
-  4. dependencies;
-  5. installation directories;
-  6. default values of the connection options.
+  2. the flag to build the shared library (default is on);
+  3. the flag to only install the header-only library (default is off);
+  4. the flag to build the tests (default is on);
+  5. dependencies;
+  6. installation directories;
+  7. default values of the connection options.
 
 Details (may need to use horizontal scrolling for full view):
 
@@ -479,6 +488,8 @@ Details (may need to use horizontal scrolling for full view):
 |CMAKE_BUILD_TYPE|Debug \| Release \| RelWithDebInfo \| MinSizeRel|Debug|Debug|
 |**The flag to build the shared library**||||
 |BUILD_SHARED_LIBS|On \| Off|On|On|
+|**The flag to only install the header-only library**||||
+|DMITIGR_PGFE_HEADER_ONLY|On \| Off|Off|Off|
 |**The flag to build the tests**||||
 |DMITIGR_PGFE_BUILD_TESTS|On \| Off|On|On|
 |**Dependencies**||||
@@ -598,6 +609,25 @@ target_link_libraries(foo dmitigr_pgfe)
 
 The above code snippet is minimal CMakeLists.txt that enough to build the
 application `foo` that depends on the Pgfe library.
+
+To consume the header-only version of the Pgfe library just specify it by using
+`CONFIGS` option of [find_package][cmake_find_package]:
+
+```cmake
+find_package(dmitigr_ttpl REQUIRED CONFIGS dmitigr_ttpl_interface-config.cmake)
+# ...
+target_link_libraries(foo dmitigr_ttpl_interface)
+```
+
+It's possible to use header-only version of the Pgfe library without [CMake]. Just include
+the path where `dmitigr/pgfe` and `dmitigr/pgfe.hpp` are located to the include directories
+path and define `DMITIGR_PGFE_HEADER_ONLY` macro just before including of `dmitigr/pgfe.hpp`:
+
+```cpp
+#define DMITIGR_PGFE_HEADER_ONLY
+#include <dmitigr/pgfe.hpp>
+// ...
+```
 
 License
 =======
