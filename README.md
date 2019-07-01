@@ -669,6 +669,8 @@ Copyright (C) Dmitry Igrishin
 [paypal1]: https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=38TY2K8KYKYJC&lc=US&item_name=Pgfe%20library&item_number=1&currency_code=USD&bn=PP%2dDonationsBF%3abtn_donateCC_LG%2egif%3aNonHosted
 [paypal2]: https://paypal.me/dmitigr
 
+[cmake_find_package]: https://cmake.org/cmake/help/latest/command/find_package.html
+
 [PostgreSQL]: https://www.postgresql.org/
 [dollar-quoting]: https://www.postgresql.org/docs/current/static/sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING
 [datatype-datetime]: https://www.postgresql.org/docs/current/datatype-datetime.html
