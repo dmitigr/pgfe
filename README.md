@@ -78,7 +78,7 @@ Features of the near future
 
 The urgent TODO-list includes support of:
 
-  - exception class for each [SQLSTATE] code;
+  - exception class for each [SQLSTATE][errcodes] code;
   - [Large Objects][lob] via IO streams of the Standard C++ library;
   - the COPY command;
   - conversions for `dmitigr::pgfe::Composite` data type;
