@@ -62,7 +62,7 @@ The Pgfe library can be used as:
 
   - a header-only library;
   - a static library;
-  - shared library (default).
+  - a shared library (default).
 
 Current API allows to work with:
 
@@ -619,9 +619,10 @@ find_package(dmitigr_ttpl REQUIRED CONFIGS dmitigr_ttpl_interface-config.cmake)
 target_link_libraries(foo dmitigr_ttpl_interface)
 ```
 
-It's possible to use header-only version of the Pgfe library without [CMake]. Just include
-the path where `dmitigr/pgfe` and `dmitigr/pgfe.hpp` are located to the include directories
-path and define `DMITIGR_PGFE_HEADER_ONLY` macro just before including of `dmitigr/pgfe.hpp`:
+It's possible to use header-only version of the Pgfe library without [CMake] (still need
+to link with [libpq] manually). Just include the path where `dmitigr/pgfe` and
+`dmitigr/pgfe.hpp` are located to the include directories path and define
+the `DMITIGR_PGFE_HEADER_ONLY` macro just before including of `dmitigr/pgfe.hpp`:
 
 ```cpp
 #define DMITIGR_PGFE_HEADER_ONLY
