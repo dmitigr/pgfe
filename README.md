@@ -1,3 +1,6 @@
+THIS PROJECT IS A PART OF [CEFEIKA][cefeika] PROJECT NOW!!!
+===========================================================
+
 The C++ client library for PostgreSQL {#mainpage}
 =================================================
 
@@ -700,3 +703,4 @@ Copyright (C) Dmitry Igrishin
 [std_runtime_error]: https://en.cppreference.com/w/cpp/error/runtime_error
 [std_string]: https://en.cppreference.com/w/cpp/string/basic_string
 [std_vector]: https://en.cppreference.com/w/cpp/container/vector
+[cefeika]: https://github.com/dmitigr/cefeika.git
