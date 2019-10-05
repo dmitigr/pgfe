@@ -1,38 +1,34 @@
 # -*- cmake -*-
 # Copyright (C) Dmitry Igrishin
-# For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
+# For conditions of distribution and use, see file LICENSE.txt
 
-project(dmitigr_pgfe)
+project(dmitigr_cefeika)
 
-cmake_minimum_required(VERSION 3.13)
-cmake_policy(VERSION 3.13)
+cmake_minimum_required(VERSION 3.10)
+cmake_policy(VERSION 3.10)
 
 if (NOT (UNIX OR WIN32))
   message(FATAL_ERROR "unsupported target platform")
 endif()
 
-list(APPEND CMAKE_MODULE_PATH ${dmitigr_pgfe_SOURCE_DIR}/cmake)
+list(APPEND CMAKE_MODULE_PATH ${dmitigr_cefeika_SOURCE_DIR}/cmake)
 include(dmitigr)
-
-set(dmitigr_pgfe_version_part1 1)
-set(dmitigr_pgfe_version_part2 1)
-add_definitions(-DDMITIGR_PGFE_VERSION_PART1=${dmitigr_pgfe_version_part1})
-add_definitions(-DDMITIGR_PGFE_VERSION_PART2=${dmitigr_pgfe_version_part2})
+include(dmitigr_cefeika)
 
 # ------------------------------------------------------------------------------
 # Build options
 # ------------------------------------------------------------------------------
 
-option(BUILD_SHARED_LIBS "Build shared library?" ON)
-option(DMITIGR_PGFE_HEADER_ONLY "Header-only library?" OFF)
-option(DMITIGR_PGFE_BUILD_TESTS "Build tests?" ON)
+option(BUILD_SHARED_LIBS "Build shared libraries?" ON)
+option(DMITIGR_CEFEIKA_HEADER_ONLY "Header-only?" OFF)
+option(DMITIGR_CEFEIKA_BUILD_TESTS "Build tests?" OFF)
+option(DMITIGR_LIBRARIAN_DEBUG "Print librarian.cmake debug output?" OFF)
 
-if(NOT DMITIGR_PGFE_HEADER_ONLY)
+if(NOT DMITIGR_CEFEIKA_HEADER_ONLY)
   if(BUILD_SHARED_LIBS)
-    message("Building of shared library is enabled.")
-    add_definitions(-DDMITIGR_PGFE_DLL_BUILDING)
+    message("Building of shared libraries is enabled.")
   else()
-    message("Building of static library is enabled.")
+    message("Building of static libraries is enabled.")
   endif()
 
   if(NOT DEFINED CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE)
@@ -41,12 +37,7 @@ if(NOT DMITIGR_PGFE_HEADER_ONLY)
   endif()
   message("Build type is ${CMAKE_BUILD_TYPE}")
 else()
-  message("Header-only mode is enabled")
-endif()
-
-if(DMITIGR_PGFE_BUILD_TESTS)
-  enable_testing()
-  message("Building of tests is enabled")
+  message("Header-only libraries mode is enabled.")
 endif()
 
 # ------------------------------------------------------------------------------
@@ -54,231 +45,31 @@ endif()
 # ------------------------------------------------------------------------------
 
 if(UNIX)
-  set(DMITIGR_PGFE_CMAKE_INSTALL_DIR "share/dmitigr_pgfe/cmake" CACHE
+  set(DMITIGR_CEFEIKA_SHARE_INSTALL_DIR "share/dmitigr_cefeika" CACHE
+    STRING "Name of the installation directory for the shared stuff relative to ${CMAKE_INSTALL_PREFIX}")
+  set(DMITIGR_CEFEIKA_CMAKE_INSTALL_DIR "${DMITIGR_CEFEIKA_SHARE_INSTALL_DIR}/cmake" CACHE
     STRING "Name of the installation directory for the CMake stuff relative to ${CMAKE_INSTALL_PREFIX}")
-  set(DMITIGR_PGFE_DOC_INSTALL_DIR "share/dmitigr_pgfe/doc" CACHE
+  set(DMITIGR_CEFEIKA_DOC_INSTALL_DIR "${DMITIGR_CEFEIKA_SHARE_INSTALL_DIR}/doc" CACHE
     STRING "Name of the installation directory for the documentation relative to ${CMAKE_INSTALL_PREFIX}")
-  set(DMITIGR_PGFE_LIB_INSTALL_DIR "lib" CACHE
+  set(DMITIGR_CEFEIKA_LIB_INSTALL_DIR "lib" CACHE
     STRING "Name of the installation directory for the libraries relative to ${CMAKE_INSTALL_PREFIX}")
-  set(DMITIGR_PGFE_INCLUDE_INSTALL_DIR "include" CACHE
+  set(DMITIGR_CEFEIKA_INCLUDE_INSTALL_DIR "include" CACHE
     STRING "Name of the installation directory for the includes relative to ${CMAKE_INSTALL_PREFIX}")
 elseif(WIN32)
   # On Windows, CMAKE_INSTALL_PREFIX is $ENV{ProgramFiles}\\${CMAKE_PROJECT_NAME} by default. In turn:
   #   - on AMD64: ProgramFiles=%ProgramFiles%
   #   - on   x86: ProgramFiles=%ProgramFiles(x86)%
   # See: https://msdn.microsoft.com/en-us/library/aa384274.aspx
-  set(DMITIGR_PGFE_CMAKE_INSTALL_DIR "cmake" CACHE
-    STRING "Name of share directory relative to ${CMAKE_INSTALL_PREFIX}")
-  set(DMITIGR_PGFE_DOC_INSTALL_DIR "doc" CACHE
-    STRING "Name of the documentation directory relative to ${CMAKE_INSTALL_PREFIX}")
-  set(DMITIGR_PGFE_LIB_INSTALL_DIR "lib" CACHE
-    STRING "Name of the library directory relative to ${CMAKE_INSTALL_PREFIX}")
-  set(DMITIGR_PGFE_INCLUDE_INSTALL_DIR "include" CACHE
-    STRING "Name of includes directory relative to ${CMAKE_INSTALL_PREFIX}")
-endif()
-
-# ------------------------------------------------------------------------------
-# Default connection options
-# ------------------------------------------------------------------------------
-
-if (UNIX)
-  if(NOT DEFINED DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE)
-    set(DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE "uds" CACHE
-      STRING "The connection communication mode: \"uds\" or \"net\"")
-  endif()
-  if(NOT "${DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE}" STREQUAL "uds" AND
-      NOT "${DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE}" STREQUAL "net")
-    message(FATAL_ERROR "Invalid value of DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE")
-  endif()
-
-  if(NOT DEFINED DMITIGR_PGFE_CONNECTION_UDS_DIRECTORY)
-    set(DMITIGR_PGFE_CONNECTION_UDS_DIRECTORY "/tmp" CACHE
-      PATH "Absolute name of the directory where the Unix-domain socket file is located")
-  endif()
-  if ("${DMITIGR_PGFE_CONNECTION_UDS_DIRECTORY}" STREQUAL "")
-    message(FATAL_ERROR "Invalid value of DMITIGR_PGFE_CONNECTION_UDS_DIRECTORY")
-  endif()
-
-  if(NOT DEFINED DMITIGR_PGFE_CONNECTION_UDS_REQUIRE_SERVER_PROCESS_USERNAME)
-    set(DMITIGR_PGFE_CONNECTION_UDS_REQUIRE_SERVER_PROCESS_USERNAME "" CACHE
-      STRING "The authentication requirement to the effective UID of the server process")
-  endif()
-  if (NOT "${DMITIGR_PGFE_CONNECTION_UDS_REQUIRE_SERVER_PROCESS_USERNAME}" STREQUAL "")
-    set(DMITIGR_PGFE_CONNECTION_UDS_REQUIRE_SERVER_PROCESS_USERNAME_CPP
-      "\"${DMITIGR_PGFE_CONNECTION_UDS_REQUIRE_SERVER_PROCESS_USERNAME}\"")
-  endif()
-else()
-  # The PostgreSQL server doesn't support Unix Domain Sockets on Windows.
-  set(DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE "net")
-endif()
-
-if(NOT DEFINED DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_ENABLED)
-  set(DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_ENABLED OFF CACHE
-    BOOL "Keepalives mode")
-endif()
-if(${DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_ENABLED})
-  set(DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_ENABLED_CPP "true")
-endif()
-
-if(NOT DEFINED DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_IDLE)
-  set(DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_IDLE "" CACHE
-    STRING "Integer (in seconds). See TCP_KEEPIDLE (or its equivalent)")
-endif()
-if (NOT "${DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_IDLE}" STREQUAL "")
-  if(NOT "${DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_IDLE}" MATCHES ^[0-9]+$)
-    message(FATAL_ERROR "Invalid value of DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_IDLE")
-  endif()
-endif()
-
-if(NOT DEFINED DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_INTERVAL)
-  set(DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_INTERVAL "" CACHE
-    STRING "Integer (in seconds). See TCP_KEEPINTVL (or its equivalent)")
-endif()
-if (NOT "${DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_INTERVAL}" STREQUAL "")
-  if(NOT "${DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_INTERVAL}" MATCHES ^[0-9]+$)
-    message(FATAL_ERROR "Invalid value of DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_INTERVAL")
-  endif()
-endif()
-
-if(NOT DEFINED DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_COUNT)
-  set(DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_COUNT "" CACHE
-    STRING "Integer. See TCP_KEEPCNT (or its equivalent)")
-endif()
-if (NOT "${DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_COUNT}" STREQUAL "")
-  if(NOT "${DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_COUNT}" MATCHES ^[0-9]+$)
-    message(FATAL_ERROR "Invalid value of DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_COUNT")
-  endif()
-endif()
-
-if(NOT DEFINED DMITIGR_PGFE_CONNECTION_NET_ADDRESS)
-  set(DMITIGR_PGFE_CONNECTION_NET_ADDRESS "127.0.0.1" CACHE
-    STRING "Numeric IP address of the host to connect to")
-endif()
-if (NOT "${DMITIGR_PGFE_CONNECTION_NET_ADDRESS}" STREQUAL "")
-  if (NOT "${DMITIGR_PGFE_CONNECTION_NET_ADDRESS}" MATCHES ^[a-zA-Z0-9:]+[a-zA-Z0-9.:]+[a-zA-Z0-9]+$)
-    message(FATAL_ERROR "Invalid value of DMITIGR_PGFE_CONNECTION_NET_ADDRESS")
-  else()
-    set(DMITIGR_PGFE_CONNECTION_NET_ADDRESS_CPP "\"${DMITIGR_PGFE_CONNECTION_NET_ADDRESS}\"")
-  endif()
-endif()
-
-if(NOT DEFINED DMITIGR_PGFE_CONNECTION_NET_HOSTNAME)
-  set(DMITIGR_PGFE_CONNECTION_NET_HOSTNAME "localhost" CACHE
-    STRING "Name of the host to connect to")
-endif()
-if(NOT "${DMITIGR_PGFE_CONNECTION_NET_HOSTNAME}" STREQUAL "")
-  if (NOT "${DMITIGR_PGFE_CONNECTION_NET_HOSTNAME}" MATCHES ^[a-zA-Z0-9._-]+$)
-    message(FATAL_ERROR "Invalid value of DMITIGR_PGFE_CONNECTION_NET_HOSTNAME")
-  else()
-    set(DMITIGR_PGFE_CONNECTION_NET_HOSTNAME_CPP "\"${DMITIGR_PGFE_CONNECTION_NET_HOSTNAME}\"")
-  endif()
-endif()
-
-if ("${DMITIGR_PGFE_CONNECTION_NET_HOSTNAME}" STREQUAL "" AND "${DMITIGR_PGFE_CONNECTION_NET_ADDRESS}" STREQUAL "")
-  message(FATAL_ERROR "Neither DMITIGR_PGFE_CONNECTION_NET_HOSTNAME nor DMITIGR_PGFE_CONNECTION_NET_ADDRESS specified")
-endif()
-
-if(NOT DEFINED DMITIGR_PGFE_CONNECTION_PORT)
-  set(DMITIGR_PGFE_CONNECTION_PORT "5432" CACHE
-    STRING "Server port number")
-endif()
-if(NOT "${DMITIGR_PGFE_CONNECTION_PORT}" MATCHES ^[0-9]+$)
-  message(FATAL_ERROR "Invalid value of DMITIGR_PGFE_CONNECTION_PORT")
-endif()
-
-if(NOT DEFINED DMITIGR_PGFE_CONNECTION_USERNAME)
-  set(DMITIGR_PGFE_CONNECTION_USERNAME "postgres" CACHE
-    STRING "Name of the role registered on the server")
-endif()
-if(NOT "${DMITIGR_PGFE_CONNECTION_USERNAME}" STREQUAL "")
-  if(NOT "${DMITIGR_PGFE_CONNECTION_USERNAME}" MATCHES ^[a-zA-Z_]+[a-zA-Z0-9$_]*$)
-    message(WARNING "Probably problematic value of DMITIGR_PGFE_CONNECTION_USERNAME")
-  endif()
-  set(DMITIGR_PGFE_CONNECTION_USERNAME_CPP "\"${DMITIGR_PGFE_CONNECTION_USERNAME}\"")
-endif()
-
-if(NOT DEFINED DMITIGR_PGFE_CONNECTION_DATABASE)
-  set(DMITIGR_PGFE_CONNECTION_DATABASE "postgres" CACHE
-    STRING "Name of the database on the server to connect to")
-endif()
-if(NOT "${DMITIGR_PGFE_CONNECTION_DATABASE}" STREQUAL "")
-  if(NOT "${DMITIGR_PGFE_CONNECTION_DATABASE}" MATCHES ^[a-zA-Z_]+[a-zA-Z0-9$_]*$)
-    message(WARNING "Probably problematic value of DMITIGR_PGFE_CONNECTION_DATABASE")
-  endif()
-  set(DMITIGR_PGFE_CONNECTION_DATABASE_CPP "\"${DMITIGR_PGFE_CONNECTION_DATABASE}\"")
-endif()
-
-if(NOT DEFINED DMITIGR_PGFE_CONNECTION_PASSWORD)
-  set(DMITIGR_PGFE_CONNECTION_PASSWORD "" CACHE
-    STRING "The password for Password/LDAP authentication methods")
-endif()
-if (NOT "${DMITIGR_PGFE_CONNECTION_PASSWORD}" STREQUAL "")
-  set(DMITIGR_PGFE_CONNECTION_PASSWORD_CPP "\"${DMITIGR_PGFE_CONNECTION_PASSWORD}\"")
-endif()
-
-if(NOT DEFINED DMITIGR_PGFE_CONNECTION_KERBEROS_SERVICE_NAME)
-  set(DMITIGR_PGFE_CONNECTION_KERBEROS_SERVICE_NAME "" CACHE
-    STRING "Kerberos service name")
-endif()
-if (NOT "${DMITIGR_PGFE_CONNECTION_KERBEROS_SERVICE_NAME}" STREQUAL "")
-  set(DMITIGR_PGFE_CONNECTION_KERBEROS_SERVICE_NAME_CPP "\"${DMITIGR_PGFE_CONNECTION_KERBEROS_SERVICE_NAME}\"")
-endif()
-
-if(NOT DEFINED DMITIGR_PGFE_CONNECTION_SSL_ENABLED)
-  set(DMITIGR_PGFE_CONNECTION_SSL_ENABLED OFF CACHE
-    BOOL "The SSL mode")
-endif()
-if(${DMITIGR_PGFE_CONNECTION_SSL_ENABLED})
-  set(DMITIGR_PGFE_CONNECTION_SSL_ENABLED_CPP "true")
-endif()
-
-if(NOT DEFINED DMITIGR_PGFE_CONNECTION_SSL_SERVER_HOSTNAME_VERIFICATION_ENABLED)
-  set(DMITIGR_PGFE_CONNECTION_SSL_SERVER_HOSTNAME_VERIFICATION_ENABLED OFF CACHE
-    BOOL "The SSL server host name verification enabled")
-endif()
-if(${DMITIGR_PGFE_CONNECTION_SSL_SERVER_HOSTNAME_VERIFICATION_ENABLED})
-  set(DMITIGR_PGFE_CONNECTION_SSL_SERVER_HOSTNAME_VERIFICATION_ENABLED_CPP "true")
-endif()
-
-if(NOT DEFINED DMITIGR_PGFE_CONNECTION_SSL_COMPRESSION_ENABLED)
-  set(DMITIGR_PGFE_CONNECTION_SSL_COMPRESSION_ENABLED OFF CACHE
-    BOOL "The SSL compression enabled")
-endif()
-if(${DMITIGR_PGFE_CONNECTION_SSL_COMPRESSION_ENABLED})
-  set(DMITIGR_PGFE_CONNECTION_SSL_COMPRESSION_ENABLED_CPP "true")
-endif()
-
-if(NOT DEFINED DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_FILE)
-  set(DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_FILE "" CACHE
-    FILEPATH "The SSL certificate file")
-endif()
-if (NOT "${DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_FILE}" STREQUAL "")
-  set(DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_FILE_CPP "\"${DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_FILE}\"")
-endif()
-
-if(NOT DEFINED DMITIGR_PGFE_CONNECTION_SSL_PRIVATE_KEY_FILE)
-  set(DMITIGR_PGFE_CONNECTION_SSL_PRIVATE_KEY_FILE "" CACHE
-    FILEPATH "The SSL private key file")
-endif()
-if (NOT "${DMITIGR_PGFE_CONNECTION_SSL_PRIVATE_KEY_FILE}" STREQUAL "")
-  set(DMITIGR_PGFE_CONNECTION_SSL_PRIVATE_KEY_FILE_CPP "\"${DMITIGR_PGFE_CONNECTION_SSL_PRIVATE_KEY_FILE}\"")
-endif()
-
-if(NOT DEFINED DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_AUTHORITY_FILE)
-  set(DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_AUTHORITY_FILE "" CACHE
-    FILEPATH "The SSL certificate authority (CA) file")
-endif()
-if (NOT "${DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_AUTHORITY_FILE}" STREQUAL "")
-  set(DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_AUTHORITY_FILE_CPP "\"${DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_AUTHORITY_FILE}\"")
-endif()
-
-if(NOT DEFINED DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_REVOCATION_LIST_FILE)
-  set(DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_REVOCATION_LIST_FILE "" CACHE
-    FILEPATH "The SSL certificate revocation list (CRL) file")
-endif()
-if (NOT "${DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_REVOCATION_LIST_FILE}" STREQUAL "")
-  set(DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_REVOCATION_LIST_FILE_CPP
-    "\"${DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_REVOCATION_LIST_FILE}\"")
+  set(DMITIGR_CEFEIKA_SHARE_INSTALL_DIR "." CACHE
+    STRING "Name of the installation directory for the shared stuff relative to ${CMAKE_INSTALL_PREFIX}")
+  set(DMITIGR_CEFEIKA_CMAKE_INSTALL_DIR "cmake" CACHE
+    STRING "Name of the installation directory for the CMake stuff relative to ${CMAKE_INSTALL_PREFIX}")
+  set(DMITIGR_CEFEIKA_DOC_INSTALL_DIR "doc" CACHE
+    STRING "Name of the installation directory for the documentation relative to ${CMAKE_INSTALL_PREFIX}")
+  set(DMITIGR_CEFEIKA_LIB_INSTALL_DIR "lib" CACHE
+    STRING "Name of the installation directory for the libraries relative to ${CMAKE_INSTALL_PREFIX}")
+  set(DMITIGR_CEFEIKA_INCLUDE_INSTALL_DIR "include" CACHE
+    STRING "Name of the installation directory for the includes relative to ${CMAKE_INSTALL_PREFIX}")
 endif()
 
 # ------------------------------------------------------------------------------
@@ -289,145 +80,15 @@ enable_language(CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CXX_STANDARD_REQUIRED ON)
 
+# ------------------------------------------------------------------------------
+# Include directories
+# ------------------------------------------------------------------------------
+
 include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/lib)
 include_directories(BEFORE ${CMAKE_CURRENT_BINARY_DIR}/lib)
 
 # ------------------------------------------------------------------------------
-# Preprocessing
-# ------------------------------------------------------------------------------
-
-# Generated headers (.hpp) should go to the CMAKE_CURRENT_SOURCE_DIR, but
-# generated implementations (.cxx) should go to the CMAKE_CURRENT_BINARY_DIR.
-
-include("lib/dmitigr/pgfe/basics.cmake")
-configure_file(lib/dmitigr/pgfe/basics.hpp.in ${CMAKE_CURRENT_SOURCE_DIR}/lib/dmitigr/pgfe/basics.hpp @ONLY
-  NEWLINE_STYLE UNIX)
-
-include("lib/dmitigr/pgfe/errc.cmake")
-configure_file(lib/dmitigr/pgfe/errc.hpp.in ${CMAKE_CURRENT_SOURCE_DIR}/lib/dmitigr/pgfe/errc.hpp @ONLY
-  NEWLINE_STYLE UNIX)
-
-configure_file(lib/dmitigr/pgfe/connection_options.cxx.in ${CMAKE_CURRENT_BINARY_DIR}/lib/dmitigr/pgfe/connection_options.cxx @ONLY
-  NEWLINE_STYLE UNIX)
-
-# ------------------------------------------------------------------------------
-# Sources
-# ------------------------------------------------------------------------------
-
-set(dmitigr_pgfe_root_headers
-  lib/dmitigr/pgfe.hpp
-  )
-
-set(dmitigr_pgfe_preprocessed_headers
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/dmitigr/pgfe/basics.hpp
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib/dmitigr/pgfe/errc.hpp
-  ${CMAKE_CURRENT_BINARY_DIR}/lib/dmitigr/pgfe/connection_options.cxx
-  )
-
-set(dmitigr_pgfe_header_only_headers
-  lib/dmitigr/pgfe/implementation_footer.hpp
-  lib/dmitigr/pgfe/implementation_header.hpp
-  )
-
-set(dmitigr_pgfe_headers
-  lib/dmitigr/pgfe/array_conversions.hpp
-  lib/dmitigr/pgfe/basic_conversions.hpp
-  lib/dmitigr/pgfe/completion.hpp
-  lib/dmitigr/pgfe/compositional.hpp
-  lib/dmitigr/pgfe/composite.hpp
-  lib/dmitigr/pgfe/connection.hpp
-  lib/dmitigr/pgfe/connection_options.hpp
-  lib/dmitigr/pgfe/conversions_api.hpp
-  lib/dmitigr/pgfe/conversions.hpp
-  lib/dmitigr/pgfe/data.hpp
-  lib/dmitigr/pgfe/dll.hpp
-  lib/dmitigr/pgfe/error.hpp
-  lib/dmitigr/pgfe/exceptions.hpp
-  lib/dmitigr/pgfe/message.hpp
-  lib/dmitigr/pgfe/misc.hpp
-  lib/dmitigr/pgfe/notice.hpp
-  lib/dmitigr/pgfe/notification.hpp
-  lib/dmitigr/pgfe/parameterizable.hpp
-  lib/dmitigr/pgfe/pq.hpp
-  lib/dmitigr/pgfe/prepared_statement_dfn.hpp
-  lib/dmitigr/pgfe/prepared_statement_impl.hpp
-  lib/dmitigr/pgfe/problem.hpp
-  lib/dmitigr/pgfe/response.hpp
-  lib/dmitigr/pgfe/row.hpp
-  lib/dmitigr/pgfe/row_info.hpp
-  lib/dmitigr/pgfe/server_message.hpp
-  lib/dmitigr/pgfe/signal.hpp
-  lib/dmitigr/pgfe/sql_string.hpp
-  lib/dmitigr/pgfe/sql_vector.hpp
-  lib/dmitigr/pgfe/std_system_error.hpp
-  lib/dmitigr/pgfe/util.hpp
-  lib/dmitigr/pgfe/types_fwd.hpp
-  )
-
-set(dmitigr_pgfe_implementations
-  lib/dmitigr/pgfe/basics.cpp
-  lib/dmitigr/pgfe/completion.cpp
-  lib/dmitigr/pgfe/composite.cpp
-  lib/dmitigr/pgfe/compositional.cpp
-  lib/dmitigr/pgfe/connection.cpp
-  lib/dmitigr/pgfe/connection_options.cpp
-  lib/dmitigr/pgfe/data.cpp
-  lib/dmitigr/pgfe/errc.cpp
-  lib/dmitigr/pgfe/error.cpp
-  lib/dmitigr/pgfe/exceptions.cpp
-  lib/dmitigr/pgfe/misc.cpp
-  lib/dmitigr/pgfe/notice.cpp
-  lib/dmitigr/pgfe/notification.cpp
-  lib/dmitigr/pgfe/parameterizable.cpp
-  lib/dmitigr/pgfe/prepared_statement_impl.cpp
-  lib/dmitigr/pgfe/problem.cpp
-  lib/dmitigr/pgfe/row.cpp
-  lib/dmitigr/pgfe/row_info.cpp
-  lib/dmitigr/pgfe/sql_string.cpp
-  lib/dmitigr/pgfe/sql_vector.cpp
-  lib/dmitigr/pgfe/std_system_error.cpp
-  lib/dmitigr/pgfe/util.cpp
-  )
-
-set(dmitigr_pgfe_cmake_sources
-  lib/dmitigr/pgfe/basics.cmake
-  lib/dmitigr/pgfe/errc.cmake
-  )
-
-set(dmitigr_pgfe_cmake_unpreprocessed
-  lib/dmitigr/pgfe/basics.hpp.in
-  lib/dmitigr/pgfe/connection_options.cxx.in
-  lib/dmitigr/pgfe/errc.hpp.in
-  )
-
-set(dmitigr_pgfe_transunits
-  lib/dmitigr/pgfe.cpp
-  )
-
-set(dmitigr_pgfe_sources
-  ${dmitigr_pgfe_root_headers}
-  ${dmitigr_pgfe_header_only_headers}
-  ${dmitigr_pgfe_headers}
-  ${dmitigr_pgfe_implementations}
-  ${dmitigr_pgfe_cmake_sources}
-  ${dmitigr_pgfe_cmake_unpreprocessed}
-  ${dmitigr_pgfe_transunits}
-  )
-
-if (WIN32)
-  list(APPEND dmitigr_pgfe_sources lib/dmitigr/pgfe/version.rc)
-endif()
-
-set_source_files_properties(
-  ${dmitigr_pgfe_implementations}
-  ${dmitigr_pgfe_cmake_sources}
-  ${dmitigr_pgfe_cmake_unpreprocessed}
-
-  PROPERTIES
-  HEADER_FILE_ONLY ON)
-
-# ------------------------------------------------------------------------------
-# Targets
+# Output settings
 # ------------------------------------------------------------------------------
 
 # Note: Multi-configuration generators (VS, Xcode) appends a per-configuration
@@ -435,147 +96,238 @@ set_source_files_properties(
 # is used.
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 
-if(NOT DMITIGR_PGFE_HEADER_ONLY)
-  if(BUILD_SHARED_LIBS)
-    set(dmitigr_pgfe_target "dmitigr_pgfe")
-  else()
-    set(dmitigr_pgfe_target "dmitigr_pgfe_static")
-  endif()
-
-  add_library(${dmitigr_pgfe_target} ${dmitigr_pgfe_sources})
-
-  if(BUILD_SHARED_LIBS)
-    target_compile_definitions(dmitigr_pgfe PUBLIC -DDMITIGR_PGFE_DLL)
-  endif()
-
-  set_target_properties(${dmitigr_pgfe_target}
-    PROPERTIES
-    LINKER_LANGUAGE "CXX"
-    POSITION_INDEPENDENT_CODE True
-    VERSION ${dmitigr_pgfe_version_part1}.${dmitigr_pgfe_version_part2}
-    DEBUG_POSTFIX "d")
-
-  dmitigr_target_compile_options(${dmitigr_pgfe_target})
-else() # for header-only
-  set(dmitigr_pgfe_target "dmitigr_pgfe_interface")
-
-  add_library(dmitigr_pgfe_interface INTERFACE)
-
-  target_compile_definitions(dmitigr_pgfe_interface INTERFACE -DDMITIGR_PGFE_HEADER_ONLY)
+if (WIN32)
+  set(dmitigr_cefeika_resource_destination_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
+elseif (UNIX)
+  set(dmitigr_cefeika_resource_destination_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 endif()
 
 # ------------------------------------------------------------------------------
-# Dependencies
+# Custom targets
 # ------------------------------------------------------------------------------
 
-#
-# dmitigr_common
-#
+add_custom_target(dmitigr_cefeika_uninstall)
 
-find_package(dmitigr_common REQUIRED)
-message("Using ${dmitigr_common_library} library")
-
-#
-# libpq
-#
-
-# FindPq.cmake module will use these settings to find libpq.
-set(LIBPQ_PREFIX "" CACHE PATH
-  "Installation prefix of the libpq library (where headers and binary resides)")
-set(LIBPQ_LIB_PREFIX "${LIBPQ_PREFIX}" CACHE PATH
-  "Installation prefix of the libpq binary (where the binary reside)")
-set(LIBPQ_INCLUDE_PREFIX "${LIBPQ_PREFIX}" CACHE PATH
-  "Installation prefix of the libpq includes (where the headers resides)")
-
-find_package(Pq REQUIRED)
-message("libpq includes to use: ${Pq_INCLUDE_DIRS}")
-message("Suggested libpq binary to use: ${Suggested_Pq_LIBRARIES}")
-include_directories(${Pq_INCLUDE_DIRS})
-
-# --------------------------------------
-
-if(NOT DMITIGR_PGFE_HEADER_ONLY)
-  target_link_libraries(${dmitigr_pgfe_target}
-    PUBLIC ${Suggested_Pq_LIBRARIES} ${dmitigr_common_library})
-
-  if (UNIX)
-    target_link_libraries(${dmitigr_pgfe_target} PRIVATE stdc++fs)
-  elseif (WIN32)
-    target_link_libraries(${dmitigr_pgfe_target} PRIVATE Ws2_32.lib)
-  endif()
-else()
-  target_link_libraries(dmitigr_pgfe_interface
-    INTERFACE ${Suggested_Pq_LIBRARIES} ${dmitigr_common_library})
-
-  if (UNIX)
-    target_link_libraries(dmitigr_pgfe_interface INTERFACE stdc++fs)
-  elseif (WIN32)
-    target_link_libraries(dmitigr_pgfe_interface INTERFACE Ws2_32.lib)
-  endif()
-endif()
-
-# ------------------------------------------------------------------------------
-# Installing
-# ------------------------------------------------------------------------------
-
-install(FILES ${dmitigr_pgfe_root_headers}
-  DESTINATION ${DMITIGR_PGFE_INCLUDE_INSTALL_DIR}/dmitigr)
-
-install(FILES ${dmitigr_pgfe_preprocessed_headers}
-  DESTINATION ${DMITIGR_PGFE_INCLUDE_INSTALL_DIR}/dmitigr/pgfe)
-
-if(DMITIGR_PGFE_HEADER_ONLY)
-  install(FILES ${dmitigr_pgfe_header_only_headers}
-    DESTINATION ${DMITIGR_PGFE_INCLUDE_INSTALL_DIR}/dmitigr/pgfe)
-endif()
-
-install(FILES ${dmitigr_pgfe_headers}
-  DESTINATION ${DMITIGR_PGFE_INCLUDE_INSTALL_DIR}/dmitigr/pgfe)
-
-if(NOT DMITIGR_PGFE_HEADER_ONLY)
-  install(TARGETS ${dmitigr_pgfe_target}
-    EXPORT ${dmitigr_pgfe_target}_export
-    ARCHIVE  DESTINATION ${DMITIGR_PGFE_LIB_INSTALL_DIR}
-    LIBRARY  DESTINATION ${DMITIGR_PGFE_LIB_INSTALL_DIR}
-    RUNTIME  DESTINATION ${DMITIGR_PGFE_LIB_INSTALL_DIR}
-    INCLUDES DESTINATION ${DMITIGR_PGFE_INCLUDE_INSTALL_DIR})
-else()
-  install(TARGETS dmitigr_pgfe_interface
-    EXPORT dmitigr_pgfe_interface_export
-    INCLUDES DESTINATION ${DMITIGR_PGFE_INCLUDE_INSTALL_DIR})
-
-  install(FILES ${dmitigr_pgfe_implementations}
-    DESTINATION ${DMITIGR_PGFE_INCLUDE_INSTALL_DIR}/dmitigr/pgfe)
-endif()
-
-install(EXPORT ${dmitigr_pgfe_target}_export
-  DESTINATION ${DMITIGR_PGFE_CMAKE_INSTALL_DIR}
-  FILE ${dmitigr_pgfe_target}-config.cmake)
-
-# --------------------------------------
-
-install(FILES
-  doc/dmitigr_pgfe.class.violet.html
-
-  DESTINATION ${DMITIGR_PGFE_DOC_INSTALL_DIR})
-
-# ------------------------------------------------------------------------------
-# Uninstalling
-# ------------------------------------------------------------------------------
-
-add_custom_target(uninstall)
-
-add_custom_command(TARGET uninstall PRE_BUILD
-  COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_CMAKE_INSTALL_DIR}/dmitigr_pgfe*
-  COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_DOC_INSTALL_DIR}/dmitigr_pgfe*
-  COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_LIB_INSTALL_DIR}/dmitigr_pgfe*
-  COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_LIB_INSTALL_DIR}/libdmitigr_pgfe*
-  COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_INCLUDE_INSTALL_DIR}/dmitigr/pgfe*
-  COMMAND cmake -E remove_directory ${CMAKE_INSTALL_PREFIX}/${DMITIGR_PGFE_INCLUDE_INSTALL_DIR}/dmitigr/pgfe
+add_custom_target(dmitigr_cefeika_create_resource_destination_dir ALL
+  COMMAND cmake -E make_directory "${dmitigr_cefeika_resource_destination_dir}"
   )
 
+# --------------------------------------
+# Installing
+# --------------------------------------
+
+install(FILES LICENSE.txt
+  DESTINATION ${DMITIGR_CEFEIKA_SHARE_INSTALL_DIR})
+
+install(FILES
+  cmake/dmitigr_cefeika.cmake
+  cmake/dmitigr_cefeika-config.cmake
+  DESTINATION ${DMITIGR_CEFEIKA_CMAKE_INSTALL_DIR})
+
+# ------------------------------------------------------------------------------
+# Libraries
 # ------------------------------------------------------------------------------
 
-if(DMITIGR_PGFE_BUILD_TESTS)
-  add_subdirectory(tests)
+foreach(lib ${dmitigr_cefeika_libraries})
+  string(TOUPPER "${lib}" LIB)
+
+  add_subdirectory(lib/dmitigr/${lib})
+
+  # ------------------------------------
+  # Preprocessing
+  # ------------------------------------
+
+  dmitigr_set_library_info_lib_variables(${lib})
+
+  foreach(file dll.hpp implementation_footer.hpp
+      implementation_header.hpp version.hpp version.rc)
+    configure_file(lib/dmitigr/${file}.in
+      ${CMAKE_CURRENT_SOURCE_DIR}/lib/dmitigr/${lib}/${file} @ONLY
+      NEWLINE_STYLE UNIX)
+  endforeach()
+
+  configure_file(doc/Doxyfile.in
+    ${CMAKE_CURRENT_SOURCE_DIR}/doc/${lib}/Doxyfile @ONLY
+    NEWLINE_STYLE UNIX)
+
+  if(NOT EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/doc/${lib}/doxyfile.specific)
+    file(TOUCH ${CMAKE_CURRENT_SOURCE_DIR}/doc/${lib}/doxyfile.specific)
+  endif()
+
+  # ------------------------------------
+  # Sources
+  # ------------------------------------
+
+  list(APPEND dmitigr_${lib}_preprocessed_headers
+    dll.hpp implementation_footer.hpp implementation_header.hpp version.hpp)
+  if (WIN32)
+    list(APPEND dmitigr_${lib}_build_only_sources version.rc)
+  endif()
+
+  foreach(st ${dmitigr_source_types})
+    list(TRANSFORM dmitigr_${lib}_${st} PREPEND "lib/dmitigr/${lib}/")
+    list(APPEND dmitigr_${lib}_sources ${dmitigr_${lib}_${st}})
+  endforeach()
+
+  set_source_files_properties(
+    ${dmitigr_${lib}_implementations}
+    ${dmitigr_${lib}_cmake_sources}
+    ${dmitigr_${lib}_cmake_unpreprocessed}
+
+    PROPERTIES
+    HEADER_FILE_ONLY ON)
+
+  # ------------------------------------
+  # Targets
+  # ------------------------------------
+
+  if(NOT DMITIGR_CEFEIKA_HEADER_ONLY)
+    add_library(${lib} ${dmitigr_${lib}_sources})
+  else()
+    add_library(${lib} INTERFACE)
+  endif()
+  add_library(dmitigr::${lib} ALIAS ${lib})
+
+  if(NOT DMITIGR_CEFEIKA_HEADER_ONLY)
+    set(output_name "dmitigr_${lib}")
+    if(BUILD_SHARED_LIBS)
+      target_compile_definitions(${lib}
+        PRIVATE -DDMITIGR_CEFEIKA_DLL_BUILDING
+        INTERFACE -DDMITIGR_${LIB}_DLL)
+    elseif(WIN32)
+      set(output_name "dmitigr_${lib}_static")
+    endif()
+
+    set_target_properties(${lib}
+      PROPERTIES
+      OUTPUT_NAME "${output_name}"
+      LINKER_LANGUAGE "CXX"
+      POSITION_INDEPENDENT_CODE True
+      VERSION ${dmitigr_${lib}_version_major}.${dmitigr_${lib}_version_minor}
+      DEBUG_POSTFIX "d")
+
+    dmitigr_target_compile_options(${lib})
+  else() # header-only
+    target_compile_definitions(${lib} INTERFACE -DDMITIGR_${LIB}_HEADER_ONLY)
+  endif()
+
+  if(NOT DMITIGR_CEFEIKA_HEADER_ONLY)
+    target_compile_definitions(${lib}
+      PRIVATE ${dmitigr_${lib}_target_compile_definitions_private}
+      PUBLIC  ${dmitigr_${lib}_target_compile_definitions_public})
+
+    target_include_directories(${lib}
+      PRIVATE ${dmitigr_${lib}_target_include_directories_private}
+      PUBLIC  ${dmitigr_${lib}_target_include_directories_public})
+  else() # header-only
+    target_compile_definitions(${lib}
+      INTERFACE ${dmitigr_${lib}_target_compile_definitions_interface})
+
+    target_include_directories(${lib}
+      INTERFACE ${dmitigr_${lib}_target_include_directories_interface})
+  endif()
+
+  # ------------------------------------
+  # Dependencies
+  # ------------------------------------
+
+  if(NOT DMITIGR_CEFEIKA_HEADER_ONLY)
+    target_link_libraries(${lib}
+      PRIVATE ${dmitigr_${lib}_target_link_libraries_private}
+      PUBLIC  ${dmitigr_${lib}_target_link_libraries_public})
+  else() # header-only
+    target_link_libraries(${lib} INTERFACE ${dmitigr_${lib}_target_link_libraries_interface})
+  endif()
+
+  # ------------------------------------
+  # Installing
+  # ------------------------------------
+
+  install(FILES ${dmitigr_${lib}_root_headers}
+    DESTINATION ${DMITIGR_CEFEIKA_INCLUDE_INSTALL_DIR}/dmitigr)
+
+  install(FILES ${dmitigr_${lib}_preprocessed_headers}
+    DESTINATION ${DMITIGR_CEFEIKA_INCLUDE_INSTALL_DIR}/dmitigr/${lib})
+
+  install(FILES ${dmitigr_${lib}_headers}
+    DESTINATION ${DMITIGR_CEFEIKA_INCLUDE_INSTALL_DIR}/dmitigr/${lib})
+
+  if(NOT DMITIGR_CEFEIKA_HEADER_ONLY)
+    install(TARGETS ${lib}
+      EXPORT dmitigr_${lib}_export
+      ARCHIVE  DESTINATION ${DMITIGR_CEFEIKA_LIB_INSTALL_DIR}
+      LIBRARY  DESTINATION ${DMITIGR_CEFEIKA_LIB_INSTALL_DIR}
+      RUNTIME  DESTINATION ${DMITIGR_CEFEIKA_LIB_INSTALL_DIR}
+      INCLUDES DESTINATION ${DMITIGR_CEFEIKA_INCLUDE_INSTALL_DIR})
+  else()
+    install(TARGETS ${lib}
+      EXPORT dmitigr_${lib}_export
+      INCLUDES DESTINATION ${DMITIGR_CEFEIKA_INCLUDE_INSTALL_DIR})
+
+    install(FILES ${dmitigr_${lib}_implementations}
+      DESTINATION ${DMITIGR_CEFEIKA_INCLUDE_INSTALL_DIR}/dmitigr/${lib})
+
+    install(FILES lib/dmitigr/cefeika_header_only.hpp
+      DESTINATION ${DMITIGR_CEFEIKA_INCLUDE_INSTALL_DIR}/dmitigr)
+  endif()
+
+  if(NOT DMITIGR_CEFEIKA_HEADER_ONLY)
+    if(BUILD_SHARED_LIBS)
+      set(export_file_suffix "shared")
+    else()
+      set(export_file_suffix "static")
+    endif()
+  else() # header-only
+    set(export_file_suffix "interface")
+  endif()
+
+  install(EXPORT dmitigr_${lib}_export
+    NAMESPACE dmitigr::
+    DESTINATION ${DMITIGR_CEFEIKA_CMAKE_INSTALL_DIR}
+    FILE dmitigr_${lib}_${export_file_suffix}-config.cmake)
+
+  # ------------------------------------
+  # Uninstalling
+  # ------------------------------------
+
+  add_custom_command(TARGET dmitigr_cefeika_uninstall PRE_BUILD
+    COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CEFEIKA_CMAKE_INSTALL_DIR}/dmitigr_${lib}*
+    COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CEFEIKA_DOC_INSTALL_DIR}/dmitigr_${lib}*
+    COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CEFEIKA_LIB_INSTALL_DIR}/dmitigr_${lib}*
+    COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CEFEIKA_LIB_INSTALL_DIR}/libdmitigr_${lib}*
+    COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CEFEIKA_INCLUDE_INSTALL_DIR}/dmitigr/${lib}*
+    COMMAND cmake -E remove_directory ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CEFEIKA_INCLUDE_INSTALL_DIR}/dmitigr/${lib})
+endforeach()
+
+# ------------------------------------------------------------------------------
+# Testing
+# ------------------------------------------------------------------------------
+
+if(DMITIGR_CEFEIKA_BUILD_TESTS)
+  enable_testing()
+  message("Building of tests is enabled")
+
+  function(dmitigr_configure_test lib test)
+    set(full_name "${lib}-${test}")
+    if(NOT EXISTS "${CMAKE_SOURCE_DIR}/lib/dmitigr/${lib}/test/${full_name}.cpp")
+      set(is_unit_test TRUE)
+      set(full_name "${lib}-unit-${test}")
+    else()
+      set(is_unit_test FALSE)
+    endif()
+    set(exe "${full_name}")
+    set(src "${CMAKE_SOURCE_DIR}/lib/dmitigr/${lib}/test/${full_name}.cpp")
+    add_executable(${exe} ${src})
+    target_link_libraries(${exe} PRIVATE dmitigr::util dmitigr::${lib} ${dmitigr_${lib}_tests_target_link_libraries})
+    dmitigr_target_compile_options(${exe})
+    if(is_unit_test)
+      add_test(NAME ${exe} COMMAND ${exe})
+    endif()
+  endfunction()
+
+  foreach(lib ${dmitigr_cefeika_libraries})
+    foreach(test ${dmitigr_${lib}_tests})
+      dmitigr_configure_test(${lib} ${test})
+    endforeach()
+  endforeach()
 endif()

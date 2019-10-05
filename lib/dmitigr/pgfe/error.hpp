@@ -16,8 +16,7 @@ namespace dmitigr::pgfe {
 /**
  * @ingroup main
  *
- * @brief Represents an abstraction of synchronous messages (responses)
- * from the PostgreSQL server with the information about the error occurred.
+ * @brief A error message from a PostgreSQL server.
  */
 class Error : public Response, public Problem {
 public:

@@ -13,7 +13,7 @@ namespace dmitigr::pgfe {
 /**
  * @ingroup errors
  *
- * @brief Represents exceptions thrown on the client side.
+ * @brief The base class of exceptions thrown on a client side.
  */
 class Client_exception : public std::system_error {
 private:
@@ -35,7 +35,7 @@ private:
 /**
  * @ingroup errors
  *
- * @brief Represents exceptions thrown on the server side.
+ * @brief The base class of exceptions thrown on a server side.
  */
 class Server_exception : public std::system_error {
 public:
@@ -47,19 +47,9 @@ public:
 private:
   friend detail::iServer_exception;
 
-  /**
-   * @internal
-   *
-   * @brief The constructor.
-   */
   Server_exception(std::error_code ec) : system_error(ec)
   {}
 
-  /**
-   * @internal
-   *
-   * @overload
-   */
   Server_exception(std::error_code ec, const std::string& what) : system_error(ec, what)
   {}
 };

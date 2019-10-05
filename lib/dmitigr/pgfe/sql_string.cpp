@@ -8,7 +8,7 @@
 #include "dmitigr/pgfe/sql_string.hpp"
 #include "dmitigr/pgfe/implementation_header.hpp"
 
-#include <dmitigr/common/debug.hpp>
+#include <dmitigr/util/debug.hpp>
 
 #include <algorithm>
 #include <list>
@@ -22,13 +22,40 @@ namespace dmitigr::pgfe::detail {
 
 std::pair<iSql_string, const char*> parse_sql_input(const char* text);
 
+/**
+ * @brief The implementation of Sql_string.
+ */
 class iSql_string final : public Sql_string {
 public:
+  /**
+   * @brief The default constructor.
+   */
   iSql_string()
   {
     DMITIGR_ASSERT(is_invariant_ok());
   }
 
+  /**
+   * @overload
+   */
+  explicit iSql_string(const char* const text)
+    : iSql_string(parse_sql_input(text).first)
+  {
+    DMITIGR_ASSERT(is_invariant_ok());
+  }
+
+  /**
+   * @overload
+   */
+  explicit iSql_string(const std::string& text)
+    : iSql_string(text.c_str())
+  {
+    DMITIGR_ASSERT(is_invariant_ok());
+  }
+
+  /**
+   * @brief The copy constructor.
+   */
   iSql_string(const iSql_string& rhs)
     : fragments_{rhs.fragments_}
     , positional_parameters_{rhs.positional_parameters_}
@@ -36,6 +63,9 @@ public:
     named_parameters_ = named_parameters();
   }
 
+  /**
+   * @brief The copy assignment operator.
+   */
   iSql_string& operator=(const iSql_string& rhs)
   {
     iSql_string tmp{rhs};
@@ -43,6 +73,9 @@ public:
     return *this;
   }
 
+  /**
+   * @brief The move constructor.
+   */
   iSql_string(iSql_string&& rhs)
     : fragments_{std::move(rhs.fragments_)}
     , positional_parameters_{std::move(rhs.positional_parameters_)}
@@ -50,6 +83,9 @@ public:
     named_parameters_ = named_parameters();
   }
 
+  /**
+   * @brief The move assignment operator.
+   */
   iSql_string& operator=(iSql_string&& rhs)
   {
     iSql_string tmp{std::move(rhs)};
@@ -57,26 +93,15 @@ public:
     return *this;
   }
 
+  /**
+   * @brief The swap operation.
+   */
   void swap(iSql_string& other)
   {
     fragments_.swap(other.fragments_);
     positional_parameters_.swap(other.positional_parameters_);
     named_parameters_.swap(other.named_parameters_);
   }
-
-  explicit iSql_string(const char* const text)
-    : iSql_string(parse_sql_input(text).first)
-  {
-    DMITIGR_ASSERT(is_invariant_ok());
-  }
-
-  explicit iSql_string(const std::string& text)
-    : iSql_string(text.c_str())
-  {
-    DMITIGR_ASSERT(is_invariant_ok());
-  }
-
-  // ---------------------------------------------------------------------------
 
   std::size_t positional_parameter_count() const override
   {
@@ -101,22 +126,23 @@ public:
 
   std::optional<std::size_t> parameter_index(const std::string& name) const override
   {
-    if (const auto i = named_parameter_index__(name); i < parameter_count())
-      return i;
+    if (const auto result = named_parameter_index__(name); result < parameter_count())
+      return result;
     else
       return std::nullopt;
   }
 
   std::size_t parameter_index_throw(const std::string& name) const override
   {
-    const auto i = named_parameter_index__(name);
-    DMITIGR_REQUIRE(i < parameter_count(), std::out_of_range);
-    return i;
+    const auto result = named_parameter_index__(name);
+    DMITIGR_REQUIRE(result < parameter_count(), std::out_of_range,
+      "the instance of dmitigr::pgfe::Sql_string has no parameter \"" + name + "\"");
+    return result;
   }
 
   bool has_parameter(const std::string& name) const override
   {
-    return bool(parameter_index(name));
+    return static_cast<bool>(parameter_index(name));
   }
 
   bool has_positional_parameters() const override
@@ -133,8 +159,6 @@ public:
   {
     return (has_positional_parameters() || has_named_parameters());
   }
-
-  // ---------------------------------------------------------------------------
 
   std::unique_ptr<Sql_string> to_sql_string() const override
   {
@@ -163,7 +187,8 @@ public:
 
   bool has_missing_parameters() const override
   {
-    return any_of(cbegin(positional_parameters_), cend(positional_parameters_), [](const auto is_present) { return !is_present; });
+    return any_of(cbegin(positional_parameters_), cend(positional_parameters_),
+      [](const auto is_present) { return !is_present; });
   }
 
   void append(const Sql_string* const appendix) override
@@ -264,7 +289,6 @@ public:
     return result;
   }
 
-  // Returns: output query string.
   std::string to_query_string() const override
   {
     std::string result;
@@ -293,12 +317,12 @@ public:
     return result;
   }
 
-  Composite* extra() override
+  heap_data_Composite* extra() override
   {
-    return const_cast<Composite*>(static_cast<const iSql_string*>(this)->extra());
+    return const_cast<heap_data_Composite*>(static_cast<const iSql_string*>(this)->extra());
   }
 
-  const Composite* extra() const override
+  const heap_data_Composite* extra() const override
   {
     if (!extra_)
       extra_.emplace(Extra::extract(fragments_));
@@ -401,13 +425,14 @@ private:
   {
     if (parameter_count() < maximum_parameter_count_) {
       push_back_fragment__(Fragment::Type::named_parameter, str);
-      if (none_of(cbegin(named_parameters_), cend(named_parameters_), [&str](const auto& i) { return (i->str == str); })) {
+      if (none_of(cbegin(named_parameters_), cend(named_parameters_),
+          [&str](const auto& i) { return (i->str == str); })) {
         auto e = cend(fragments_);
         --e;
         named_parameters_.push_back(e);
       }
     } else
-      throw std::runtime_error("maximum parameters count (" + std::to_string(maximum_parameter_count_) + ") exceeded");
+      throw std::runtime_error{"maximum parameters count (" + std::to_string(maximum_parameter_count_) + ") exceeded"};
 
     DMITIGR_ASSERT(is_invariant_ok());
   }
@@ -527,8 +552,6 @@ private:
   // ---------------------------------------------------------------------------
 
   /**
-   * @internal
-   *
    * @brief Represents an API for extraction the extra data from the comments.
    */
   struct Extra final {
@@ -905,8 +928,6 @@ private:
 
 } // namespace dmitigr::pgfe::detail
 
-// =============================================================================
-
 // -----------------------------------------------------------------------------
 // Very basic SQL input parser
 // -----------------------------------------------------------------------------
@@ -979,8 +1000,6 @@ namespace dmitigr::pgfe::detail {
 namespace {
 
 /**
- * @internal
- *
  * @returns `true` if `c` is a valid character of unquoted SQL identifier.
  */
 inline bool is_ident_char(const char c) noexcept
@@ -990,6 +1009,10 @@ inline bool is_ident_char(const char c) noexcept
 
 } // namespace
 
+/**
+ * @returns Preparsed SQL string in pair with the pointer to a character
+ * that follows the SQL string.
+ */
 std::pair<iSql_string, const char*> parse_sql_input(const char* text)
 {
   DMITIGR_ASSERT(text);
@@ -1330,15 +1353,13 @@ std::pair<iSql_string, const char*> parse_sql_input(const char* text)
     result.push_named_parameter(fragment);
     break;
   default:
-    throw std::runtime_error("invalid SQL input");
+    throw std::runtime_error{"invalid SQL input"};
   }
 
   return std::make_pair(result, text);
 }
 
 } // namespace dmitigr::pgfe::detail
-
-// =============================================================================
 
 namespace dmitigr::pgfe {
 

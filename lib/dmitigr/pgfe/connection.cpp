@@ -19,7 +19,7 @@
 #include "dmitigr/pgfe/util.hpp"
 #include "dmitigr/pgfe/implementation_header.hpp"
 
-#include <dmitigr/common/debug.hpp>
+#include <dmitigr/util/debug.hpp>
 
 #include <list>
 #include <optional>
@@ -30,14 +30,15 @@
 
 namespace dmitigr::pgfe::detail {
 
+/**
+ * The base implementation of Connection.
+ */
 class iConnection : public Connection {
 public:
   std::unique_ptr<Connection> to_connection() const override
   {
     return options()->make_connection();
   }
-
-  // ---------------------------------------------------------------------------
 
   bool is_connected() const override
   {
@@ -57,16 +58,6 @@ public:
 
     DMITIGR_REQUIRE(timeout >= milliseconds{-1}, std::invalid_argument);
 
-    if (is_connected())
-      return; // No need to check invariant. Just return.
-
-    // Stage 1: beginning.
-    auto timepoint1 = system_clock::now();
-
-    connect_async();
-    auto current_status = communication_status();
-
-    const bool ignore_timeout = (timeout == milliseconds{-1});
     const auto is_timeout = [&timeout]()
     {
       return timeout <= std::decay_t<decltype (timeout)>::zero();
@@ -77,6 +68,16 @@ public:
       throw detail::iClient_exception{Client_errc::timed_out, "connection timeout"};
     };
 
+    if (is_connected())
+      return; // No need to check invariant. Just return.
+
+    // Stage 1: beginning.
+    auto timepoint1 = system_clock::now();
+
+    connect_async();
+    auto current_status = communication_status();
+
+    const bool ignore_timeout = (timeout == milliseconds{-1});
     if (!ignore_timeout) {
       timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
       if (is_timeout())
@@ -109,7 +110,7 @@ public:
 
       if (!ignore_timeout) {
         timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
-        DMITIGR_ASSERT(current_socket_readiness != Socket_readiness::unready || is_timeout());
+        DMITIGR_ASSERT(!is_timeout() || current_socket_readiness == Socket_readiness::unready);
         if (is_timeout())
           throw_timeout();
       }
@@ -300,8 +301,11 @@ inline bool iConnection::is_invariant_ok()
   return trans_ok && sess_time_ok && pid_ok && readiness_ok;
 }
 
-// -----------------------------------------------------------------------------
+// =============================================================================
 
+/**
+ * The implementation of Connection based on libpq.
+ */
 class pq_Connection final : public iConnection {
 public:
   ~pq_Connection() override
@@ -314,19 +318,11 @@ public:
     , notice_handler_{&default_notice_handler}
   {}
 
-  // Non copyable.
   pq_Connection(const pq_Connection&) = delete;
-
-  // Movable.
   pq_Connection(pq_Connection&& rhs) = default;
 
-  // Non copyable.
   pq_Connection& operator=(const pq_Connection&) = delete;
-
-  // Movable.
   pq_Connection& operator=(pq_Connection&& rhs) = default;
-
-  // ---------------------------------------------------------------------------
 
   bool is_ssl_secured() const override
   {
@@ -364,7 +360,7 @@ public:
     return session_start_time_;
   }
 
-  const Connection_options* options() const noexcept override
+  const iConnection_options* options() const noexcept override
   {
     return &options_;
   }
@@ -421,7 +417,7 @@ public:
         session_start_time_ = std::chrono::system_clock::now();
         /*
          * We cannot assert here that communication_status() is "connected", because it can
-         * become "failure" at *any* time, even just after successful connection establishment.
+         * become "failure" at *any* time, even just after successful connection establishment!
          */
         DMITIGR_ASSERT(communication_status() == Status::connected || communication_status() == Status::failure);
         goto done;
@@ -641,7 +637,7 @@ public:
     return !signals_.empty();
   }
 
-  const Notice* notice() const noexcept override
+  const simple_Notice* notice() const noexcept override
   {
     return signal_ptr<simple_Notice>();
   }
@@ -656,7 +652,7 @@ public:
     dismiss_signal<simple_Notice>();
   }
 
-  const Notification* notification() const noexcept override
+  const pq_Notification* notification() const noexcept override
   {
     return signal_ptr<pq_Notification>();
   }
@@ -739,7 +735,7 @@ public:
     response_.reset();
   }
 
-  const Error* error() const noexcept override
+  const simple_Error* error() const noexcept override
   {
     return response_ptr<simple_Error>();
   }
@@ -749,7 +745,7 @@ public:
     return release_response<Error, simple_Error>();
   }
 
-  const Row* row() const noexcept override
+  const pq_Row* row() const noexcept override
   {
     return response_ptr<pq_Row>();
   }
@@ -759,7 +755,7 @@ public:
     return release_response<Row, pq_Row>();
   }
 
-  const Completion* completion() const noexcept override
+  const simple_Completion* completion() const noexcept override
   {
     return response_ptr<simple_Completion>();
   }
@@ -769,12 +765,12 @@ public:
     return release_response<Completion, simple_Completion>();
   }
 
-  Prepared_statement* prepared_statement() const override
+  pq_Prepared_statement* prepared_statement() const override
   {
     return response_ptr<pq_Prepared_statement>();
   }
 
-  Prepared_statement* prepared_statement(const std::string& name) const override
+  pq_Prepared_statement* prepared_statement(const std::string& name) const override
   {
     return ps(name);
   }
@@ -1043,6 +1039,8 @@ protected:
       iconnection_ok;
   }
 
+  // ===========================================================================
+
   std::string error_message() const override
   {
     /*
@@ -1053,7 +1051,7 @@ protected:
   }
 
 private:
-  friend class pq_Prepared_statement;
+  friend pq_Prepared_statement;
 
   // ---------------------------------------------------------------------------
   // Persistent data
@@ -1090,7 +1088,10 @@ private:
   mutable std::optional<pq_Prepared_statement> unnamed_prepared_statement_;
   std::shared_ptr<std::vector<std::string>> shared_field_names_;
 
+  // ----------------------------
   // Session data / requests data
+  // ----------------------------
+
   enum class Request_id {
     perform = 1,
     execute,
@@ -1343,20 +1344,14 @@ private:
   }
 };
 
-} // namespace dmitigr::pgfe::detail
-
-// =============================================================================
-
-namespace dmitigr::pgfe {
-
-namespace detail {
-
 inline std::unique_ptr<Connection> iConnection_options::make_connection() const
 {
-  return std::make_unique<detail::pq_Connection>(*this);
+  return std::make_unique<pq_Connection>(*this);
 }
 
-} // namespace detail
+} // namespace dmitigr::pgfe::detail
+
+namespace dmitigr::pgfe {
 
 DMITIGR_PGFE_INLINE std::unique_ptr<Connection> Connection::make(const Connection_options* const options)
 {

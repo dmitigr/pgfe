@@ -3,11 +3,11 @@
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
 #include "dmitigr/pgfe/connection_options.hpp"
-#include "dmitigr/pgfe/connection_options.cxx"
+#include "dmitigr/pgfe/defaults.hpp"
 #include "dmitigr/pgfe/implementation_header.hpp"
 
-#include <dmitigr/common/debug.hpp>
-#include <dmitigr/common/net.hpp>
+#include <dmitigr/util/debug.hpp>
+#include <dmitigr/util/net.hpp>
 
 #include <algorithm>
 #include <stdexcept>
@@ -57,12 +57,15 @@ inline void validate(const bool condition, const std::string& option_name)
 
 } // namespace validators
 
-// -----------------------------------------------------------------------------
+// =============================================================================
 
+/**
+ * @brief The Connection_options implementation.
+ */
 class iConnection_options final : public Connection_options {
 public:
   iConnection_options()
-    : iConnection_options{btd::communication_mode}
+    : iConnection_options{defaults::communication_mode}
   {}
 
   /*
@@ -72,29 +75,30 @@ public:
   explicit iConnection_options(const Communication_mode communication_mode)
     : communication_mode_{communication_mode}
 #ifndef _WIN32
-    , uds_directory_{btd::uds_directory}
-    , uds_require_server_process_username_{btd::uds_require_server_process_username}
+    , uds_directory_{defaults::uds_directory}
+    , uds_require_server_process_username_{defaults::uds_require_server_process_username}
 #endif
-    , tcp_keepalives_enabled_{btd::tcp_keepalives_enabled}
-    , tcp_keepalives_idle_{btd::tcp_keepalives_idle}
-    , tcp_keepalives_interval_{btd::tcp_keepalives_interval}
-    , tcp_keepalives_count_{btd::tcp_keepalives_count}
-    , net_address_{btd::net_address}
-    , net_hostname_{btd::net_hostname}
-    , port_{btd::port}
-    , username_{btd::username}
-    , database_{btd::database}
-    , password_{btd::password}
-    , kerberos_service_name_{btd::kerberos_service_name}
-    , is_ssl_enabled_{btd::ssl_enabled}
-    , ssl_compression_enabled_{btd::ssl_compression_enabled}
-    , ssl_certificate_file_{btd::ssl_certificate_file}
-    , ssl_private_key_file_{btd::ssl_private_key_file}
-    , ssl_certificate_authority_file_{btd::ssl_certificate_authority_file}
-    , ssl_certificate_revocation_list_file_{btd::ssl_certificate_revocation_list_file}
-    , ssl_server_hostname_verification_enabled_{btd::ssl_server_hostname_verification_enabled}
+    , tcp_keepalives_enabled_{defaults::tcp_keepalives_enabled}
+    , tcp_keepalives_idle_{defaults::tcp_keepalives_idle}
+    , tcp_keepalives_interval_{defaults::tcp_keepalives_interval}
+    , tcp_keepalives_count_{defaults::tcp_keepalives_count}
+    , net_address_{defaults::net_address}
+    , net_hostname_{defaults::net_hostname}
+    , port_{defaults::port}
+    , username_{defaults::username}
+    , database_{defaults::database}
+    , password_{defaults::password}
+    , kerberos_service_name_{defaults::kerberos_service_name}
+    , is_ssl_enabled_{defaults::ssl_enabled}
+    , ssl_compression_enabled_{defaults::ssl_compression_enabled}
+    , ssl_certificate_file_{defaults::ssl_certificate_file}
+    , ssl_private_key_file_{defaults::ssl_private_key_file}
+    , ssl_certificate_authority_file_{defaults::ssl_certificate_authority_file}
+    , ssl_certificate_revocation_list_file_{defaults::ssl_certificate_revocation_list_file}
+    , ssl_server_hostname_verification_enabled_{defaults::ssl_server_hostname_verification_enabled}
   {
-    DMITIGR_ASSERT(is_invariant_ok());
+    DMITIGR_REQUIRE(is_invariant_ok(), std::logic_error,
+      "invalid connection options defaults (dmitigr::pgfe must be recompiled)");
   }
 
   std::unique_ptr<Connection> make_connection() const override; // defined in connection.cpp
@@ -104,7 +108,7 @@ public:
     return std::make_unique<iConnection_options>(*this);
   }
 
-  Connection_options* set(const Communication_mode value) override
+  iConnection_options* set(const Communication_mode value) override
   {
 #ifdef _WIN32
     DMITIGR_ASSERT(value == Communication_mode::net);
@@ -121,7 +125,7 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_port(const std::int_fast32_t value) override
+  iConnection_options* set_port(const std::int_fast32_t value) override
   {
     validate(is_valid_port(value), "server port");
     port_ = value;
@@ -137,7 +141,7 @@ public:
   // ---------------------------------------------------------------------------
 
 #ifndef _WIN32
-  Connection_options* set_uds_directory(std::filesystem::path value) override
+  iConnection_options* set_uds_directory(std::filesystem::path value) override
   {
     DMITIGR_REQUIRE(communication_mode() == Communication_mode::uds, std::logic_error);
     validate(is_absolute_directory_name(value), "UDS directory");
@@ -153,7 +157,7 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_uds_require_server_process_username(std::optional<std::string> value) override
+  iConnection_options* set_uds_require_server_process_username(std::optional<std::string> value) override
   {
     DMITIGR_REQUIRE(communication_mode() == Communication_mode::uds, std::logic_error);
     if (value)
@@ -172,7 +176,7 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_tcp_keepalives_enabled(const bool value) override
+  iConnection_options* set_tcp_keepalives_enabled(const bool value) override
   {
     DMITIGR_REQUIRE(communication_mode() == Communication_mode::net, std::logic_error);
     tcp_keepalives_enabled_ = value;
@@ -187,7 +191,7 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_tcp_keepalives_idle(const std::optional<std::chrono::seconds> value) override
+  iConnection_options* set_tcp_keepalives_idle(const std::optional<std::chrono::seconds> value) override
   {
     DMITIGR_REQUIRE(communication_mode() == Communication_mode::net, std::logic_error);
     if (value)
@@ -204,7 +208,7 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_tcp_keepalives_interval(const std::optional<std::chrono::seconds> value) override
+  iConnection_options* set_tcp_keepalives_interval(const std::optional<std::chrono::seconds> value) override
   {
     DMITIGR_REQUIRE(communication_mode() == Communication_mode::net, std::logic_error);
     if (value)
@@ -221,7 +225,7 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_tcp_keepalives_count(const std::optional<int> value) override
+  iConnection_options* set_tcp_keepalives_count(const std::optional<int> value) override
   {
     DMITIGR_REQUIRE(communication_mode() == Communication_mode::net, std::logic_error);
     if (value)
@@ -238,32 +242,27 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_net_address(std::optional<std::string> value) override
+  iConnection_options* set_net_address(std::string value) override
   {
     DMITIGR_REQUIRE(communication_mode() == Communication_mode::net, std::logic_error);
-    if (value)
-      validate(is_ip_address(*value), "Network address");
-    else
-      DMITIGR_REQUIRE(net_hostname(), std::logic_error);
+    validate(is_ip_address(value), "Network address");
     net_address_ = std::move(value);
     DMITIGR_ASSERT(is_invariant_ok());
     return this;
   }
 
-  const std::optional<std::string>& net_address() const override
+  const std::string& net_address() const override
   {
     return net_address_;
   }
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_net_hostname(std::optional<std::string> value) override
+  iConnection_options* set_net_hostname(std::optional<std::string> value) override
   {
     DMITIGR_REQUIRE(communication_mode() == Communication_mode::net, std::logic_error);
     if (value)
       validate(is_hostname(*value), "Network host name");
-    else
-      DMITIGR_REQUIRE(net_address(), std::logic_error);
     net_hostname_ = std::move(value);
     DMITIGR_ASSERT(is_invariant_ok());
     return this;
@@ -276,7 +275,7 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_username(std::string value) override
+  iConnection_options* set_username(std::string value) override
   {
     validate(is_non_empty(value), "username");
     username_ = std::move(value);
@@ -291,7 +290,7 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_database(std::string value) override
+  iConnection_options* set_database(std::string value) override
   {
     validate(is_non_empty(value), "database");
     database_ = std::move(value);
@@ -306,7 +305,7 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_password(std::optional<std::string> value) override
+  iConnection_options* set_password(std::optional<std::string> value) override
   {
     if (value)
       validate(is_non_empty(*value), "password");
@@ -322,7 +321,7 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_kerberos_service_name(std::optional<std::string> value) override
+  iConnection_options* set_kerberos_service_name(std::optional<std::string> value) override
   {
     if (value)
       validate(is_non_empty(*value), "Kerberos service name");
@@ -338,7 +337,7 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_ssl_enabled(const bool value) override
+  iConnection_options* set_ssl_enabled(const bool value) override
   {
     is_ssl_enabled_ = value;
     DMITIGR_ASSERT(is_invariant_ok());
@@ -352,7 +351,7 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_ssl_compression_enabled(const bool value) override
+  iConnection_options* set_ssl_compression_enabled(const bool value) override
   {
     DMITIGR_REQUIRE(is_ssl_enabled(), std::logic_error);
     ssl_compression_enabled_ = value;
@@ -367,7 +366,7 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_ssl_certificate_file(std::optional<std::filesystem::path> value) override
+  iConnection_options* set_ssl_certificate_file(std::optional<std::filesystem::path> value) override
   {
     DMITIGR_REQUIRE(is_ssl_enabled(), std::logic_error);
     if (value)
@@ -384,7 +383,7 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_ssl_private_key_file(std::optional<std::filesystem::path> value) override
+  iConnection_options* set_ssl_private_key_file(std::optional<std::filesystem::path> value) override
   {
     DMITIGR_REQUIRE(is_ssl_enabled(), std::logic_error);
     if (value)
@@ -401,7 +400,7 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_ssl_certificate_authority_file(std::optional<std::filesystem::path> value) override
+  iConnection_options* set_ssl_certificate_authority_file(std::optional<std::filesystem::path> value) override
   {
     DMITIGR_REQUIRE(is_ssl_enabled(), std::logic_error);
     if (value)
@@ -418,7 +417,7 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_ssl_certificate_revocation_list_file(std::optional<std::filesystem::path> value) override
+  iConnection_options* set_ssl_certificate_revocation_list_file(std::optional<std::filesystem::path> value) override
   {
     DMITIGR_REQUIRE(is_ssl_enabled(), std::logic_error);
     if (value)
@@ -435,7 +434,7 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  Connection_options* set_ssl_server_hostname_verification_enabled(const bool value) override
+  iConnection_options* set_ssl_server_hostname_verification_enabled(const bool value) override
   {
     DMITIGR_REQUIRE(is_ssl_enabled() && ssl_certificate_authority_file(), std::logic_error);
     ssl_server_hostname_verification_enabled_ = value;
@@ -465,8 +464,7 @@ private:
       ((!tcp_keepalives_idle_ || is_non_negative(tcp_keepalives_idle_->count())) &&
         (!tcp_keepalives_interval_ || is_non_negative(tcp_keepalives_interval_->count())) &&
         (!tcp_keepalives_count_ || is_non_negative(tcp_keepalives_count_)) &&
-        (net_address_ || net_hostname_) &&
-        (!net_address_ || is_ip_address(*net_address_)) &&
+        is_ip_address(net_address_) &&
         (!net_hostname_ || is_hostname(*net_hostname_)) &&
         is_valid_port(port_));
     const bool auth_ok =
@@ -493,7 +491,7 @@ private:
   std::optional<std::chrono::seconds> tcp_keepalives_idle_;
   std::optional<std::chrono::seconds> tcp_keepalives_interval_;
   std::optional<int> tcp_keepalives_count_;
-  std::optional<std::string> net_address_;
+  std::string net_address_;
   std::optional<std::string> net_hostname_;
   std::int_fast32_t port_;
   std::string username_;
@@ -511,9 +509,15 @@ private:
 
 // =============================================================================
 
+/**
+ * @brief A generator of connection options for libpq from Connection_options.
+ */
 class pq_Connection_options final {
 public:
-  pq_Connection_options(const Connection_options* const o)
+  /**
+   * @brief The constructor.
+   */
+  explicit pq_Connection_options(const Connection_options* const o)
   {
     DMITIGR_ASSERT(o);
 
@@ -521,7 +525,7 @@ public:
     case Communication_mode::net: {
       constexpr auto z = std::chrono::seconds::zero();
       values_[host] = o->net_hostname().value_or("");
-      values_[hostaddr] = o->net_address().value_or("");
+      values_[hostaddr] = o->net_address();
       values_[port] = std::to_string(o->port());
       values_[keepalives] = std::to_string(o->is_tcp_keepalives_enabled());
       values_[keepalives_idle] = std::to_string(o->tcp_keepalives_idle().value_or(z).count());
@@ -580,6 +584,9 @@ public:
     update_cache();
   }
 
+  /**
+   * @brief The copy constructor.
+   */
   pq_Connection_options(const pq_Connection_options& rhs)
   {
     for (decltype (+Keyword_count_) i = host; i < Keyword_count_; ++i)
@@ -587,6 +594,9 @@ public:
     update_cache();
   }
 
+  /**
+   * @brief The move constructor.
+   */
   pq_Connection_options(pq_Connection_options&& rhs)
   {
     for (decltype (+Keyword_count_) i = host; i < Keyword_count_; ++i)
@@ -594,6 +604,9 @@ public:
     update_cache();
   }
 
+  /**
+   * @brief The copy assignment operator.
+   */
   pq_Connection_options& operator=(const pq_Connection_options& rhs)
   {
     if (this != &rhs) {
@@ -603,6 +616,9 @@ public:
     return *this;
   }
 
+  /**
+   * @brief The move assignment operator.
+   */
   pq_Connection_options& operator=(pq_Connection_options&& rhs)
   {
     if (this != &rhs) {
@@ -612,6 +628,9 @@ public:
     return *this;
   }
 
+  /**
+   * @brief The swap operation.
+   */
   void swap(pq_Connection_options& rhs)
   {
     for (decltype (+Keyword_count_) i = host; i < Keyword_count_; ++i) {
@@ -621,16 +640,29 @@ public:
     }
   }
 
+  /**
+   * @returns The libpq parameter keywords.
+   *
+   * @see https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-PARAMKEYWORDS
+   */
   const char* const* keywords() const
   {
     return pq_keywords_;
   }
 
+  /**
+   * @returns The libpq parameter values.
+   *
+   * @see keywords().
+   */
   const char* const* values() const
   {
     return pq_values_;
   }
 
+  /**
+   * @returns The total count of keyword/value pairs.
+   */
   static std::size_t count()
   {
     return Keyword_count_;
@@ -646,6 +678,14 @@ private:
     return true;
   }
 
+  // ===========================================================================
+
+  /**
+   * @brief A libpq keyword.
+   *
+   * @remarks The keyword "host" is used in update_cache() as the initial value
+   * in for-loop. Thus, it must be 0!
+   */
   enum Keyword : std::size_t {
     host = 0, hostaddr, port,
     dbname, user, password,
@@ -662,6 +702,9 @@ private:
     Keyword_count_
   };
 
+  /**
+   * @returns The libpq keyword literal.
+   */
   static const char* to_literal(const Keyword keyword)
   {
     switch (keyword) {
@@ -697,6 +740,11 @@ private:
     DMITIGR_ASSERT_ALWAYS(!true);
   }
 
+  /**
+   * @brief Updates the cache of libpq keywords.
+   *
+   * @remarks Used by copy/move constructors.
+   */
   void update_cache()
   {
     for (decltype (+Keyword_count_) i = host; i < Keyword_count_; ++i) {

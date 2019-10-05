@@ -6,25 +6,40 @@
 #include "dmitigr/pgfe/exceptions.hpp"
 #include "dmitigr/pgfe/implementation_header.hpp"
 
-#include <dmitigr/common/debug.hpp>
+#include <dmitigr/util/debug.hpp>
 
 #include <memory>
 
 namespace dmitigr::pgfe::detail {
 
+/**
+ * @brief The Client_exception implementation.
+ */
 class iClient_exception final : public Client_exception {
 public:
+  /**
+   * @brief The constructor.
+   */
   explicit iClient_exception(const Client_errc errc)
     : Client_exception(errc)
   {}
 
+  /**
+   * @overload
+   */
   iClient_exception(const Client_errc errc, const std::string& what)
     : Client_exception(errc, what)
   {}
 };
 
+/**
+ * @brief The Server_exception implementation.
+ */
 class iServer_exception final : public Server_exception {
 public:
+  /**
+   * @brief The constructor.
+   */
   explicit iServer_exception(std::shared_ptr<Error> error)
     : Server_exception(error->code())
     , error_(std::move(error))

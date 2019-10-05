@@ -6,19 +6,23 @@
 #include "dmitigr/pgfe/sql_vector.hpp"
 #include "dmitigr/pgfe/implementation_header.hpp"
 
+#include "dmitigr/util/debug.hpp"
+
 namespace dmitigr::pgfe::detail {
 
 /**
- * @internal
- *
- * @brief An straightforward implementation of Sql_vector.
+ * @brief The implementation of Sql_vector.
  */
 class iSql_vector final : public Sql_vector {
 public:
-  using Container = std::vector<std::unique_ptr<Sql_string>>;
-
+  /**
+   * @brief See Sql_vector::make().
+   */
   iSql_vector() = default;
 
+  /**
+   * @brief See Sql_vector::make().
+   */
   explicit iSql_vector(const std::string& input)
   {
     const char* text{input.c_str()};
@@ -31,12 +35,18 @@ public:
     DMITIGR_ASSERT(is_invariant_ok());
   }
 
+  /**
+   * @overload
+   */
   explicit iSql_vector(std::vector<std::unique_ptr<Sql_string>>&& storage)
     : storage_{std::move(storage)}
   {
     DMITIGR_ASSERT(is_invariant_ok());
   }
 
+  /**
+   * @brief The copy constructor.
+   */
   iSql_vector(const iSql_vector& rhs)
     : storage_(rhs.storage_.size())
   {
@@ -45,6 +55,14 @@ public:
     DMITIGR_ASSERT(is_invariant_ok());
   }
 
+  /**
+   * @brief The move constructor.
+   */
+  iSql_vector(iSql_vector&& rhs) = default;
+
+  /**
+   * @brief The copy assignment operator.
+   */
   iSql_vector& operator=(const iSql_vector& rhs)
   {
     iSql_vector tmp{rhs};
@@ -52,23 +70,23 @@ public:
     return *this;
   }
 
-  iSql_vector(iSql_vector&& rhs) = default;
-
+  /**
+   * @brief The move assignment operator.
+   */
   iSql_vector& operator=(iSql_vector&& rhs) = default;
 
+  /**
+   * @brief The swap operation.
+   */
   void swap(iSql_vector& rhs) noexcept
   {
     storage_.swap(rhs.storage_);
   }
 
-  // ---------------------------------------------------------------------------
-
   std::unique_ptr<Sql_vector> to_sql_vector() const override
   {
     return std::make_unique<iSql_vector>(*this);
   }
-
-  // ---------------------------------------------------------------------------
 
   std::size_t sql_string_count() const override
   {
@@ -81,27 +99,41 @@ public:
   }
 
   bool has_sql_string(const std::string& extra_name, const std::string& extra_value,
-    const std::size_t offset = 0, const std::size_t extra_offset = 0) const override
+    const std::size_t offset, const std::size_t extra_offset) const override
   {
-    return bool(sql_string_index(extra_name, extra_value, offset, extra_offset));
+    return static_cast<bool>(sql_string_index(extra_name, extra_value, offset, extra_offset));
   }
 
   std::optional<std::size_t> sql_string_index(const std::string& extra_name, const std::string& extra_value,
-    const std::size_t offset = 0, const std::size_t extra_offset = 0) const override
+    const std::size_t offset, const std::size_t extra_offset) const override
   {
-    DMITIGR_REQUIRE(offset < sql_string_count(), std::out_of_range);
-    if (const auto i = sql_string_index__(extra_name, extra_value, offset, extra_offset); i < sql_string_count())
-      return i;
-    else
+    if (offset < sql_string_count()) {
+      const auto b = cbegin(storage_);
+      const auto e = cend(storage_);
+      const auto i = std::find_if(b + offset, e,
+        [&](const auto& sql_string)
+        {
+          DMITIGR_ASSERT(sql_string);
+          if (const auto* const extra = sql_string->extra(); extra && extra_offset < extra->field_count()) {
+            const auto index = extra->field_index(extra_name, extra_offset);
+            return (index && (extra->data(*index)->bytes() == extra_value));
+          } else
+            return false;
+        });
+      return i != e ? std::make_optional(i - b) : std::nullopt;
+    } else
       return std::nullopt;
   }
 
   std::size_t sql_string_index_throw(const std::string& extra_name, const std::string& extra_value,
-    const std::size_t offset = 0, const std::size_t extra_offset = 0) const override
+    const std::size_t offset, const std::size_t extra_offset) const override
   {
-    const auto index = sql_string_index(extra_name, extra_value, offset, extra_offset);
-    DMITIGR_REQUIRE(index, std::out_of_range);
-    return *index;
+    const auto result = sql_string_index(extra_name, extra_value, offset, extra_offset);
+    DMITIGR_REQUIRE(result, std::out_of_range,
+      "the instance of dmitigr::pgfe::Sql_vector has no SQL string with"
+      " extra name \"" + extra_name + "\" and"
+      " extra value \"" + extra_value + "\"");
+    return *result;
   }
 
   Sql_string* sql_string(const std::size_t index) override
@@ -116,19 +148,18 @@ public:
   }
 
   Sql_string* sql_string(const std::string& extra_name, const std::string& extra_value,
-    const std::size_t offset = 0, const std::size_t extra_offset = 0) override
+    const std::size_t offset, const std::size_t extra_offset) override
   {
     return const_cast<Sql_string*>(static_cast<const Sql_vector*>(this)->
       sql_string(extra_name, extra_value, offset, extra_offset));
   }
 
   const Sql_string* sql_string(const std::string& extra_name, const std::string& extra_value,
-    const std::size_t offset = 0, const std::size_t extra_offset = 0) const override
+    const std::size_t offset, const std::size_t extra_offset) const override
   {
-    return sql_string(sql_string_index_throw(extra_name, extra_value, offset, extra_offset));
+    const auto index = sql_string_index_throw(extra_name, extra_value, offset, extra_offset);
+    return sql_string(index);
   }
-
-  // --------------------------------------------------------------------------
 
   void set_sql_string(const std::size_t index, std::unique_ptr<Sql_string>&& sql_string) override
   {
@@ -155,8 +186,6 @@ public:
     DMITIGR_REQUIRE(index < sql_string_count(), std::out_of_range);
     storage_.erase(begin(storage_) + index);
   }
-
-  // ---------------------------------------------------------------------------
 
   std::string to_string() const override
   {
@@ -189,33 +218,10 @@ protected:
   }
 
 private:
-  std::size_t sql_string_index__(const std::string& extra_name, const std::string& extra_value,
-    const std::size_t offset = 0, const std::size_t extra_offset = 0) const
-  {
-    const auto b = cbegin(storage_);
-    const auto e = cend(storage_);
-    const auto i = std::find_if(b + offset, e,
-      [&](const auto& sql_string)
-      {
-        DMITIGR_ASSERT(sql_string);
-        if (const auto* const extra = sql_string->extra()) {
-          if (extra_offset < extra->field_count()) {
-            const auto index = extra->field_index(extra_name, extra_offset);
-            return (index && (extra->data(*index)->bytes() == extra_value));
-          } else
-            return false;
-        } else
-          return false;
-      });
-    return (i - b);
-  }
-
   mutable std::vector<std::unique_ptr<Sql_string>> storage_;
 };
 
 } // namespace dmitigr::pgfe::detail
-
-// =============================================================================
 
 namespace dmitigr::pgfe {
 

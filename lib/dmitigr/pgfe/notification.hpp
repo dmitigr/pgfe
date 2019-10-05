@@ -15,7 +15,7 @@ namespace dmitigr::pgfe {
 /**
  * @ingroup main
  *
- * @brief Represents unprompted notifications from the server.
+ * @brief An unprompted (asynchronous) notification from a PostgreSQL server.
  *
  * @remarks It should not be confused with the Notice signal.
  *
@@ -24,13 +24,14 @@ namespace dmitigr::pgfe {
 class Notification : public Signal {
 public:
   /**
-   * @returns The identifier of the server process that produced this notification.
+   * @returns The identifier of the PostgreSQL server process that
+   * produced this notification.
    */
   virtual std::int_fast32_t server_pid() const noexcept = 0;
 
   /**
-   * @returns The name of the notification channel (which might be any identifier)
-   * of the server that produced this notification.
+   * @returns The name of the notification channel (which might be
+   * any identifier) of the PostgreSQL server that produced this notification.
    */
   virtual const std::string& channel_name() const noexcept = 0;
 

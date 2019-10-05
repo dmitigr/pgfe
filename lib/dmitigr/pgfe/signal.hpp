@@ -12,8 +12,7 @@ namespace dmitigr::pgfe {
 /**
  * @ingroup main
  *
- * @brief Represents an abstraction of asynchronous
- * (unprompted) messages from PostgreSQL server.
+ * @brief An asynchronous (unprompted) message from a PostgreSQL server.
  */
 class Signal : public Server_message {
 private:

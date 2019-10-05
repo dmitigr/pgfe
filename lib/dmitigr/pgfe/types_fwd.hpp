@@ -6,10 +6,7 @@
 #define DMITIGR_PGFE_TYPES_FWD_HPP
 
 /**
- * @brief Public API.
- *
- * @warning The nested namespaces `detail` contains implementation details
- * which should not be used in the client code.
+ * @brief The API.
  */
 namespace dmitigr::pgfe {
 
@@ -60,18 +57,17 @@ class Row;
 class Row_info;
 class Server_message;
 class Signal;
-class Sql_vector;
 class Sql_string;
+class Sql_vector;
 
 class Client_exception;
 class Server_exception;
 
 template<typename> struct Conversions;
+template<typename> class Entity_vector;
 
 /**
- * @internal
- *
- * @brief The namespace dmitigr::pgfe::detail contains an implementation details.
+ * @brief The implementation details.
  */
 namespace detail {
 
@@ -86,8 +82,15 @@ class iNotification;
 class iPrepared_statement;
 class iRow;
 class iRow_info;
-class iSql_vector;
 class iSql_string;
+class iSql_vector;
+
+class pq_Connection;
+class pq_Connection_options;
+class pq_Notification;
+class pq_Prepared_statement;
+class pq_Row;
+class pq_Row_info;
 
 class iClient_exception;
 class iServer_exception;

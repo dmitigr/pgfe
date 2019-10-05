@@ -7,8 +7,8 @@
 
 #include "dmitigr/pgfe/basics.hpp"
 
-#include <dmitigr/common/debug.hpp>
-#include <dmitigr/common/string.hpp>
+#include <dmitigr/util/debug.hpp>
+#include <dmitigr/util/string.hpp>
 
 #include <libpq-fe.h>
 
@@ -42,11 +42,12 @@ template<> struct default_delete<::PGresult> final {
 
 } // namespace std
 
+/**
+ * @brief The layer of abstraction over libpq.
+ */
 namespace dmitigr::pgfe::detail::pq {
 
 /**
- * @internal
- *
  * @returns The integer identifier of the specified format.
  */
 inline int to_int(const Data_format format)
@@ -59,8 +60,6 @@ inline int to_int(const Data_format format)
 }
 
 /**
- * @internal
- *
  * @returns Data_format converted from integer.
  */
 inline Data_format to_data_format(const int format)
@@ -73,40 +72,51 @@ inline Data_format to_data_format(const int format)
 }
 
 /**
- * @internal
- *
  * @brief Represents libpq's result.
  */
 class Result {
 public:
   /**
-   * Denotes a result status.
+   * @brief Denotes a result status.
    */
   using Status = ::ExecStatusType;
 
   /**
-   * The default constructor.
+   * @brief The default constructor.
    */
   Result() = default;
 
   /**
-   * The constructor.
+   * @brief The constructor.
    */
   explicit Result(::PGresult* const pgresult) noexcept
     : pgresult_(pgresult)
   {}
 
-  /// @{
-  /// Non copyable.
+  /**
+   * @overload
+   *
+   * @remarks Constructs the empty single tuple result.
+   */
+  explicit Result(const Data_format fmt)
+    : pgresult_{::PQmakeEmptyPGresult(nullptr, PGRES_SINGLE_TUPLE)}
+  {
+    char empty_literal[] = {'\0'};
+    auto* const name = empty_literal;
+    const auto tableid = 0;
+    const auto columnid = -1;
+    const auto format = pq::to_int(fmt);
+    const auto typid = 0;
+    const auto typlen = -1;
+    const auto atttypmod = -1;
+    ::PGresAttDesc attributes[] = {{name, tableid, columnid, format, typid, typlen, atttypmod}};
+    set_attributes(attributes, sizeof (attributes) / sizeof (::PGresAttDesc));
+  }
+
   Result(const Result&) = delete;
   Result& operator=(const Result&) = delete;
-  /// @}
-
-  /// @{
-  /// Movable.
   Result(Result&&) = default;
   Result& operator=(Result&&) = default;
-  /// @}
 
   /**
    * @returns `true` if this instance is set to a some `::PGresult`.
@@ -117,7 +127,7 @@ public:
   }
 
   /**
-   * @brief Resets the current instance to the specified `::PGresult`.
+   * @brief Resets the current instance to the specified `pgresult`.
    */
   void reset(::PGresult* const pgresult = nullptr) noexcept
   {
@@ -125,19 +135,18 @@ public:
   }
 
   /**
-   * @returns The result status of the command.
+   * @returns The result status of a SQL command.
    *
-   * @remarks A SELECT command that happens to retrieve zero rows still shows PGRES_TUPLES_OK.
+   * @remarks It returns a value `PGRES_TUPLES_OK` for a
+   * `SELECT` command that happens to produce zero rows.
    */
   Status status() const noexcept
   {
     return ::PQresultStatus(pg_result());
   }
 
-  // ---------------------------------------------------------------------------
-
   /**
-   * @returns The command status tag from the SQL command.
+   * @returns The command status tag from a SQL command.
    */
   const char* command_tag() const noexcept
   {
@@ -145,12 +154,15 @@ public:
   }
 
   /**
-   * @returns The number of rows affected by the SQL command.
+   * @returns The number of rows affected by a SQL command.
    */
   const char* affected_rows_count() const noexcept
   {
     return ::PQcmdTuples(const_cast< ::PGresult*>(pg_result()));
   }
+
+  /// @name Error report.
+  /// @{
 
   /**
    * @returns The item of the error report.
@@ -296,9 +308,12 @@ public:
     return string::literal(::PQresultErrorField(pg_result(), PG_DIAG_SOURCE_FUNCTION));
   }
 
-  // ---------------------------------------------------------------------------
-  // TUPLES_OK / SINGLE_TUPLE
-  // ---------------------------------------------------------------------------
+  /// @}
+
+  // ===========================================================================
+
+  /// @name TUPLES_OK / SINGLE_TUPLE
+  /// @{
 
   /**
    * @returns The number of rows.
@@ -408,7 +423,7 @@ public:
    *
    * @remarks To distinguish null values from empty-string values use is_data_null().
    *
-   * @see is_data_null()
+   * @see is_data_null().
    */
   const char* data_value(const int row_number, const int field_number) const noexcept
   {
@@ -427,9 +442,12 @@ public:
     return ::PQsetvalue(const_cast< ::PGresult*>(pg_result()), row_number, field_number, const_cast<char*>(value), size);
   }
 
-  // ---------------------------------------------------------------------------
-  // ::PQdescribePrepared() result inspectors
-  // ---------------------------------------------------------------------------
+  /// @}
+
+  // ===========================================================================
+
+  /// @name ::PQdescribePrepared() result inspectors
+  /// @{
 
   /**
    * @returns The number of parameters of a prepared statement.
@@ -447,9 +465,12 @@ public:
     return ::PQparamtype(pg_result(), position);
   }
 
-  // ---------------------------------------------------------------------------
-  // Miscellaneous
-  // ---------------------------------------------------------------------------
+  /// @}
+
+  // ==============================================================================
+
+  /// @name Miscellaneous
+  /// @{
 
   /**
    * @brief Sets the attributes of this instance.
@@ -469,30 +490,11 @@ public:
     return pgresult_.get();
   }
 
+  /// @}
+
 private:
   std::unique_ptr< ::PGresult> pgresult_;
 };
-
-/**
- * @internal
- *
- * @brief Makes the empty single tuple result.
- */
-inline Result make_empty_single_tuple(const Data_format fmt)
-{
-  auto result = Result(::PQmakeEmptyPGresult(nullptr, PGRES_SINGLE_TUPLE));
-  char empty_literal[] = {'\0'};
-  auto* const name = empty_literal;
-  const auto tableid = 0;
-  const auto columnid = -1;
-  const auto format = pq::to_int(fmt);
-  const auto typid = 0;
-  const auto typlen = -1;
-  const auto atttypmod = -1;
-  ::PGresAttDesc attributes[] = {{name, tableid, columnid, format, typid, typlen, atttypmod}};
-  result.set_attributes(attributes, sizeof (attributes) / sizeof (::PGresAttDesc));
-  return result;
-}
 
 } // namespace dmitigr::pgfe::detail::pq
 

@@ -1,0 +1,22 @@
+// -*- C++ -*-
+// Copyright (C) Dmitry Igrishin
+// For conditions of distribution and use, see files LICENSE.txt or @dmitigr_lib_name@.hpp
+
+#ifndef DMITIGR_@dmitigr_lib_NAME@_DLL_HPP
+#define DMITIGR_@dmitigr_lib_NAME@_DLL_HPP
+
+#ifdef _WIN32
+  #ifdef DMITIGR_CEFEIKA_DLL_BUILDING
+    #define DMITIGR_@dmitigr_lib_NAME@_API __declspec(dllexport)
+  #else
+    #if DMITIGR_@dmitigr_lib_NAME@_DLL
+      #define DMITIGR_@dmitigr_lib_NAME@_API __declspec(dllimport)
+    #else /* static or header-only library on Windows */
+      #define DMITIGR_@dmitigr_lib_NAME@_API
+    #endif
+  #endif
+#else /* Unix */
+  #define DMITIGR_@dmitigr_lib_NAME@_API
+#endif
+
+#endif // DMITIGR_@dmitigr_lib_NAME@_DLL_HPP

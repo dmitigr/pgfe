@@ -5,7 +5,7 @@
 #include "dmitigr/pgfe/compositional.hpp"
 #include "dmitigr/pgfe/implementation_header.hpp"
 
-#include <dmitigr/common/debug.hpp>
+#include <dmitigr/util/debug.hpp>
 
 #include <functional>
 #include <type_traits>

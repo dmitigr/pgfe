@@ -1,5 +1,5 @@
 // -*- C++ -*-
-// Copyright (C) 2018 Dmitry Igrishin
+// Copyright (C) 2019 Dmitry Igrishin
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -34,6 +34,7 @@
 #include "dmitigr/pgfe/conversions_api.hpp"
 #include "dmitigr/pgfe/conversions.hpp"
 #include "dmitigr/pgfe/data.hpp"
+#include "dmitigr/pgfe/entity_vector.hpp"
 #include "dmitigr/pgfe/errc.hpp"
 #include "dmitigr/pgfe/error.hpp"
 #include "dmitigr/pgfe/exceptions.hpp"
@@ -42,9 +43,6 @@
 #include "dmitigr/pgfe/notice.hpp"
 #include "dmitigr/pgfe/notification.hpp"
 #include "dmitigr/pgfe/parameterizable.hpp"
-#include "dmitigr/pgfe/pq.hpp"
-// #include "dmitigr/pgfe/prepared_statement_dfn.hpp"
-// #include "dmitigr/pgfe/prepared_statement_impl.hpp"
 #include "dmitigr/pgfe/problem.hpp"
 #include "dmitigr/pgfe/response.hpp"
 #include "dmitigr/pgfe/row.hpp"
@@ -56,5 +54,6 @@
 #include "dmitigr/pgfe/std_system_error.hpp"
 #include "dmitigr/pgfe/types_fwd.hpp"
 #include "dmitigr/pgfe/util.hpp"
+#include "dmitigr/pgfe/version.hpp"
 
 #endif  // DMITIGR_PGFE_HPP

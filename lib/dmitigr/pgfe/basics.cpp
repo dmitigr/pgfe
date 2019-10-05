@@ -5,7 +5,7 @@
 #include "dmitigr/pgfe/basics.hpp"
 #include "dmitigr/pgfe/implementation_header.hpp"
 
-#include <dmitigr/common/basics.hpp>
+#include <dmitigr/util/basics.hpp>
 
 #include <cstring>
 

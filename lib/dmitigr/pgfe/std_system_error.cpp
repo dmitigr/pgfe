@@ -6,7 +6,7 @@
 #include "dmitigr/pgfe/std_system_error.hpp"
 #include "dmitigr/pgfe/implementation_header.hpp"
 
-#include <dmitigr/common/string.hpp>
+#include <dmitigr/util/string.hpp>
 
 namespace dmitigr::pgfe {
 
@@ -58,22 +58,22 @@ DMITIGR_PGFE_INLINE const Server_error_category& server_error_category() noexcep
 
 DMITIGR_PGFE_INLINE std::error_code make_error_code(Client_errc errc) noexcept
 {
-  return std::error_code(int(errc), client_error_category());
+  return std::error_code{static_cast<int>(errc), client_error_category()};
 }
 
 DMITIGR_PGFE_INLINE std::error_code make_error_code(Server_errc errc) noexcept
 {
-  return std::error_code(int(errc), server_error_category());
+  return std::error_code{static_cast<int>(errc), server_error_category()};
 }
 
 DMITIGR_PGFE_INLINE std::error_condition make_error_condition(Client_errc errc) noexcept
 {
-  return std::error_condition(int(errc), client_error_category());
+  return std::error_condition{static_cast<int>(errc), client_error_category()};
 }
 
 DMITIGR_PGFE_INLINE std::error_condition make_error_condition(Server_errc errc) noexcept
 {
-  return std::error_condition(int(errc), server_error_category());
+  return std::error_condition{static_cast<int>(errc), server_error_category()};
 }
 
 } // namespace dmitigr::pgfe

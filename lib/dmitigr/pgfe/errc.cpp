@@ -5,13 +5,11 @@
 #include "dmitigr/pgfe/errc.hpp"
 #include "dmitigr/pgfe/implementation_header.hpp"
 
-#include <dmitigr/common/debug.hpp>
+#include <dmitigr/util/debug.hpp>
 
 namespace dmitigr::pgfe::detail {
 
 /**
- * @internal
- *
  * @returns The literal representation of the `errc`.
  */
 DMITIGR_PGFE_INLINE const char* to_literal(const Client_errc errc)
@@ -34,8 +32,6 @@ DMITIGR_PGFE_INLINE const char* to_literal(const Client_errc errc)
 }
 
 /**
- * @internal
- *
  * @returns The literal representation of the `errc`.
  */
 DMITIGR_PGFE_INLINE const char* to_literal(const Server_errc errc)

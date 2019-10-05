@@ -30,7 +30,7 @@ struct Basic_conversions {
    * @returns The object of the type `Type` converted from the object of the type Data.
    *
    * @par Requires
-   * `data`
+   * `(data != nullptr)`.
    */
   template<typename ... Types>
   static Type to_type(const Data* const data, Types&& ... args)

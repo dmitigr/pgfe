@@ -15,9 +15,9 @@ namespace dmitigr::pgfe {
 /**
  * @ingroup main
  *
- * @brief Represents an interface of parameterizable types.
+ * @brief A parameterizable type.
  *
- * @remarks The API assumes that named parameters follows after positional parameters.
+ * @remarks The named parameters follows *after* positional parameters.
  */
 class Parameterizable {
 public:
@@ -44,41 +44,43 @@ public:
   /**
    * @returns The name of the parameter by the `index`.
    *
-   * @par requires
-   * Index in range [positional_parameter_count(), parameter_count()).
+   * @par Requires
+   * `index` in range `[positional_parameter_count(), parameter_count())`.
    */
   virtual const std::string& parameter_name(std::size_t index) const = 0;
 
   /**
-   * @returns The parameter index if the parameter with the specified name is present.
+   * @returns The parameter index if `has_parameter(name)`, or
+   * `std::nullopt` otherwise.
    */
   virtual std::optional<std::size_t> parameter_index(const std::string& name) const = 0;
 
   /**
-   * @returns `parameter_index(name).value()`
+   * @returns The parameter index.
    *
    * @par Requires
-   * `(has_parameter(name))`
+   * `has_parameter(name)`.
    */
   virtual std::size_t parameter_index_throw(const std::string& name) const = 0;
 
   /**
-   * @returns `bool(parameter_index(name))`
+   * @returns `true` if this instance has the parameter with the specified
+   * `name`, or `false` otherwise.
    */
   virtual bool has_parameter(const std::string& name) const = 0;
 
   /**
-   * @returns  `(positional_parameter_count() > 0)`
+   * @returns  `(positional_parameter_count() > 0)`.
    */
   virtual bool has_positional_parameters() const = 0;
 
   /**
-   * @returns `(named_parameter_count() > 0)`
+   * @returns `(named_parameter_count() > 0)`.
    */
   virtual bool has_named_parameters() const = 0;
 
   /**
-   * @returns `(parameter_count() > 0)`
+   * @returns `(parameter_count() > 0)`.
    */
   virtual bool has_parameters() const = 0;
 

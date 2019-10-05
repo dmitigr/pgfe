@@ -11,7 +11,7 @@
 #include "dmitigr/pgfe/prepared_statement_dfn.hpp"
 #include "dmitigr/pgfe/row_info.hpp"
 
-#include <dmitigr/common/memory.hpp>
+#include <dmitigr/util/memory.hpp>
 
 #include <algorithm>
 #include <chrono>
@@ -22,6 +22,9 @@
 
 namespace dmitigr::pgfe::detail {
 
+/**
+ * @brief The base implementation of Prepared_statement.
+ */
 class iPrepared_statement : public Prepared_statement {
 protected:
   virtual bool is_invariant_ok() = 0;
@@ -37,20 +40,35 @@ inline bool iPrepared_statement::is_invariant_ok()
 
 class pq_Connection;
 
+/**
+ * @brief The implementation of Prepared_statement based on libpq.
+ */
 class pq_Prepared_statement final : public iPrepared_statement {
 public:
-  // Construct prepared statement when preparing.
+  /**
+   * @brief Constructs when preparing.
+   */
   pq_Prepared_statement(std::string name, pq_Connection* connection, const Sql_string* preparsed);
 
-  // Construct prepared statement when describing.
+  /**
+   * @brief Constructs when describing.
+   */
   pq_Prepared_statement(std::string name, pq_Connection* connection, std::size_t parameters_count);
 
-  // Non copyable.
+  /** Non copyable. */
   pq_Prepared_statement(const pq_Prepared_statement&) = delete;
+
+  /**
+   * @brief The move constructor.
+   */
+  pq_Prepared_statement(pq_Prepared_statement&&) = default;
+
+  /** Non copyable. */
   pq_Prepared_statement& operator=(const pq_Prepared_statement&) = delete;
 
-  // Movable.
-  pq_Prepared_statement(pq_Prepared_statement&&) = default;
+  /**
+   * @brief The move assignment operator.
+   */
   pq_Prepared_statement& operator=(pq_Prepared_statement&&) = default;
 
   // ---------------------------------------------------------------------------
@@ -83,22 +101,23 @@ public:
 
   std::optional<std::size_t> parameter_index(const std::string& name) const override
   {
-    if (const auto i = parameter_index__(name); i < parameter_count())
-      return i;
+    if (const auto result = parameter_index__(name); result < parameter_count())
+      return result;
     else
       return std::nullopt;
   }
 
   std::size_t parameter_index_throw(const std::string& name) const override
   {
-    const auto i = parameter_index__(name);
-    DMITIGR_REQUIRE(i < parameter_count(), std::out_of_range);
-    return i;
+    const auto result = parameter_index__(name);
+    DMITIGR_REQUIRE(result < parameter_count(), std::out_of_range,
+      "the instance of dmitigr::pgfe::Prepared_statement has no parameter \"" + name + "\"");
+    return result;
   }
 
   bool has_parameter(const std::string& name) const override
   {
-    return bool(parameter_index(name));
+    return static_cast<bool>(parameter_index(name));
   }
 
   bool has_positional_parameters() const override
@@ -142,7 +161,9 @@ public:
 
   const Data* parameter(const std::size_t index) const override
   {
-    DMITIGR_REQUIRE(index < parameter_count(), std::out_of_range);
+    DMITIGR_REQUIRE(index < parameter_count(), std::out_of_range,
+      "invalid parameter index (" + std::to_string(index) + ")"
+      " of the dmitigr::pgfe::Prepared_statement instance");
     return parameters_[index].data.get();
   }
 
@@ -294,10 +315,10 @@ private:
 
   std::size_t parameter_index__(const std::string& name) const
   {
-    const auto beg = cbegin(parameters_);
-    const auto end = cend(parameters_);
-    const auto pos = std::find_if(beg, end, [&](const auto& p) { return p.name == name; });
-    return pos - beg;
+    const auto b = cbegin(parameters_);
+    const auto e = cend(parameters_);
+    const auto i = std::find_if(b, e, [&](const auto& p) { return p.name == name; });
+    return i - b;
   }
 
   constexpr static std::size_t maximum_parameter_count_{65536 - 1};

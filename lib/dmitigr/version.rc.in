@@ -1,0 +1,48 @@
+// -*- C++ -*-
+// Copyright (C) Dmitry Igrishin
+// For conditions of distribution and use, see files LICENSE.txt or @dmitigr_lib_name@.hpp
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// This file was generated automatically. Edit version.rc.in instead!!!!!!!!!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+#include <winres.h>
+
+#ifdef NDEBUG
+#define DMITIGR_@dmitigr_lib_NAME@_VERSION_DEBUG 0
+#define DMITIGR_@dmitigr_lib_NAME@_VERSION_ORIGINAL_FILENAME "@dmitigr_lib_internal_name@.dll\0"
+#else
+#define DMITIGR_@dmitigr_lib_NAME@_VERSION_DEBUG VS_FF_DEBUG
+#define DMITIGR_@dmitigr_lib_NAME@_VERSION_ORIGINAL_FILENAME "@dmitigr_lib_internal_name@d.dll\0"
+#endif
+
+VS_VERSION_INFO VERSIONINFO
+
+FILEVERSION     @dmitigr_lib_version_major_hi@,@dmitigr_lib_version_major_lo@,@dmitigr_lib_version_minor_hi@,@dmitigr_lib_version_minor_lo@
+PRODUCTVERSION  @dmitigr_lib_version_major_hi@,@dmitigr_lib_version_major_lo@,@dmitigr_lib_version_minor_hi@,@dmitigr_lib_version_minor_lo@
+FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
+FILEFLAGS       (DMITIGR_@dmitigr_lib_NAME@_VERSION_DEBUG)
+FILEOS          VOS__WINDOWS32
+FILETYPE        VFT_DLL
+FILESUBTYPE     0x0L
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "040904E4"
+    BEGIN
+      VALUE "CompanyName",      "Dmitry Igrishin\0"
+      VALUE "FileDescription",  "@dmitigr_lib_description@\0"
+      VALUE "FileVersion",      "@dmitigr_lib_version_major@.@dmitigr_lib_version_minor@\0"
+      VALUE "InternalName",     "@dmitigr_lib_internal_name@\0"
+      VALUE "LegalCopyright",   "Copyright (C) Dmitry Igrishin\0"
+      VALUE "LegalTrademarks",  "\0"
+      VALUE "OriginalFilename", DMITIGR_@dmitigr_lib_NAME@_VERSION_ORIGINAL_FILENAME
+      VALUE "ProductName",      "@dmitigr_lib_product_name@\0"
+      VALUE "ProductVersion",   "@dmitigr_lib_version_major@.@dmitigr_lib_version_minor@\0"
+    END
+  END
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x409, 1200
+  END
+END

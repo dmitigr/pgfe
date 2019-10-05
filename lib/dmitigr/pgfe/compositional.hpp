@@ -15,11 +15,11 @@ namespace dmitigr::pgfe {
 /**
  * @ingroup main
  *
- * @brief Defines an interface of compositional types.
+ * @brief An interface of compositional types.
  *
- * @param index - field index specifier;
- * @param name - field name specifier;
- * @param offset - field offset specifier.
+ * @param index - the field index specifier;
+ * @param name - the field name specifier;
+ * @param offset - the field offset specifier.
  */
 class Compositional {
 public:
@@ -42,34 +42,30 @@ public:
    * @returns The name of the field by the `index`.
    *
    * @par Requires
-   * `(index < field_count())`
+   * `(index < field_count())`.
    */
   virtual const std::string& field_name(std::size_t index) const = 0;
 
   /**
-   * @returns The field index if field with specified name is present.
+   * @returns The field index if `has_field(name, offset)`, or
+   * `std::nullopt` otherwise.
    *
    * @remarks Since several fields can be named equally, `offset` can be
    * specified as the starting lookup index.
-   *
-   * @par Requires
-   * `(offset < field_count())`
    */
   virtual std::optional<std::size_t> field_index(const std::string& name, std::size_t offset = 0) const = 0;
 
   /**
-   * @returns `field_index(name, offset).value()`
+   * @returns The field index.
    *
    * @par Requires
-   * `(has_field(name, offset))`
+   * `has_field(name, offset)`.
    */
   virtual std::size_t field_index_throw(const std::string& name, std::size_t offset = 0) const = 0;
 
   /**
-   * @returns `true` if the field named by `name` is presents, or `false` otherwise.
-   *
-   * @par Requires
-   * `(offset < field_count())`
+   * @returns `true` if this instance has the field with the specified `name`,
+   * or `false` otherwise.
    */
   virtual bool has_field(const std::string& name, std::size_t offset = 0) const = 0;
 

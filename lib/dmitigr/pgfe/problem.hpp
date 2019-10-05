@@ -17,7 +17,7 @@ namespace dmitigr::pgfe {
 /**
  * @ingroup main
  *
- * @brief Represents the problem which occurred on the PostgreSQL server.
+ * @brief A problem which occurred on a PostgreSQL server.
  */
 class Problem {
 public:
@@ -42,18 +42,20 @@ public:
   virtual std::error_code code() const = 0;
 
   /**
-   * @returns The value of enum class that corresponds to the problem severity.
+   * @returns The value of enum class that corresponds to a problem severity.
    *
-   * @throws `std::runtime_error` if used with version of PostgreSQL prior to 9.6.
+   * @throws `std::runtime_error` if the problem occured on the PostgreSQL
+   * server of version prior to 9.6.
    *
-   * @see severity_localized(), severity_non_localized()
+   * @see severity_localized(), severity_non_localized().
    */
   virtual Problem_severity severity() const = 0;
 
   /**
-   * Similar to severity_non_localized(), but textual representation possibly localized.
+   * @brief Similar to severity_non_localized(), but textual representation
+   * possibly localized.
    *
-   * @see severity(), severity_non_localized()
+   * @see severity(), severity_non_localized().
    */
   virtual const std::string& severity_localized() const noexcept = 0;
 
@@ -62,9 +64,10 @@ public:
    * one of the following: "LOG", "INFO", "DEBUG", "NOTICE", "WARNING", or
    * "ERROR", "FATAL", "PANIC".
    *
-   * @throws `std::runtime_error` if used with version of PostgreSQL prior to 9.6.
+   * @throws `std::runtime_error` if the problem occured on the PostgreSQL
+   * server of version prior to 9.6.
    *
-   * @see severity(), severity_localized()
+   * @see severity(), severity_localized().
    */
   virtual const std::string& severity_non_localized() const = 0;
 
@@ -100,7 +103,7 @@ public:
   virtual const std::optional<std::string>& hint() const noexcept = 0;
 
   /**
-   * @returns The position of a character of the query string submitted by client.
+   * @returns The position of a character of a query string submitted.
    *
    * @remarks Positions start at `1` and measured in characters rather than bytes!
    */
@@ -108,8 +111,7 @@ public:
 
   /**
    * @returns: Similar to query_position(), but it is used when the position
-   * refers to an internally-generated query rather than the one submitted by
-   * the client.
+   * refers to an internally-generated query rather than the one submitted.
    */
   virtual const std::optional<std::string>& internal_query_position() const noexcept = 0;
 
@@ -165,19 +167,17 @@ public:
   virtual const std::optional<std::string>& constraint_name() const noexcept = 0;
 
   /**
-   * @returns The file name of the source-code location where the problem
-   * was reported.
+   * @returns The file name of the source-code location reporting the problem.
    */
   virtual const std::optional<std::string>& source_file() const noexcept = 0;
 
   /**
-   * @returns The line number of the source-code location where the problem
-   * was reported.
+   * @returns The line number of the source-code location reporting the problem.
    */
   virtual const std::optional<std::string>& source_line() const noexcept = 0;
 
   /**
-   * @returns The name of the source-code routine reporting the problem.
+   * @returns The name of the source-code function reporting the problem.
    */
   virtual const std::optional<std::string>& source_function() const noexcept = 0;
 

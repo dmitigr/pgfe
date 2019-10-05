@@ -22,8 +22,6 @@
 namespace dmitigr::pgfe::detail {
 
 /**
- * @internal
- *
  * @brief `T` to/from `std::string` conversions.
  */
 template<typename T>
@@ -53,8 +51,6 @@ struct Generic_string_conversions final {
 };
 
 /**
- * @internal
- *
  * @brief `T` to/from Data conversions.
  */
 template<typename T, class StringConversions>
@@ -86,8 +82,6 @@ struct Generic_data_conversions final {
 // -----------------------------------------------------------------------------
 
 /**
- * @internal
- *
  * @brief The common implementation of numeric to/from `std::string` conversions.
  */
 template<typename T>
@@ -117,8 +111,6 @@ protected:
 // -----------------------------------------------------------------------------
 
 /**
- * @internal
- *
  * @brief The implementation of `short int` to/from `std::string` conversions.
  */
 template<>
@@ -139,8 +131,6 @@ struct Numeric_string_conversions<short int> final
 };
 
 /**
- * @internal
- *
  * @brief The implementation of `int` to/from `std::string` conversions.
  */
 template<>
@@ -157,8 +147,6 @@ struct Numeric_string_conversions<int> final
 };
 
 /**
- * @internal
- *
  * @brief The implementation of `long int` to/from `std::string` conversions.
  */
 template<>
@@ -175,8 +163,6 @@ struct Numeric_string_conversions<long int> final
 };
 
 /**
- * @internal
- *
  * @brief The implementation of `long long int` to/from `std::string` conversions.
  */
 template<>
@@ -193,8 +179,6 @@ struct Numeric_string_conversions<long long int> final
 };
 
 /**
- * @internal
- *
  * @brief The implementation of `float` to/from `std::string` conversions.
  */
 template<>
@@ -211,8 +195,6 @@ struct Numeric_string_conversions<float> final
 };
 
 /**
- * @internal
- *
  * @brief The implementation of `double` to/from `std::string` conversions.
  */
 template<>
@@ -229,8 +211,6 @@ struct Numeric_string_conversions<double> final
 };
 
 /**
- * @internal
- *
  * @brief The implementation of `long double` to/from `std::string` conversions.
  */
 template<>
@@ -251,8 +231,6 @@ struct Numeric_string_conversions<long double> final
 // -----------------------------------------------------------------------------
 
 /**
- * @internal
- *
  * @brief The common implementation of numeric to/from Data conversions.
  */
 template<typename T, class StringConversions>
@@ -323,8 +301,6 @@ private:
 // -----------------------------------------------------------------------------
 
 /**
- * @internal
- *
  * @brief The implementation of `std::string` to/from `std::string` conversions.
  */
 struct Std_string_conversions final {
@@ -347,6 +323,9 @@ struct Std_string_conversions final {
 // char conversions
 // -----------------------------------------------------------------------------
 
+/**
+ * @brief The implementation of `char` to/from `std::string` conversions.
+ */
 struct Char_string_conversions final {
   using Type = char;
 
@@ -364,6 +343,9 @@ struct Char_string_conversions final {
   }
 };
 
+/**
+ * @brief The implementation of `char` to/from Data conversions.
+ */
 struct Char_data_conversions final {
   using Type = char;
 
@@ -391,6 +373,9 @@ struct Char_data_conversions final {
 // bool conversions
 // -----------------------------------------------------------------------------
 
+/**
+ * @brief The implementation of `bool` to/from `std::string` conversions.
+ */
 struct Bool_string_conversions final {
   using Type = char;
 
@@ -433,6 +418,9 @@ private:
   }
 };
 
+/**
+ * @brief The implementation of `bool` to/from Data conversions.
+ */
 struct Bool_data_conversions final {
   using Type = char;
 
@@ -483,7 +471,13 @@ struct Numeric_conversions : public Basic_conversions<T, detail::Numeric_string_
 
 // -----------------------------------------------------------------------------
 
-template<typename T> struct Conversions final : public Basic_conversions<T, detail::Generic_string_conversions<T>,
+/**
+ * @ingroup conversions
+ *
+ * @brief The generic conversions.
+ */
+template<typename T>
+struct Conversions final : public Basic_conversions<T, detail::Generic_string_conversions<T>,
   detail::Generic_data_conversions<T>> {};
 
 /**
@@ -496,7 +490,8 @@ template<typename T> struct Conversions final : public Basic_conversions<T, deta
  *     and Data_format::binary formats;
  *   - instances of the type Data can only be created in Data_format::text format.
  */
-template<> struct Conversions<std::string> final : public Basic_conversions<std::string,
+template<>
+struct Conversions<std::string> final : public Basic_conversions<std::string,
   detail::Std_string_conversions, detail::Generic_data_conversions<std::string, detail::Std_string_conversions>> {};
 
 /**
@@ -504,49 +499,56 @@ template<> struct Conversions<std::string> final : public Basic_conversions<std:
  *
  * @brief Full specialization of Conversions for `short int`.
  */
-template<> struct Conversions<short int> final : public Numeric_conversions<short int>     {};
+template<>
+struct Conversions<short int> final : public Numeric_conversions<short int>{};
 
 /**
  * @ingroup conversions
  *
  * @brief Full specialization of Conversions for `int`.
  */
-template<> struct Conversions<int> final : public Numeric_conversions<int>           {};
+template<>
+struct Conversions<int> final : public Numeric_conversions<int>{};
 
 /**
  * @ingroup conversions
  *
  * @brief Full specialization of Conversions for `long int`.
  */
-template<> struct Conversions<long int> final : public Numeric_conversions<long int>      {};
+template<>
+struct Conversions<long int> final : public Numeric_conversions<long int>{};
 
 /**
  * @ingroup conversions
  *
  * @brief Full specialization of Conversions for `long long int`.
  */
-template<> struct Conversions<long long int> final : public Numeric_conversions<long long int> {};
+template<>
+struct Conversions<long long int> final : public Numeric_conversions<long long int>{};
 
 /**
  * @ingroup conversions
  *
  * @brief Full specialization of Conversions for `float`.
  */
-template<> struct Conversions<float> final : public Numeric_conversions<float>       {};
+template<>
+struct Conversions<float> final : public Numeric_conversions<float>{};
 
 /**
  * @ingroup conversions
  *
  * @brief Full specialization of Conversions for `double`.
  */
-template<> struct Conversions<double> final : public Numeric_conversions<double>      {};
+template<>
+struct Conversions<double> final : public Numeric_conversions<double>{};
 
 /**
  * @ingroup conversions
  *
  * @brief Full specialization of Conversions for `long double`.
  */
-template<> struct Conversions<long double> final : public Numeric_conversions<long double> {};
+template<>
+struct Conversions<long double> final : public Numeric_conversions<long double>{};
 
 /**
  * @ingroup conversions
@@ -558,10 +560,11 @@ template<> struct Conversions<long double> final : public Numeric_conversions<lo
  *   - for output data - Data_format::text.
  *
  * @par Requires
- * The size of the input data must be exactly 1.
+ * The size of the input data must be exactly `1`.
  */
-template<> struct Conversions<char> final : public Basic_conversions<char,
-  detail::Char_string_conversions, detail::Char_data_conversions> {};
+template<>
+struct Conversions<char> final : public Basic_conversions<char,
+  detail::Char_string_conversions, detail::Char_data_conversions>{};
 
 /**
  * @ingroup conversions
@@ -573,10 +576,12 @@ template<> struct Conversions<char> final : public Basic_conversions<char,
  *   - for output data - Data_format::text.
  *
  * @par Requires
- * The size of the input data in the Data_format::binary format must be exactly 1.
+ * The size of the input data in the Data_format::binary format must be
+ * exactly `1`.
  */
-template<> struct Conversions<bool> final : public Basic_conversions<bool,
-  detail::Bool_string_conversions, detail::Bool_data_conversions> {};
+template<>
+struct Conversions<bool> final : public Basic_conversions<bool,
+  detail::Bool_string_conversions, detail::Bool_data_conversions>{};
 
 } // namespace dmitigr::pgfe
 

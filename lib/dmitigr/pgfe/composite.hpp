@@ -20,7 +20,7 @@ namespace dmitigr::pgfe {
 /**
  * @ingroup main
  *
- * @brief Represents an abstraction of a composite type.
+ * @brief A composite type.
  */
 class Composite : public Compositional {
 public:
@@ -28,7 +28,7 @@ public:
   /// @{
 
   /**
-   * @returns The new instance of the composite.
+   * @returns A new instance of this class.
    */
   static DMITIGR_PGFE_API std::unique_ptr<Composite> make();
 
@@ -38,7 +38,7 @@ public:
   static DMITIGR_PGFE_API std::unique_ptr<Composite> make(std::vector<std::pair<std::string, std::unique_ptr<Data>>>&& v);
 
   /**
-   * @returns The copy of this instance.
+   * @returns A copy of this instance.
    */
   virtual std::unique_ptr<Composite> to_composite() const = 0;
 
@@ -53,7 +53,7 @@ public:
    * @param index - see Compositional;
    *
    * @par Requires
-   * `(index < field_count())`
+   * `(index < field_count())`.
    */
   virtual const Data* data(std::size_t index) const = 0;
 
@@ -64,7 +64,7 @@ public:
    * @param offset - see Compositional.
    *
    * @par Requires
-   * `has_field(name, offset)`
+   * `has_field(name, offset)`.
    */
   virtual const Data* data(const std::string& name, std::size_t offset = 0) const = 0;
 
@@ -85,7 +85,7 @@ public:
    * Strong.
    *
    * @par Requires
-   * `(index < field_count())`
+   * `(index < field_count())`.
    */
   virtual void set_data(std::size_t index, std::unique_ptr<Data>&& data) = 0;
 
@@ -97,8 +97,8 @@ public:
   /**
    * @overload
    *
-   * Sets the data of the specified index with the value of type T, implicitly
-   * converted to the Data by using to_data().
+   * @brief Sets the data of the specified index with the value of type T,
+   * implicitly converted to the Data by using to_data().
    */
   template<typename T>
   std::enable_if_t<!std::is_same_v<Data*, T>> set_data(std::size_t index, T&& value)
@@ -113,7 +113,7 @@ public:
    * @param data - the data to set.
    *
    * @par Requires
-   * `(has_field(name, 0))`
+   * `has_field(name, 0)`.
    */
   virtual void set_data(const std::string& name, std::unique_ptr<Data>&& data) = 0;
 
@@ -145,7 +145,7 @@ public:
    * Strong.
    *
    * @par Requires
-   * `(index < field_count())`
+   * `(index < field_count())`.
    */
   virtual std::unique_ptr<Data> release_data(std::size_t index) = 0;
 
@@ -156,7 +156,7 @@ public:
    * @param offset - see Compositional.
    *
    * @par Requires
-   * `has_field(name, offset)`
+   * `has_field(name, offset)`.
    */
   virtual std::unique_ptr<Data> release_data(const std::string& name, std::size_t offset = 0) = 0;
 
@@ -181,7 +181,7 @@ public:
   }
 
   /**
-   * @brief Inserts new field to a composite.
+   * @brief Inserts new field to this composite.
    *
    * @param index - the index of the field before which the new field will be inserted;
    * @param name - the name of the new field;
@@ -191,7 +191,7 @@ public:
    * Strong.
    *
    * @par Requires
-   * `(index < field_count())`
+   * `(index < field_count())`.
    */
   virtual void insert_field(std::size_t index, const std::string& name, std::unique_ptr<Data>&& data = {}) = 0;
 
@@ -212,7 +212,7 @@ public:
    * @param data - the data to set to the new field.
    *
    * @par Requires
-   * `(has_field(name, 0))`
+   * `has_field(name, 0)`.
    */
   virtual void insert_field(const std::string& name, const std::string& new_field_name, std::unique_ptr<Data>&& data) = 0;
 
@@ -226,10 +226,10 @@ public:
   }
 
   /**
-   * @brief Removes field from a composite.
+   * @brief Removes field from this composite.
    *
    * @par Requires
-   * `(index < field_count())`
+   * `(index < field_count())`.
    *
    * @par Exception safety guarantee
    * Strong.
@@ -242,8 +242,8 @@ public:
    * @param name - see Compositional;
    * @param offset - see Compositional.
    *
-   * @par Requires
-   * `has_field(name, offset)`
+   * @par Effects
+   * `!has_field(name, offset)`.
    */
   virtual void remove_field(const std::string& name, std::size_t offset = 0) = 0;
 
@@ -263,7 +263,7 @@ public:
    * @returns The result of conversion of this instance to the instance of type `std::vector`.
    *
    * @par Effects
-   * `(has_fields() == false)`
+   * `!has_fields()`.
    */
   virtual std::vector<std::pair<std::string, std::unique_ptr<Data>>> move_to_vector() = 0;
 

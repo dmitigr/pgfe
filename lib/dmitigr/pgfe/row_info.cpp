@@ -15,6 +15,9 @@
 
 namespace dmitigr::pgfe::detail {
 
+/**
+ * @brief The base implementation of Row_info.
+ */
 class iRow_info : public Row_info {
 public:
   virtual std::uint_fast32_t table_oid(const std::size_t) const override = 0;
@@ -71,10 +74,14 @@ inline bool iRow_info::is_invariant_ok()
   return compositional_ok;
 }
 
-// -----------------------------------------------------------------------------
-
+/**
+ * @brief The implementation of Row_info based on libpq.
+ */
 class pq_Row_info final : public iRow_info {
 public:
+  /**
+   * @brief The constructor.
+   */
   explicit pq_Row_info(pq::Result&& pq_result)
     : pq_result_(std::move(pq_result))
     , shared_field_names_(make_shared_field_names(pq_result_)) // note pq_result_
@@ -82,6 +89,9 @@ public:
     DMITIGR_ASSERT(is_invariant_ok());
   }
 
+  /**
+   * @overload
+   */
   pq_Row_info(pq::Result&& pq_result,
     const std::shared_ptr<std::vector<std::string>>& shared_field_names)
     : pq_result_(std::move(pq_result))
@@ -90,14 +100,25 @@ public:
     DMITIGR_ASSERT(is_invariant_ok());
   }
 
-  // Non copyable.
+  /** Non copyable. */
   pq_Row_info(const pq_Row_info&) = delete;
+
+  /**
+   * @brief The move constuctor.
+   */
+  pq_Row_info(pq_Row_info&&) = default;
+
+  /** Non copyable. */
   pq_Row_info& operator=(const pq_Row_info&) = delete;
 
-  // Movable.
-  pq_Row_info(pq_Row_info&&) = default;
+  /**
+   * @brief The move assignment operator.
+   */
   pq_Row_info& operator=(pq_Row_info&&) = default;
 
+  /**
+   * @returns The shared vector of field names to use across multiple rows.
+   */
   static std::shared_ptr<std::vector<std::string>> make_shared_field_names(const pq::Result& pq_result)
   {
     DMITIGR_ASSERT(pq_result);
@@ -129,24 +150,25 @@ public:
     return (*shared_field_names_)[index];
   }
 
-  std::optional<std::size_t> field_index(const std::string& name, const std::size_t offset = 0) const override
+  std::optional<std::size_t> field_index(const std::string& name, const std::size_t offset) const override
   {
-    if (const auto i = field_index__(name, offset); i < field_count())
-      return i;
+    if (const auto result = field_index__(name, offset); result < field_count())
+      return result;
     else
       return std::nullopt;
   }
 
-  std::size_t field_index_throw(const std::string& name, std::size_t offset) const override
+  std::size_t field_index_throw(const std::string& name, const std::size_t offset) const override
   {
-    const auto i = field_index__(name, offset);
-    DMITIGR_REQUIRE(i < field_count(), std::out_of_range);
-    return i;
+    const auto result = field_index__(name, offset);
+    DMITIGR_REQUIRE(result < field_count(), std::out_of_range,
+      "the instance of dmitigr::pgfe::Row_info has no field \"" + name + "\"");
+    return result;
   }
 
-  bool has_field(const std::string& name, const std::size_t offset = 0) const override
+  bool has_field(const std::string& name, const std::size_t offset) const override
   {
-    return bool(field_index(name, offset));
+    return static_cast<bool>(field_index(name, offset));
   }
 
   // ---------------------------------------------------------------------------
@@ -221,8 +243,8 @@ protected:
   }
 
 private:
-  friend class pq_Row;
-  friend class pq_Prepared_statement;
+  friend pq_Row;
+  friend pq_Prepared_statement;
 
   std::size_t field_index__(const std::string& name, std::size_t offset) const
   {
@@ -231,7 +253,7 @@ private:
     const auto e = cend(*shared_field_names_);
     const auto ident = unquote_identifier(name);
     const auto i = std::find(b + offset, e, ident);
-    return (i - b);
+    return i - b;
   }
 
   pq::Result pq_result_;

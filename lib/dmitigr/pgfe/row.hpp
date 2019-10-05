@@ -15,7 +15,7 @@ namespace dmitigr::pgfe {
 /**
  * @ingroup main
  *
- * @brief Represents an abstraction of a row produced by a server.
+ * @brief A row produced by a PostgreSQL server.
  */
 class Row : public Response, public Compositional {
 public:
@@ -30,7 +30,7 @@ public:
    * @param index - see Compositional.
    *
    * @par Requires
-   * Index in range [0, field_count()).
+   * `(index < field_count())`.
    */
   virtual const Data* data(std::size_t index) const = 0;
 
@@ -43,7 +43,7 @@ public:
    * @par Requires
    * `has_field(name, offset)`.
    *
-   * @see has_field()
+   * @see has_field().
    */
   virtual const Data* data(const std::string& name, std::size_t offset = 0) const = 0;
 

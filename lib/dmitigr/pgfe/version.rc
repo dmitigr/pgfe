@@ -2,6 +2,10 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// This file was generated automatically. Edit version.rc.in instead!!!!!!!!!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 #include <winres.h>
 
 #ifdef NDEBUG
@@ -14,8 +18,8 @@
 
 VS_VERSION_INFO VERSIONINFO
 
-FILEVERSION     1,0,1,0
-PRODUCTVERSION  1,0,1,0
+FILEVERSION     0,1,0,0
+PRODUCTVERSION  0,1,0,0
 FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
 FILEFLAGS       (DMITIGR_PGFE_VERSION_DEBUG)
 FILEOS          VOS__WINDOWS32
@@ -27,14 +31,14 @@ BEGIN
     BLOCK "040904E4"
     BEGIN
       VALUE "CompanyName",      "Dmitry Igrishin\0"
-      VALUE "FileDescription",  "PostgreSQL API\0"
-      VALUE "FileVersion",      "1.0.1.0\0"
+      VALUE "FileDescription",  "The client API for PostgreSQL\0"
+      VALUE "FileVersion",      "1.0\0"
       VALUE "InternalName",     "dmitigr_pgfe\0"
       VALUE "LegalCopyright",   "Copyright (C) Dmitry Igrishin\0"
       VALUE "LegalTrademarks",  "\0"
       VALUE "OriginalFilename", DMITIGR_PGFE_VERSION_ORIGINAL_FILENAME
       VALUE "ProductName",      "Dmitigr Pgfe\0"
-      VALUE "ProductVersion",   "1.1beta\0"
+      VALUE "ProductVersion",   "1.0\0"
     END
   END
   BLOCK "VarFileInfo"

@@ -1,0 +1,12 @@
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+
+[*.{cpp,hpp,txt,md}]
+charset = utf-8
+
+[*.{cpp,hpp}]
+indent_style = space
+indent_size = 2

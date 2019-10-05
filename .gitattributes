@@ -1,2 +1,4 @@
 * text eol=lf
-doc/pgfe.class.violet.html binary
+tests/mulf-form-data*.txt text eol=crlf
+doc/fcgi/dmitigr_fcgi_overview.violet.html binary
+doc/pgfe/dmitigr_pgfe_overview.violet.html binary

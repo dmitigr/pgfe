@@ -53,7 +53,7 @@ inline void pq_Prepared_statement::execute_async()
 {
   DMITIGR_REQUIRE(connection()->is_ready_for_async_request(), std::logic_error);
 
-  // All values are NULLs. (can throw)
+  // All values are NULLs. (Can throw.)
   const int param_count = int(parameter_count());
   std::vector<const char*> values(param_count, nullptr);
   std::vector<int> lengths(param_count, 0);

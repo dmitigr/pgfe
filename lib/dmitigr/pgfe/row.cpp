@@ -10,6 +10,9 @@
 
 namespace dmitigr::pgfe::detail {
 
+/**
+ * @brief The base implementation of Row.
+ */
 class iRow : public Row {
 protected:
   virtual bool is_invariant_ok() = 0;
@@ -21,10 +24,14 @@ inline bool iRow::is_invariant_ok()
   return compositional_ok;
 }
 
-// -----------------------------------------------------------------------------
-
+/**
+ * @brief The implementation of Row based on libpq.
+ */
 class pq_Row final : public iRow {
 public:
+  /**
+   * @brief The constructor.
+   */
   explicit pq_Row(pq_Row_info&& info)
     : info_{std::move(info)}
     , datas_{decltype (datas_)::size_type(info_.pq_result_.field_count())}
@@ -76,18 +83,18 @@ public:
   // Row overridings
   // ---------------------------------------------------------------------------
 
-  const Row_info* info() const noexcept override
+  const pq_Row_info* info() const noexcept override
   {
     return &info_;
   }
 
-  const Data* data(const std::size_t index) const override
+  const Data_view* data(const std::size_t index) const override
   {
     DMITIGR_REQUIRE(index < field_count(), std::out_of_range);
     return data__(index);
   }
 
-  const Data* data(const std::string& name, const std::size_t offset) const override
+  const Data_view* data(const std::string& name, const std::size_t offset) const override
   {
     const auto index = field_index_throw(name, offset);
     return data__(index);
@@ -102,9 +109,10 @@ protected:
   }
 
 private:
-  const Data* data__(const std::size_t index) const noexcept
+  const Data_view* data__(const std::size_t index) const noexcept
   {
-    return !info_.pq_result_.is_data_null(0, int(index)) ? &datas_[index] : nullptr;
+    constexpr int row = 0;
+    return !info_.pq_result_.is_data_null(row, static_cast<int>(index)) ? &datas_[index] : nullptr;
   }
 
   pq_Row_info info_; // contains pq::Result

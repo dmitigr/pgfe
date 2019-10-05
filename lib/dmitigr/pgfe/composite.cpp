@@ -8,7 +8,7 @@
 #include "dmitigr/pgfe/util.hpp"
 #include "dmitigr/pgfe/implementation_header.hpp"
 
-#include <dmitigr/common/debug.hpp>
+#include <dmitigr/util/debug.hpp>
 
 #include <algorithm>
 #include <utility>
@@ -16,6 +16,9 @@
 
 namespace dmitigr::pgfe::detail {
 
+/**
+ * @brief The base implementation of Composite.
+ */
 class iComposite : public Composite {
 protected:
   virtual bool is_invariant_ok() = 0;
@@ -27,26 +30,31 @@ inline bool iComposite::is_invariant_ok()
   return compositional_ok;
 }
 
-// -----------------------------------------------------------------------------
-
 /**
- * @internal
- *
- * @brief An implementation of Composite that stores data as a vector of unique
- * pointers.
+ * @brief The implementation of Composite that stores the data as a vector of
+ * unique pointers.
  *
  * @remarks Fields removing will not invalidate pointers returned by data().
  */
 class heap_data_Composite final : public iComposite {
 public:
+  /**
+   * @brief The default constructor
+   */
   heap_data_Composite() = default;
 
+  /**
+   * @brief See Composite::make().
+   */
   explicit heap_data_Composite(std::vector<std::pair<std::string, std::unique_ptr<Data>>>&& datas)
     : datas_{std::move(datas)}
   {
     DMITIGR_ASSERT(is_invariant_ok());
   }
 
+  /**
+   * @brief The copy constructor.
+   */
   heap_data_Composite(const heap_data_Composite& rhs)
     : datas_{rhs.datas_.size()}
   {
@@ -55,6 +63,14 @@ public:
     DMITIGR_ASSERT(is_invariant_ok());
   }
 
+  /**
+   * @brief The move constructor.
+   */
+  heap_data_Composite(heap_data_Composite&& rhs) = default;
+
+  /**
+   * @brief The copy assignment operator.
+   */
   heap_data_Composite& operator=(const heap_data_Composite& rhs)
   {
     heap_data_Composite tmp{rhs};
@@ -62,10 +78,14 @@ public:
     return *this;
   }
 
-  heap_data_Composite(heap_data_Composite&& rhs) = default;
-
+  /**
+   * @brief The move assignment operator.
+   */
   heap_data_Composite& operator=(heap_data_Composite&& rhs) = default;
 
+  /**
+   * @brief The swap operation.
+   */
   void swap(heap_data_Composite& rhs) noexcept
   {
     datas_.swap(rhs.datas_);
@@ -93,22 +113,27 @@ public:
 
   std::optional<std::size_t> field_index(const std::string& name, const std::size_t offset = 0) const override
   {
-    if (const auto i = field_index__(name, offset); i < field_count())
-      return i;
-    else
+    if (offset < field_count()) {
+      const auto b = cbegin(datas_);
+      const auto e = cend(datas_);
+      const auto ident = unquote_identifier(name);
+      const auto i = std::find_if(b + offset, e, [&](const auto& pair) { return pair.first == ident; });
+      return i != e ? std::make_optional(i - b) : std::nullopt;
+    } else
       return std::nullopt;
   }
 
   std::size_t field_index_throw(const std::string& name, const std::size_t offset = 0) const override
   {
-    const auto i = field_index__(name, offset);
-    DMITIGR_REQUIRE(i < field_count(), std::out_of_range);
-    return i;
+    const auto result = field_index(name, offset);
+    DMITIGR_REQUIRE(result, std::out_of_range,
+      "the instance of dmitigr::pgfe::Composite has no field \"" + name + "\"");
+    return *result;
   }
 
   bool has_field(const std::string& name, const std::size_t offset = 0) const override
   {
-    return bool(field_index(name, offset));
+    return static_cast<bool>(field_index(name, offset));
   }
 
   // ---------------------------------------------------------------------------
@@ -120,8 +145,6 @@ public:
     return std::make_unique<heap_data_Composite>(*this);
   }
 
-  // ---------------------------------------------------------------------------
-
   const Data* data(const std::size_t index) const override
   {
     DMITIGR_REQUIRE(index < field_count(), std::out_of_range);
@@ -132,8 +155,6 @@ public:
   {
     return data(field_index_throw(name, offset));
   }
-
-  // -------------------------------------------------------------------------------------
 
   void set_data(const std::size_t index, std::unique_ptr<Data>&& data) override
   {
@@ -197,12 +218,12 @@ public:
     DMITIGR_ASSERT(is_invariant_ok());
   }
 
-  void remove_field(const std::string& name, std::size_t offset = 0) override
+  void remove_field(const std::string& name, const std::size_t offset) override
   {
-    remove_field(field_index_throw(name, offset));
+    if (const auto index = field_index(name, offset))
+      datas_.erase(cbegin(datas_) + *index);
+    DMITIGR_ASSERT(is_invariant_ok());
   }
-
-  // ---------------------------------------------------------------------------
 
   std::vector<std::pair<std::string, std::unique_ptr<Data>>> to_vector() const override
   {
@@ -221,6 +242,9 @@ public:
   // Non public API
   // ---------------------------------------------------------------------------
 
+  /**
+   * @brief Appends `rhs` to the end of `this` composite.
+   */
   void append(heap_data_Composite&& rhs)
   {
     datas_.insert(cend(datas_), std::make_move_iterator(begin(rhs.datas_)), std::make_move_iterator(end(rhs.datas_)));
@@ -234,22 +258,10 @@ protected:
   }
 
 private:
-  std::size_t field_index__(const std::string& name, std::size_t offset) const
-  {
-    DMITIGR_REQUIRE(offset < field_count(), std::out_of_range);
-    const auto b = cbegin(datas_);
-    const auto e = cend(datas_);
-    const auto ident = unquote_identifier(name);
-    const auto i = std::find_if(b + offset, e, [&](const auto& pair) { return pair.first == ident; });
-    return (i - b);
-  }
-
   std::vector<std::pair<std::string, std::unique_ptr<Data>>> datas_;
 };
 
 } // namespace dmitigr::pgfe::detail
-
-// =============================================================================
 
 namespace dmitigr::pgfe {
 

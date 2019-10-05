@@ -12,8 +12,7 @@ namespace dmitigr::pgfe {
 /**
  * @ingroup main
  *
- * @brief Represents an abstraction of synchronous
- * (requested) messages from PostgreSQL server.
+ * @brief A synchronous (requested) message from a PostgreSQL server.
  */
 class Response : public Server_message {
 private:

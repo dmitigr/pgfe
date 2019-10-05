@@ -5,10 +5,13 @@
 #include "dmitigr/pgfe/completion.hpp"
 #include "dmitigr/pgfe/implementation_header.hpp"
 
-#include <dmitigr/common/debug.hpp>
+#include <dmitigr/util/debug.hpp>
 
 namespace dmitigr::pgfe::detail {
 
+/**
+ * @brief The base implementation of Completion.
+ */
 class iCompletion : public Completion {
 protected:
   virtual bool is_invariant_ok() = 0;
@@ -19,10 +22,14 @@ inline bool iCompletion::is_invariant_ok()
   return true;
 }
 
-// -----------------------------------------------------------------------------
-
+/**
+ * @brief The implementation of Completion.
+ */
 class simple_Completion final : public iCompletion {
 public:
+  /**
+   * @brief The constructor.
+   */
   explicit simple_Completion(const std::string& tag)
   {
     auto space_before_word_pos = tag.find_last_of(' ');
@@ -30,9 +37,9 @@ public:
       auto end_word_pos = tag.size() - 1;
       while (space_before_word_pos != std::string::npos) {
         /*
-         * The tag probably contains number (with affected row count as the last word).
-         * We'll try to convert each word of the tag to a number.
-         * All numbers except the last one (ie affected row count) will be ignored.
+         * The tag probably contains number (with affected row count as the last
+         * word). We'll try to convert each word of the tag to a number. All
+         * numbers except the last one (i.e. affected row count) will be ignored.
          */
         auto word_size = end_word_pos - space_before_word_pos;
         auto word = tag.substr(space_before_word_pos + 1, word_size);

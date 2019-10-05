@@ -15,7 +15,7 @@ namespace dmitigr::pgfe {
 /**
  * @ingroup errors
  *
- * @brief Represents a category of runtime client errors.
+ * @brief A category of runtime client errors.
  *
  * @see Client_exception.
  */
@@ -32,7 +32,8 @@ public:
    * @par Requires
    * `ev` must corresponds to the value of Client_errc.
    *
-   * @remarks The caller should not rely on the return value as it a subject to change.
+   * @remarks The caller should not rely on the return value as it is a
+   * subject to change.
    */
   std::string message(int ev) const override;
 };
@@ -40,7 +41,7 @@ public:
 /**
  * @ingroup errors
  *
- * @brief Represents a category of runtime server errors.
+ * @brief A category of runtime server errors.
  *
  * @see Server_exception.
  */
@@ -57,7 +58,8 @@ public:
    * @par Requires
    * `ev` must corresponds to the value of Server_errc.
    *
-   * @remarks The caller should not rely on the return value as it a subject to change.
+   * @remarks The caller should not rely on the return value as it is a
+   * subject to change.
    */
   std::string message(int ev) const override;
 };
@@ -65,14 +67,14 @@ public:
 /**
  * @ingroup errors
  *
- * @returns The reference to instance of type Client_error_category.
+ * @returns The reference to the instance of type Client_error_category.
  */
 DMITIGR_PGFE_API const Client_error_category& client_error_category() noexcept;
 
 /**
  * @ingroup errors
  *
- * @returns The reference to instance of type Server_error_category.
+ * @returns The reference to the instance of type Server_error_category.
  */
 DMITIGR_PGFE_API const Server_error_category& server_error_category() noexcept;
 

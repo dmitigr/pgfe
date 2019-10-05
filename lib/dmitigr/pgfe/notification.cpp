@@ -7,13 +7,16 @@
 #include "dmitigr/pgfe/pq.hpp"
 #include "dmitigr/pgfe/implementation_header.hpp"
 
-#include <dmitigr/common/debug.hpp>
+#include <dmitigr/util/debug.hpp>
 
 #include <cstring>
 #include <optional>
 
 namespace dmitigr::pgfe::detail {
 
+/**
+ * @brief The base implementation of Notification.
+ */
 class iNotification : public Notification {
 protected:
   virtual bool is_invariant_ok()
@@ -22,8 +25,14 @@ protected:
   }
 };
 
+/**
+ * @brief The implementation of Notification based on libpq.
+ */
 class pq_Notification final : public iNotification {
 public:
+  /**
+   * @brief The constructor.
+   */
   explicit pq_Notification(::PGnotify* const pgnotify)
     : pgnotify_(pgnotify)
     , payload_{}
@@ -34,12 +43,20 @@ public:
     DMITIGR_ASSERT(is_invariant_ok());
   }
 
-  // Non copyable.
+  /** Non copyable. */
   pq_Notification(const pq_Notification&) = delete;
+
+  /**
+   * @brief The move constructor.
+   */
+  pq_Notification(pq_Notification&&) = default;
+
+  /** Non copyable. */
   pq_Notification& operator=(const pq_Notification&) = delete;
 
-  // Movable.
-  pq_Notification(pq_Notification&&) = default;
+  /**
+   * @brief The move assignment operator.
+   */
   pq_Notification& operator=(pq_Notification&&) = default;
 
   std::int_fast32_t server_pid() const noexcept override
@@ -52,7 +69,7 @@ public:
     return channel_name_;
   }
 
-  const Data* payload() const noexcept override
+  const Data_view* payload() const noexcept override
   {
     return payload_ ? &*payload_ : nullptr;
   }

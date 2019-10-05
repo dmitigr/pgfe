@@ -20,7 +20,7 @@ namespace dmitigr::pgfe {
 /**
  * @ingroup utilities
  *
- * @brief Represents a vector of SQL strings and useful operations on it.
+ * @brief A container of SQL strings and useful operations on it.
  *
  * @see Sql_string.
  */
@@ -35,18 +35,14 @@ public:
   /// @{
 
   /**
-   * @brief Makes an empty SQL vector.
+   * @returns A new instance of an empty SQL vector.
    */
   static DMITIGR_PGFE_API std::unique_ptr<Sql_vector> make();
 
   /**
    * @brief Parses the input to make a SQL vector at once.
    *
-   * @param input - the SQL input, such as a content of a file with multiple SQL
-   * commands and comments.
-   *
-   * @returns The SQL vector parsed from the `input`. For example, consider the
-   * following input:
+   * For example, consider the following input:
    *   @code{sql}
    *   -- Comment 1 (comment of the empty query string)
    *   ;
@@ -58,8 +54,14 @@ public:
    *
    *   -- Comment 4 (just a footer)
    * @endcode
-   * In this case the result vector will consists of the three sql string. (The
-   * second SQL string includes comments 2 and 3 and the `SELECT 1` statement.)
+   * In this case the result vector will consists of the three SQL strings: the
+   * string with only comment 1 and the string with comments 2 and 3 and the
+   * `SELECT 1` statement.
+   *
+   * @param input - the SQL input, such as a content of a file with multiple SQL
+   * commands and comments.
+   *
+   * @returns A new instance of this class.
    */
   static DMITIGR_PGFE_API std::unique_ptr<Sql_vector> make(const std::string& input);
 
@@ -75,7 +77,7 @@ public:
 
   /// @}
 
-  // ---------------------------------------------------------------------------
+  // ===========================================================================
 
   /// @name Observers
   /// @{
@@ -86,13 +88,13 @@ public:
   virtual std::size_t sql_string_count() const = 0;
 
   /**
-   * @returns `true` if this SQL vector is empty, or `false` otherwise.
+   * @returns `true` if this SQL vector is not empty, or `false` otherwise.
    */
   virtual bool has_sql_strings() const = 0;
 
   /**
-   * @returns `true` if the SQL string with the given criterias is presents in
-   * this vector, or `false` otherwise.
+   * @returns `true` if the SQL string with the given criterias is presents
+   * in this vector, or `false` otherwise.
    */
   virtual bool has_sql_string(const std::string& extra_name, const std::string& extra_value,
     const std::size_t offset = 0, const std::size_t extra_offset = 0) const = 0;
@@ -107,20 +109,16 @@ public:
    * @param offset - the starting position of lookup in this vector;
    * @param extra_offset - the starting position of lookup in the extra data.
    *
-   * @par Requires
-   * `(offset < sql_string_count() && extra_offset < sql_string(i)->extra()->field_count())`,
-   * for each `i` in range `[0, sql_string_count())`.
-   *
    * @see Sql_string::extra().
    */
   virtual std::optional<std::size_t> sql_string_index(const std::string& extra_name, const std::string& extra_value,
     std::size_t offset = 0, std::size_t extra_offset = 0) const = 0;
 
   /**
-   * @brief Similar to sql_string_index(const std::string&, const std::string&, std::size_t, std::size_t) except the requirement.
+   * @brief Similar to sql_string_index() except the requirement.
    *
-   * @par Requires:
-   * `(has_sql_string(name))`
+   * @par Requires
+   * `has_sql_string(extra_name, extra_value, offset, extra_offset)`.
    */
   virtual std::size_t sql_string_index_throw(const std::string& extra_name, const std::string& extra_value,
     std::size_t offset = 0, std::size_t extra_offset = 0) const = 0;
@@ -131,7 +129,7 @@ public:
    * @param index - the index of SQL string to return.
    *
    * @par Requires
-   * `(index < sql_string_count())`
+   * `(index < sql_string_count())`.
    */
   virtual Sql_string* sql_string(std::size_t index) = 0;
 
@@ -147,9 +145,6 @@ public:
    * @par Parameters
    * See sql_string_index().
    *
-   * @par Requires
-   * `(offset < sql_string_count())`
-   *
    * @see Sql_string::extra().
    */
   virtual Sql_string* sql_string(const std::string& extra_name, const std::string& extra_value,
@@ -163,7 +158,7 @@ public:
 
   /// @}
 
-  // --------------------------------------------------------------------------
+  // ===========================================================================
 
   /// @{
   /// @name Modifiers
@@ -175,7 +170,7 @@ public:
    * @param sql_string - the SQL string to set.
    *
    * @par Requires
-   * `(index < sql_string_count() && sql_string != nullptr)`
+   * `(index < sql_string_count() && sql_string != nullptr)`.
    */
   virtual void set_sql_string(std::size_t index, std::unique_ptr<Sql_string>&& sql_string) = 0;
 
@@ -197,7 +192,7 @@ public:
    * @param sql_string - the SQL string to append.
    *
    * @par Requires
-   * `(sql_string != nullptr)`
+   * `(sql_string != nullptr)`.
    */
   virtual void append_sql_string(std::unique_ptr<Sql_string>&& sql_string) = 0;
 
@@ -211,13 +206,13 @@ public:
   }
 
   /**
-   * @brief Inserts new SQL string to this vector.
+   * @brief Inserts the new SQL string to this vector.
    *
    * @param index - the index of the SQL string before which the new SQL string will be inserted;
    * @param sql_string - the SQL string to insert.
    *
    * @par Requires
-   * `(index < sql_string_count() && sql_string != nullptr)`
+   * `(index < sql_string_count() && sql_string != nullptr)`.
    */
   virtual void insert_sql_string(std::size_t index, std::unique_ptr<Sql_string>&& sql_string) = 0;
 
@@ -233,35 +228,38 @@ public:
   }
 
   /**
-   * @brief Removes SQL string from the vector.
+   * @brief Removes the SQL string from the vector.
    *
    * @par Requires
-   * `(index < sql_string_count())`
+   * `(index < sql_string_count())`.
    */
   virtual void remove_sql_string(std::size_t index) = 0;
 
   /// @}
 
-  // ---------------------------------------------------------------------------
+  // ===========================================================================
 
   /// @name Conversions
   /// @{
 
   /**
-   * @returns The result of conversion of this instance to the instance of type `std::string`.
+   * @returns The result of conversion of this instance to the instance of type
+   * `std::string`.
    */
   virtual std::string to_string() const = 0;
 
   /**
-   * @returns The result of conversion of this instance to the instance of type `std::vector`.
+   * @returns The result of conversion of this instance to the instance of type
+   * `std::vector`.
    */
   virtual std::vector<std::unique_ptr<Sql_string>> to_vector() const = 0;
 
   /**
-   * @returns The result of conversion of this instance to the instance of type `std::vector`.
+   * @returns The result of conversion of this instance to the instance of type
+   * `std::vector`.
    *
    * @par Effects
-   * `(has_sql_strings() == false)`
+   * `!has_sql_strings()`.
    */
   virtual std::vector<std::unique_ptr<Sql_string>> move_to_vector() = 0;
 

@@ -1,0 +1,20 @@
+// -*- C++ -*-
+// Copyright (C) Dmitry Igrishin
+// For conditions of distribution and use, see files LICENSE.txt or @dmitigr_lib_name@.hpp
+
+#ifndef DMITIGR_@dmitigr_lib_NAME@_INLINE
+  #if defined(DMITIGR_@dmitigr_lib_NAME@_HEADER_ONLY) && !defined(DMITIGR_@dmitigr_lib_NAME@_BUILDING)
+    #define DMITIGR_@dmitigr_lib_NAME@_INLINE inline
+  #else
+    #define DMITIGR_@dmitigr_lib_NAME@_INLINE
+  #endif
+#endif  // DMITIGR_@dmitigr_lib_NAME@_INLINE
+
+#ifndef DMITIGR_@dmitigr_lib_NAME@_NOMINMAX
+  #ifdef _WIN32
+    #ifndef NOMINMAX
+      #define NOMINMAX
+      #define DMITIGR_@dmitigr_lib_NAME@_NOMINMAX
+    #endif
+  #endif
+#endif  // DMITIGR_@dmitigr_lib_NAME@_NOMINMAX

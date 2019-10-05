@@ -9,7 +9,7 @@
 #include "dmitigr/pgfe/dll.hpp"
 #include "dmitigr/pgfe/types_fwd.hpp"
 
-#include <dmitigr/common/filesystem_experimental.hpp>
+#include <dmitigr/util/filesystem.hpp>
 
 #include <cstdint>
 #include <chrono>
@@ -22,7 +22,7 @@ namespace dmitigr::pgfe {
 /**
  * @ingroup main
  *
- * @brief Defines an abstraction to work with Connection options.
+ * @brief Connection options.
  */
 class Connection_options {
 public:
@@ -35,27 +35,28 @@ public:
   /// @{
 
   /**
-   * @returns The new instance of the default connection options.
+   * @returns A new instance of the default connection options.
    */
   static DMITIGR_PGFE_API std::unique_ptr<Connection_options> make();
 
   /**
-   * @returns The new instance of the default connection options.
+   * @returns A new instance of the default connection options.
    *
    * @par Effects
-   * `(communication_mode() == value)`
+   * `(communication_mode() == value)`.
    */
   static DMITIGR_PGFE_API std::unique_ptr<Connection_options> make(Communication_mode value);
 
   /**
-   * @returns The instance of type Connection initialized with this instance.
+   * @returns A new instance of type Connection initialized by
+   * using `this` instance.
    *
-   * @see Connection::make()
+   * @see Connection::make().
    */
   virtual std::unique_ptr<Connection> make_connection() const = 0;
 
   /**
-   * @returns The copy of this instance.
+   * @returns A copy of this instance.
    */
   virtual std::unique_ptr<Connection_options> to_connection_options() const = 0;
 
@@ -75,38 +76,38 @@ public:
    * @remarks The Communication_mode::uds communication mode is unavailable on
    * Microsoft Windows.
    *
-   * @see communication_mode()
+   * @see communication_mode().
    */
   virtual Connection_options* set(Communication_mode value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set(Communication_mode)
+   * @see set(Communication_mode).
    */
   virtual Communication_mode communication_mode() const = 0;
 
   // ---------------------------------------------------------------------------
 
   /**
-   * @brief Sets server's port number.
+   * @brief Sets the server's port number.
    *
-   * When `(communication_mode() == Communication_mode::net)` it will be used as
-   * the TCP port number. Otherwise, it will be used as extension of the
-   * Unix-domain socket file, which is named `.s.PGSQL.port` and located in the
-   * directory `uds_directory()`.
+   * If `(communication_mode() == Communication_mode::net)` it will be used as
+   * the TCP port number. Otherwise, it will be used as the extension of the
+   * Unix-domain socket file, which is named as `.s.PGSQL.port` and located in
+   * the `uds_directory()` directory.
    *
    * @par Exception safety guarantee
    * Strong.
    *
-   * @see port()
+   * @see port().
    */
   virtual Connection_options* set_port(const std::int_fast32_t value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_port()
+   * @see set_port().
    */
   virtual std::int_fast32_t port() const = 0;
 
@@ -120,56 +121,57 @@ public:
   /// @{
 
   /**
-   * @brief Sets absolute name of the directory where the Unix-domain socket file is
-   * located (usually /tmp).
+   * @brief Sets the absolute name of the directory where the Unix-domain socket
+   * file is located (usually `/tmp`).
    *
    * @par Requires
-   * `(communication_mode() == Communication_mode::uds)`. A `value` must be a valid
-   * absolute directory path.
+   * `(communication_mode() == Communication_mode::uds)`. A `value` must be a
+   * valid absolute directory path.
    *
    * @par Exception safety guarantee
    * Strong.
    *
-   * @see uds_directory()
+   * @see uds_directory().
    */
   virtual Connection_options* set_uds_directory(std::filesystem::path value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_uds_directory()
+   * @see set_uds_directory().
    */
   virtual const std::filesystem::path& uds_directory() const = 0;
 
   // ---------------------------------------------------------------------------
 
   /**
-   * @brief Sets obligation of verification that the server process is running
-   * under the specified username for successful authentication.
+   * @brief Sets the obligation of verification that the PostgreSQL server
+   * process is running under the specified username for successful
+   * authentication.
    *
    * @param value - the value of `std::nullopt` means *disabled*.
    *
    * @par Requires
-   * `(communication_mode() == Communication_mode::uds && (!value || !value->empty()))`
+   * `(communication_mode() == Communication_mode::uds && (!value || !value->empty()))`.
    *
    * @par Exception safety guarantee
    * Strong.
    *
-   * @see uds_require_server_process_username()
+   * @see uds_require_server_process_username().
    */
   virtual Connection_options* set_uds_require_server_process_username(std::optional<std::string> value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_uds_require_server_process_username()
+   * @see set_uds_require_server_process_username().
    */
   virtual const std::optional<std::string>& uds_require_server_process_username() const = 0;
 #endif
 
   // ---------------------------------------------------------------------------
 
-  /// @name Options specific to the TCP communication mode
+  /// @name Options specific to the Communication_mode::net.
   /// @{
 
   /**
@@ -178,68 +180,68 @@ public:
    * @par Exception safety guarantee
    * Strong.
    *
-   * @see is_tcp_keepalives_enabled()
+   * @see is_tcp_keepalives_enabled().
    */
   virtual Connection_options* set_tcp_keepalives_enabled(bool value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_tcp_keepalives_enabled()
+   * @see set_tcp_keepalives_enabled().
    */
   virtual bool is_tcp_keepalives_enabled() const = 0;
 
   // ---------------------------------------------------------------------------
 
   /**
-   * @brief Sets the interval (in seconds) after which start keepalives.
+   * @brief Sets the interval (in seconds) after which to start the keepalives.
    *
    * @param value - the value of `std::nullopt` means *system default*.
    *
    * @par Requires
-   * `(communication_mode() == Communication_mode::net)`
+   * `(communication_mode() == Communication_mode::net)`.
    *
    * @par Exception safety guarantee
    * Strong.
    *
    * @remarks This option is system dependent and has no effect on systems where
-   * TCP_KEEPIDLE socket option (or its equivalent) is unavailable.
+   * the `TCP_KEEPIDLE` socket option (or its equivalent) is unavailable.
    *
-   * @see tcp_keepalives_idle()
+   * @see tcp_keepalives_idle().
    */
   virtual Connection_options* set_tcp_keepalives_idle(std::optional<std::chrono::seconds> value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_tcp_keepalives_idle()
+   * @see set_tcp_keepalives_idle().
    */
   virtual std::optional<std::chrono::seconds> tcp_keepalives_idle() const = 0;
 
   // ---------------------------------------------------------------------------
 
   /**
-   * @brief Sets the interval (in seconds) between keepalives.
+   * @brief Sets the interval (in seconds) between the keepalives.
    *
    * @param value - the value of `std::nullopt` means *system default*.
    *
    * @par Requires
-   * `(communication_mode() == Communication_mode::net)`
+   * `(communication_mode() == Communication_mode::net)`.
    *
    * @par Exception safety guarantee
    * Strong.
    *
    * @remarks This option is system dependent and has no effect on systems where
-   * TCP_KEEPINTVL socket option (or its equivalent) is unavailable.
+   * the `TCP_KEEPINTVL` socket option (or its equivalent) is unavailable.
    *
-   * @see tcp_keepalives_interval()
+   * @see tcp_keepalives_interval().
    */
   virtual Connection_options* set_tcp_keepalives_interval(std::optional<std::chrono::seconds> value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_tcp_keepalives_interval()
+   * @see set_tcp_keepalives_interval().
    */
   virtual std::optional<std::chrono::seconds> tcp_keepalives_interval() const = 0;
 
@@ -257,27 +259,25 @@ public:
    * Strong.
    *
    * @remarks This option is system dependent and has no effect on systems where
-   * TCP_KEEPCNT socket option (or its equivalent) is unavailable.
+   * the `TCP_KEEPCNT` socket option (or its equivalent) is unavailable.
    *
-   * @see tcp_keepalives_count()
+   * @see tcp_keepalives_count().
    */
   virtual Connection_options* set_tcp_keepalives_count(std::optional<int> value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_tcp_keepalives_count()
+   * @see set_tcp_keepalives_count().
    */
   virtual std::optional<int> tcp_keepalives_count() const = 0;
 
   // ---------------------------------------------------------------------------
 
   /**
-   * @brief Sets numeric IP address of the PostgreSQL server.
+   * @brief Sets the numeric IP address of a PostgreSQL server to connect to.
    *
-   * With this option a host name lookup can be avoided.
-   *
-   * @param value - must be a valid address in either IPv4 or IPv6 format.
+   * @param value - the valid IPv4 or IPv6 address.
    *
    * @par Requires
    * `((communication_mode() == Communication_mode::net) && (value || net_hostname()))`.
@@ -286,25 +286,24 @@ public:
    * Strong.
    *
    * @remarks When using SSL or some authentication methods (such as Kerberos)
-   * the option `net_hostname` is mandatory even if using this option. If
-   * both `net_address` and `net_hostname` are set, the value of `net_address`
-   * will be treated as PostgreSQL server address to connect.
+   * the option `net_hostname` might be mandatory in couple with this option.
    *
-   * @see net_address(), set_net_hostname()
+   * @see net_address(), set_net_hostname().
    */
-  virtual Connection_options* set_net_address(std::optional<std::string> value) = 0;
+  virtual Connection_options* set_net_address(std::string value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_net_address()
+   * @see set_net_address().
    */
-  virtual const std::optional<std::string>& net_address() const = 0;
+  virtual const std::string& net_address() const = 0;
 
   // ---------------------------------------------------------------------------
 
   /**
-   * @brief Sets name of the host to connect to.
+   * @brief Sets the name of the host that might be required for some
+   * authentication methods or SSL certificate verification.
    *
    * @param value - must be a valid host name.
    *
@@ -314,18 +313,17 @@ public:
    * @par Exception safety guarantee
    * strong.
    *
-   * @remarks If the option `net_address` is set, host name lookup will not
-   * occurs even if this option is also set. However, the value of this option may
-   * be required for some authentication methods or SSL certificate verification.
+   * @remarks This option doesn't denotes the hostname to connect to, and no
+   * hostname lookup occurs upon setting this option!
    *
-   * @see net_hostname(), set_net_address()
+   * @see net_hostname(), set_net_address().
    */
   virtual Connection_options* set_net_hostname(std::optional<std::string> value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_net_hostname()
+   * @see set_net_hostname().
    */
   virtual const std::optional<std::string>& net_hostname() const = 0;
 
@@ -337,83 +335,84 @@ public:
   /// @{
 
   /**
-   * @brief Sets name of the role registered on the server.
+   * @brief Sets the name of the role registered on a PostgreSQL server.
    *
    * @par Exception safety guarantee
    * strong.
    *
-   * @see username()
+   * @see username().
    */
   virtual Connection_options* set_username(std::string value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_username()
+   * @see set_username().
    */
   virtual const std::string& username() const = 0;
 
   // ---------------------------------------------------------------------------
 
   /**
-   * @brief Sets name of the database on the server to connect to.
+   * @brief Sets the name of the database on a PostgreSQL server to connect to.
    *
    * @par Exception safety guarantee
    * Strong.
    *
-   * @see database()
+   * @see database().
    */
   virtual Connection_options* set_database(std::string value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_database()
+   * @see set_database().
    */
   virtual const std::string& database() const = 0;
 
   // ---------------------------------------------------------------------------
 
   /**
-   * @brief Sets password for such authentication methods as Password Authentication,
-   * LDAP Authentication.
+   * @brief Sets the password for the authentication methods like Password
+   * Authentication or LDAP Authentication.
    *
    * @par Requires
-   * `(!value || !value->empty())`
+   * `(!value || !value->empty())`.
    *
    * @par Exception safety guarantee
    * Strong.
    *
-   * @see password()
+   * @see password().
    */
   virtual Connection_options* set_password(std::optional<std::string> value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_password()
+   * @see set_password().
    */
   virtual const std::optional<std::string>& password() const = 0;
 
   // ---------------------------------------------------------------------------
 
   /**
-   * @brief Sets Kerberos service name to use when authenticating with GSSAPI Authentication.
+   * @brief Sets the Kerberos service name to use when authenticating with
+   * GSSAPI Authentication.
    *
    * @par Requires
-   * `(!value || !value->empty())`
+   * `(!value || !value->empty())`.
    *
    * @par Exception safety guarantee
    * Strong.
    *
-   * @see kerberos_service_name()
+   * @see kerberos_service_name().
    */
   virtual Connection_options* set_kerberos_service_name(std::optional<std::string> value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_kerberos_service_name()
+   * @see set_kerberos_service_name().
    */
   virtual const std::optional<std::string>& kerberos_service_name() const = 0;
 
@@ -428,48 +427,49 @@ public:
    * @brief Sets the SSL mode enabled if `(value == true)`, or disabled otherwise.
    *
    * @par Requires
-   * `(is_ssl_enabled())`
+   * `is_ssl_enabled()`.
    *
    * @par Exception safety guarantee
    * Strong.
    *
-   * @see is_ssl_enabled()
+   * @see is_ssl_enabled().
    */
   virtual Connection_options* set_ssl_enabled(bool value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_ssl_enabled()
+   * @see set_ssl_enabled().
    */
   virtual bool is_ssl_enabled() const = 0;
 
   // ---------------------------------------------------------------------------
 
   /**
-   * @brief Sets the SSL compression enabled if `(value == true)`, or disabled otherwise.
+   * @brief Sets the SSL compression enabled if `(value == true)`, or
+   * disabled otherwise.
    *
    * @par Requires
-   * `(is_ssl_enabled())`
+   * `is_ssl_enabled()`.
    *
    * @par Exception safety guarantee
    * Strong.
    *
-   * @see is_ssl_compression_enabled()
+   * @see is_ssl_compression_enabled().
    */
   virtual Connection_options* set_ssl_compression_enabled(bool value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_ssl_compression_enabled()
+   * @see set_ssl_compression_enabled().
    */
   virtual bool is_ssl_compression_enabled() const = 0;
 
   // ---------------------------------------------------------------------------
 
   /**
-   * @brief Sets the name of the file containing the SSL client certificate.
+   * @brief Sets the name of the file containing a SSL client certificate.
    *
    * @par Requires
    * `(is_ssl_enabled() && (!value || !value->empty()))`.
@@ -477,21 +477,21 @@ public:
    * @par Exception safety guarantee
    * Strong.
    *
-   * @see ssl_certificate_file()
+   * @see ssl_certificate_file().
    */
   virtual Connection_options* set_ssl_certificate_file(std::optional<std::filesystem::path> value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_ssl_certificate_file()
+   * @see set_ssl_certificate_file().
    */
   virtual const std::optional<std::filesystem::path>& ssl_certificate_file() const = 0;
 
   // ---------------------------------------------------------------------------
 
   /**
-   * @brief Sets name of the file containing the SSL client private key.
+   * @brief Sets the name of the file containing a SSL client private key.
    *
    * @par Requires
    * `(is_ssl_enabled() && (!value || !value->empty()))`.
@@ -499,24 +499,26 @@ public:
    * @par Exception safety guarantee
    * Strong.
    *
-   * @see ssl_private_key_file()
+   * @see ssl_private_key_file().
    */
   virtual Connection_options* set_ssl_private_key_file(std::optional<std::filesystem::path> value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_ssl_private_key_file()
+   * @see set_ssl_private_key_file().
    */
   virtual const std::optional<std::filesystem::path>& ssl_private_key_file() const = 0;
 
   // ---------------------------------------------------------------------------
 
   /**
-   * @brief Sets name of the file containing the SSL client certificate authority (CA).
+   * @brief Sets the name of the file containing a SSL client certificate
+   * authority (CA).
    *
-   * If this option is set, verification that the server certificate is issued
-   * by a trusted certificate authority (CA) will be performed.
+   * If this option is set, a verification that the PostgreSQL server
+   * certificate is issued by a trusted certificate authority (CA) will
+   * be performed.
    *
    * @par Requires
    * `(is_ssl_enabled() && (!value || !value->empty()))`.
@@ -524,21 +526,22 @@ public:
    * @par Exception safety guarantee
    * Strong.
    *
-   * @see ssl_certificate_authority_file()
+   * @see ssl_certificate_authority_file().
    */
   virtual Connection_options* set_ssl_certificate_authority_file(std::optional<std::filesystem::path> value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_ssl_certificate_authority_file()
+   * @see set_ssl_certificate_authority_file().
    */
   virtual const std::optional<std::filesystem::path>& ssl_certificate_authority_file() const = 0;
 
   // ---------------------------------------------------------------------------
 
   /**
-   * @brief Sets name of the file containing the SSL client certificate revocation list (CRL).
+   * @brief Sets the name of the file containing a SSL client certificate
+   * revocation list (CRL).
    *
    * @par Requires
    * `(is_ssl_enabled() && (!value || !value->empty()))`.
@@ -546,22 +549,22 @@ public:
    * @par Exception safety guarantee
    * Strong.
    *
-   * @see ssl_certificate_revocation_list_file()
+   * @see ssl_certificate_revocation_list_file().
    */
   virtual Connection_options* set_ssl_certificate_revocation_list_file(std::optional<std::filesystem::path> value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_ssl_certificate_revocation_list_file()
+   * @see set_ssl_certificate_revocation_list_file().
    */
   virtual const std::optional<std::filesystem::path>& ssl_certificate_revocation_list_file() const = 0;
 
   // ---------------------------------------------------------------------------
 
   /**
-   * @brief Sets obligation of verification that the requested server host name
-   * matches that in the certificate.
+   * @brief Sets the obligation of a verification that the requested PostgreSQL
+   * server hostname matches that in the certificate.
    *
    * @par Requires
    * `(is_ssl_enabled() && ssl_certificate_authority_file())`
@@ -569,14 +572,14 @@ public:
    * @par Exception safety guarantee
    * Strong.
    *
-   * @see is_ssl_server_hostname_verification_enabled()
+   * @see is_ssl_server_hostname_verification_enabled().
    */
   virtual Connection_options* set_ssl_server_hostname_verification_enabled(bool value) = 0;
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_ssl_server_hostname_verification_enabled()
+   * @see set_ssl_server_hostname_verification_enabled().
    */
   virtual bool is_ssl_server_hostname_verification_enabled() const = 0;
 
