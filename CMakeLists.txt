@@ -7,7 +7,7 @@ cmake_policy(VERSION 3.10)
 project(dmitigr_cefeika)
 
 if (NOT (UNIX OR WIN32))
-  message(FATAL_ERROR "unsupported target platform")
+  message(FATAL_ERROR "Dmitigr Cefeika only supports Unix-like or Windows")
 endif()
 
 list(APPEND CMAKE_MODULE_PATH ${dmitigr_cefeika_SOURCE_DIR}/cmake)
@@ -25,18 +25,18 @@ option(DMITIGR_LIBRARIAN_DEBUG "Print librarian.cmake debug output?" OFF)
 
 if(NOT DMITIGR_CEFEIKA_HEADER_ONLY)
   if(BUILD_SHARED_LIBS)
-    message("Building of shared libraries is enabled.")
+    message("The mode of building shared Dmitigr Cefeika libraries is set.")
   else()
-    message("Building of static libraries is enabled.")
+    message("The mode of building static Dmitigr Cefeika libraries is set.")
   endif()
 
   if(NOT DEFINED CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE Debug CACHE STRING
       "Build type: Debug Release RelWithDebInfo MinSizeRel." FORCE)
   endif()
-  message("Build type is ${CMAKE_BUILD_TYPE}")
+  message("Dmitigr Cefeika build type it set to ${CMAKE_BUILD_TYPE}")
 else()
-  message("Header-only libraries mode is enabled.")
+  message("Dmitigr Cefeika header-only mode is set.")
 endif()
 
 # ------------------------------------------------------------------------------
@@ -304,7 +304,7 @@ endforeach()
 
 if(DMITIGR_CEFEIKA_BUILD_TESTS)
   enable_testing()
-  message("Building of tests is enabled")
+  message("The mode of building Dmitigr Cefeika tests is set.")
 
   function(dmitigr_configure_test lib test)
     set(full_name "${lib}-${test}")
