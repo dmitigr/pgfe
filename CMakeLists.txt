@@ -2,10 +2,9 @@
 # Copyright (C) Dmitry Igrishin
 # For conditions of distribution and use, see file LICENSE.txt
 
-project(dmitigr_cefeika)
-
 cmake_minimum_required(VERSION 3.10)
 cmake_policy(VERSION 3.10)
+project(dmitigr_cefeika)
 
 if (NOT (UNIX OR WIN32))
   message(FATAL_ERROR "unsupported target platform")
