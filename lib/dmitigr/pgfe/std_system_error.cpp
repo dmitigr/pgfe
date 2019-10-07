@@ -10,12 +10,12 @@
 
 namespace dmitigr::pgfe {
 
-const char* Client_error_category::name() const noexcept
+DMITIGR_PGFE_INLINE const char* Client_error_category::name() const noexcept
 {
   return "dmitigr_pgfe_client_error";
 }
 
-std::string Client_error_category::message(const int ev) const
+DMITIGR_PGFE_INLINE std::string Client_error_category::message(const int ev) const
 {
   std::string result(name());
   result += ' ';
@@ -25,12 +25,12 @@ std::string Client_error_category::message(const int ev) const
   return result;
 }
 
-const char* Server_error_category::name() const noexcept
+DMITIGR_PGFE_INLINE const char* Server_error_category::name() const noexcept
 {
   return "dmitigr_pgfe_server_error";
 }
 
-std::string Server_error_category::message(const int ev) const
+DMITIGR_PGFE_INLINE std::string Server_error_category::message(const int ev) const
 {
   std::string result(name());
   result += ' ';

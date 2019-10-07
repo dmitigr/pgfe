@@ -1013,7 +1013,7 @@ inline bool is_ident_char(const char c) noexcept
  * @returns Preparsed SQL string in pair with the pointer to a character
  * that follows the SQL string.
  */
-std::pair<iSql_string, const char*> parse_sql_input(const char* text)
+DMITIGR_PGFE_INLINE std::pair<iSql_string, const char*> parse_sql_input(const char* text)
 {
   DMITIGR_ASSERT(text);
 
