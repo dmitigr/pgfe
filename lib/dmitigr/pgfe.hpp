@@ -46,6 +46,7 @@
 #include "dmitigr/pgfe/problem.hpp"
 #include "dmitigr/pgfe/response.hpp"
 #include "dmitigr/pgfe/row.hpp"
+#include "dmitigr/pgfe/row_conversions.hpp"
 #include "dmitigr/pgfe/row_info.hpp"
 #include "dmitigr/pgfe/server_message.hpp"
 #include "dmitigr/pgfe/signal.hpp"

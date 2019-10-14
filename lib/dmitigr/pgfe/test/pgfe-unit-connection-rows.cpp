@@ -6,19 +6,11 @@
 
 #include "dmitigr/pgfe.hpp"
 
-namespace pgfe = dmitigr::pgfe;
-
 struct Person {
   int id;
   std::string name;
   unsigned int age;
 };
-
-template<class T, typename ... Types>
-pgfe::Entity_vector<T> retrieve(pgfe::Connection* const conn, std::string_view function, Types&& ... args)
-{
-  return pgfe::Entity_vector<T>::from_function(conn, function, std::forward<Types>(args)...);
-}
 
 void print(const Person& p)
 {
@@ -57,6 +49,7 @@ template<> struct Conversions<Person> {
 
 int main(int, char* argv[])
 {
+  namespace pgfe = dmitigr::pgfe;
   using namespace dmitigr::test;
 
   try {
@@ -73,8 +66,9 @@ int main(int, char* argv[])
     // Test 1a.
     {
       std::cout << "From rows created on the server side:\n";
-      pgfe::Entity_vector<Person> persons{conn.get(), "select * from person"};
-      ASSERT(persons.entity_count() == 2);
+      conn->execute("select * from person");
+      const auto persons = conn->rows<std::vector<Person>>();
+      ASSERT(persons.size() == 2);
       print(persons[0]);
       print(persons[1]);
     }
@@ -91,10 +85,11 @@ int main(int, char* argv[])
       )");
 
       std::cout << "From rows created on the server side by function all_persons:\n";
-      auto persons = retrieve<Person>(conn.get(), "all_persons");
-      ASSERT(persons.entity_count() == 2);
-      print(persons.entity(0));
-      print(persons.entity(1));
+      conn->invoke("all_persons");
+      auto persons = conn->rows<std::vector<Person>>();
+      ASSERT(persons.size() == 2);
+      print(persons[0]);
+      print(persons[1]);
 
       conn->perform("rollback");
     }
@@ -113,59 +108,13 @@ int main(int, char* argv[])
       )");
 
       std::cout << "From rows created on the server side by function persons_by_name:\n";
-      auto persons = retrieve<Person>(conn.get(), "persons_by_name", _{"fname", "^B"});
-      ASSERT(persons.entity_count() == 1);
+      conn->invoke("persons_by_name", _{"fname", "^B"});
+      auto persons = conn->rows<std::vector<Person>>();
+      ASSERT(persons.size() == 1);
       for (const auto& person : persons)
         print(person);
 
       conn->perform("rollback");
-    }
-
-    // Test 2.
-    {
-      std::cout << "From composite created on the client side:\n";
-      auto alla = pgfe::Composite::make();
-      alla->append_field("id",  1);
-      alla->append_field("name", "Alla");
-      alla->append_field("age", "30");
-      auto bella = pgfe::Composite::make();
-      bella->append_field("id",  2);
-      bella->append_field("name", "Bella");
-      bella->append_field("age", "33");
-
-      std::vector<decltype(alla)> pv;
-      pv.emplace_back(std::move(alla));
-      pv.emplace_back(std::move(bella));
-      pgfe::Entity_vector<Person> persons{std::move(pv)};
-      ASSERT(persons.entity_count() == 2);
-      for (const auto& person : persons)
-        print(person);
-    }
-
-    // Test 3.
-    {
-      auto alla = pgfe::Composite::make();
-      alla->append_field("id",  1);
-      alla->append_field("name", "Alla");
-      alla->append_field("age", "30");
-      pgfe::Entity_vector<Person> persons;
-      persons.append_entity(std::move(alla));
-      ASSERT(persons.entity_count() == 1);
-      persons.remove_entity(cbegin(persons));
-      ASSERT(persons.entity_count() == 0);
-    }
-
-    // Test 4.
-    {
-      pgfe::Entity_vector<Person> persons;
-      auto b = begin(persons);
-      auto e = end(persons);
-      ASSERT(b == e);
-      auto cb = cbegin(persons);
-      auto ce = cend(persons);
-      ASSERT(cb == ce);
-      ASSERT(b == cb);
-      ASSERT(e == ce);
     }
   } catch (const std::exception& e) {
     report_failure(argv[0], e);

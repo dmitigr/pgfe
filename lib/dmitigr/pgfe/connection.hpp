@@ -7,6 +7,7 @@
 
 #include "dmitigr/pgfe/dll.hpp"
 #include "dmitigr/pgfe/prepared_statement_dfn.hpp"
+#include "dmitigr/pgfe/row_conversions.hpp"
 #include "dmitigr/pgfe/sql_string.hpp"
 #include "dmitigr/pgfe/types_fwd.hpp"
 
@@ -18,6 +19,8 @@
 #include <memory>
 #include <optional>
 #include <string>
+#include <type_traits>
+#include <vector>
 
 namespace dmitigr::pgfe {
 
@@ -938,6 +941,31 @@ public:
    * @remarks Calls body(release_row()).
    */
   virtual void for_each(const std::function<void(std::unique_ptr<Row>&&)>& body) = 0;
+
+  /**
+   * @brief Retrieves all the rows of the connection and converts them into
+   * objects of specified type.
+   *
+   * The conversion is performed by applying the conversion routine
+   * `Conversions<typename Container::value_type>::to_type()` to each row.
+   *
+   * @returns The container of objects retrieved from the connection.
+   *
+   * @par Exception safety guarantee
+   * Basic.
+   */
+  template<class Container = std::vector<std::unique_ptr<Row>>,
+    bool Release = std::is_convertible_v<std::unique_ptr<Row>,
+      typename Container::value_type>>
+  Container rows()
+  {
+    Row_collector<Container> result;
+    if constexpr (Release)
+      for_each([&result](std::unique_ptr<Row>&& row) { result.collect(std::move(row)); });
+    else
+      for_each([&result](const Row* const row) { result.collect(row); });
+    return std::move(result.container);
+  }
 
   /**
    * @brief Waits for the Completion or the Error and calls

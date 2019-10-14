@@ -243,7 +243,6 @@ set(dmitigr_pgfe_headers
   conversions_api.hpp
   conversions.hpp
   data.hpp
-  entity_vector.hpp
   errc.hpp
   error.hpp
   exceptions.hpp
@@ -258,6 +257,7 @@ set(dmitigr_pgfe_headers
   problem.hpp
   response.hpp
   row.hpp
+  row_conversions.hpp
   row_info.hpp
   server_message.hpp
   signal.hpp
@@ -302,8 +302,8 @@ set(dmitigr_pgfe_transunits
 
 set(dmitigr_pgfe_tests benchmark_array_client benchmark_array_server
   benchmark_sql_string_replace composite connection connection_deferrable
-  connection-err_in_mid connection_options connection_ssl conversions
-  conversions_online data entity_vector hello_world problem ps sql_string sql_vector)
+  connection-err_in_mid connection_options connection-rows connection_ssl
+  conversions conversions_online data  hello_world problem ps sql_string sql_vector)
 
 # ------------------------------------------------------------------------------
 # Tests
