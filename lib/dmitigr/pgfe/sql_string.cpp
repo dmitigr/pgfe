@@ -1158,6 +1158,7 @@ DMITIGR_PGFE_INLINE std::pair<iSql_string, const char*> parse_sql_input(const ch
     case dollar_quote_leading_tag:
       DMITIGR_ASSERT(previous_char != '$' && is_ident_char(previous_char));
       if (current_char == '$') {
+        fragment += current_char;
         state = dollar_quote;
       } else if (is_ident_char(current_char)) {
         dollar_quote_leading_tag_name += current_char;

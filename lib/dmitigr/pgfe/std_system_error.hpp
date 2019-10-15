@@ -41,13 +41,6 @@ public:
 /**
  * @ingroup errors
  *
- * @brief The instance of type Client_error_category.
- */
-inline const Client_error_category client_error_category;
-
-/**
- * @ingroup errors
- *
  * @brief A category of runtime server errors.
  *
  * @see Server_exception.
@@ -69,15 +62,21 @@ public:
    * subject to change.
    */
   std::string message(int ev) const override;
-
 };
 
 /**
  * @ingroup errors
  *
- * @brief The instance of type Server_error_category.
+ * @returns The reference to the instance of type Client_error_category.
  */
-inline const Server_error_category server_error_category;
+DMITIGR_PGFE_API const Client_error_category& client_error_category() noexcept;
+
+/**
+ * @ingroup errors
+ *
+ * @returns The reference to the instance of type Server_error_category.
+ */
+DMITIGR_PGFE_API const Server_error_category& server_error_category() noexcept;
 
 /**
  * @ingroup errors

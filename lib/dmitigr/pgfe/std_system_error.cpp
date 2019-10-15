@@ -44,24 +44,36 @@ DMITIGR_PGFE_INLINE std::string Server_error_category::message(const int ev) con
 
 // =============================================================================
 
+DMITIGR_PGFE_INLINE const Client_error_category& client_error_category() noexcept
+{
+  static const Client_error_category result;
+  return result;
+}
+
+DMITIGR_PGFE_INLINE const Server_error_category& server_error_category() noexcept
+{
+  static const Server_error_category result;
+  return result;
+}
+
 DMITIGR_PGFE_INLINE std::error_code make_error_code(Client_errc errc) noexcept
 {
-  return std::error_code{static_cast<int>(errc), client_error_category};
+  return std::error_code{static_cast<int>(errc), client_error_category()};
 }
 
 DMITIGR_PGFE_INLINE std::error_code make_error_code(Server_errc errc) noexcept
 {
-  return std::error_code{static_cast<int>(errc), server_error_category};
+  return std::error_code{static_cast<int>(errc), server_error_category()};
 }
 
 DMITIGR_PGFE_INLINE std::error_condition make_error_condition(Client_errc errc) noexcept
 {
-  return std::error_condition{static_cast<int>(errc), client_error_category};
+  return std::error_condition{static_cast<int>(errc), client_error_category()};
 }
 
 DMITIGR_PGFE_INLINE std::error_condition make_error_condition(Server_errc errc) noexcept
 {
-  return std::error_condition{static_cast<int>(errc), server_error_category};
+  return std::error_condition{static_cast<int>(errc), server_error_category()};
 }
 
 } // namespace dmitigr::pgfe

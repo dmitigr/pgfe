@@ -34,7 +34,6 @@
 #include "dmitigr/pgfe/conversions_api.hpp"
 #include "dmitigr/pgfe/conversions.hpp"
 #include "dmitigr/pgfe/data.hpp"
-#include "dmitigr/pgfe/entity_vector.hpp"
 #include "dmitigr/pgfe/errc.hpp"
 #include "dmitigr/pgfe/error.hpp"
 #include "dmitigr/pgfe/exceptions.hpp"

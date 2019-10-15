@@ -790,15 +790,11 @@ public:
 
   /**
    * @overload
-   *
-   * @remarks The statement will be send as-is without any preparsing.
    */
   template<typename ... Types>
   void execute(const std::string& statement, Types&& ... parameters)
   {
-    auto* const ps = prepare_statement(statement);
-    ps->set_parameters(std::forward<Types>(parameters)...);
-    ps->execute();
+    execute(Sql_string::make(statement).get(), std::forward<Types>(parameters)...);
   }
 
   /**
