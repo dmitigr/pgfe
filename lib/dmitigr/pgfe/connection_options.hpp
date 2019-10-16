@@ -87,6 +87,54 @@ public:
    */
   virtual Communication_mode communication_mode() const = 0;
 
+  /**
+   * @brief Sets the timeout of the connect operation.
+   *
+   * @param value - the value of `std::nullopt` means *eternity*.
+   *
+   * @see connect_timeout(), Connection::connect().
+   */
+  virtual Connection_options* set_connect_timeout(std::optional<std::chrono::milliseconds> value) = 0;
+
+  /**
+   * @return The current value of the connect timeout.
+   *
+   * @see set_connect_timeout(), Connection::connect().
+   */
+  virtual std::optional<std::chrono::milliseconds> connect_timeout() const = 0;
+
+  /**
+   * @brief Sets the timeout of the wait response operation.
+   *
+   * @param value - the value of `std::nullopt` means *eternity*.
+   *
+   * @see wait_response_timeout(), Connection::wait_response().
+   */
+  virtual Connection_options* set_wait_response_timeout(std::optional<std::chrono::milliseconds> value) = 0;
+
+  /**
+   * @return The current value of the wait response timeout.
+   *
+   * @see set_wait_response_timeout(), Connection::wait_response().
+   */
+  virtual std::optional<std::chrono::milliseconds> wait_response_timeout() const = 0;
+
+  /**
+   * @brief Sets the timeout of the wait last response operation.
+   *
+   * @param value - the value of `std::nullopt` means *eternity*.
+   *
+   * @see wait_last_response_timeout(), Connection::wait_last_response().
+   */
+  virtual Connection_options* set_wait_last_response_timeout(std::optional<std::chrono::milliseconds> value) = 0;
+
+  /**
+   * @return The current value of the wait last response timeout.
+   *
+   * @see set_wait_last_response_timeout(), Connection::wait_last_response().
+   */
+  virtual std::optional<std::chrono::milliseconds> wait_last_response_timeout() const = 0;
+
   // ---------------------------------------------------------------------------
 
   /**

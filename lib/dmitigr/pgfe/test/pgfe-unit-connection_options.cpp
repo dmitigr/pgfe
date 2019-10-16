@@ -47,6 +47,36 @@ int main(int, char* argv[])
       ASSERT(co->communication_mode() == value);
     }
 
+    ASSERT(co->connect_timeout() == defaults::connect_timeout);
+    {
+      std::chrono::milliseconds valid_value;
+      co->set_connect_timeout(valid_value);
+      ASSERT(co->connect_timeout() == valid_value);
+
+      std::chrono::milliseconds invalid_value{-1};
+      ASSERT(is_logic_throw_works([&]{ co->set_connect_timeout(invalid_value); }));
+    }
+
+    ASSERT(co->wait_response_timeout() == defaults::wait_response_timeout);
+    {
+      std::chrono::milliseconds valid_value;
+      co->set_wait_response_timeout(valid_value);
+      ASSERT(co->wait_response_timeout() == valid_value);
+
+      std::chrono::milliseconds invalid_value{-1};
+      ASSERT(is_logic_throw_works([&]{ co->set_wait_response_timeout(invalid_value); }));
+    }
+
+    ASSERT(co->wait_last_response_timeout() == defaults::wait_last_response_timeout);
+    {
+      std::chrono::milliseconds valid_value;
+      co->set_wait_last_response_timeout(valid_value);
+      ASSERT(co->wait_last_response_timeout() == valid_value);
+
+      std::chrono::milliseconds invalid_value{-1};
+      ASSERT(is_logic_throw_works([&]{ co->set_wait_last_response_timeout(invalid_value); }));
+    }
+
 #ifndef _WIN32
     ASSERT(co->uds_directory() == defaults::uds_directory);
     {

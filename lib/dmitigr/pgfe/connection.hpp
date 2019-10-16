@@ -142,14 +142,15 @@ public:
   /**
    * @brief Attempts to connect to a PostgreSQL server.
    *
-   * @param timeout - similar to wait_socket_readiness().
+   * @param timeout - the value of `-1` means `options()->connect_timeout()`,
+   * the value of `std::nullopt` means *eternity*.
    *
    * @par Effects
    * `(communication_status() == Communication_status::failure ||
    *    communication_status() == Communication_status::connected)`.
    *
    * @par Requires
-   * `(timeout >= -1)`.
+   * `(!timeout || timeout->count() >= -1)`.
    *
    * @throws Client_exception with code of Client_errc::timed_out if the
    * `(connection_status() == Communication_status::connected)` will not
@@ -160,7 +161,7 @@ public:
    *
    * @see connect_async().
    */
-  virtual void connect(std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) = 0;
+  virtual void connect(std::optional<std::chrono::milliseconds> timeout = std::chrono::milliseconds{-1}) = 0;
 
   /**
    * @brief Attempts to disconnect from a server.
@@ -182,15 +183,15 @@ public:
    * connection socket;
    *
    * @param timeout - the maximum amount of time to wait before return. The
-   * special value of `-1` denotes *eternity*.
+   * value of `std::nullopt` denotes *eternity*.
    *
    * @par Requires
-   * `((timeout >= -1) &&
+   * `((!timeout || timeout->count() >= -1) &&
    *    (communication_status() != Communication_status::failure) &&
    *    (communication_status() != Communication_status::disconnected))`.
    */
   virtual Socket_readiness wait_socket_readiness(Socket_readiness mask,
-    std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) const = 0;
+    std::optional<std::chrono::milliseconds> timeout = std::nullopt) const = 0;
 
   /**
    * @brief Polls the readiness of the connection socket.
@@ -389,10 +390,11 @@ public:
   /**
    * @brief Waits a some kind of the Response if it is unavailable and awaited.
    *
-   * @param timeout - similar to wait_socket_readiness().
+   * @param timeout - the value of `-1` means `options()->wait_response_timeout()`,
+   * the value of `std::nullopt` means *eternity*.
    *
    * @par Requires
-   * `(timeout >= -1 && is_connected() && is_awaiting_response())`.
+   * `((!timeout || timeout->count() >= -1) && is_connected() && is_awaiting_response())`.
    *
    * @par Exception safety guarantee
    * Basic.
@@ -402,33 +404,34 @@ public:
    *
    * @see is_response_available().
    */
-  virtual void wait_response(std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) = 0;
+  virtual void wait_response(std::optional<std::chrono::milliseconds> timeout = std::chrono::milliseconds{-1}) = 0;
 
   /**
    * @brief Similar to wait_response(), but throws Server_exception
    * if `(error() != nullptr)` after awaiting.
    */
-  virtual void wait_response_throw(std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) = 0;
+  virtual void wait_response_throw(std::optional<std::chrono::milliseconds> timeout = std::chrono::milliseconds{-1}) = 0;
 
   /**
    * @brief Waits for a Completion or an Error.
    *
-   * @param timeout - similar to wait_socket_readiness().
+   * @param timeout - the value of `-1` means `options()->wait_last_response_timeout()`,
+   * the value of `std::nullopt` means *eternity*.
    *
    * @par Requires
-   * `(timeout >= -1 && is_connected())`.
+   * `((!timeout || timeout->count() >= -1) && is_connected())`.
    *
    * @par Exception safety guarantee
    * Basic.
    */
-  virtual void wait_last_response(std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) = 0;
+  virtual void wait_last_response(std::optional<std::chrono::milliseconds> timeout = std::chrono::milliseconds{-1}) = 0;
 
   /**
    * @brief Similar to wait_last_response().
    *
    * @throws Server_exception if `(error() != nullptr)` after awaiting.
    */
-  virtual void wait_last_response_throw(std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) = 0;
+  virtual void wait_last_response_throw(std::optional<std::chrono::milliseconds> timeout = std::chrono::milliseconds{-1}) = 0;
 
   /**
    * @returns `(error() || row() || completion() || prepared_statement())`

@@ -17,21 +17,21 @@ namespace dmitigr::pgfe::detail {
 inline namespace validators {
 
 template<typename T>
-bool is_non_negative(const T value)
+bool is_non_negative(const T value) noexcept
 {
-  return (value >= 0);
+  return value >= 0;
 }
 
 template<typename T>
-bool is_non_empty(const T& value)
+bool is_non_empty(const T& value) noexcept
 {
   return !value.empty();
 }
 
 template<typename T>
-bool is_valid_port(const T value)
+bool is_valid_port(const T value) noexcept
 {
-  return (value > 0 && value < 65536);
+  return 0 < value && value < 65536;
 }
 
 inline bool is_ip_address(const std::string& value)
@@ -74,6 +74,9 @@ public:
    */
   explicit iConnection_options(const Communication_mode communication_mode)
     : communication_mode_{communication_mode}
+    , connect_timeout_{defaults::connect_timeout}
+    , wait_response_timeout_{defaults::wait_response_timeout}
+    , wait_last_response_timeout_{defaults::wait_last_response_timeout}
 #ifndef _WIN32
     , uds_directory_{defaults::uds_directory}
     , uds_require_server_process_username_{defaults::uds_require_server_process_username}
@@ -121,6 +124,48 @@ public:
   Communication_mode communication_mode() const override
   {
     return communication_mode_;
+  }
+
+  Connection_options* set_connect_timeout(std::optional<std::chrono::milliseconds> value) override
+  {
+    if (value)
+      validate(is_non_negative(value->count()), "connect timeout");
+    connect_timeout_ = std::move(value);
+    DMITIGR_ASSERT(is_invariant_ok());
+    return this;
+  }
+
+  std::optional<std::chrono::milliseconds> connect_timeout() const override
+  {
+    return connect_timeout_;
+  }
+
+  Connection_options* set_wait_response_timeout(std::optional<std::chrono::milliseconds> value) override
+  {
+    if (value)
+      validate(is_non_negative(value->count()), "wait response timeout");
+    wait_response_timeout_ = std::move(value);
+    DMITIGR_ASSERT(is_invariant_ok());
+    return this;
+  }
+
+  std::optional<std::chrono::milliseconds> wait_response_timeout() const override
+  {
+    return wait_response_timeout_;
+  }
+
+  Connection_options* set_wait_last_response_timeout(std::optional<std::chrono::milliseconds> value) override
+  {
+    if (value)
+      validate(is_non_negative(value->count()), "wait last response timeout");
+    wait_last_response_timeout_ = std::move(value);
+    DMITIGR_ASSERT(is_invariant_ok());
+    return this;
+  }
+
+  std::optional<std::chrono::milliseconds> wait_last_response_timeout() const override
+  {
+    return wait_last_response_timeout_;
   }
 
   // ---------------------------------------------------------------------------
@@ -483,6 +528,9 @@ private:
   }
 
   Communication_mode communication_mode_;
+  std::optional<std::chrono::milliseconds> connect_timeout_;
+  std::optional<std::chrono::milliseconds> wait_response_timeout_;
+  std::optional<std::chrono::milliseconds> wait_last_response_timeout_;
 #ifndef _WIN32
   std::filesystem::path uds_directory_;
   std::optional<std::string> uds_require_server_process_username_;

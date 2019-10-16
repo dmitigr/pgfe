@@ -16,6 +16,7 @@
 #include <cstdint>
 #include <limits>
 #include <locale>
+#include <optional>
 #include <string>
 
 namespace dmitigr::pgfe::detail {
@@ -83,12 +84,13 @@ inline int sqlstate_to_int(const char* const code)
 /**
  * @brief A wrapper around net::poll().
  */
-inline Socket_readiness poll_sock(const int socket, const Socket_readiness mask, const std::chrono::milliseconds timeout)
+inline Socket_readiness poll_sock(const int socket, const Socket_readiness mask,
+  const std::optional<std::chrono::milliseconds> timeout)
 {
   using Sock = net::Socket_native;
   using Sock_readiness = net::Socket_readiness;
-  using net::poll;
-  return static_cast<Socket_readiness>(poll(static_cast<Sock>(socket), static_cast<Sock_readiness>(mask), timeout));
+  return static_cast<Socket_readiness>(net::poll(static_cast<Sock>(socket),
+      static_cast<Sock_readiness>(mask), timeout ? *timeout : std::chrono::milliseconds{-1}));
 }
 
 } // namespace dmitigr::pgfe::detail

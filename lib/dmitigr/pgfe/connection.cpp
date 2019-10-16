@@ -48,17 +48,17 @@ public:
     return (transaction_block_status() == Transaction_block_status::uncommitted);
   }
 
-  void connect(std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) override
+  void connect(std::optional<std::chrono::milliseconds> timeout = std::chrono::milliseconds{-1}) override
   {
     using std::chrono::milliseconds;
     using std::chrono::system_clock;
     using std::chrono::duration_cast;
 
-    DMITIGR_REQUIRE(timeout >= milliseconds{-1}, std::invalid_argument);
+    DMITIGR_REQUIRE(!timeout || timeout >= milliseconds{-1}, std::invalid_argument);
 
     const auto is_timeout = [&timeout]()
     {
-      return timeout <= std::decay_t<decltype (timeout)>::zero();
+      return timeout <= milliseconds::zero();
     };
 
     const auto throw_timeout = []()
@@ -69,15 +69,17 @@ public:
     if (is_connected())
       return; // No need to check invariant. Just return.
 
+    if (timeout == milliseconds{-1})
+      timeout = options()->connect_timeout();
+
     // Stage 1: beginning.
     auto timepoint1 = system_clock::now();
 
     connect_async();
     auto current_status = communication_status();
 
-    const bool ignore_timeout = (timeout == milliseconds{-1});
-    if (!ignore_timeout) {
-      timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
+    if (timeout) {
+      *timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
       if (is_timeout())
         throw_timeout();
     }
@@ -106,8 +108,8 @@ public:
         throw std::runtime_error{error_message()};
       }
 
-      if (!ignore_timeout) {
-        timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
+      if (timeout) {
+        *timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
         DMITIGR_ASSERT(!is_timeout() || current_socket_readiness == Socket_readiness::unready);
         if (is_timeout())
           throw_timeout();
@@ -121,13 +123,13 @@ public:
   }
 
   Socket_readiness wait_socket_readiness(Socket_readiness mask,
-    std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) const override
+    std::optional<std::chrono::milliseconds> timeout = std::nullopt) const override
   {
     using std::chrono::system_clock;
     using std::chrono::milliseconds;
     using std::chrono::duration_cast;
 
-    DMITIGR_REQUIRE(timeout >= milliseconds{-1}, std::invalid_argument);
+    DMITIGR_REQUIRE(!timeout || timeout >= milliseconds{-1}, std::invalid_argument);
 
     {
       const auto cs = communication_status();
@@ -136,8 +138,6 @@ public:
 
     DMITIGR_ASSERT(socket() >= 0);
 
-    const bool ignore_timeout = (timeout == milliseconds{-1});
-
     while (true) {
       const auto timepoint1 = system_clock::now();
       try {
@@ -145,9 +145,9 @@ public:
       } catch (const std::system_error& e) {
         // Retry on EINTR.
         if (e.code() == std::errc::interrupted) {
-          if (!ignore_timeout) {
-            timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
-            if (timeout <= decltype (timeout)::zero())
+          if (timeout) {
+            *timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
+            if (timeout <= milliseconds::zero())
               // Timeout.
               return Socket_readiness::unready;
           } else
@@ -173,19 +173,20 @@ public:
     return is_signal_available() || is_response_available();
   }
 
-  void wait_response(std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) override
+  void wait_response(std::optional<std::chrono::milliseconds> timeout = std::chrono::milliseconds{-1}) override
   {
     using std::chrono::system_clock;
     using std::chrono::milliseconds;
     using std::chrono::duration_cast;
 
-    DMITIGR_REQUIRE(timeout >= milliseconds{-1}, std::invalid_argument);
+    DMITIGR_REQUIRE(!timeout || timeout >= milliseconds{-1}, std::invalid_argument);
     DMITIGR_REQUIRE(is_connected() && is_awaiting_response(), std::logic_error);
 
     if (is_response_available())
       return;
 
-    const bool ignore_timeout = (timeout == milliseconds{-1});
+    if (timeout == milliseconds{-1})
+      timeout = options()->wait_response_timeout();
 
     while (true) {
       collect_server_messages();
@@ -194,8 +195,8 @@ public:
         break;
       const auto timepoint1 = system_clock::now();
       if (wait_socket_readiness(Socket_readiness::read_ready, timeout) == Socket_readiness::read_ready) {
-        if (!ignore_timeout)
-          timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
+        if (timeout)
+          *timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
       } else
         // Timeout.
         break;
@@ -204,19 +205,22 @@ public:
     DMITIGR_ASSERT(is_invariant_ok());
   }
 
-  void wait_response_throw(const std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) override
+  void wait_response_throw(const std::optional<std::chrono::milliseconds> timeout = std::chrono::milliseconds{-1}) override
   {
     wait_response(timeout);
     throw_if_error();
   }
 
-  void wait_last_response(std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) override
+  void wait_last_response(std::optional<std::chrono::milliseconds> timeout = std::chrono::milliseconds{-1}) override
   {
     using std::chrono::system_clock;
     using std::chrono::milliseconds;
     using std::chrono::duration_cast;
 
-    const bool ignore_timeout = (timeout == milliseconds{-1});
+    DMITIGR_REQUIRE(!timeout || timeout >= milliseconds{-1}, std::invalid_argument);
+
+    if (timeout == milliseconds{-1})
+      timeout = options()->wait_last_response_timeout();
 
     while (true) {
       const auto timepoint1 = system_clock::now();
@@ -228,15 +232,15 @@ public:
       else
         break;
 
-      if (!ignore_timeout) {
-        timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
-        if (timeout <= decltype (timeout)::zero())
+      if (timeout) {
+        *timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
+        if (timeout <= milliseconds::zero())
           break;
       }
     }
   }
 
-  void wait_last_response_throw(std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) override
+  void wait_last_response_throw(std::optional<std::chrono::milliseconds> timeout = std::chrono::milliseconds{-1}) override
   {
     wait_last_response(timeout);
     throw_if_error();
