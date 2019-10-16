@@ -396,6 +396,10 @@ public:
    * @par Requires
    * `((!timeout || timeout->count() >= -1) && is_connected() && is_awaiting_response())`.
    *
+   * @throws Client_exception with code of Client_errc::timed_out if the
+   * `is_response_available()` will not evaluates to `true` within the specified
+   * `timeout`.
+   *
    * @par Exception safety guarantee
    * Basic.
    *
@@ -418,8 +422,12 @@ public:
    * @param timeout - the value of `-1` means `options()->wait_last_response_timeout()`,
    * the value of `std::nullopt` means *eternity*.
    *
+   * @throws Client_exception with code of Client_errc::timed_out if the
+   * `is_awaiting_response()` will not evaluates to `false` within the specified
+   * `timeout`.
+   *
    * @par Requires
-   * `((!timeout || timeout->count() >= -1) && is_connected())`.
+   * `((!timeout || timeout->count() >= -1) && is_connected() && is_awaiting_response())`.
    *
    * @par Exception safety guarantee
    * Basic.

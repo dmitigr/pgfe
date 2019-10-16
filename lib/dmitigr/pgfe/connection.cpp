@@ -197,9 +197,8 @@ public:
       if (wait_socket_readiness(Socket_readiness::read_ready, timeout) == Socket_readiness::read_ready) {
         if (timeout)
           *timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
-      } else
-        // Timeout.
-        break;
+      } else // Timeout
+        throw detail::iClient_exception{Client_errc::timed_out, "wait response timeout"};
     }
 
     DMITIGR_ASSERT(is_invariant_ok());
@@ -218,6 +217,7 @@ public:
     using std::chrono::duration_cast;
 
     DMITIGR_REQUIRE(!timeout || timeout >= milliseconds{-1}, std::invalid_argument);
+    DMITIGR_REQUIRE(is_connected() && is_awaiting_response(), std::logic_error);
 
     if (timeout == milliseconds{-1})
       timeout = options()->wait_last_response_timeout();
@@ -234,10 +234,11 @@ public:
 
       if (timeout) {
         *timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
-        if (timeout <= milliseconds::zero())
-          break;
+        if (timeout <= milliseconds::zero()) // Timeout
+          throw detail::iClient_exception{Client_errc::timed_out, "wait last response timeout"};
       }
     }
+    DMITIGR_ASSERT(!is_awaiting_response());
   }
 
   void wait_last_response_throw(std::optional<std::chrono::milliseconds> timeout = std::chrono::milliseconds{-1}) override
