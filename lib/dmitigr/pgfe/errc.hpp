@@ -5,6 +5,8 @@
 #ifndef DMITIGR_PGFE_ERRC_HPP
 #define DMITIGR_PGFE_ERRC_HPP
 
+#include "dmitigr/pgfe/dll.hpp"
+
 namespace dmitigr::pgfe {
 
 /**
@@ -31,6 +33,11 @@ enum class Client_errc {
   /** Denotes a timed out operation. */
   timed_out = 500
 };
+
+/**
+ * @returns The literal representation of the `errc`.
+ */
+DMITIGR_PGFE_API const char* to_literal(Client_errc errc);
 
 /**
  * @ingroup errors
@@ -981,6 +988,11 @@ enum class Server_errc {
   /** XX002 */
   cxx_index_corrupted = 56966978
 };
+
+/**
+ * @returns The literal representation of the `errc`.
+ */
+DMITIGR_PGFE_API const char* to_literal(Server_errc errc);
 
 } // namespace dmitigr::pgfe
 

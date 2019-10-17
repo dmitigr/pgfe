@@ -7,11 +7,8 @@
 
 #include <dmitigr/util/debug.hpp>
 
-namespace dmitigr::pgfe::detail {
+namespace dmitigr::pgfe {
 
-/**
- * @returns The literal representation of the `errc`.
- */
 DMITIGR_PGFE_INLINE const char* to_literal(const Client_errc errc)
 {
   switch (errc) {
@@ -31,9 +28,6 @@ DMITIGR_PGFE_INLINE const char* to_literal(const Client_errc errc)
   DMITIGR_ASSERT_ALWAYS(!true);
 }
 
-/**
- * @returns The literal representation of the `errc`.
- */
 DMITIGR_PGFE_INLINE const char* to_literal(const Server_errc errc)
 {
   switch (errc) {
@@ -555,6 +549,6 @@ DMITIGR_PGFE_INLINE const char* to_literal(const Server_errc errc)
   DMITIGR_ASSERT_ALWAYS(!true);
 }
 
-} // namespace dmitigr::pgfe::detail
+} // namespace dmitigr::pgfe
 
 #include "dmitigr/pgfe/implementation_footer.hpp"

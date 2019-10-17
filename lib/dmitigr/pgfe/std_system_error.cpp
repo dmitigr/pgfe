@@ -2,7 +2,6 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
-#include "dmitigr/pgfe/errc.hpp"
 #include "dmitigr/pgfe/std_system_error.hpp"
 #include "dmitigr/pgfe/implementation_header.hpp"
 
@@ -21,7 +20,7 @@ DMITIGR_PGFE_INLINE std::string Client_error_category::message(const int ev) con
   result += ' ';
   result += std::to_string(ev);
   result += ' ';
-  result += detail::to_literal(Client_errc(ev));
+  result += to_literal(Client_errc(ev));
   return result;
 }
 
@@ -38,7 +37,7 @@ DMITIGR_PGFE_INLINE std::string Server_error_category::message(const int ev) con
   result += ' ';
   result += string::to_string(ev, 36);
   result += ' ';
-  result += detail::to_literal(Server_errc(ev));
+  result += to_literal(Server_errc(ev));
   return result;
 }
 
