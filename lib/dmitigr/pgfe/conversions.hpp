@@ -297,23 +297,21 @@ private:
 };
 
 // -----------------------------------------------------------------------------
-// std::string conversions
+// Forwarding string conversions
 // -----------------------------------------------------------------------------
 
 /**
- * @brief The implementation of `std::string` to/from `std::string` conversions.
+ * @brief The implementation of String to/from String conversions.
  */
-struct Std_string_conversions final {
-  using Type = std::string;
-
+struct Forwarding_string_conversions final {
   template<typename String, typename ... Types>
-  static std::enable_if_t<std::is_same_v<Type, std::decay_t<String>>, Type> to_type(String&& text, Types&& ...)
+  static String to_type(String&& text, Types&& ...)
   {
     return std::forward<String>(text);
   }
 
   template<typename String, typename ... Types>
-  static std::enable_if_t<std::is_same_v<Type, std::decay_t<String>>, std::string> to_string(String&& value, Types&& ...)
+  static String to_string(String&& value, Types&& ...)
   {
     return std::forward<String>(value);
   }
@@ -448,6 +446,36 @@ struct Bool_data_conversions final {
   }
 };
 
+// -----------------------------------------------------------------------------
+// std::string_view conversions
+// -----------------------------------------------------------------------------
+
+/**
+ * @brief The implementation of `std::string_view` to/from Data conversions.
+ */
+struct String_view_data_conversions final {
+  using Type = std::string_view;
+
+  template<typename ... Types>
+  static Type to_type(const Data* const data, Types&& ...)
+  {
+    DMITIGR_REQUIRE(data, std::invalid_argument);
+    return Type{data->bytes(), data->size()};
+  }
+
+  template<typename ... Types>
+  static Type to_type(std::unique_ptr<Data>&& data, Types&& ...)
+  {
+    return to_type(data.get());
+  }
+
+  template<typename ... Types>
+  static std::unique_ptr<Data> to_data(Type value, Types&& ...)
+  {
+    return Data::make_no_copy(value.data(), value.size(), Data_format::text);
+  }
+};
+
 } // namespace dmitigr::pgfe::detail
 
 namespace dmitigr::pgfe {
@@ -492,7 +520,21 @@ struct Conversions final : public Basic_conversions<T, detail::Generic_string_co
  */
 template<>
 struct Conversions<std::string> final : public Basic_conversions<std::string,
-  detail::Std_string_conversions, detail::Generic_data_conversions<std::string, detail::Std_string_conversions>> {};
+  detail::Forwarding_string_conversions, detail::Generic_data_conversions<std::string, detail::Forwarding_string_conversions>> {};
+
+/**
+ * @ingroup conversions
+ *
+ * @brief Full specialization of Conversions for `std::string_view`.
+ *
+ * The support of the following data formats is implemented:
+ *   - instances of the type `std::string_view` can be created from both Data_format::text
+ *     and Data_format::binary formats;
+ *   - instances of the type Data can only be created in Data_format::text format.
+ */
+template<>
+struct Conversions<std::string_view> final : public Basic_conversions<std::string_view,
+  detail::Forwarding_string_conversions, detail::String_view_data_conversions> {};
 
 /**
  * @ingroup conversions

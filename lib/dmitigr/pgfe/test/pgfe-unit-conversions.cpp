@@ -154,6 +154,14 @@ int main(int, char* argv[])
       ASSERT(original == converted);
     }
 
+    // std::string_view
+    {
+      const std::string_view original{"Dmitry Igrishin"};
+      const auto data = pgfe::to_data(original);
+      const auto converted = pgfe::to<std::string_view>(data.get());
+      ASSERT(original == converted);
+    }
+
     // My_string with overloaded operator<< and operator>>
     {
       My_string original{"Dmitry Igrishin"};

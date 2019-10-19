@@ -99,6 +99,22 @@ public:
     Data_format format = Data_format::binary);
 
   /**
+   * @returns A new instance of this class.
+   *
+   * @param bytes - the pointer to the data;
+   * @param size - the size of the data;
+   * @param format - the format of the data.
+   *
+   * @remarks The data pointed by `bytes` will *not* be copied into the
+   * modifiable internal storage.
+   *
+   * @par Requires
+   * `(bytes && (format == Data_format::binary || bytes[size] == '\0'))`.
+   */
+  static DMITIGR_PGFE_API std::unique_ptr<Data> make_no_copy(const char* bytes,
+    std::size_t size, Data_format format = Data_format::text);
+
+  /**
    * @returns The copy of this instance.
    */
   virtual std::unique_ptr<Data> to_data() const = 0;

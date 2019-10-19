@@ -111,7 +111,7 @@ int main(int, char* argv[])
       auto* const r = conn->row();
       ASSERT(r);
       ASSERT(to<std::string>(r->data(0)) == "dima");
-      ASSERT(to<std::string>(r->data(1)) == "olga");
+      ASSERT(to<std::string_view>(r->data(1)) == "olga");
       ASSERT(to<std::string>(r->data(2)) == "vika");
       conn->dismiss_response();
       conn->wait_response();

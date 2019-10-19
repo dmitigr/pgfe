@@ -19,8 +19,10 @@ DMITIGR_PGFE_INLINE std::string Client_error_category::message(const int ev) con
   std::string result(name());
   result += ' ';
   result += std::to_string(ev);
-  result += ' ';
-  result += to_literal(Client_errc(ev));
+  if (const char* const literal = to_literal(static_cast<Client_errc>(ev))) {
+    result += ' ';
+    result += literal;
+  }
   return result;
 }
 
@@ -36,8 +38,10 @@ DMITIGR_PGFE_INLINE std::string Server_error_category::message(const int ev) con
   result += std::to_string(ev);
   result += ' ';
   result += string::to_string(ev, 36);
-  result += ' ';
-  result += to_literal(Server_errc(ev));
+  if (const char* const literal = to_literal(static_cast<Server_errc>(ev))) {
+    result += ' ';
+    result += literal;
+  }
   return result;
 }
 

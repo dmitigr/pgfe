@@ -313,17 +313,17 @@ private:
 /**
  * @brief The implementation of the Data view.
  */
-class Data_view final : public iData {
+class view_Data final : public iData {
 public:
   /**
    * @brief The default constructor.
    */
-  Data_view() = default;
+  view_Data() = default;
 
   /**
    * @brief The constructor.
    */
-  Data_view(const char* const bytes, const std::size_t size, const Format format)
+  view_Data(const char* const bytes, const std::size_t size, const Format format)
     : format_(format)
     , size_(size)
     , bytes_(bytes)
@@ -332,20 +332,20 @@ public:
   }
 
   /** Non copyable. */
-  Data_view(const Data_view&) = delete;
+  view_Data(const view_Data&) = delete;
 
   /**
    * @brief The move constructor.
    */
-  Data_view(Data_view&&) = default;
+  view_Data(view_Data&&) = default;
 
   /** Non copyable. */
-  Data_view& operator=(const Data_view&) = delete;
+  view_Data& operator=(const view_Data&) = delete;
 
   /**
    * @brief The move assignment operator.
    */
-  Data_view& operator=(Data_view&&) = default;
+  view_Data& operator=(view_Data&&) = default;
 
   std::unique_ptr<Data> to_data() const override
   {
@@ -436,6 +436,19 @@ Data::make(std::vector<unsigned char> storage, const Data_format format)
   DMITIGR_REQUIRE(format == Data_format::binary || (!storage.empty() && storage.back() == '\0'),
     std::invalid_argument);
   return std::make_unique<detail::vector_Data>(std::move(storage), format);
+}
+
+DMITIGR_PGFE_INLINE std::unique_ptr<Data>
+Data::make_no_copy(const char* const bytes, const std::size_t size, const Data_format format)
+{
+  using detail::view_Data;
+  using detail::empty_Data;
+
+  DMITIGR_REQUIRE(bytes && (format == Data_format::binary || bytes[size] == '\0'), std::invalid_argument);
+  if (size > 0)
+    return std::make_unique<view_Data>(bytes, size, format);
+  else
+    return std::make_unique<empty_Data>(format);
 }
 
 namespace {

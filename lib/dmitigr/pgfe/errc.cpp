@@ -5,8 +5,6 @@
 #include "dmitigr/pgfe/errc.hpp"
 #include "dmitigr/pgfe/implementation_header.hpp"
 
-#include <dmitigr/util/debug.hpp>
-
 namespace dmitigr::pgfe {
 
 DMITIGR_PGFE_INLINE const char* to_literal(const Client_errc errc)
@@ -25,7 +23,7 @@ DMITIGR_PGFE_INLINE const char* to_literal(const Client_errc errc)
   case Client_errc::timed_out:
     return "timed_out";
   }
-  DMITIGR_ASSERT_ALWAYS(!true);
+  return nullptr;
 }
 
 DMITIGR_PGFE_INLINE const char* to_literal(const Server_errc errc)
@@ -546,7 +544,7 @@ DMITIGR_PGFE_INLINE const char* to_literal(const Server_errc errc)
   case Server_errc::cxx_index_corrupted:
     return "cxx_index_corrupted";
   }
-  DMITIGR_ASSERT_ALWAYS(!true);
+  return nullptr;
 }
 
 } // namespace dmitigr::pgfe
