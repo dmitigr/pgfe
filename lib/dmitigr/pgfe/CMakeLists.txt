@@ -363,11 +363,24 @@ set(LIBPQ_LIB_PREFIX "${LIBPQ_PREFIX}" CACHE PATH
 set(LIBPQ_INCLUDE_PREFIX "${LIBPQ_PREFIX}" CACHE PATH
   "Installation prefix of the libpq includes (where the headers resides)")
 
-find_package(Pq REQUIRED)
-list(APPEND dmitigr_pgfe_target_include_directories_public "${Pq_INCLUDE_DIRS}")
-list(APPEND dmitigr_pgfe_target_include_directories_interface "${Pq_INCLUDE_DIRS}")
-list(APPEND dmitigr_pgfe_target_link_libraries_public ${Suggested_Pq_LIBRARIES})
-list(APPEND dmitigr_pgfe_target_link_libraries_interface ${Suggested_Pq_LIBRARIES})
+if(("${LIBPQ_PREFIX}" STREQUAL "") AND ("${LIBPQ_LIB_PREFIX}" STREQUAL "") AND ("${LIBPQ_INCLUDE_PREFIX}" STREQUAL ""))
+  find_package(PostgreSQL REQUIRED)
+  list(APPEND dmitigr_pgfe_target_include_directories_public "${PostgreSQL_INCLUDE_DIRS}")
+  list(APPEND dmitigr_pgfe_target_include_directories_interface "${PostgreSQL_INCLUDE_DIRS}")
+  list(APPEND dmitigr_pgfe_target_link_libraries_public ${PostgreSQL_LIBRARIES})
+  list(APPEND dmitigr_pgfe_target_link_libraries_interface ${PostgreSQL_LIBRARIES})
+else()
+  find_package(Pq REQUIRED)
+  list(APPEND dmitigr_pgfe_target_include_directories_public "${Pq_INCLUDE_DIRS}")
+  list(APPEND dmitigr_pgfe_target_include_directories_interface "${Pq_INCLUDE_DIRS}")
+  list(APPEND dmitigr_pgfe_target_link_libraries_public ${Suggested_Pq_LIBRARIES})
+  list(APPEND dmitigr_pgfe_target_link_libraries_interface ${Suggested_Pq_LIBRARIES})
+endif()
+
+#
+# OS
+#
+
 if (UNIX)
   list(APPEND dmitigr_pgfe_target_link_libraries_private stdc++fs)
   list(APPEND dmitigr_pgfe_target_link_libraries_interface stdc++fs)
