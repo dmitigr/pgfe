@@ -287,16 +287,19 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  iConnection_options* set_net_address(std::string value) override
+  iConnection_options* set_net_address(std::optional<std::string> value) override
   {
     DMITIGR_REQUIRE(communication_mode() == Communication_mode::net, std::logic_error);
-    validate(is_ip_address(value), "Network address");
+    if (value)
+      validate(is_ip_address(*value), "Network address");
+    else
+      DMITIGR_REQUIRE(net_hostname(), std::logic_error);
     net_address_ = std::move(value);
     DMITIGR_ASSERT(is_invariant_ok());
     return this;
   }
 
-  const std::string& net_address() const override
+  const std::optional<std::string>& net_address() const override
   {
     return net_address_;
   }
@@ -308,6 +311,8 @@ public:
     DMITIGR_REQUIRE(communication_mode() == Communication_mode::net, std::logic_error);
     if (value)
       validate(is_hostname(*value), "Network host name");
+    else
+      DMITIGR_REQUIRE(net_address(), std::logic_error);
     net_hostname_ = std::move(value);
     DMITIGR_ASSERT(is_invariant_ok());
     return this;
@@ -509,7 +514,8 @@ private:
       ((!tcp_keepalives_idle_ || is_non_negative(tcp_keepalives_idle_->count())) &&
         (!tcp_keepalives_interval_ || is_non_negative(tcp_keepalives_interval_->count())) &&
         (!tcp_keepalives_count_ || is_non_negative(tcp_keepalives_count_)) &&
-        is_ip_address(net_address_) &&
+        (net_address_ || net_hostname_) &&
+        (!net_address_ || is_ip_address(*net_address_)) &&
         (!net_hostname_ || is_hostname(*net_hostname_)) &&
         is_valid_port(port_));
     const bool auth_ok =
@@ -539,7 +545,7 @@ private:
   std::optional<std::chrono::seconds> tcp_keepalives_idle_;
   std::optional<std::chrono::seconds> tcp_keepalives_interval_;
   std::optional<int> tcp_keepalives_count_;
-  std::string net_address_;
+  std::optional<std::string> net_address_;
   std::optional<std::string> net_hostname_;
   std::int_fast32_t port_;
   std::string username_;
@@ -573,7 +579,7 @@ public:
     case Communication_mode::net: {
       constexpr auto z = std::chrono::seconds::zero();
       values_[host] = o->net_hostname().value_or("");
-      values_[hostaddr] = o->net_address();
+      values_[hostaddr] = o->net_address().value_or("");
       values_[port] = std::to_string(o->port());
       values_[keepalives] = std::to_string(o->is_tcp_keepalives_enabled());
       values_[keepalives_idle] = std::to_string(o->tcp_keepalives_idle().value_or(z).count());

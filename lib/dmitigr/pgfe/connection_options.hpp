@@ -323,7 +323,8 @@ public:
   // ---------------------------------------------------------------------------
 
   /**
-   * @brief Sets the numeric IP address of a PostgreSQL server to connect to.
+   * @brief Sets the numeric IP address of a PostgreSQL server
+   * to avoid hostname lookup.
    *
    * @param value - the valid IPv4 or IPv6 address.
    *
@@ -334,24 +335,25 @@ public:
    * Strong.
    *
    * @remarks When using SSL or some authentication methods (such as Kerberos)
-   * the option `net_hostname` might be mandatory in couple with this option.
+   * the option `net_hostname` is mandatory even if using this option. If
+   * both `net_address` and `net_hostname` are set, the value of `net_address`
+   * will be treated as the PostgreSQL server address to connect.
    *
    * @see net_address(), set_net_hostname().
    */
-  virtual Connection_options* set_net_address(std::string value) = 0;
+  virtual Connection_options* set_net_address(std::optional<std::string> value) = 0;
 
   /**
    * @returns The current value of the option.
    *
    * @see set_net_address().
    */
-  virtual const std::string& net_address() const = 0;
+  virtual const std::optional<std::string>& net_address() const = 0;
 
   // ---------------------------------------------------------------------------
 
   /**
-   * @brief Sets the name of the host that might be required for some
-   * authentication methods or SSL certificate verification.
+   * @brief Sets the name of the host to connect to.
    *
    * @param value - must be a valid host name.
    *
@@ -361,8 +363,10 @@ public:
    * @par Exception safety guarantee
    * strong.
    *
-   * @remarks This option doesn't denotes the hostname to connect to, and no
-   * hostname lookup occurs upon setting this option!
+   * @remarks If the option `net_address` is set, hostname lookup will not
+   * occurs even if this option is also set. However, the value of this option
+   * might be required for some authentication methods or SSL certificate
+   * verification.
    *
    * @see net_hostname(), set_net_address().
    */
