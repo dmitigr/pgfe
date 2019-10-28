@@ -113,12 +113,11 @@ endif()
 
 if ((NOT DEFINED DMITIGR_PGFE_CONNECTION_NET_ADDRESS) AND
     (NOT DEFINED DMITIGR_PGFE_CONNECTION_NET_HOSTNAME))
-    set(net_address_default_value "127.0.0.1")
     set(net_hostname_default_value "localhost")
 endif()
 
 if (NOT DEFINED DMITIGR_PGFE_CONNECTION_NET_ADDRESS)
-  set(DMITIGR_PGFE_CONNECTION_NET_ADDRESS "${net_address_default_value}" CACHE
+  set(DMITIGR_PGFE_CONNECTION_NET_ADDRESS "" CACHE
     STRING "Numeric IP address of the host to connect to")
 endif()
 if (NOT "${DMITIGR_PGFE_CONNECTION_NET_ADDRESS}" STREQUAL "")
