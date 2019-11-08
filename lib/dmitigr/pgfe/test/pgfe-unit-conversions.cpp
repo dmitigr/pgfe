@@ -170,6 +170,25 @@ int main(int, char* argv[])
       ASSERT(original == converted);
     }
 
+    // std::optional<std::string>
+    {
+      {
+        const std::optional<std::string> original;
+        const auto data = pgfe::to_data(original);
+        ASSERT(!data);
+        const auto converted = pgfe::to<std::optional<std::string>>(data.get());
+        ASSERT(!converted);
+        ASSERT(original == converted);
+      }
+      {
+        const std::optional<std::string> original{"Dmitry Igrishin"};
+        const auto data = pgfe::to_data(original);
+        ASSERT(data);
+        const auto converted = pgfe::to<std::optional<std::string>>(data.get());
+        ASSERT(original == converted);
+      }
+    }
+
     // Arrays
     // =========================================================================
 

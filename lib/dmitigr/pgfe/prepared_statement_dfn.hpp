@@ -78,7 +78,7 @@ public:
    * The `value` must be convertible to the Data.
    */
   template<typename T>
-  Named_argument(std::enable_if_t<!std::is_same_v<Data*, T>, std::string> name, T&& value)
+  Named_argument(std::enable_if_t<!std::is_same_v<Data*, std::decay_t<T>>, std::string> name, T&& value)
     : Named_argument{std::move(name), to_data(std::forward<T>(value))}
   {
     check_name(name_);
@@ -290,7 +290,7 @@ public:
    * The value must be convertible to the Data.
    */
   template<typename T>
-  std::enable_if_t<!std::is_same_v<Data*, T>> set_parameter(std::size_t index, T&& value)
+  std::enable_if_t<!std::is_same_v<Data*, std::decay_t<T>>> set_parameter(std::size_t index, T&& value)
   {
     set_parameter(index, to_data(std::forward<T>(value)));
   }
@@ -304,7 +304,7 @@ public:
    * @see has_parameter().
    */
   template<typename T>
-  std::enable_if_t<!std::is_same_v<Data*, T>> set_parameter(const std::string& name, T&& value)
+  std::enable_if_t<!std::is_same_v<Data*, std::decay_t<T>>> set_parameter(const std::string& name, T&& value)
   {
     set_parameter(parameter_index_throw(name), std::forward<T>(value));
   }

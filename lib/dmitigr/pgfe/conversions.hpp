@@ -625,6 +625,106 @@ template<>
 struct Conversions<bool> final : public Basic_conversions<bool,
   detail::Bool_string_conversions, detail::Bool_data_conversions>{};
 
+/**
+ * @ingroup conversions
+ *
+ * @brief Partial specialization of Conversions for `std::optional<T>`.
+ */
+template<typename T>
+struct Conversions<std::optional<T>> final {
+  using Type = std::optional<T>;
+
+  template<typename ... Types>
+  static Type to_type(const Data* const data, Types&& ... args)
+  {
+    if (data)
+      return Conversions<T>::to_type(data, std::forward(args)...);
+    else
+      return std::nullopt;
+  }
+
+  template<typename ... Types>
+  static Type to_type(std::unique_ptr<Data>&& data, Types&& ... args)
+  {
+    if (data)
+      return Conversions<T>::to_type(std::move(data), std::forward(args)...);
+    else
+      return std::nullopt;
+  }
+
+  template<typename ... Types>
+  static std::unique_ptr<Data> to_data(const Type& value, Types&& ... args)
+  {
+    if (value)
+      return Conversions<T>::to_data(*value, std::forward(args)...);
+    else
+      return nullptr;
+  }
+
+  template<typename ... Types>
+  static std::unique_ptr<Data> to_data(Type&& value, Types&& ... args)
+  {
+    if (value)
+      return Conversions<T>::to_data(std::move(*value), std::forward(args)...);
+    else
+      return nullptr;
+  }
+
+  template<typename ... Types>
+  static Type to_type(const Composite* const composite, Types&& ... args)
+  {
+    if (composite)
+      return Conversions<T>::to_type(composite, std::forward(args)...);
+    else
+      return std::nullopt;
+  }
+
+  template<typename ... Types>
+  static Type to_type(std::unique_ptr<Composite>&& composite, Types&& ... args)
+  {
+    if (composite)
+      return Conversions<T>::to_type(std::move(composite), std::forward(args)...);
+    else
+      return std::nullopt;
+  }
+
+  template<typename ... Types>
+  static std::unique_ptr<Composite> to_composite(const Type& value, Types&& ... args)
+  {
+    if (value)
+      return Conversions<T>::to_composite(*value, std::forward(args)...);
+    else
+      return nullptr;
+  }
+
+  template<typename ... Types>
+  static std::unique_ptr<Composite> to_composite(Type&& value, Types&& ... args)
+  {
+    if (value)
+      return Conversions<T>::to_composite(std::move(*value), std::forward(args)...);
+    else
+      return nullptr;
+  }
+
+  template<typename ... Types>
+  static Type to_type(const Row* const row, Types&& ... args)
+  {
+    if (row)
+      return Conversions<T>::to_type(row, std::forward(args)...);
+    else
+      return std::nullopt;
+  }
+
+  template<typename ... Types>
+  static Type to_type(std::unique_ptr<Row>&& row, Types&& ... args)
+  {
+    if (row)
+      return Conversions<T>::to_type(std::move(row), std::forward(args)...);
+    else
+      return std::nullopt;
+  }
+};
+
 } // namespace dmitigr::pgfe
 
 #endif  // DMITIGR_PGFE_CONVERSIONS_HPP
