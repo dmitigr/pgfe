@@ -236,7 +236,7 @@ namespace dmitigr::pgfe {
 
 inline std::error_code Problem::code() const
 {
-  const int code_integer = detail::sqlstate_to_int(sqlstate().c_str());
+  const int code_integer = sqlstate_to_int(sqlstate());
   return std::error_code(code_integer, server_error_category());
 }
 

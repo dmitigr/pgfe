@@ -321,6 +321,7 @@ set(dmitigr_pgfe_implementations
   sql_string.cpp
   sql_vector.cpp
   std_system_error.cpp
+  util.cpp
   )
 
 set(dmitigr_pgfe_cmake_unpreprocessed
