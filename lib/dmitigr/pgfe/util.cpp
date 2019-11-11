@@ -8,6 +8,7 @@
 
 #include <dmitigr/util/debug.hpp>
 #include <dmitigr/util/net.hpp>
+#include <dmitigr/util/string.hpp>
 
 #include <cerrno>
 #include <limits>
@@ -16,7 +17,7 @@
 
 namespace dmitigr::pgfe {
 
-DMITIGR_PGFE_INLINE int sqlstate_to_int(const std::string& code)
+DMITIGR_PGFE_INLINE int sqlstate_string_to_int(const std::string& code)
 {
   const std::locale l{};
   DMITIGR_REQUIRE(
@@ -31,6 +32,12 @@ DMITIGR_PGFE_INLINE int sqlstate_to_int(const std::string& code)
   DMITIGR_ASSERT(errno == 0);
   DMITIGR_ASSERT(result >= 0 && result <= std::numeric_limits<int>::max());
   return result;
+}
+
+DMITIGR_PGFE_INLINE std::string sqlstate_int_to_string(const int code)
+{
+  DMITIGR_REQUIRE(0 <= code && code <= 60466175, std::invalid_argument);
+  return string::to_string(code, 36);
 }
 
 namespace detail {

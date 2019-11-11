@@ -18,12 +18,17 @@ namespace dmitigr::pgfe {
  * @returns The integer representation of the SQLSTATE code.
  *
  * @par Requires
- * The `code` must must consist of five alphanumeric characters.
- *
- * @par Thread safety
- * Thread-safe.
+ * The `code` must consist of five alphanumeric characters.
  */
-DMITIGR_PGFE_API int sqlstate_to_int(const std::string& code);
+DMITIGR_PGFE_API int sqlstate_string_to_int(const std::string& code);
+
+/**
+ * @returns The textual representation of the SQLSTATE code.
+ *
+ * @par Requires
+ * The `code` must be in range [0, 60466175].
+ */
+DMITIGR_PGFE_API std::string sqlstate_int_to_string(int code);
 
 namespace detail {
 
