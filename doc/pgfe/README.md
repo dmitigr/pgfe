@@ -81,6 +81,12 @@ Features of the future
   - conversions for `dmitigr::pgfe::Composite` data type;
   - yet more convenient work with arrays of variable dimensions at runtime.
 
+Usage
+=====
+
+Please, see [Cefeika Usage][dmitigr_cefeika_usage] section for hints how to
+link the library to a project.
+
 Tutorial
 ========
 
@@ -557,6 +563,7 @@ Copyright (C) [Dmitry Igrishin][dmitigr_mail]
 
 [dmitigr_mail]: mailto:dmitigr@gmail.com
 [dmitigr_cefeika]: https://github.com/dmitigr/cefeika.git
+[dmitigr_cefeika_usage]: https://github.com/dmitigr/cefeika.git#usage
 [dmitigr_pgfe_doc]: http://dmitigr.ru/en/projects/cefeika/pgfe/doc/
 [dmitigr_pgfe_doc_diagram]: http://dmitigr.ru/en/projects/cefeika/pgfe/doc/dmitigr_pgfe_overview.violet.html
 
