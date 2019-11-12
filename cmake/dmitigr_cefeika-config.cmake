@@ -2,13 +2,17 @@
 # Copyright (C) Dmitry Igrishin
 # For conditions of distribution and use, see file LICENSE.txt
 
-include(${CMAKE_CURRENT_LIST_DIR}/dmitigr_cefeika.cmake)
+function(dmitigr_cefeika_load_with_deps component)
+  #
+  # Loading the dependencies
+  #
+  foreach(dep ${dmitigr_cefeika_${component}_deps})
+    dmitigr_cefeika_load_with_deps(${dep})
+  endforeach()
 
-if(NOT dmitigr_cefeika_FIND_COMPONENTS)
-  set(dmitigr_cefeika_FIND_COMPONENTS ${dmitigr_cefeika_libraries})
-endif()
-
-foreach(component ${dmitigr_cefeika_FIND_COMPONENTS})
+  #
+  # Loading the component
+  #
   string(REGEX MATCH "(shared|static|interface)$" suffix "${component}")
   if(NOT suffix)
     if(EXISTS ${CMAKE_CURRENT_LIST_DIR}/dmitigr_${component}_shared-config.cmake)
@@ -27,4 +31,16 @@ foreach(component ${dmitigr_cefeika_FIND_COMPONENTS})
   else()
     message(FATAL_ERROR "No configuration files of the Dmitigr Cefeika ${component} component found")
   endif()
+endfunction()
+
+# ------------------------------------------------------------------------------
+
+include(${CMAKE_CURRENT_LIST_DIR}/dmitigr_cefeika.cmake)
+
+if(NOT dmitigr_cefeika_FIND_COMPONENTS)
+  set(dmitigr_cefeika_FIND_COMPONENTS ${dmitigr_cefeika_libraries})
+endif()
+
+foreach(component ${dmitigr_cefeika_FIND_COMPONENTS})
+  dmitigr_cefeika_load_with_deps(${component})
 endforeach()
