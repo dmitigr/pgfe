@@ -4,9 +4,6 @@
 
 #include "pgfe-unit-benchmark_array.hpp"
 
-#ifndef DMITIGR_PGFE_HEADER_ONLY
-#include <dmitigr/pgfe/exceptions.cpp>
-#endif
 #include <dmitigr/pgfe/conversions.hpp>
 #include <dmitigr/pgfe/row.hpp>
 

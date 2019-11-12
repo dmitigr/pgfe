@@ -2,11 +2,7 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
-#ifndef DMITIGR_PGFE_HEADER_ONLY
-#include <dmitigr/pgfe/exceptions.cpp>
-#else
 #include <dmitigr/pgfe/exceptions.hpp>
-#endif
 #include <dmitigr/pgfe/conversions.hpp>
 #include <dmitigr/util/test.hpp>
 

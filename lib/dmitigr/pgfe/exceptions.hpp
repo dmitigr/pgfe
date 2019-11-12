@@ -56,8 +56,6 @@ private:
 
 } // namespace dmitigr::pgfe
 
-#ifdef DMITIGR_PGFE_HEADER_ONLY
 #include "dmitigr/pgfe/exceptions.cpp"
-#endif
 
 #endif  // DMITIGR_PGFE_EXCEPTIONS_HPP
