@@ -5,8 +5,13 @@
 #ifndef DMITIGR_PGFE_EXCEPTIONS_HPP
 #define DMITIGR_PGFE_EXCEPTIONS_HPP
 
+#include "dmitigr/pgfe/error.hpp"
 #include "dmitigr/pgfe/std_system_error.hpp"
 #include "dmitigr/pgfe/types_fwd.hpp"
+
+#include <dmitigr/util/debug.hpp>
+
+#include <memory>
 
 namespace dmitigr::pgfe {
 
@@ -54,8 +59,61 @@ private:
   {}
 };
 
-} // namespace dmitigr::pgfe
+namespace detail {
 
-#include "dmitigr/pgfe/exceptions.cpp"
+/**
+ * @brief The Client_exception implementation.
+ */
+class iClient_exception final : public Client_exception {
+public:
+  /**
+   * @brief The constructor.
+   */
+  explicit iClient_exception(const Client_errc errc)
+    : Client_exception(errc)
+  {}
+
+  /**
+   * @overload
+   */
+  iClient_exception(const Client_errc errc, const std::string& what)
+    : Client_exception(errc, what)
+  {}
+};
+
+/**
+ * @brief The Server_exception implementation.
+ */
+class iServer_exception final : public Server_exception {
+public:
+  /**
+   * @brief The constructor.
+   */
+  explicit iServer_exception(std::shared_ptr<Error> error)
+    : Server_exception(error->code())
+    , error_(std::move(error))
+  {
+    DMITIGR_ASSERT(is_invariant_ok());
+  }
+
+  /**
+   * @returns The error details.
+   */
+  const Error* error() const noexcept override
+  {
+    return error_.get();
+  }
+
+private:
+  bool is_invariant_ok()
+  {
+    return static_cast<bool>(error_);
+  }
+
+  std::shared_ptr<Error> error_;
+};
+
+} // namespace detail
+} // namespace dmitigr::pgfe
 
 #endif  // DMITIGR_PGFE_EXCEPTIONS_HPP
