@@ -309,7 +309,6 @@ set(dmitigr_pgfe_implementations
   data.cpp
   errc.cpp
   error.cpp
-  exceptions.cpp
   misc.cpp
   notice.cpp
   notification.cpp
