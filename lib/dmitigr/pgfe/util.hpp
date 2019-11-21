@@ -30,15 +30,12 @@ DMITIGR_PGFE_API int sqlstate_string_to_int(const std::string& code);
  */
 DMITIGR_PGFE_API std::string sqlstate_int_to_string(int code);
 
-namespace detail {
-
 /**
  * @returns The case-folded and double-quote processed SQL identifier.
- *
- * @par Thread safety
- * Thread-safe.
  */
-std::string unquote_identifier(const std::string& identifier);
+DMITIGR_PGFE_API std::string unquote_identifier(std::string_view identifier);
+
+namespace detail {
 
 /**
  * @brief A wrapper around net::poll().

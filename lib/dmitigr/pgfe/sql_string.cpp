@@ -1353,8 +1353,12 @@ DMITIGR_PGFE_INLINE std::pair<iSql_string, const char*> parse_sql_input(const ch
   case named_parameter:
     result.push_named_parameter(fragment);
     break;
-  default:
-    throw std::runtime_error{"invalid SQL input"};
+  default: {
+    std::string message{"invalid SQL input"};
+    if (!result.fragments_.empty())
+      message.append(" follows after: ").append(result.fragments_.back().str);
+    throw std::runtime_error{message};
+  }
   }
 
   return std::make_pair(result, text);

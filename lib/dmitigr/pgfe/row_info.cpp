@@ -246,13 +246,12 @@ private:
   friend pq_Row;
   friend pq_Prepared_statement;
 
-  std::size_t field_index__(const std::string& name, std::size_t offset) const
+  std::size_t field_index__(const std::string& name, const std::size_t offset) const
   {
     DMITIGR_ASSERT(offset < field_count());
     const auto b = cbegin(*shared_field_names_);
     const auto e = cend(*shared_field_names_);
-    const auto ident = unquote_identifier(name);
-    const auto i = std::find(b + offset, e, ident);
+    const auto i = std::find(b + offset, e, name);
     return i - b;
   }
 

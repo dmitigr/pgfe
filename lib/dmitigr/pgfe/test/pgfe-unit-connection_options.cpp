@@ -49,7 +49,7 @@ int main(int, char* argv[])
 
     ASSERT(co->connect_timeout() == defaults::connect_timeout);
     {
-      std::chrono::milliseconds valid_value;
+      std::chrono::milliseconds valid_value{};
       co->set_connect_timeout(valid_value);
       ASSERT(co->connect_timeout() == valid_value);
 
@@ -59,7 +59,7 @@ int main(int, char* argv[])
 
     ASSERT(co->wait_response_timeout() == defaults::wait_response_timeout);
     {
-      std::chrono::milliseconds valid_value;
+      std::chrono::milliseconds valid_value{};
       co->set_wait_response_timeout(valid_value);
       ASSERT(co->wait_response_timeout() == valid_value);
 
@@ -69,7 +69,7 @@ int main(int, char* argv[])
 
     ASSERT(co->wait_last_response_timeout() == defaults::wait_last_response_timeout);
     {
-      std::chrono::milliseconds valid_value;
+      std::chrono::milliseconds valid_value{};
       co->set_wait_last_response_timeout(valid_value);
       ASSERT(co->wait_last_response_timeout() == valid_value);
 

@@ -40,9 +40,7 @@ DMITIGR_PGFE_INLINE std::string sqlstate_int_to_string(const int code)
   return string::to_string(code, 36);
 }
 
-namespace detail {
-
-inline std::string unquote_identifier(const std::string& identifier)
+DMITIGR_PGFE_INLINE std::string unquote_identifier(const std::string_view identifier)
 {
   enum { top, double_quote, adjacent_double_quote } state = top;
 
@@ -52,15 +50,15 @@ inline std::string unquote_identifier(const std::string& identifier)
   for (Counter i = 0; i < sz; ++i) {
     const char c = identifier[i];
     if (state == top) {
-      if (c != '"') {
+      if (c != '"')
         result += std::tolower(c, std::locale{});
-      } else
+      else
         state = double_quote;
     } else if (state == double_quote) {
       if (c != '"')
         result += c;
-      else                      // Note: identifier[sz] == 0
-        state = (identifier[i + 1] == '"') ? adjacent_double_quote : top;
+      else
+        state = (i + 1 < sz && identifier[i + 1] == '"') ? adjacent_double_quote : top;
     } else if (state == adjacent_double_quote) {
       result += c;
       state = double_quote;
@@ -68,6 +66,8 @@ inline std::string unquote_identifier(const std::string& identifier)
   }
   return result;
 }
+
+namespace detail {
 
 inline Socket_readiness poll_sock(const int socket, const Socket_readiness mask,
   const std::optional<std::chrono::milliseconds> timeout)
