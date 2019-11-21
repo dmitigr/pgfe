@@ -484,7 +484,10 @@ private:
 
   void set_parameter__(const std::size_t, Named_argument&& na)
   {
-    set_parameter(na.name(), na.release());
+    if (na.is_data_owner())
+      set_parameter(na.name(), na.release());
+    else
+      set_parameter_no_copy(na.name(), na.data());
   }
 
   void set_parameter__(const std::size_t, const Named_argument& na)
