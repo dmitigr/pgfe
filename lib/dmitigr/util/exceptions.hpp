@@ -17,6 +17,8 @@ namespace dmitigr {
  */
 class Sys_exception : public std::system_error {
 public:
+   //explicitly deleted because base class 'std::system_error' has no default constructor
+   Sys_exception() = delete;
   /**
    * @brief The constructor.
    */
@@ -35,7 +37,6 @@ public:
 private:
   friend Net_exception;
 
-  Sys_exception() = default;
 };
 
 #ifdef _WIN32
