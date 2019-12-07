@@ -382,7 +382,7 @@ endif()
 # OS
 #
 
-if (UNIX)
+if (UNIX AND (CMAKE_CXX_COMPILER_ID STREQUAL "GNU"))
   list(APPEND dmitigr_pgfe_target_link_libraries_private stdc++fs)
   list(APPEND dmitigr_pgfe_target_link_libraries_interface stdc++fs)
 elseif (WIN32)
