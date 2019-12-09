@@ -61,7 +61,7 @@ static_assert(sd_both == SHUT_RDWR);
 DMITIGR_UTIL_INLINE Socket_guard::~Socket_guard()
 {
   if (close() != 0)
-    Net_exception::report("closesocket");
+    DMITIGR_NET_EXCEPTION::report("closesocket");
 }
 
 DMITIGR_UTIL_INLINE Socket_guard::Socket_guard() noexcept
@@ -595,7 +595,7 @@ public:
     constexpr int flags{};
     const int result = ::recv(socket_, buf, static_cast<int>(len), flags);
     if (net::is_socket_error(result))
-      throw Net_exception{"recv"};
+      throw DMITIGR_NET_EXCEPTION{"recv"};
 
     return static_cast<std::streamsize>(result);
   }
@@ -608,7 +608,7 @@ public:
     constexpr int flags{};
     const int result = ::send(socket_, buf, static_cast<int>(len), flags);
     if (net::is_socket_error(result))
-      throw Net_exception{"send"};
+      throw DMITIGR_NET_EXCEPTION{"send"};
 
     return static_cast<std::streamsize>(result);
   }
@@ -637,7 +637,7 @@ private:
   void shutdown__()
   {
     if (::shutdown(socket_, net::sd_send) != 0)
-      throw Net_exception{"shutdown"};
+      throw DMITIGR_NET_EXCEPTION{"shutdown"};
 
     while (true) {
       using Sr = net::Socket_readiness;
@@ -648,7 +648,7 @@ private:
       std::array<char, 1024> trashcan;
       constexpr int flags{};
       if (const int r = ::recv(socket_, trashcan.data(), static_cast<int>(trashcan.size()), flags); net::is_socket_error(r))
-        throw Net_exception{"recv"};
+        throw DMITIGR_NET_EXCEPTION{"recv"};
       else if (r == 0)
         break; // the end (ok)
     }
@@ -795,7 +795,7 @@ public:
     {
       socket_ = net::Socket_guard{::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)};
       if (!net::is_socket_valid(socket_))
-        throw Net_exception{"socket"};
+        throw DMITIGR_NET_EXCEPTION{"socket"};
 
       const int optval = 1;
 #ifdef _WIN32
@@ -804,7 +804,7 @@ public:
       const auto optlen = static_cast<::socklen_t>(sizeof (optval));
 #endif
       if (::setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&optval), optlen) != 0)
-        throw Net_exception{"setsockopt"};
+        throw DMITIGR_NET_EXCEPTION{"setsockopt"};
 
       const auto ip = net::Ip_address::make(*eid->net_address());
       if (ip->family() == Ip_version::v4) {
@@ -815,7 +815,7 @@ public:
         addr.sin_addr = *static_cast<const ::in_addr*>(ip->binary());
         addr.sin_port = htons(static_cast<unsigned short>(*eid->net_port()));
         if (::bind(socket_, reinterpret_cast<::sockaddr*>(&addr), static_cast<int>(addr_size)) != 0)
-          throw Net_exception{"bind"};
+          throw DMITIGR_NET_EXCEPTION{"bind"};
       } else if (ip->family() == Ip_version::v6) {
         ::sockaddr_in6 addr{};
         constexpr auto addr_size = sizeof (addr);
@@ -826,7 +826,7 @@ public:
         addr.sin6_flowinfo = htonl(0);
         addr.sin6_scope_id = htonl(0);
         if (::bind(socket_, reinterpret_cast<::sockaddr*>(&addr), static_cast<int>(addr_size)) != 0)
-          throw Net_exception{"bind"};
+          throw DMITIGR_NET_EXCEPTION{"bind"};
       }
     };
 
@@ -837,7 +837,7 @@ public:
     {
       socket_ = net::Socket_guard{::socket(AF_UNIX, SOCK_STREAM, IPPROTO_TCP)};
       if (!net::is_socket_valid(socket_))
-        throw Net_exception{"socket"};
+        throw DMITIGR_NET_EXCEPTION{"socket"};
 
       ::sockaddr_un addr{};
       constexpr auto addr_size = sizeof (addr);
@@ -849,7 +849,7 @@ public:
         std::strncpy(addr.sun_path, path.native().c_str(), sizeof (::sockaddr_un::sun_path));
 
       if (::bind(socket_, reinterpret_cast<::sockaddr*>(&addr), static_cast<int>(addr_size)) != 0)
-        throw Net_exception{"bind"};
+        throw DMITIGR_NET_EXCEPTION{"bind"};
     };
 
     if (cm == Communication_mode::net)
@@ -859,7 +859,7 @@ public:
 #endif
 
     if (::listen(socket_, *options_->backlog()) != 0)
-      throw Net_exception{"listen"};
+      throw DMITIGR_NET_EXCEPTION{"listen"};
   }
 
   bool wait(const std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) override
@@ -885,7 +885,7 @@ public:
     constexpr ::socklen_t* addrlen{};
 #endif
     if (net::Socket_guard sock{::accept(socket_, addr, addrlen)}; !net::is_socket_valid(sock))
-      throw Net_exception{"accept"};
+      throw DMITIGR_NET_EXCEPTION{"accept"};
     else
       return std::make_unique<socket_Descriptor>(std::move(sock));
   }
@@ -893,7 +893,7 @@ public:
   void close() override
   {
     if (socket_.close() != 0)
-      throw Net_exception{"closesocket"};
+      throw DMITIGR_NET_EXCEPTION{"closesocket"};
   }
 
 private:
@@ -913,7 +913,7 @@ private:
   void net_deinitialize()
   {
     if (::WSACleanup() != 0)
-      Net_exception::report("WSACleanup");
+      DMITIGR_NET_EXCEPTION::report("WSACleanup");
   }
 #else
   void net_initialize()

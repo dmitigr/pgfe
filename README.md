@@ -5,7 +5,8 @@ Dmitigr Pgfe (PostGres FrontEnd, hereinafter referred to as Pgfe) - is a client
 API to [PostgreSQL] servers written in C++. The development is focused on
 easines and robustness of use. At the same time, everything possible is being
 done to ensure that the performance is at its best. Pgfe is a part of the
-[Dmitigr Cefeika][dmitigr_cefeika] project.
+[Dmitigr Cefeika][dmitigr_cefeika] project, but also available as a standalone
+project [here][dmitigr_pgfe].
 
 **ATTENTION, this software is "beta" quality, and the API is a subject to change!**
 
@@ -58,8 +59,6 @@ int main()
 
 Features
 ========
-
-Current API allows to:
 
   - work with database connections (in both blocking and non-blocking IO manner);
   - execute prepared statements (named parameters are supported);
@@ -525,10 +524,10 @@ Dependencies
 
 Pgfe is depends on the [libpq] library.
 
-Customization
+CMake options
 =============
 
-The table below (may need to use horizontal scrolling for full view) contains
+The table below (one may need to use horizontal scrolling for full view) contains
 variables which can be passed to [CMake] for customization of the Pgfe library.
 
 |CMake variable|Possible values|Default on Unix|Default on Windows|
@@ -564,6 +563,7 @@ Copyright (C) [Dmitry Igrishin][dmitigr_mail]
 [dmitigr_mail]: mailto:dmitigr@gmail.com
 [dmitigr_cefeika]: https://github.com/dmitigr/cefeika.git
 [dmitigr_cefeika_usage]: https://github.com/dmitigr/cefeika.git#usage
+[dmitigr_pgfe]: https://github.com/dmitigr/pgfe.git
 [dmitigr_pgfe_doc]: http://dmitigr.ru/en/projects/cefeika/pgfe/doc/
 [dmitigr_pgfe_doc_diagram]: http://dmitigr.ru/en/projects/cefeika/pgfe/doc/dmitigr_pgfe_overview.violet.html
 

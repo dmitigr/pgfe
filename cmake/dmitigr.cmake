@@ -14,6 +14,23 @@ set(dmitigr_source_types
 
 # ------------------------------------------------------------------------------
 
+function(dmitigr_append_cppfs libraries)
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9")
+      list(APPEND ${libraries} stdc++fs)
+    endif()
+  elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "7")
+      list(APPEND ${libraries} c++experimental)
+    elseif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9")
+      list(APPEND ${libraries} c++fs)
+    endif()
+  endif()
+  set(${libraries} ${${libraries}} PARENT_SCOPE)
+endfunction()
+
+# ------------------------------------------------------------------------------
+
 function(dmitigr_target_compile_options t)
   if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
     # FIXME: GDB 7.7 doesn't print info of rvalues' that are function arguments

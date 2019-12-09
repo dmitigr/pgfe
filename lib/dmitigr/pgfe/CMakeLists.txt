@@ -379,13 +379,13 @@ else()
 endif()
 
 #
-# OS
+# System
 #
 
-if (UNIX)
-  list(APPEND dmitigr_pgfe_target_link_libraries_private stdc++fs)
-  list(APPEND dmitigr_pgfe_target_link_libraries_interface stdc++fs)
-elseif (WIN32)
+dmitigr_append_cppfs(dmitigr_pgfe_target_link_libraries_private)
+dmitigr_append_cppfs(dmitigr_pgfe_target_link_libraries_interface)
+
+if (WIN32)
   list(APPEND dmitigr_pgfe_target_link_libraries_private Ws2_32.lib)
   list(APPEND dmitigr_pgfe_target_link_libraries_interface Ws2_32.lib)
 endif()

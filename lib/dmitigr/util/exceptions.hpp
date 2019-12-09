@@ -15,7 +15,7 @@ namespace dmitigr {
 /**
  * @brief An exception thrown on system error.
  */
-class Sys_exception : public std::system_error {
+class Sys_exception final : public std::system_error {
 public:
   /**
    * @brief The constructor.
@@ -31,11 +31,6 @@ public:
    * @returns The last system error code.
    */
   static DMITIGR_UTIL_API int last_error() noexcept;
-
-private:
-  friend Net_exception;
-
-  Sys_exception() = default;
 };
 
 #ifdef _WIN32
@@ -66,7 +61,7 @@ DMITIGR_UTIL_API const Wsa_error_category& wsa_error_category() noexcept;
 /**
  * @brief An exception thrown on Windows Socket Application (WSA) error.
  */
-class Wsa_exception : public std::system_error {
+class Wsa_exception final : public std::system_error {
 public:
   /**
    * @brief The constructor.
@@ -82,29 +77,20 @@ public:
    * @returns The last WSA error code.
    */
   static DMITIGR_UTIL_API int last_error() noexcept;
-
-private:
-  friend Net_exception;
-
-  Wsa_exception() = default;
 };
-#endif
-
-#ifdef _WIN32
-#define DMITIGR_NET_EXCEPTION_BASE Wsa_exception
-#else
-#define DMITIGR_NET_EXCEPTION_BASE Sys_exception
 #endif
 
 /**
- * @brief An exception thrown on network error.
+ * Convenient macro for cross-platform network programming.
+ *
+ * This macro can be useful because on Windows some network functions
+ * reports errors via GetLastError(), while others - via WSAGetLastError().
  */
-class Net_exception final : public DMITIGR_NET_EXCEPTION_BASE {
-public:
-  using DMITIGR_NET_EXCEPTION_BASE::DMITIGR_NET_EXCEPTION_BASE;
-  using DMITIGR_NET_EXCEPTION_BASE::report;
-  using DMITIGR_NET_EXCEPTION_BASE::last_error;
-};
+#ifdef _WIN32
+#define DMITIGR_NET_EXCEPTION dmitigr::Wsa_exception
+#else
+#define DMITIGR_NET_EXCEPTION dmitigr::Sys_exception
+#endif
 
 } // namespace dmitigr
 
