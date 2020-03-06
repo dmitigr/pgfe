@@ -1,4 +1,4 @@
 * text eol=lf
-lib/dmitigr/mulf/test/mulf-form-data*.txt text eol=crlf
+test/mulf/mulf-form-data*.txt text eol=crlf
 doc/fcgi/dmitigr_fcgi_overview.violet.html binary
 doc/pgfe/dmitigr_pgfe_overview.violet.html binary

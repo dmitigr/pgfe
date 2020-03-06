@@ -10,8 +10,8 @@
 #include "dmitigr/pgfe/data.hpp"
 #include "dmitigr/pgfe/exceptions.hpp"
 
+#include <dmitigr/str.hpp>
 #include <dmitigr/util/debug.hpp>
-#include <dmitigr/util/string.hpp>
 
 #include <algorithm>
 #include <locale>
@@ -659,7 +659,7 @@ const char* fill_container(Container<Optional<T>, Allocator<Optional<T>>>& resul
    * Note: On MSVS the "fatal error C1001: An internal error has occurred in the compiler."
    * is possible if the using directive below points to the incorrect symbol!
    */
-  using string::next_non_space_pointer;
+  using str::next_non_space_pointer;
 
   literal = next_non_space_pointer(literal);
   if (*literal != '{')

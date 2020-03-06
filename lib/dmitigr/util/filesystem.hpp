@@ -5,11 +5,15 @@
 #ifndef DMITIGR_UTIL_FILESYSTEM_HPP
 #define DMITIGR_UTIL_FILESYSTEM_HPP
 
-#if __GNUG__ && (__GNUC__ == 7 && __GNUC_MINOR__ >= 3)
-#include <experimental/filesystem>
-namespace std {
-namespace filesystem = experimental::filesystem;
-} // namespace std
+#if __GNUG__
+  #if (__GNUC__ >= 8)
+    #include <filesystem>
+  #else
+    #include <experimental/filesystem>
+    namespace std {
+    namespace filesystem = experimental::filesystem;
+    } // namespace std
+  #endif
 #else
 #include <filesystem>
 #endif

@@ -85,6 +85,8 @@ macro(dmitigr_set_library_info lib version_major version_minor description)
   set(dmitigr_${lib}_product_name "Dmitigr ${dmitigr_${lib}_Name}")
 endmacro()
 
+# ------------------------------------------------------------------------------
+
 macro(dmitigr_propagate_library_settings lib)
   set(dmitigr_${lib}_name ${dmitigr_${lib}_name} PARENT_SCOPE)
   set(dmitigr_${lib}_NAME ${dmitigr_${lib}_NAME} PARENT_SCOPE)
@@ -105,14 +107,17 @@ macro(dmitigr_propagate_library_settings lib)
     set(dmitigr_${lib}_${st} ${dmitigr_${lib}_${st}} PARENT_SCOPE)
   endforeach()
 
-  set(dmitigr_${lib}_tests ${dmitigr_${lib}_tests} PARENT_SCOPE)
-
   foreach(suff public private interface)
     set(dmitigr_${lib}_target_link_libraries_${suff} ${dmitigr_${lib}_target_link_libraries_${suff}} PARENT_SCOPE)
     set(dmitigr_${lib}_target_compile_definitions_${suff} ${dmitigr_${lib}_target_compile_definitions_${suff}} PARENT_SCOPE)
     set(dmitigr_${lib}_target_include_directories_${suff} ${dmitigr_${lib}_target_include_directories_${suff}} PARENT_SCOPE)
   endforeach()
+endmacro()
 
+# ------------------------------------------------------------------------------
+
+macro(dmitigr_propagate_tests_settings lib)
+  set(dmitigr_${lib}_tests ${dmitigr_${lib}_tests} PARENT_SCOPE)
   set(dmitigr_${lib}_tests_target_link_libraries ${dmitigr_${lib}_tests_target_link_libraries} PARENT_SCOPE)
 endmacro()
 

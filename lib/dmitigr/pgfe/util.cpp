@@ -6,9 +6,9 @@
 #include "dmitigr/pgfe/util.hpp"
 #include "dmitigr/pgfe/implementation_header.hpp"
 
+#include <dmitigr/net.hpp>
+#include <dmitigr/str.hpp>
 #include <dmitigr/util/debug.hpp>
-#include <dmitigr/util/net.hpp>
-#include <dmitigr/util/string.hpp>
 
 #include <cerrno>
 #include <limits>
@@ -37,7 +37,7 @@ DMITIGR_PGFE_INLINE int sqlstate_string_to_int(const std::string& code)
 DMITIGR_PGFE_INLINE std::string sqlstate_int_to_string(const int code)
 {
   DMITIGR_REQUIRE(0 <= code && code <= 60466175, std::invalid_argument);
-  return string::to_string(code, 36);
+  return str::to_string(code, 36);
 }
 
 DMITIGR_PGFE_INLINE std::string unquote_identifier(const std::string_view identifier)

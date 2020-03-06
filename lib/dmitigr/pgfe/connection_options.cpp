@@ -6,8 +6,8 @@
 #include "dmitigr/pgfe/defaults.hpp"
 #include "dmitigr/pgfe/implementation_header.hpp"
 
+#include <dmitigr/net.hpp>
 #include <dmitigr/util/debug.hpp>
-#include <dmitigr/util/net.hpp>
 
 #include <algorithm>
 #include <stdexcept>

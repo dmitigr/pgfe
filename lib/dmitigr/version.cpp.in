@@ -1,0 +1,26 @@
+// -*- C++ -*-
+// Copyright (C) Dmitry Igrishin
+// For conditions of distribution and use, see files LICENSE.txt or @dmitigr_lib_name@.hpp
+
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// This file was generated automatically. Edit version.cpp.in instead!!!!!!!!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+#include "dmitigr/@dmitigr_lib_name@/version.hpp"
+#include "dmitigr/@dmitigr_lib_name@/implementation_header.hpp"
+
+namespace dmitigr::@dmitigr_lib_name@ {
+
+DMITIGR_@dmitigr_lib_NAME@_INLINE std::int_fast32_t version() noexcept
+{
+  // Actual values are set in CMakeLists.txt.
+  constexpr std::int_least32_t major = @dmitigr_lib_version_major@;
+  constexpr std::int_least32_t minor = @dmitigr_lib_version_minor@;
+
+  // 11.234 -> 11 * 1000 + 234 = 11234
+  return major*1000 + minor;
+}
+
+} // namespace dmitigr::@dmitigr_lib_name@
+
+#include "dmitigr/@dmitigr_lib_name@/implementation_footer.hpp"

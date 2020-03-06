@@ -19,7 +19,7 @@
 #include <string>
 
 /**
- * @brief Defaults which are sets on build time.
+ * @brief Defaults which are sets at build time.
  */
 namespace dmitigr::pgfe::detail::defaults {
 

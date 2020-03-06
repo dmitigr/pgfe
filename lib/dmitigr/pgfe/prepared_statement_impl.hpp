@@ -11,7 +11,7 @@
 #include "dmitigr/pgfe/prepared_statement_dfn.hpp"
 #include "dmitigr/pgfe/row_info.hpp"
 
-#include <dmitigr/util/memory.hpp>
+#include <dmitigr/mem.hpp>
 
 #include <algorithm>
 #include <chrono>
@@ -275,7 +275,7 @@ public:
 private:
   friend pq_Connection;
 
-  using Data_deletion_required = memory::Conditional_delete<const Data>;
+  using Data_deletion_required = mem::Conditional_delete<const Data>;
   using Data_ptr = std::unique_ptr<const Data, Data_deletion_required>;
 
   struct Parameter final {

@@ -10,8 +10,8 @@
 #include "dmitigr/pgfe/parameterizable.hpp"
 #include "dmitigr/pgfe/response.hpp"
 
+#include <dmitigr/mem.hpp>
 #include <dmitigr/util/debug.hpp>
-#include <dmitigr/util/memory.hpp>
 
 #include <cstdint>
 #include <memory>
@@ -125,7 +125,7 @@ public:
   }
 
 private:
-  using Data_deletion_required = memory::Conditional_delete<const Data>;
+  using Data_deletion_required = mem::Conditional_delete<const Data>;
   using Data_ptr = std::unique_ptr<const Data, Data_deletion_required>;
 
   static void check_name(const std::string& name)

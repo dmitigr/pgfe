@@ -6,7 +6,7 @@
 # Info
 # ------------------------------------------------------------------------------
 
-dmitigr_set_library_info(pgfe 1 0 "The client API for PostgreSQL")
+dmitigr_set_library_info(pgfe 1 0 "Powerful client API for PostgreSQL")
 
 # ------------------------------------------------------------------------------
 # Default connection options
@@ -331,26 +331,12 @@ set(dmitigr_pgfe_transunits
   ../pgfe.cpp
   )
 
-set(dmitigr_pgfe_tests benchmark_array_client benchmark_array_server
-  benchmark_sql_string_replace composite connection connection_deferrable
-  connection-err_in_mid connection_options connection-rows connection_ssl
-  conversions conversions_online data  hello_world problem ps row_info sql_string sql_vector)
-
-# ------------------------------------------------------------------------------
-# Tests
-# ------------------------------------------------------------------------------
-
-add_custom_target(dmitigr_pgfe_copy_test_resources ALL
-  COMMAND cmake -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/test/pgfe-unit-sql_vector.sql"
-  "${dmitigr_cefeika_resource_destination_dir}"
-  )
-
 # ------------------------------------------------------------------------------
 # Dependencies
 # ------------------------------------------------------------------------------
 
-set(dmitigr_pgfe_target_link_libraries_public dmitigr::util)
-set(dmitigr_pgfe_target_link_libraries_interface dmitigr::util)
+set(dmitigr_pgfe_target_link_libraries_public dmitigr::mem dmitigr::net dmitigr::str dmitigr::util)
+set(dmitigr_pgfe_target_link_libraries_interface dmitigr::mem dmitigr::net dmitigr::str dmitigr::util)
 
 #
 # libpq

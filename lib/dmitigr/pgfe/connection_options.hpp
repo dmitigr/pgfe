@@ -478,9 +478,6 @@ public:
   /**
    * @brief Sets the SSL mode enabled if `(value == true)`, or disabled otherwise.
    *
-   * @par Requires
-   * `is_ssl_enabled()`.
-   *
    * @par Exception safety guarantee
    * Strong.
    *

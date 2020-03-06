@@ -1050,7 +1050,7 @@ protected:
      * If nullptr passed to ::PQerrorMessage() it returns
      * something like "connection pointer is NULL\n".
      */
-    return conn_ ? string::literal(::PQerrorMessage(conn_)) : std::string{};
+    return conn_ ? str::literal(::PQerrorMessage(conn_)) : std::string{};
   }
 
 private:
@@ -1286,8 +1286,8 @@ private:
   template<class Problem>
   static Problem problem(const ::PGresult* const r)
   {
-    using string::literal;
-    using string::coalesce;
+    using str::literal;
+    using str::coalesce;
 
     DMITIGR_ASSERT(::PQresultStatus(r) == PGRES_NONFATAL_ERROR || ::PQresultStatus(r) == PGRES_FATAL_ERROR);
 

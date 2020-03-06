@@ -18,10 +18,16 @@ include(dmitigr_cefeika)
 # Build options
 # ------------------------------------------------------------------------------
 
-option(BUILD_SHARED_LIBS "Build shared libraries?" ON)
-option(DMITIGR_CEFEIKA_HEADER_ONLY "Header-only?" OFF)
-option(DMITIGR_CEFEIKA_BUILD_TESTS "Build tests?" OFF)
-option(DMITIGR_LIBRARIAN_DEBUG "Print librarian.cmake debug output?" OFF)
+set(CMAKE_VERBOSE_MAKEFILE FALSE CACHE BOOL
+  "Verbose output upon build?")
+set(BUILD_SHARED_LIBS TRUE CACHE BOOL
+  "Build shared libraries?")
+set(DMITIGR_CEFEIKA_HEADER_ONLY FALSE CACHE BOOL
+  "Header-only?")
+set(DMITIGR_CEFEIKA_BUILD_TESTS FALSE CACHE BOOL
+  "Build tests?")
+set(DMITIGR_LIBRARIAN_DEBUG FALSE CACHE BOOL
+  "Print librarian.cmake debug output?")
 
 if(NOT DMITIGR_CEFEIKA_HEADER_ONLY)
   if(BUILD_SHARED_LIBS)
@@ -72,6 +78,20 @@ elseif(WIN32)
 endif()
 
 # ------------------------------------------------------------------------------
+# Global variables (constants)
+# ------------------------------------------------------------------------------
+
+if(NOT DMITIGR_CEFEIKA_HEADER_ONLY)
+  if(BUILD_SHARED_LIBS)
+    set(export_file_suffix "shared")
+  else()
+    set(export_file_suffix "static")
+  endif()
+else() # header-only
+  set(export_file_suffix "interface")
+endif()
+
+# ------------------------------------------------------------------------------
 # Languages
 # ------------------------------------------------------------------------------
 
@@ -83,8 +103,24 @@ set(CXX_STANDARD_REQUIRED ON)
 # Include directories
 # ------------------------------------------------------------------------------
 
-include_directories(BEFORE ${CMAKE_CURRENT_SOURCE_DIR}/lib)
-include_directories(BEFORE ${CMAKE_CURRENT_BINARY_DIR}/lib)
+include_directories(BEFORE
+  ${CMAKE_CURRENT_SOURCE_DIR}/lib
+  ${CMAKE_CURRENT_BINARY_DIR}/lib
+  )
+
+# ------------------------------------------------------------------------------
+# Third-party dependencies
+# ------------------------------------------------------------------------------
+
+if ("rajson" IN_LIST dmitigr_cefeika_libraries)
+  add_subdirectory(thirdparty/rapidjson)
+endif()
+
+if ("ws" IN_LIST dmitigr_cefeika_libraries)
+  add_subdirectory(thirdparty/uv)
+  add_subdirectory(thirdparty/usockets)
+  add_subdirectory(thirdparty/uwebsockets)
+endif()
 
 # ------------------------------------------------------------------------------
 # Output settings
@@ -139,7 +175,7 @@ foreach(lib ${dmitigr_cefeika_libraries})
   dmitigr_set_library_info_lib_variables(${lib})
 
   foreach(file dll.hpp implementation_footer.hpp
-      implementation_header.hpp version.hpp version.rc)
+      implementation_header.hpp version.hpp version.cpp version.rc)
     configure_file(lib/dmitigr/${file}.in
       ${CMAKE_CURRENT_SOURCE_DIR}/lib/dmitigr/${lib}/${file} @ONLY
       NEWLINE_STYLE UNIX)
@@ -159,6 +195,7 @@ foreach(lib ${dmitigr_cefeika_libraries})
 
   list(APPEND dmitigr_${lib}_preprocessed_headers
     dll.hpp implementation_footer.hpp implementation_header.hpp version.hpp)
+  list(APPEND dmitigr_${lib}_implementations version.cpp)
   if (WIN32)
     list(APPEND dmitigr_${lib}_build_only_sources version.rc)
   endif()
@@ -270,16 +307,6 @@ foreach(lib ${dmitigr_cefeika_libraries})
       DESTINATION ${DMITIGR_CEFEIKA_INCLUDE_INSTALL_DIR}/dmitigr)
   endif()
 
-  if(NOT DMITIGR_CEFEIKA_HEADER_ONLY)
-    if(BUILD_SHARED_LIBS)
-      set(export_file_suffix "shared")
-    else()
-      set(export_file_suffix "static")
-    endif()
-  else() # header-only
-    set(export_file_suffix "interface")
-  endif()
-
   install(EXPORT dmitigr_${lib}_export
     NAMESPACE dmitigr::
     DESTINATION ${DMITIGR_CEFEIKA_CMAKE_INSTALL_DIR}
@@ -299,7 +326,7 @@ foreach(lib ${dmitigr_cefeika_libraries})
 endforeach()
 
 # ------------------------------------------------------------------------------
-# Testing
+# Tests
 # ------------------------------------------------------------------------------
 
 if(DMITIGR_CEFEIKA_BUILD_TESTS)
@@ -308,14 +335,14 @@ if(DMITIGR_CEFEIKA_BUILD_TESTS)
 
   function(dmitigr_configure_test lib test)
     set(full_name "${lib}-${test}")
-    if(NOT EXISTS "${CMAKE_SOURCE_DIR}/lib/dmitigr/${lib}/test/${full_name}.cpp")
+    if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/test/${lib}/${full_name}.cpp")
       set(is_unit_test TRUE)
       set(full_name "${lib}-unit-${test}")
     else()
       set(is_unit_test FALSE)
     endif()
     set(exe "${full_name}")
-    set(src "${CMAKE_SOURCE_DIR}/lib/dmitigr/${lib}/test/${full_name}.cpp")
+    set(src "${CMAKE_CURRENT_SOURCE_DIR}/test/${lib}/${full_name}.cpp")
     add_executable(${exe} ${src})
     target_link_libraries(${exe} PRIVATE dmitigr::util dmitigr::${lib} ${dmitigr_${lib}_tests_target_link_libraries})
     dmitigr_target_compile_options(${exe})
@@ -325,8 +352,11 @@ if(DMITIGR_CEFEIKA_BUILD_TESTS)
   endfunction()
 
   foreach(lib ${dmitigr_cefeika_libraries})
-    foreach(test ${dmitigr_${lib}_tests})
-      dmitigr_configure_test(${lib} ${test})
-    endforeach()
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/test/${lib}")
+      add_subdirectory(test/${lib})
+      foreach(test ${dmitigr_${lib}_tests})
+        dmitigr_configure_test(${lib} ${test})
+      endforeach()
+    endif()
   endforeach()
 endif()

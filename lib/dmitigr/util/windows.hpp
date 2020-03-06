@@ -2,6 +2,8 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or util.hpp
 
+// Include this header instead of Windows.h whenever Windows.h is needed.
+
 #ifndef _WIN32
 #error windows.hpp is usable only on Microsoft Windows!
 #endif
@@ -14,6 +16,16 @@
 
 #include <algorithm>
 
+/*
+ * For historical reasons, the Windows.h header defaults to including the
+ * Winsock.h header file for Windows Sockets 1.1. The declarations in the
+ * Winsock.h header file will conflict with the declarations in the Winsock2.h
+ * header file required by Windows Sockets 2.0. The WIN32_LEAN_AND_MEAN macro
+ * prevents the Winsock.h from being included by the Windows.h header.
+ *
+ * https://docs.microsoft.com/en-us/windows/desktop/winsock/include-files-2
+ * https://social.msdn.microsoft.com/Forums/vstudio/en-US/671124df-c42b-48b8-a4ac-3413230bc43b/dll-compilationredefinition-error
+ */
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
