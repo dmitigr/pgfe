@@ -9,9 +9,8 @@
 #include "dmitigr/pgfe/dll.hpp"
 #include "dmitigr/pgfe/types_fwd.hpp"
 
-#include <dmitigr/util/filesystem.hpp>
-
 #include <cstdint>
+#include <filesystem>
 #include <chrono>
 #include <memory>
 #include <optional>
