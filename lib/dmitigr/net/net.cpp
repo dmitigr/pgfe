@@ -2,15 +2,11 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or net.hpp
 
-#include "dmitigr/net/descriptor.hpp"
 #include "dmitigr/net/net.hpp"
-#include "dmitigr/net/implementation_header.hpp"
-
-#include "dmitigr/util/debug.hpp"
-#include "dmitigr/util/exceptions.hpp"
 #ifdef _WIN32
-#include "dmitigr/util/windows.hpp"
+#include <dmitigr/os/windows.hpp>
 #endif
+#include <dmitigr/base/debug.hpp>
 
 #include <algorithm>
 #include <array>
@@ -650,7 +646,7 @@ public:
     }
 
     if (socket_.close() != 0)
-      throw Sys_exception{"closesocket"};
+      throw os::Sys_exception{"closesocket"};
   }
 
 private:
@@ -698,10 +694,10 @@ public:
   {
     if (pipe_ != INVALID_HANDLE_VALUE) {
       if (!::FlushFileBuffers(pipe_))
-        Sys_exception::report("FlushFileBuffers");
+        os::Sys_exception::report("FlushFileBuffers");
 
       if (!::DisconnectNamedPipe(pipe_))
-        Sys_exception::report("DisconnectNamedPipe");
+        os::Sys_exception::report("DisconnectNamedPipe");
     }
   }
 
@@ -721,7 +717,7 @@ public:
 
     DWORD result{};
     if (!::ReadFile(pipe_, buf, static_cast<DWORD>(len), &result, nullptr))
-      throw Sys_exception{"Readfile"};
+      throw os::Sys_exception{"Readfile"};
 
     return static_cast<std::streamsize>(result);
   }
@@ -733,7 +729,7 @@ public:
 
     DWORD result{};
     if (!::WriteFile(pipe_, buf, static_cast<DWORD>(len), &result, nullptr))
-      throw Sys_exception{"WriteFile"};
+      throw os::Sys_exception{"WriteFile"};
 
     return static_cast<std::streamsize>(result);
   }
@@ -742,13 +738,13 @@ public:
   {
     if (pipe_ != INVALID_HANDLE_VALUE) {
       if (!::FlushFileBuffers(pipe_))
-        throw Sys_exception{"FlushFileBuffers"};
+        throw os::Sys_exception{"FlushFileBuffers"};
 
       if (!::DisconnectNamedPipe(pipe_))
-        throw Sys_exception{"DisconnectNamedPipe"};
+        throw os::Sys_exception{"DisconnectNamedPipe"};
 
       if (!pipe_.close())
-        throw Sys_exception{"CloseHandle"};
+        throw os::Sys_exception{"CloseHandle"};
     }
   }
 
@@ -818,7 +814,6 @@ public:
     DMITIGR_REQUIRE(!is_listening(), std::logic_error);
 
     const auto* const eid = options_->endpoint_id();
-    const auto cm = eid->communication_mode();
 
     const auto tcp_create_bind = [&]()
     {
@@ -881,7 +876,7 @@ public:
         throw DMITIGR_NET_EXCEPTION{"bind"};
     };
 
-    if (cm == Communication_mode::net)
+    if (const auto cm = eid->communication_mode(); cm == Communication_mode::net)
       tcp_create_bind();
     else
       uds_create_bind();
@@ -1014,7 +1009,7 @@ public:
     OVERLAPPED ol{0, 0, 0, 0, nullptr};
     ol.hEvent = ::CreateEventA(nullptr, true, false, nullptr);
     if (!ol.hEvent)
-      throw Sys_exception{"CreateEventA"};
+      throw os::Sys_exception{"CreateEventA"};
 
     os::windows::Handle_guard pipe = make_named_pipe();
 
@@ -1033,20 +1028,20 @@ public:
           if (::GetOverlappedResult(pipe, &ol, &number_of_bytes_transferred, false))
             goto have_waited;
           else
-            throw Sys_exception{"GetOverlappedResult"};
+            throw os::Sys_exception{"GetOverlappedResult"};
         } else {
           if (!::CancelIo(pipe))
-            throw Sys_exception{"CancelIo"};
+            throw os::Sys_exception{"CancelIo"};
 
           if (r == WAIT_TIMEOUT)
             return false;
           else
-            throw Sys_exception{"WaitForSingleObject"};
+            throw os::Sys_exception{"WaitForSingleObject"};
         }
       }
 
       default:
-        throw Sys_exception{"ConnectNamedPipe"};
+        throw os::Sys_exception{"ConnectNamedPipe"};
       }
     }
 
@@ -1066,7 +1061,7 @@ public:
   {
     if (is_listening()) {
       if (!pipe_.close())
-        throw Sys_exception{"CloseHandle"};
+        throw os::Sys_exception{"CloseHandle"};
       is_listening_ = false;
     }
   }
@@ -1105,7 +1100,7 @@ private:
     if (result != INVALID_HANDLE_VALUE)
       return result;
     else
-      throw Sys_exception{"CreateNamedPipeA"};
+      throw os::Sys_exception{"CreateNamedPipeA"};
   }
 };
 
@@ -1240,5 +1235,3 @@ DMITIGR_NET_INLINE Socket_readiness poll(const Socket_native socket,
 }
 
 } // namespace dmitigr::net
-
-#include "dmitigr/net/implementation_footer.hpp"

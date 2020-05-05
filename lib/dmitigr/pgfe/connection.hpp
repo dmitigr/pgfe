@@ -10,8 +10,8 @@
 #include "dmitigr/pgfe/row_conversions.hpp"
 #include "dmitigr/pgfe/sql_string.hpp"
 #include "dmitigr/pgfe/types_fwd.hpp"
+#include <dmitigr/base/debug.hpp>
 
-#include "dmitigr/util/debug.hpp"
 
 #include <chrono>
 #include <cstdint>

@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see files LICENSE.txt or @dmitigr_lib_name@.hpp
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// This file was generated automatically. Edit version.rc.in instead!!!!!!!!!!!!
+// This file is generated automatically. Edit version.rc.in instead!!!!!!!!!!!!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 #include <winres.h>

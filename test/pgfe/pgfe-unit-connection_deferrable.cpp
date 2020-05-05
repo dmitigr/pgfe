@@ -10,7 +10,7 @@
 int main(int, char* argv[])
 {
   namespace pgfe = dmitigr::pgfe;
-  using namespace dmitigr::test;
+  using namespace dmitigr::testo;
 
   try {
     auto conn = pgfe::test::make_connection();

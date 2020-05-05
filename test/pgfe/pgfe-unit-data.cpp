@@ -4,7 +4,7 @@
 
 #include <dmitigr/pgfe/data.hpp>
 #include <dmitigr/pgfe/exceptions.hpp>
-#include <dmitigr/util/test.hpp>
+#include <dmitigr/testo.hpp>
 
 #include <cstring>
 #include <string>
@@ -13,7 +13,7 @@
 int main(int, char* argv[])
 {
   namespace pgfe = dmitigr::pgfe;
-  using namespace dmitigr::test;
+  using namespace dmitigr::testo;
 
   try {
     // Data::make(const char*)

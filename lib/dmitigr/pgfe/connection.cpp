@@ -17,9 +17,7 @@
 #include "dmitigr/pgfe/row_info.hpp"
 #include "dmitigr/pgfe/sql_string.hpp"
 #include "dmitigr/pgfe/util.hpp"
-#include "dmitigr/pgfe/implementation_header.hpp"
-
-#include <dmitigr/util/debug.hpp>
+#include <dmitigr/base/debug.hpp>
 
 #include <list>
 #include <optional>
@@ -1365,5 +1363,3 @@ DMITIGR_PGFE_INLINE std::unique_ptr<Connection> Connection::make(const Connectio
 }
 
 } // namespace dmitigr::pgfe
-
-#include "dmitigr/pgfe/implementation_footer.hpp"

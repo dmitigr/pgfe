@@ -7,7 +7,7 @@
 #define DMITIGR_PGFE_HEADER_ONLY
 #endif
 #include <dmitigr/pgfe/connection_options.hpp>
-#include <dmitigr/util/test.hpp>
+#include <dmitigr/testo.hpp>
 
 namespace dmitigr::pgfe::detail {
 
@@ -27,7 +27,7 @@ int main(int, char* argv[])
 {
   namespace pgfe = dmitigr::pgfe;
   namespace defaults = pgfe::detail::defaults;
-  using namespace dmitigr::test;
+  using namespace dmitigr::testo;
 
   try {
     auto co = pgfe::Connection_options::make(pgfe::Communication_mode::net);

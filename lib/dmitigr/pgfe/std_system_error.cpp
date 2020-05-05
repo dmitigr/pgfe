@@ -4,7 +4,6 @@
 
 #include "dmitigr/pgfe/std_system_error.hpp"
 #include "dmitigr/pgfe/util.hpp"
-#include "dmitigr/pgfe/implementation_header.hpp"
 
 namespace dmitigr::pgfe {
 
@@ -79,5 +78,3 @@ DMITIGR_PGFE_INLINE std::error_condition make_error_condition(Server_errc errc) 
 }
 
 } // namespace dmitigr::pgfe
-
-#include "dmitigr/pgfe/implementation_footer.hpp"

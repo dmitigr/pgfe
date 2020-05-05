@@ -24,6 +24,9 @@ class Endpoint_id;
 class Listener_options;
 class Listener;
 
+class Wsa_exception;
+class Wsa_error_category;
+
 /**
  * @brief The implementation details.
  */

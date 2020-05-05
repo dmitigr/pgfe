@@ -9,9 +9,8 @@
 #include "dmitigr/pgfe/conversions_api.hpp"
 #include "dmitigr/pgfe/data.hpp"
 #include "dmitigr/pgfe/exceptions.hpp"
-
-#include <dmitigr/str.hpp>
-#include <dmitigr/util/debug.hpp>
+#include <dmitigr/base/debug.hpp>
+#include <dmitigr/str/str.hpp>
 
 #include <algorithm>
 #include <locale>

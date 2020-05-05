@@ -6,9 +6,7 @@
 #include "dmitigr/pgfe/data.hpp"
 #include "dmitigr/pgfe/parameterizable.hpp"
 #include "dmitigr/pgfe/sql_string.hpp"
-#include "dmitigr/pgfe/implementation_header.hpp"
-
-#include <dmitigr/util/debug.hpp>
+#include <dmitigr/base/debug.hpp>
 
 #include <algorithm>
 #include <list>
@@ -224,7 +222,7 @@ public:
   void replace_parameter(const std::string& name, const Sql_string* const replacement) override
   {
     DMITIGR_REQUIRE(has_parameter(name), std::out_of_range);
-    DMITIGR_REQUIRE(replacement, std::invalid_argument);
+    DMITIGR_REQUIRE(replacement && replacement != this, std::invalid_argument);
     const auto* const ireplacement = dynamic_cast<const iSql_string*>(replacement);
     DMITIGR_ASSERT_ALWAYS(ireplacement);
 
@@ -1374,5 +1372,3 @@ DMITIGR_PGFE_INLINE std::unique_ptr<Sql_string> Sql_string::make(const std::stri
 }
 
 } // namespace dmitigr::pgfe
-
-#include "dmitigr/pgfe/implementation_footer.hpp"

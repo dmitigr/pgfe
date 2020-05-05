@@ -33,10 +33,7 @@ endfunction()
 
 function(dmitigr_target_compile_options t)
   if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    # FIXME: GDB 7.7 doesn't print info of rvalues' that are function arguments
-    # properly when compiled with -gdwarf-4. So, using -gdwarf-3 instead.
     target_compile_options(${t} PRIVATE
-      -gdwarf-3
       -pedantic
       -Wall
       -Wextra
@@ -65,6 +62,10 @@ endfunction()
 # ------------------------------------------------------------------------------
 
 macro(dmitigr_set_library_info lib version_major version_minor description)
+  if((${version_major} LESS 0) OR (${version_minor} LESS 0))
+    message(FATAL_ERROR "Invalid major or minor version of ${lib} specified")
+  endif()
+
   set(dmitigr_${lib}_name "${lib}")
   string(TOUPPER "${lib}" dmitigr_${lib}_NAME)
 
@@ -119,6 +120,7 @@ endmacro()
 macro(dmitigr_propagate_tests_settings lib)
   set(dmitigr_${lib}_tests ${dmitigr_${lib}_tests} PARENT_SCOPE)
   set(dmitigr_${lib}_tests_target_link_libraries ${dmitigr_${lib}_tests_target_link_libraries} PARENT_SCOPE)
+  set(dmitigr_${lib}_tests_target_compile_definitions ${dmitigr_${lib}_tests_target_compile_definitions} PARENT_SCOPE)
 endmacro()
 
 # ------------------------------------------------------------------------------

@@ -3,9 +3,7 @@
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
 #include "dmitigr/pgfe/basics.hpp"
-#include "dmitigr/pgfe/implementation_header.hpp"
-
-#include <dmitigr/util/basics.hpp>
+#include <dmitigr/base/basics.hpp>
 
 #include <cstring>
 
@@ -18,5 +16,3 @@ template<> struct Is_bitmask_enum<dmitigr::pgfe::External_library> final : std::
 
 DMITIGR_DEFINE_ENUM_BITMASK_OPERATORS(dmitigr::pgfe, dmitigr::pgfe::Socket_readiness)
 DMITIGR_DEFINE_ENUM_BITMASK_OPERATORS(dmitigr::pgfe, dmitigr::pgfe::External_library)
-
-#include "dmitigr/pgfe/implementation_footer.hpp"

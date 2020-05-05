@@ -8,7 +8,7 @@
 #include "dmitigr/os/dll.hpp"
 
 #ifdef _WIN32
-#include "dmitigr/util/windows.hpp"
+#include "dmitigr/os/windows.hpp"
 #else
 #include <sys/types.h>
 #endif

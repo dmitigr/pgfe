@@ -12,7 +12,7 @@ dmitigr_set_library_info(pgfe 1 0 "Powerful client API for PostgreSQL")
 # Default connection options
 # ------------------------------------------------------------------------------
 
-if (UNIX)
+if (UNIX AND NOT CMAKE_SYSTEM_NAME MATCHES MSYS|MinGW|Cygwin)
   if(NOT DEFINED DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE)
     set(DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE "uds" CACHE
       STRING "The connection communication mode: \"uds\" or \"net\"")
@@ -254,10 +254,6 @@ configure_file(defaults.hpp.in ${CMAKE_CURRENT_SOURCE_DIR}/defaults.hpp
 # Sources
 # ------------------------------------------------------------------------------
 
-set(dmitigr_pgfe_root_headers
-  ../pgfe.hpp
-  )
-
 set(dmitigr_pgfe_preprocessed_headers
   defaults.hpp
   )
@@ -327,16 +323,9 @@ set(dmitigr_pgfe_cmake_unpreprocessed
   defaults.hpp.in
   )
 
-set(dmitigr_pgfe_transunits
-  ../pgfe.cpp
-  )
-
 # ------------------------------------------------------------------------------
 # Dependencies
 # ------------------------------------------------------------------------------
-
-set(dmitigr_pgfe_target_link_libraries_public dmitigr::mem dmitigr::net dmitigr::str dmitigr::util)
-set(dmitigr_pgfe_target_link_libraries_interface dmitigr::mem dmitigr::net dmitigr::str dmitigr::util)
 
 #
 # libpq
@@ -362,18 +351,6 @@ else()
   list(APPEND dmitigr_pgfe_target_include_directories_interface "${Pq_INCLUDE_DIRS}")
   list(APPEND dmitigr_pgfe_target_link_libraries_public ${Suggested_Pq_LIBRARIES})
   list(APPEND dmitigr_pgfe_target_link_libraries_interface ${Suggested_Pq_LIBRARIES})
-endif()
-
-#
-# System
-#
-
-dmitigr_append_cppfs(dmitigr_pgfe_target_link_libraries_private)
-dmitigr_append_cppfs(dmitigr_pgfe_target_link_libraries_interface)
-
-if (WIN32)
-  list(APPEND dmitigr_pgfe_target_link_libraries_private Ws2_32.lib)
-  list(APPEND dmitigr_pgfe_target_link_libraries_interface Ws2_32.lib)
 endif()
 
 # ------------------------------------------------------------------------------

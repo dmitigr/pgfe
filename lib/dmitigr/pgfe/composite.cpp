@@ -6,9 +6,7 @@
 #include "dmitigr/pgfe/compositional.hpp"
 #include "dmitigr/pgfe/data.hpp"
 #include "dmitigr/pgfe/util.hpp"
-#include "dmitigr/pgfe/implementation_header.hpp"
-
-#include <dmitigr/util/debug.hpp>
+#include <dmitigr/base/debug.hpp>
 
 #include <algorithm>
 #include <utility>
@@ -276,5 +274,3 @@ DMITIGR_PGFE_INLINE std::unique_ptr<Composite> Composite::make(std::vector<std::
 }
 
 } // namespace dmitigr::pgfe
-
-#include "dmitigr/pgfe/implementation_footer.hpp"

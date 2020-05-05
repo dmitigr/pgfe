@@ -6,7 +6,6 @@
 #include "dmitigr/pgfe/pq.hpp"
 #include "dmitigr/pgfe/row_info.hpp"
 #include "dmitigr/pgfe/util.hpp"
-#include "dmitigr/pgfe/implementation_header.hpp"
 
 #include <algorithm>
 #include <limits>
@@ -260,5 +259,3 @@ private:
 };
 
 } // namespace dmitigr::pgfe::detail
-
-#include "dmitigr/pgfe/implementation_footer.hpp"

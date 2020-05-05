@@ -3,9 +3,7 @@
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
 #include "dmitigr/pgfe/completion.hpp"
-#include "dmitigr/pgfe/implementation_header.hpp"
-
-#include <dmitigr/util/debug.hpp>
+#include <dmitigr/base/debug.hpp>
 
 namespace dmitigr::pgfe::detail {
 
@@ -88,5 +86,3 @@ private:
 };
 
 } // namespace dmitigr::pgfe::detail
-
-#include "dmitigr/pgfe/implementation_footer.hpp"

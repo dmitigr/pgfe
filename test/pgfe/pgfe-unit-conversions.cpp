@@ -4,7 +4,7 @@
 
 #include <dmitigr/pgfe/exceptions.hpp>
 #include <dmitigr/pgfe/conversions.hpp>
-#include <dmitigr/util/test.hpp>
+#include <dmitigr/testo.hpp>
 
 #include <limits>
 #include <optional>
@@ -61,7 +61,7 @@ using Vector_array = Array<T, std::vector>;
 int main(int, char* argv[])
 {
   namespace pgfe = dmitigr::pgfe;
-  using namespace dmitigr::test;
+  using namespace dmitigr::testo;
   using std::numeric_limits;
 
   try {

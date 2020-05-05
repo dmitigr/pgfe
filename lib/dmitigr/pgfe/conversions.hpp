@@ -506,7 +506,11 @@ struct Numeric_conversions : public Basic_conversions<T, detail::Numeric_string_
  */
 template<typename T>
 struct Conversions final : public Basic_conversions<T, detail::Generic_string_conversions<T>,
-  detail::Generic_data_conversions<T>> {};
+  detail::Generic_data_conversions<T>> {
+  static_assert(!std::is_same_v<T, signed char> &&
+    !std::is_same_v<T, unsigned char>,
+    "attempt to use generic conversions for unsupported type");
+};
 
 /**
  * @ingroup conversions

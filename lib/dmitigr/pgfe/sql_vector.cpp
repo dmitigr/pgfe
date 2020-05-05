@@ -4,9 +4,7 @@
 
 #include "dmitigr/pgfe/sql_string.hpp"
 #include "dmitigr/pgfe/sql_vector.hpp"
-#include "dmitigr/pgfe/implementation_header.hpp"
-
-#include "dmitigr/util/debug.hpp"
+#include <dmitigr/base/debug.hpp>
 
 namespace dmitigr::pgfe::detail {
 
@@ -241,5 +239,3 @@ DMITIGR_PGFE_INLINE std::unique_ptr<Sql_vector> Sql_vector::make(std::vector<std
 }
 
 } // namespace dmitigr::pgfe
-
-#include "dmitigr/pgfe/implementation_footer.hpp"

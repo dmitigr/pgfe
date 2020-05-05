@@ -1,5 +1,5 @@
 // -*- C++ -*-
-// Copyright (C) 2019 Dmitry Igrishin
+// Copyright (C) 2020 Dmitry Igrishin
 //
 // This software is provided 'as-is', without any express or implied
 // warranty. In no event will the authors be held liable for any damages
@@ -20,40 +20,13 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// This file is generated automatically. Edit lib.hpp.in instead!!!!!!!!!!!!!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 #ifndef DMITIGR_PGFE_HPP
 #define DMITIGR_PGFE_HPP
 
-#include "dmitigr/pgfe/array_conversions.hpp"
-#include "dmitigr/pgfe/basic_conversions.hpp"
-#include "dmitigr/pgfe/basics.hpp"
-#include "dmitigr/pgfe/completion.hpp"
-#include "dmitigr/pgfe/composite.hpp"
-#include "dmitigr/pgfe/compositional.hpp"
-#include "dmitigr/pgfe/connection.hpp"
-#include "dmitigr/pgfe/connection_options.hpp"
-#include "dmitigr/pgfe/conversions_api.hpp"
-#include "dmitigr/pgfe/conversions.hpp"
-#include "dmitigr/pgfe/data.hpp"
-#include "dmitigr/pgfe/errc.hpp"
-#include "dmitigr/pgfe/error.hpp"
-#include "dmitigr/pgfe/exceptions.hpp"
-#include "dmitigr/pgfe/message.hpp"
-#include "dmitigr/pgfe/misc.hpp"
-#include "dmitigr/pgfe/notice.hpp"
-#include "dmitigr/pgfe/notification.hpp"
-#include "dmitigr/pgfe/parameterizable.hpp"
-#include "dmitigr/pgfe/problem.hpp"
-#include "dmitigr/pgfe/response.hpp"
-#include "dmitigr/pgfe/row.hpp"
-#include "dmitigr/pgfe/row_conversions.hpp"
-#include "dmitigr/pgfe/row_info.hpp"
-#include "dmitigr/pgfe/server_message.hpp"
-#include "dmitigr/pgfe/signal.hpp"
-#include "dmitigr/pgfe/sql_string.hpp"
-#include "dmitigr/pgfe/sql_vector.hpp"
-#include "dmitigr/pgfe/std_system_error.hpp"
-#include "dmitigr/pgfe/types_fwd.hpp"
-#include "dmitigr/pgfe/util.hpp"
-#include "dmitigr/pgfe/version.hpp"
+#include "dmitigr/pgfe/pgfe.hpp"
 
 #endif  // DMITIGR_PGFE_HPP

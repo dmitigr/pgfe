@@ -13,7 +13,7 @@
 int main(int argc, char* argv[])
 {
   namespace pgfe = dmitigr::pgfe;
-  using namespace dmitigr::test;
+  using namespace dmitigr::testo;
 
   try {
     auto [output_file, conn] = pgfe::test::arraybench::prepare(argc, argv);

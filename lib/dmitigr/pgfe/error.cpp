@@ -4,7 +4,6 @@
 
 #include "dmitigr/pgfe/error.hpp"
 #include "dmitigr/pgfe/problem.hpp"
-#include "dmitigr/pgfe/implementation_header.hpp"
 
 namespace dmitigr::pgfe::detail {
 
@@ -33,5 +32,3 @@ inline bool iError::is_invariant_ok()
 using simple_Error = basic_Problem<iError>;
 
 } // namespace dmitigr::pgfe::detail
-
-#include "dmitigr/pgfe/implementation_footer.hpp"

@@ -4,11 +4,9 @@
 
 #include "dmitigr/pgfe/basics.hpp"
 #include "dmitigr/pgfe/util.hpp"
-#include "dmitigr/pgfe/implementation_header.hpp"
-
-#include <dmitigr/net.hpp>
-#include <dmitigr/str.hpp>
-#include <dmitigr/util/debug.hpp>
+#include <dmitigr/base/debug.hpp>
+#include <dmitigr/net/net.hpp>
+#include <dmitigr/str/str.hpp>
 
 #include <cerrno>
 #include <limits>
@@ -80,5 +78,3 @@ inline Socket_readiness poll_sock(const int socket, const Socket_readiness mask,
 
 } // namespace detail
 } // namespace dmitigr::pgfe
-
-#include "dmitigr/pgfe/implementation_footer.hpp"

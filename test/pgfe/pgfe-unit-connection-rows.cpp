@@ -50,7 +50,7 @@ template<> struct Conversions<Person> {
 int main(int, char* argv[])
 {
   namespace pgfe = dmitigr::pgfe;
-  using namespace dmitigr::test;
+  using namespace dmitigr::testo;
 
   try {
     // Connecting.

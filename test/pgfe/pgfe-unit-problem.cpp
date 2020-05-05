@@ -11,12 +11,12 @@
 #include <dmitigr/pgfe/error.hpp>
 #include <dmitigr/pgfe/notice.hpp>
 #endif
-#include <dmitigr/util/test.hpp>
+#include <dmitigr/testo.hpp>
 
 int main(int, char* argv[])
 {
   namespace pgfe = dmitigr::pgfe;
-  using namespace dmitigr::test;
+  using namespace dmitigr::testo;
 
   try {
     const std::string severity_localized{"severity_localized"};

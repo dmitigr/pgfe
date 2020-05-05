@@ -3,7 +3,6 @@
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
 #include "dmitigr/pgfe/errc.hpp"
-#include "dmitigr/pgfe/implementation_header.hpp"
 
 namespace dmitigr::pgfe {
 
@@ -548,5 +547,3 @@ DMITIGR_PGFE_INLINE const char* to_literal(const Server_errc errc)
 }
 
 } // namespace dmitigr::pgfe
-
-#include "dmitigr/pgfe/implementation_footer.hpp"

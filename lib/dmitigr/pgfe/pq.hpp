@@ -7,8 +7,8 @@
 
 #include "dmitigr/pgfe/basics.hpp"
 
-#include <dmitigr/str.hpp>
-#include <dmitigr/util/debug.hpp>
+#include <dmitigr/base/debug.hpp>
+#include <dmitigr/str/str.hpp>
 
 #include <libpq-fe.h>
 

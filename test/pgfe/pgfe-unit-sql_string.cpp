@@ -5,12 +5,12 @@
 #include <dmitigr/pgfe/composite.hpp>
 #include <dmitigr/pgfe/exceptions.hpp>
 #include <dmitigr/pgfe/sql_string.hpp>
-#include <dmitigr/util/test.hpp>
+#include <dmitigr/testo.hpp>
 
 int main(int, char* argv[])
 {
   namespace pgfe = dmitigr::pgfe;
-  using namespace dmitigr::test;
+  using namespace dmitigr::testo;
 
   try {
     {

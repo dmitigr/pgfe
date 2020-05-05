@@ -3,7 +3,6 @@
 // For conditions of distribution and use, see files LICENSE.txt or os.hpp
 
 #include "dmitigr/os/proc.hpp"
-#include "dmitigr/os/implementation_header.hpp"
 
 #ifndef _WIN32
 #include <unistd.h>
@@ -21,5 +20,3 @@ DMITIGR_OS_INLINE Pid id()
 }
 
 } // namespace dmitigr::os::proc
-
-#include "dmitigr/os/implementation_footer.hpp"

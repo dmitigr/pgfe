@@ -8,8 +8,7 @@
 #include "dmitigr/pgfe/error.hpp"
 #include "dmitigr/pgfe/std_system_error.hpp"
 #include "dmitigr/pgfe/types_fwd.hpp"
-
-#include <dmitigr/util/debug.hpp>
+#include <dmitigr/base/debug.hpp>
 
 #include <memory>
 

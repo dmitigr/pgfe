@@ -12,9 +12,9 @@ namespace dmitigr {
  */
 namespace str {
 
-enum class Read_errc;
+enum class Errc;
 
-class Read_exception;
+class Exception;
 class Error_category;
 
 /**

@@ -4,7 +4,6 @@
 
 #include "dmitigr/pgfe/connection.hpp"
 #include "dmitigr/pgfe/prepared_statement_impl.hpp"
-#include "dmitigr/pgfe/implementation_header.hpp"
 
 namespace dmitigr::pgfe::detail {
 
@@ -127,5 +126,3 @@ inline bool pq_Prepared_statement::is_invariant_ok()
 }
 
 } // namespace dmitigr::pgfe::detail
-
-#include "dmitigr/pgfe/implementation_footer.hpp"

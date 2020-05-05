@@ -3,12 +3,12 @@
 // For conditions of distribution and use, see files LICENSE.txt or net.hpp
 
 #include <dmitigr/net.hpp>
-#include <dmitigr/util.hpp>
+#include <dmitigr/testo.hpp>
 
 int main(int, char* argv[])
 {
   namespace net = dmitigr::net;
-  using namespace dmitigr::test;
+  using namespace dmitigr::testo;
 
   try {
     const std::string v4_addr_str{"192.168.1.2"};

@@ -11,7 +11,7 @@
 #include "dmitigr/pgfe/prepared_statement_dfn.hpp"
 #include "dmitigr/pgfe/row_info.hpp"
 
-#include <dmitigr/mem.hpp>
+#include <dmitigr/mem/mem.hpp>
 
 #include <algorithm>
 #include <chrono>

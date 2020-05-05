@@ -12,33 +12,23 @@ dmitigr_set_library_info(os 0 1 "OS interaction")
 # Sources
 # ------------------------------------------------------------------------------
 
-set(dmitigr_os_root_headers
-  ../os.hpp
-  )
-
 set(dmitigr_os_headers
   env.hpp
+  exceptions.hpp
   proc.hpp
   proc_detach.hpp
   types_fwd.hpp
   )
+
+if (WIN32)
+  list(APPEND dmitigr_os_headers windows.hpp)
+endif()
 
 set(dmitigr_os_implementations
   env.cpp
   proc.cpp
   proc_detach.cpp
   )
-
-set(dmitigr_os_transunits
-  ../os.cpp
-  )
-
-# ------------------------------------------------------------------------------
-# Dependencies
-# ------------------------------------------------------------------------------
-
-set(dmitigr_os_target_link_libraries_public dmitigr::fs dmitigr::util)
-set(dmitigr_os_target_link_libraries_interface dmitigr::fs dmitigr::util)
 
 # ------------------------------------------------------------------------------
 # Variables propagation

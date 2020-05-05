@@ -4,12 +4,12 @@
 
 #include <dmitigr/pgfe/composite.hpp>
 #include <dmitigr/pgfe/data.hpp>
-#include <dmitigr/util/test.hpp>
+#include <dmitigr/testo.hpp>
 
 int main(int, char* argv[])
 {
   namespace pgfe = dmitigr::pgfe;
-  using namespace dmitigr::test;
+  using namespace dmitigr::testo;
 
   try {
     auto c = pgfe::Composite::make();

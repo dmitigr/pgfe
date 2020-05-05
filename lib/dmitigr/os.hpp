@@ -20,12 +20,13 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// This file is generated automatically. Edit lib.hpp.in instead!!!!!!!!!!!!!!!!
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 #ifndef DMITIGR_OS_HPP
 #define DMITIGR_OS_HPP
 
-#include "dmitigr/os/env.hpp"
-#include "dmitigr/os/proc.hpp"
-#include "dmitigr/os/proc_detach.hpp"
-#include "dmitigr/os/version.hpp"
+#include "dmitigr/os/os.hpp"
 
 #endif  // DMITIGR_OS_HPP

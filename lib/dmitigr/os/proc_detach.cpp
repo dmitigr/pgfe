@@ -3,9 +3,7 @@
 // For conditions of distribution and use, see files LICENSE.txt or os.hpp
 
 #include "dmitigr/os/proc_detach.hpp"
-#include "dmitigr/os/implementation_header.hpp"
-
-#include "dmitigr/util/debug.hpp"
+#include <dmitigr/base/debug.hpp>
 
 #include <cstring>
 #include <iostream>
@@ -88,5 +86,3 @@ DMITIGR_OS_INLINE void detach(std::function<void()> start,
 }
 
 } // namespace dmitigr::os::proc
-
-#include "dmitigr/os/implementation_footer.hpp"

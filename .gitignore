@@ -13,13 +13,5 @@ BROWSE
 
 cmake-build-*
 
-dll.hpp
-implementation_footer.hpp
-implementation_header.hpp
-version.cpp
-version.hpp
-version.rc
-lib/dmitigr/pgfe/defaults.hpp
-
 doxygen
 Doxyfile

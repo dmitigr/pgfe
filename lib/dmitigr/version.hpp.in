@@ -3,13 +3,11 @@
 // For conditions of distribution and use, see files LICENSE.txt or @dmitigr_lib_name@.hpp
 
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// This file was generated automatically. Edit version.hpp.in instead!!!!!!!!!!!
+// This file is generated automatically. Edit version.hpp.in instead!!!!!!!!!!!!
 // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
 #ifndef DMITIGR_@dmitigr_lib_NAME@_VERSION_HPP
 #define DMITIGR_@dmitigr_lib_NAME@_VERSION_HPP
-
-#include "dmitigr/@dmitigr_lib_name@/dll.hpp"
 
 #include <cstdint>
 
@@ -18,12 +16,16 @@ namespace dmitigr::@dmitigr_lib_name@ {
 /**
  * @returns The library version.
  */
-DMITIGR_@dmitigr_lib_NAME@_API std::int_fast32_t version() noexcept;
+constexpr std::int_fast32_t version() noexcept
+{
+  // Actual values are set in CMakeLists.txt.
+  constexpr std::int_least32_t major = @dmitigr_lib_version_major@;
+  constexpr std::int_least32_t minor = @dmitigr_lib_version_minor@;
+
+  // 11.234 -> 11 * 1000 + 234 = 11234
+  return major*1000 + minor;
+}
 
 } // namespace dmitigr::@dmitigr_lib_name@
-
-#ifdef DMITIGR_@dmitigr_lib_NAME@_HEADER_ONLY
-#include "dmitigr/@dmitigr_lib_name@/version.cpp"
-#endif
 
 #endif  // DMITIGR_@dmitigr_lib_NAME@_VERSION_HPP

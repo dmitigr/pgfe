@@ -3,9 +3,7 @@
 // For conditions of distribution and use, see files LICENSE.txt or os.hpp
 
 #include "dmitigr/os/env.hpp"
-#include "dmitigr/os/implementation_header.hpp"
-
-#include "dmitigr/util/debug.hpp"
+#include <dmitigr/base/debug.hpp>
 
 #include <cstdlib>
 #include <memory>
@@ -13,14 +11,14 @@
 
 #ifdef _WIN32
 
-#include "dmitigr/util/windows.hpp"
+#include "dmitigr/os/windows.hpp"
 
 #include <Winnls.h>
 #include <Lmcons.h>
 
 // IO headers
 #include <io.h>
-#include <Stdio.h>
+#include <stdio.h>
 
 #include <direct.h> // _getcwd()
 
@@ -118,7 +116,7 @@ DMITIGR_OS_INLINE std::string current_username()
 
 DMITIGR_OS_INLINE std::optional<std::string> environment_variable(const std::string& name)
 {
-#ifdef _WIN32
+#if defined(_WIN32) && defined(_MSC_VER)
   const std::unique_ptr<char, void(*)(void*)> buffer{nullptr, &std::free};
   char* result = buffer.get();
   const auto err = _dupenv_s(&result, nullptr, name.c_str());
@@ -131,5 +129,3 @@ DMITIGR_OS_INLINE std::optional<std::string> environment_variable(const std::str
 }
 
 } // namespace dmitigr::os::env
-
-#include "dmitigr/os/implementation_footer.hpp"

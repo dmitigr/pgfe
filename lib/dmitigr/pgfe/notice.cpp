@@ -4,7 +4,6 @@
 
 #include "dmitigr/pgfe/notice.hpp"
 #include "dmitigr/pgfe/problem.hpp"
-#include "dmitigr/pgfe/implementation_header.hpp"
 
 namespace dmitigr::pgfe::detail {
 
@@ -33,5 +32,3 @@ inline bool iNotice::is_invariant_ok()
 using simple_Notice = basic_Problem<iNotice>;
 
 } // namespace dmitigr::pgfe::detail
-
-#include "dmitigr/pgfe/implementation_footer.hpp"

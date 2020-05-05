@@ -6,7 +6,6 @@
 #include "dmitigr/pgfe/data.hpp"
 #include "dmitigr/pgfe/row.hpp"
 #include "dmitigr/pgfe/row_info.hpp"
-#include "dmitigr/pgfe/implementation_header.hpp"
 
 namespace dmitigr::pgfe::detail {
 
@@ -120,5 +119,3 @@ private:
 };
 
 } // namespace dmitigr::pgfe::detail
-
-#include "dmitigr/pgfe/implementation_footer.hpp"
