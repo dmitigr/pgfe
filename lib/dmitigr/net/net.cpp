@@ -11,7 +11,7 @@
 #include <algorithm>
 #include <array>
 #include <cstring>
-#include <iostream>
+#include <cstdio>
 #include <limits>
 #include <locale>
 #include <system_error>
@@ -596,7 +596,7 @@ public:
       try {
         shutdown__();
       } catch (const std::exception& e) {
-        std::cerr << e.what() << std::endl;
+        std::fprintf(stderr, "%s\n", e.what());
       } catch (...) {
         DMITIGR_DOUT_ALWAYS("bug");
       }
