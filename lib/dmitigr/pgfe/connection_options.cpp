@@ -3,7 +3,13 @@
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
 #include "dmitigr/pgfe/connection_options.hpp"
-#include "dmitigr/pgfe/defaults.hpp"
+
+#ifdef _WIN32
+#include "dmitigr/pgfe/defaults_windows.hpp"
+#else
+#include "dmitigr/pgfe/defaults_unix.hpp"
+#endif
+
 #include <dmitigr/base/debug.hpp>
 #include <dmitigr/net/net.hpp>
 

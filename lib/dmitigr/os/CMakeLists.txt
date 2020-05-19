@@ -16,19 +16,17 @@ set(dmitigr_os_headers
   env.hpp
   exceptions.hpp
   proc.hpp
-  proc_detach.hpp
   types_fwd.hpp
+  )
+
+set(dmitigr_os_implementations
   )
 
 if (WIN32)
   list(APPEND dmitigr_os_headers windows.hpp)
+else()
+  list(APPEND dmitigr_os_headers proc_detach.hpp)
 endif()
-
-set(dmitigr_os_implementations
-  env.cpp
-  proc.cpp
-  proc_detach.cpp
-  )
 
 # ------------------------------------------------------------------------------
 # Variables propagation

@@ -5,12 +5,11 @@
 #ifndef DMITIGR_OS_PROC_HPP
 #define DMITIGR_OS_PROC_HPP
 
-#include "dmitigr/os/dll.hpp"
-
 #ifdef _WIN32
 #include "dmitigr/os/windows.hpp"
 #else
 #include <sys/types.h>
+#include <unistd.h>
 #endif
 
 namespace dmitigr::os::proc {
@@ -24,12 +23,15 @@ using Pid = ::pid_t;
 #endif
 
 /// @returns The current process identifier of the calling process.
-DMITIGR_OS_API Pid id();
+inline Pid id()
+{
+#ifdef _WIN32
+  return ::GetCurrentProcessId();
+#else
+  return ::getpid();
+#endif
+}
 
 } // namespace dmitigr::os::proc
-
-#ifdef DMITIGR_OS_HEADER_ONLY
-#include "dmitigr/os/proc.cpp"
-#endif
 
 #endif  // DMITIGR_OS_PROC_HPP

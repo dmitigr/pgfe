@@ -70,7 +70,7 @@ std::string to_string(const InputIterator b, const InputIterator e, const std::s
       result.append(sep);
     }
     const auto sep_size = sep.size();
-    for (std::string::size_type i = 0; i < sep_size; ++i)
+    for (std::string::size_type j = 0; j < sep_size; ++j)
       result.pop_back();
   }
   return result;

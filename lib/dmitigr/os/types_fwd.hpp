@@ -12,6 +12,14 @@ namespace dmitigr {
  */
 namespace os {
 
+class Sys_exception;
+
+#ifdef _WIN32
+namespace windows {
+struct Handle_guard;
+} // namespace windows
+#endif  // _WIN32
+
 /**
  * @brief The implementation detail.
  */

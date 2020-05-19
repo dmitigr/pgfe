@@ -247,16 +247,26 @@ endif()
 # Preprocessing
 # ------------------------------------------------------------------------------
 
-configure_file(defaults.hpp.in ${CMAKE_CURRENT_SOURCE_DIR}/defaults.hpp
-  @ONLY NEWLINE_STYLE UNIX)
+if (UNIX)
+  configure_file(defaults.hpp.in ${CMAKE_CURRENT_SOURCE_DIR}/defaults_unix.hpp
+    @ONLY NEWLINE_STYLE UNIX)
+elseif (WIN32)
+  configure_file(defaults.hpp.in ${CMAKE_CURRENT_SOURCE_DIR}/defaults_windows.hpp
+    @ONLY NEWLINE_STYLE UNIX)
+endif()
 
 # ------------------------------------------------------------------------------
 # Sources
 # ------------------------------------------------------------------------------
 
 set(dmitigr_pgfe_preprocessed_headers
-  defaults.hpp
   )
+
+if (UNIX)
+  list(APPEND dmitigr_pgfe_preprocessed_headers defaults_unix.hpp)
+elseif (WIN32)
+  list(APPEND dmitigr_pgfe_preprocessed_headers defaults_windows.hpp)
+endif()
 
 set(dmitigr_pgfe_headers
   array_conversions.hpp
@@ -296,7 +306,6 @@ set(dmitigr_pgfe_headers
   )
 
 set(dmitigr_pgfe_implementations
-  basics.cpp
   completion.cpp
   composite.cpp
   compositional.cpp

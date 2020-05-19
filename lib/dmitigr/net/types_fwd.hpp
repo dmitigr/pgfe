@@ -20,7 +20,7 @@ enum class Ip_version;
 
 class Descriptor;
 class Ip_address;
-class Endpoint_id;
+class Endpoint;
 class Listener_options;
 class Listener;
 
@@ -31,10 +31,6 @@ class Wsa_error_category;
  * @brief The implementation details.
  */
 namespace detail {
-
-class iIp_address;
-class iEndpoint_id;
-class iListener_options;
 
 class iDescriptor;
 class socket_Descriptor;

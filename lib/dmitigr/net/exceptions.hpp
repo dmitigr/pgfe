@@ -5,8 +5,13 @@
 #ifndef DMITIGR_NET_EXCEPTIONS_HPP
 #define DMITIGR_NET_EXCEPTIONS_HPP
 
-#include "dmitigr/net/dll.hpp"
-#include "dmitigr/os/exceptions.hpp"
+#include <dmitigr/os/exceptions.hpp>
+
+#ifdef _WIN32
+#include <dmitigr/os/windows.hpp>
+
+#include <Winsock2.h> // includes Ws2def.h
+#endif
 
 namespace dmitigr::net {
 
@@ -19,7 +24,10 @@ public:
   /**
    * @returns The literal `dmitigr_wsa_error`.
    */
-  const char* name() const noexcept override;
+  const char* name() const noexcept override
+  {
+    return "dmitigr_wsa_error";
+  }
 
   /**
    * @returns The string that describes the error condition denoted by `ev`.
@@ -27,13 +35,23 @@ public:
    * @remarks The caller should not rely on the
    * return value since it is a subject to change.
    */
-  std::string message(int ev) const override;
+  std::string message(const int ev) const override
+  {
+    std::string result(name());
+    result += ' ';
+    result += std::to_string(ev);
+    return result;
+  }
 };
 
 /**
  * @returns The reference to instance of type Wsa_error_category.
  */
-DMITIGR_NET_API const Wsa_error_category& wsa_error_category() noexcept;
+inline const Wsa_error_category& wsa_error_category() noexcept
+{
+  static const Wsa_error_category result;
+  return result;
+}
 
 /**
  * @brief An exception thrown on Windows Socket Application (WSA) error.
@@ -43,17 +61,26 @@ public:
   /**
    * @brief The constructor.
    */
-  DMITIGR_NET_API explicit Wsa_exception(const std::string& func);
+  explicit Wsa_exception(const std::string& func)
+    : std::system_error{last_error(), wsa_error_category(), func}
+  {}
 
   /**
    * @brief Prints the last WSA error to the standard error.
    */
-  static DMITIGR_NET_API void report(const char* const func) noexcept;
+  static void report(const char* const func) noexcept
+  {
+    assert(func);
+    std::fprintf(stderr, "%s(): error %d\n", func, last_error());
+  }
 
   /**
    * @returns The last WSA error code.
    */
-  static DMITIGR_NET_API int last_error() noexcept;
+  static int last_error() noexcept
+  {
+    return ::WSAGetLastError();
+  }
 };
 #endif
 
@@ -70,9 +97,5 @@ public:
 #endif
 
 } // namespace dmitigr::net
-
-#ifdef DMITIGR_NET_HEADER_ONLY
-#include "dmitigr/net/exceptions.cpp"
-#endif
 
 #endif  // DMITIGR_NET_EXCEPTIONS_HPP

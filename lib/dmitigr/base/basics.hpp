@@ -96,63 +96,63 @@ operator^=(T& lhs, const T rhs) noexcept
 } // namespace dmitigr
 
 /**
- * @brief The helper macro for declaring enum bitmask operators.
- *
- * @param T - the type name.
- */
-#define DMITIGR_DECLARE_ENUM_BITMASK_OPERATORS(T)   \
-  T operator&(T lhs, T rhs) noexcept;               \
-                                                    \
-  T operator|(T lhs, T rhs) noexcept;               \
-                                                    \
-  T operator^(T lhs, T rhs) noexcept;               \
-                                                    \
-  T operator~(T rhs) noexcept;                      \
-                                                    \
-  T& operator&=(T& lhs, T rhs) noexcept;            \
-                                                    \
-  T& operator|=(T& lhs, T rhs) noexcept;            \
-                                                    \
-  T& operator^=(T& lhs, T rhs) noexcept;
-
-/**
  * @brief The helper macro for defining enum bitmask operators.
  *
- * @param N - the namespace name;
  * @param T - the type name.
  */
-#define DMITIGR_DEFINE_ENUM_BITMASK_OPERATORS(N, T)         \
-  inline T N::operator&(const T lhs, const T rhs) noexcept  \
+#define DMITIGR_DEFINE_ENUM_BITMASK_OPERATORS(T)            \
+  /**                                                       \
+   * @brief Bitwise AND for `T`.                            \
+   */                                                       \
+  constexpr T operator&(const T lhs, const T rhs) noexcept  \
   {                                                         \
     return dmitigr::operator&(lhs, rhs);                    \
   }                                                         \
                                                             \
-  inline T N::operator|(const T lhs, const T rhs) noexcept  \
+  /**                                                       \
+   * @brief Bitwise OR for `T`.                             \
+   */                                                       \
+  constexpr T operator|(const T lhs, const T rhs) noexcept  \
   {                                                         \
     return dmitigr::operator|(lhs, rhs);                    \
   }                                                         \
                                                             \
-  inline T N::operator^(const T lhs, const T rhs) noexcept  \
+  /**                                                       \
+   * @brief Bitwise XOR for `T`.                            \
+   */                                                       \
+  constexpr T operator^(const T lhs, const T rhs) noexcept  \
   {                                                         \
     return dmitigr::operator^(lhs, rhs);                    \
   }                                                         \
                                                             \
-  inline T N::operator~(const T rhs) noexcept               \
+  /**                                                       \
+   * @brief Bitwise NOT for `T`.                            \
+   */                                                       \
+  constexpr T operator~(const T rhs) noexcept               \
   {                                                         \
     return dmitigr::operator~(rhs);                         \
   }                                                         \
                                                             \
-  inline T& N::operator&=(T& lhs, T rhs) noexcept           \
+  /**                                                       \
+   * @brief Bitwise AND for `T` with assignment to lvalue.  \
+   */                                                       \
+  constexpr T& operator&=(T& lhs, T rhs) noexcept           \
   {                                                         \
     return dmitigr::operator&=(lhs, rhs);                   \
   }                                                         \
                                                             \
-  inline T& N::operator|=(T& lhs, T rhs) noexcept           \
+  /**                                                       \
+   * @brief Bitwise OR for `T` with assignment to lvalue.   \
+   */                                                       \
+  constexpr T& operator|=(T& lhs, T rhs) noexcept           \
   {                                                         \
     return dmitigr::operator|=(lhs, rhs);                   \
   }                                                         \
                                                             \
-  inline T& N::operator^=(T& lhs, T rhs) noexcept           \
+  /**                                                       \
+   * @brief Bitwise XOR for `T` with assignment to lvalue.  \
+   */                                                       \
+  constexpr T& operator^=(T& lhs, T rhs) noexcept           \
   {                                                         \
     return dmitigr::operator^=(lhs, rhs);                   \
   }
