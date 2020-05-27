@@ -135,9 +135,9 @@ std::vector<std::string> file_to_strings_if(const std::filesystem::path& path,
 }
 
 /**
- * @brief The convenient shortcut of file_data_to_strings_if().
+ * @brief The convenient shortcut of file_to_strings_if().
  *
- * @see file_data_to_strings().
+ * @see file_to_strings_if().
  */
 inline std::vector<std::string> file_to_strings(const std::filesystem::path& path,
   const char delimiter = '\n', const bool is_binary = false)

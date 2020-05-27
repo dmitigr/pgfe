@@ -268,8 +268,8 @@ foreach(lib ${dmitigr_cefeika_libraries})
     set(output_name "dmitigr_${lib}")
     if(BUILD_SHARED_LIBS)
       target_compile_definitions(${lib}
-        PRIVATE -DDMITIGR_CEFEIKA_DLL_BUILDING
-        PUBLIC -DDMITIGR_${LIB}_DLL)
+        PRIVATE DMITIGR_CEFEIKA_DLL_BUILDING
+        PUBLIC  DMITIGR_${LIB}_DLL)
     elseif(WIN32)
       set(output_name "dmitigr_${lib}_static")
     endif()
@@ -284,7 +284,7 @@ foreach(lib ${dmitigr_cefeika_libraries})
 
     dmitigr_target_compile_options(${lib})
   else() # header-only
-    target_compile_definitions(${lib} INTERFACE -DDMITIGR_${LIB}_HEADER_ONLY)
+    target_compile_definitions(${lib} INTERFACE DMITIGR_${LIB}_HEADER_ONLY)
   endif()
 
   if(NOT ${dmitigr_${lib}_header_only})
