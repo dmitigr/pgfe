@@ -131,7 +131,7 @@ public:
     DMITIGR_REQUIRE(buf, std::invalid_argument);
     DMITIGR_REQUIRE(len <= max_write_size(), std::invalid_argument);
 
-#ifdef _WIN32
+#if defined(_WIN32) || defined(__APPLE__)
     constexpr int flags{};
 #else
     constexpr int flags{MSG_NOSIGNAL};
