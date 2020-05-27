@@ -91,6 +91,18 @@ public:
     return storage_.size();
   }
 
+  std::size_t non_empty_count() const override
+  {
+    std::size_t result{};
+    const auto count = sql_string_count();
+    using Counter = std::remove_const_t<decltype (count)>;
+    for (Counter i = 0; i < count; ++i) {
+      if (!sql_string(i)->is_query_empty())
+        ++result;
+    }
+    return result;
+  }
+
   bool has_sql_strings() const override
   {
     return !storage_.empty();
@@ -157,6 +169,25 @@ public:
   {
     const auto index = sql_string_index_throw(extra_name, extra_value, offset, extra_offset);
     return sql_string(index);
+  }
+
+  std::string::size_type query_absolute_position(const std::size_t index) const override
+  {
+    DMITIGR_REQUIRE(index < sql_string_count(), std::out_of_range);
+
+    const auto sql_string_position = [this](const std::size_t index)
+    {
+      std::string::size_type result{};
+      using Counter = std::remove_const_t<decltype (index)>;
+      for (Counter i = 0; i < index; ++i)
+        result += sql_string(i)->to_string().size() + 1;
+      return result;
+    };
+
+    const auto junk_size = sql_string(index)->to_string().size() -
+      sql_string(index)->to_query_string().size();
+
+    return sql_string_position(index) + junk_size;
   }
 
   void set_sql_string(const std::size_t index, std::unique_ptr<Sql_string>&& sql_string) override

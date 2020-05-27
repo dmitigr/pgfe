@@ -83,9 +83,14 @@ public:
   /// @{
 
   /**
-   * @return The count of SQL strings this vector contains.
+   * @returns The count of SQL strings this vector contains.
    */
   virtual std::size_t sql_string_count() const = 0;
+
+  /**
+   * @returns The count of non-empty SQL query strings this vector contains.
+   */
+  virtual std::size_t non_empty_count() const = 0;
 
   /**
    * @returns `true` if this SQL vector is not empty, or `false` otherwise.
@@ -155,6 +160,16 @@ public:
    */
   virtual const Sql_string* sql_string(const std::string& extra_name, const std::string& extra_value,
     std::size_t offset = 0, std::size_t extra_offset = 0) const = 0;
+
+  /**
+   * @returns Absolute position of the query of the speficied SQL string.
+   *
+   * @param index The index of SQL string
+   *
+   * @par Requires
+   * `(index < sql_string_count())`.
+   */
+  virtual std::string::size_type query_absolute_position(std::size_t index) const = 0;
 
   /// @}
 
