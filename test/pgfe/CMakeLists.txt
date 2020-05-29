@@ -11,6 +11,7 @@ set(dmitigr_pgfe_tests
   connection_deferrable
   connection-err_in_mid
   connection_options
+  connection_pool
   connection-rows
   connection_ssl
   conversions

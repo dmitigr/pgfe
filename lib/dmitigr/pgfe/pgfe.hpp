@@ -31,6 +31,7 @@
 #include "dmitigr/pgfe/compositional.hpp"
 #include "dmitigr/pgfe/connection.hpp"
 #include "dmitigr/pgfe/connection_options.hpp"
+#include "dmitigr/pgfe/connection_pool.hpp"
 #include "dmitigr/pgfe/conversions_api.hpp"
 #include "dmitigr/pgfe/conversions.hpp"
 #include "dmitigr/pgfe/data.hpp"

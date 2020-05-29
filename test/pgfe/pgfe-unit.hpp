@@ -11,6 +11,7 @@
 #include <dmitigr/pgfe/connection_options.hpp>
 #include <dmitigr/testo.hpp>
 
+#include <chrono>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
@@ -24,7 +25,8 @@ inline std::unique_ptr<Connection_options> connection_options()
   result->set_net_address("127.0.0.1")
     ->set_database("pgfe_test")
     ->set_username("pgfe_test")
-    ->set_password("pgfe_test");
+    ->set_password("pgfe_test")
+    ->set_connect_timeout(std::chrono::seconds{7});
   return result;
 }
 

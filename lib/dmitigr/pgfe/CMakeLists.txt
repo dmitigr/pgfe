@@ -277,6 +277,7 @@ set(dmitigr_pgfe_headers
   composite.hpp
   connection.hpp
   connection_options.hpp
+  connection_pool.hpp
   conversions_api.hpp
   conversions.hpp
   data.hpp
@@ -311,6 +312,7 @@ set(dmitigr_pgfe_implementations
   compositional.cpp
   connection.cpp
   connection_options.cpp
+  connection_pool.cpp
   data.cpp
   errc.cpp
   error.cpp
