@@ -228,9 +228,9 @@ void explicit_prepare_and_execute(const std::string& name,
 Invoking functions and calling procedures
 -----------------------------------------
 
-In order to invoke a function the methods dmitigr::pgfe::Connection::invoke()
-and dmitigr::pgfe::Connection::invoke_unexpanded() can be used. Procedures can
-be called by using the method dmitigr::pgfe::Connection::call(). All of these
+In order to invoke a function the methods `dmitigr::pgfe::Connection::invoke()`
+and `dmitigr::pgfe::Connection::invoke_unexpanded()` can be used. Procedures can
+be called by using the method `dmitigr::pgfe::Connection::call()`. All of these
 methods have the same signatures.
 
 To illustrate the API the following function definition is used:
@@ -525,7 +525,7 @@ int main()
   } // connections returned back to the pool here
   auto conn = pool->connection();
   assert(conn); // true
-  pool->disonnect(); // done with the pool
+  pool->disconnect(); // done with the pool
 }
 ```
 
