@@ -69,7 +69,8 @@ Features
     [PostgreSQL] arrays to/from any combinations of STL containers are supported
     out of the box!);
   - dynamically construct SQL queries;
-  - separate SQL and C++ code (e.g., by placing SQL code into a text file).
+  - separate SQL and C++ code (e.g., by placing SQL code into a text file);
+  - simple and thread-safe connection pool.
 
 Features of the future
 ----------------------
@@ -491,6 +492,40 @@ void foo()
   auto* minus_one = bunch->sql_string("id", "minus-one"); // SELECT :n::int - 1
   auto*  plus_one = bunch->sql_string("id",  "plus-one"); // SELECT :n::int + 1, ';'
   // ...
+}
+```
+
+Connection pool
+---------------
+
+Pgfe ships with a simple connection pool implemented in class
+`dmitigr::pgfe::Connection_pool`.
+
+Example:
+
+```cpp
+namespace pgfe = dmitigr::pgfe;
+
+inline std::unique_ptr<pgfe::Connection_pool> pool;
+
+// Defined somewhere.
+std::unique_ptr<pgfe::Connection_options> connection_options();
+
+int main()
+{
+  pool = pgfe::Connection_pool::make(2, connection_options().get());
+  pool->connect(); // opening up 2 connections
+  {
+    auto conn1 = pool->connection(); // attempting to get the connection from pool
+    conn1->perform("select 1");
+    auto conn2 = pool->connection(); // again
+    conn2->perform("select 2");
+    auto conn3 = pool->connection();
+    assert(!conn3); // false -- the pool is exhausted
+  } // connections returned back to the pool here
+  auto conn = pool->connection();
+  assert(conn); // true
+  pool->disonnect(); // done with the pool
 }
 ```
 

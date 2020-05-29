@@ -14,18 +14,23 @@ namespace dmitigr::pgfe {
  * @ingroup utilities
  *
  * @brief A pool of connections to a PostgreSQL server.
+ *
+ * @par Thread-safety
+ * All functions except make() are thread-safe.
  */
 class Connection_pool {
 public:
   /**
    * @brief A connection handle.
+   *
+   * @remarks Functions of this class are not thread-safe.
    */
   class Handle final {
   public:
     /**
      * @brief The destructor.
      *
-     * Returns the connection back to the pool.
+     * Calls release().
      */
     DMITIGR_PGFE_API ~Handle();
 
@@ -53,7 +58,7 @@ public:
     /// @overload
     DMITIGR_PGFE_API const Connection_pool* pool() const;
 
-    /// Returns the connection back to the pool.
+    /// @see Connection_pool::release().
     DMITIGR_PGFE_API void release();
 
   private:
@@ -135,7 +140,15 @@ public:
    */
   virtual Handle connection() = 0;
 
-  /// Returns the connection of `handle` back to the pool.
+  /**
+   * @returns the connection of `handle` back to the pool.
+   *
+   * @par Effects
+   *   -# `(!handle.pool() && !handle.connection())`;
+   *   -# `!handle->is_connected()` if `!this->is_connected()`.
+   *
+   * @see Handle::release().
+   */
   virtual void release(Handle& handle) = 0;
 
   /// @returns The size of the pool.

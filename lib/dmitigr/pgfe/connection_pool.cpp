@@ -130,6 +130,7 @@ public:
       release_handler_(conn); // kinda of DISCARD ALL
 
     connections_[index].second = false;
+    handle.pool_ = {};
     handle.connection_ = {};
     handle.connection_index_ = {};
 
