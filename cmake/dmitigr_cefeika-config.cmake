@@ -6,7 +6,8 @@ function(dmitigr_cefeika_load_with_deps component)
   #
   # Loading the dependencies
   #
-  foreach(dep ${dmitigr_cefeika_${component}_deps})
+  string(REGEX REPLACE "^([a-z0-9]+).*" "\\1" comp "${component}")
+  foreach(dep ${dmitigr_cefeika_${comp}_deps})
     dmitigr_cefeika_load_with_deps(${dep})
   endforeach()
 
