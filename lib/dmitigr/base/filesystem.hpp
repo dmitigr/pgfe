@@ -5,19 +5,14 @@
 #ifndef DMITIGR_BASE_FILESYSTEM_HPP
 #define DMITIGR_BASE_FILESYSTEM_HPP
 
-#if __clang__
-#include <filesystem>
-#elif __GNUG__
-  #if (__GNUC__ >= 8)
-    #include <filesystem>
-  #else
-    #include <experimental/filesystem>
-    namespace std {
-    namespace filesystem = experimental::filesystem;
-    } // namespace std
-  #endif
+#if (defined(__clang__) && (__clang_major__ < 7)) || \
+    (defined(__GNUG__)  && (__GNUC__ < 8))
+  #include <experimental/filesystem>
+  namespace std {
+  namespace filesystem = experimental::filesystem;
+  } // namespace std
 #else
-#include <filesystem>
+  #include <filesystem>
 #endif
 
 #endif // DMITIGR_BASE_FILESYSTEM_HPP
