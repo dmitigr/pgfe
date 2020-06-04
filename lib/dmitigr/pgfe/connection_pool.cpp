@@ -106,7 +106,7 @@ public:
       auto& conn = i->first;
       conn->connect();
       if (conn->is_ready_for_request())
-        return {this, conn, static_cast<std::size_t>(i - b)};
+        return {this, std::move(conn), static_cast<std::size_t>(i - b)};
       else
         throw std::runtime_error{"dmitigr::pgfe::Connection_pool::connection(): "
           "Connection isn't ready for request. This is probably an application error."};
@@ -129,6 +129,7 @@ public:
     if (release_handler_)
       release_handler_(conn); // kinda of DISCARD ALL
 
+    connections_[index].first = std::move(handle.connection_);
     connections_[index].second = false;
     handle.pool_ = {};
     handle.connection_ = {};
@@ -149,7 +150,7 @@ private:
 
   mutable std::mutex mutex_;
   bool is_connected_{};
-  std::vector<std::pair<std::shared_ptr<Connection>, bool>> connections_;
+  std::vector<std::pair<std::unique_ptr<Connection>, bool>> connections_;
   std::function<void(Connection*)> connect_handler_;
   std::function<void(Connection*)> release_handler_;
 
@@ -176,7 +177,7 @@ DMITIGR_PGFE_INLINE Connection_pool::Handle::~Handle()
 DMITIGR_PGFE_INLINE Connection_pool::Handle::Handle() = default;
 
 DMITIGR_PGFE_INLINE Connection_pool::Handle::Handle(detail::iConnection_pool* const pool,
-  std::shared_ptr<Connection> connection, const std::size_t connection_index)
+  std::unique_ptr<Connection>&& connection, const std::size_t connection_index)
   : pool_{pool}
   , connection_{std::move(connection)}
   , connection_index_{connection_index}

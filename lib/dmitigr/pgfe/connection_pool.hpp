@@ -34,6 +34,18 @@ public:
      */
     DMITIGR_PGFE_API ~Handle();
 
+    /// Non copy-constructible.
+    Handle(const Handle&) = delete;
+
+    /// Non copy-assignable.
+    Handle& operator=(const Handle&) = delete;
+
+    /// Move-constructible.
+    Handle(Handle&& rhs) noexcept = default;
+
+    /// Move-assignable.
+    Handle& operator=(Handle&& rhs) noexcept = default;
+
     /// @returns The Connection.
     DMITIGR_PGFE_API Connection* connection();
 
@@ -68,13 +80,18 @@ public:
     Handle();
 
     /// The constructor.
-    Handle(detail::iConnection_pool* pool, std::shared_ptr<Connection> connection,
+    Handle(detail::iConnection_pool* pool, std::unique_ptr<Connection>&& connection,
       std::size_t connection_index);
 
     detail::iConnection_pool* pool_{};
-    std::shared_ptr<Connection> connection_;
+    std::unique_ptr<Connection> connection_;
     std::size_t connection_index_{};
   };
+
+  /**
+   * @brief The destructor.
+   */
+  virtual ~Connection_pool() = default;
 
   /**
    * @returns New instance of the pool.
