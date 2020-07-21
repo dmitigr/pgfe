@@ -15,6 +15,7 @@ dmitigr_set_library_info(base 0 1 "Basics library")
 set(dmitigr_base_headers
   basics.hpp
   debug.hpp
+  endianness.hpp
   filesystem.hpp
   macros.hpp
   )

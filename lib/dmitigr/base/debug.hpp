@@ -84,11 +84,11 @@ constexpr bool is_debug_enabled = true;
  *
  * @throws An instance of type `Exc` if the requirement failure.
  */
-#define DMITIGR_REQUIRE2(req, Exc) {                \
+#define DMITIGR_REQUIRE2(req, Exc) do {             \
     if (!(req)) {                                   \
       DMITIGR_THROW_REQUIREMENT_VIOLATED(req, Exc)  \
     }                                               \
-  }
+  } while (false)
 
 /**
  * @brief Checks the requirement `req`.
@@ -96,11 +96,11 @@ constexpr bool is_debug_enabled = true;
  * @throws An instance of type `Exc` initialized by `msg`
  * if the requirement failure.
  */
-#define DMITIGR_REQUIRE3(req, Exc, msg) {       \
+#define DMITIGR_REQUIRE3(req, Exc, msg) do {    \
     if (!(req)) {                               \
       throw Exc{msg};                           \
     }                                           \
-  }
+  } while (false)
 
 /**
  * @brief Expands to `macro_name`.

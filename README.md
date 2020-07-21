@@ -60,6 +60,7 @@ int main()
 Features
 ========
 
+  - can be used as header-only library;
   - work with database connections (in both blocking and non-blocking IO manner);
   - execute prepared statements (named parameters are supported);
   - conveniently call functions and procedures;

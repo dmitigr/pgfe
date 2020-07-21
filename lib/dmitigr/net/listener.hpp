@@ -5,6 +5,7 @@
 #ifndef DMITIGR_NET_LISTENER_HPP
 #define DMITIGR_NET_LISTENER_HPP
 
+#include "dmitigr/net/address.hpp"
 #include "dmitigr/net/descriptor.hpp"
 #include "dmitigr/net/endpoint.hpp"
 #include "dmitigr/net/socket.hpp"
@@ -20,8 +21,6 @@
 
 #ifdef _WIN32
 #include <dmitigr/os/windows.hpp>
-#else
-#include <sys/un.h>
 #endif
 
 namespace dmitigr::net {
@@ -260,9 +259,7 @@ public:
 
     const auto tcp_create_bind = [&]
     {
-      socket_ = net::Socket_guard{::socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)};
-      if (!net::is_socket_valid(socket_))
-        throw DMITIGR_NET_EXCEPTION{"socket"};
+      socket_ = make_socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
 
       const int optval = 1;
 #ifdef _WIN32
@@ -273,28 +270,7 @@ public:
       if (::setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&optval), optlen) != 0)
         throw DMITIGR_NET_EXCEPTION{"setsockopt"};
 
-      const net::Ip_address ip{*eid.net_address()};
-      if (ip.family() == Ip_version::v4) {
-        ::sockaddr_in addr{};
-        constexpr auto addr_size = sizeof (addr);
-        std::memset(&addr, 0, addr_size);
-        addr.sin_family = AF_INET;
-        addr.sin_addr = *static_cast<const ::in_addr*>(ip.binary());
-        addr.sin_port = htons(static_cast<unsigned short>(*eid.net_port()));
-        if (::bind(socket_, reinterpret_cast<::sockaddr*>(&addr), static_cast<int>(addr_size)) != 0)
-          throw DMITIGR_NET_EXCEPTION{"bind"};
-      } else if (ip.family() == Ip_version::v6) {
-        ::sockaddr_in6 addr{};
-        constexpr auto addr_size = sizeof (addr);
-        std::memset(&addr, 0, addr_size);
-        addr.sin6_family = AF_INET6;
-        addr.sin6_addr = *static_cast<const ::in6_addr*>(ip.binary());
-        addr.sin6_port = htons(static_cast<unsigned short>(*eid.net_port()));
-        addr.sin6_flowinfo = htonl(0);
-        addr.sin6_scope_id = htonl(0);
-        if (::bind(socket_, reinterpret_cast<::sockaddr*>(&addr), static_cast<int>(addr_size)) != 0)
-          throw DMITIGR_NET_EXCEPTION{"bind"};
-      }
+      bind_socket(socket_, {*eid.net_address(), *eid.net_port()});
     };
 
 #ifdef _WIN32
@@ -302,21 +278,8 @@ public:
 #else
     const auto uds_create_bind = [&]
     {
-      socket_ = net::Socket_guard{::socket(AF_UNIX, SOCK_STREAM, IPPROTO_TCP)};
-      if (!net::is_socket_valid(socket_))
-        throw DMITIGR_NET_EXCEPTION{"socket"};
-
-      ::sockaddr_un addr{};
-      constexpr auto addr_size = sizeof (addr);
-      addr.sun_family = AF_UNIX;
-      const std::filesystem::path& path = eid.uds_path().value();
-      if (path.native().size() > sizeof (::sockaddr_un::sun_path) - 1)
-        throw std::runtime_error{"UDS path is too long"};
-      else
-        std::strncpy(addr.sun_path, path.native().c_str(), sizeof (::sockaddr_un::sun_path));
-
-      if (::bind(socket_, reinterpret_cast<::sockaddr*>(&addr), static_cast<int>(addr_size)) != 0)
-        throw DMITIGR_NET_EXCEPTION{"bind"};
+      socket_ = make_socket(AF_UNIX, SOCK_STREAM, IPPROTO_TCP);
+      bind_socket(socket_, {eid.uds_path().value()});
     };
 
     if (const auto cm = eid.communication_mode(); cm == Communication_mode::net)
@@ -452,7 +415,7 @@ public:
     OVERLAPPED ol{0, 0, 0, 0, nullptr};
     ol.hEvent = ::CreateEventA(nullptr, true, false, nullptr);
     if (!ol.hEvent)
-      throw os::Sys_exception{"CreateEventA"};
+      throw Sys_exception{"CreateEventA"};
 
     os::windows::Handle_guard pipe = make_named_pipe();
 
@@ -471,20 +434,20 @@ public:
           if (::GetOverlappedResult(pipe, &ol, &number_of_bytes_transferred, false))
             goto have_waited;
           else
-            throw os::Sys_exception{"GetOverlappedResult"};
+            throw Sys_exception{"GetOverlappedResult"};
         } else {
           if (!::CancelIo(pipe))
-            throw os::Sys_exception{"CancelIo"};
+            throw Sys_exception{"CancelIo"};
 
           if (r == WAIT_TIMEOUT)
             return false;
           else
-            throw os::Sys_exception{"WaitForSingleObject"};
+            throw Sys_exception{"WaitForSingleObject"};
         }
       }
 
       default:
-        throw os::Sys_exception{"ConnectNamedPipe"};
+        throw Sys_exception{"ConnectNamedPipe"};
       }
     }
 
@@ -504,7 +467,7 @@ public:
   {
     if (is_listening()) {
       if (!pipe_.close())
-        throw os::Sys_exception{"CloseHandle"};
+        throw Sys_exception{"CloseHandle"};
       is_listening_ = false;
     }
   }
@@ -538,7 +501,7 @@ private:
     if (result != INVALID_HANDLE_VALUE)
       return result;
     else
-      throw os::Sys_exception{"CreateNamedPipeA"};
+      throw Sys_exception{"CreateNamedPipeA"};
   }
 };
 

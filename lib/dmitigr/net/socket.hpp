@@ -5,6 +5,7 @@
 #ifndef DMITIGR_NET_SOCKET_HPP
 #define DMITIGR_NET_SOCKET_HPP
 
+#include "dmitigr/net/address.hpp"
 #include "dmitigr/net/exceptions.hpp"
 #include <dmitigr/base/basics.hpp>
 
@@ -101,6 +102,41 @@ inline bool is_socket_error(const int function_result)
 #else
   return (function_result < 0);
 #endif
+}
+
+/**
+ * @brief Sets the receiving or sending timeouts until reporting an error.
+ *
+ * @throws std::system_error on failure.
+ */
+inline void set_timeout(const Socket_native socket,
+  const std::chrono::milliseconds rcv_timeout,
+  const std::chrono::milliseconds snd_timeout)
+{
+  namespace chrono = std::chrono;
+#ifdef _WIN32
+  const auto rcv_to = rcv_timeout.count();
+  const auto snd_to = snd_timeout.count();
+  const auto rrcv = setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, rcv_to, sizeof(DWORD));
+  const auto rsnd = setsockopt(socket, SOL_SOCKET, SO_SNDTIMEO, snd_to, sizeof(DWORD));
+#else
+  using chrono::system_clock;
+  constexpr chrono::time_point<system_clock> z;
+  const auto rcv_timeout_s = chrono::duration_cast<chrono::seconds>(rcv_timeout);
+  const auto snd_timeout_s = chrono::duration_cast<chrono::seconds>(snd_timeout);
+  const auto rcv_s = system_clock::to_time_t(z + rcv_timeout_s);
+  const auto snd_s = system_clock::to_time_t(z + snd_timeout_s);
+  const auto rcv_micro = chrono::duration_cast<chrono::microseconds>(rcv_timeout - rcv_timeout_s);
+  const auto snd_micro = chrono::duration_cast<chrono::microseconds>(snd_timeout - snd_timeout_s);
+  timeval rcv_tv{rcv_s, static_cast<decltype(rcv_tv.tv_usec)>(rcv_micro.count())};
+  timeval snd_tv{snd_s, static_cast<decltype(snd_tv.tv_usec)>(rcv_micro.count())};
+  char* const rcv_to = reinterpret_cast<char*>(&rcv_tv);
+  char* const snd_to = reinterpret_cast<char*>(&snd_tv);
+  const auto rrcv = setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, rcv_to, sizeof(rcv_tv));
+  const auto rsnd = setsockopt(socket, SOL_SOCKET, SO_SNDTIMEO, snd_to, sizeof(snd_tv));
+#endif
+  if (net::is_socket_error(rrcv) || net::is_socket_error(rsnd))
+    throw DMITIGR_NET_EXCEPTION{"setsockopt"};
 }
 
 // =============================================================================
@@ -231,6 +267,49 @@ public:
 private:
   Socket_native socket_{invalid_socket};
 };
+
+/// @returns Newly created socket.
+inline Socket_guard make_socket(const int domain, const int type, const int protocol)
+{
+  net::Socket_guard result{::socket(domain, type, protocol)};
+  if (net::is_socket_valid(result))
+    return result;
+  else
+    throw DMITIGR_NET_EXCEPTION{"socket"};
+}
+
+/// @overload
+inline Socket_guard make_socket(const Protocol_family family, const int type, const int protocol)
+{
+  return make_socket(to_native(family), type, protocol);
+}
+
+/// @returns Newly created TCP socket.
+inline Socket_guard make_tcp_socket(const Protocol_family family)
+{
+  return make_socket(family, SOCK_STREAM, IPPROTO_TCP);
+}
+
+/// Binds `socket` to `addr`.
+inline void bind_socket(const Socket_native socket, const Socket_address& addr)
+{
+  if (::bind(socket, addr.addr(), static_cast<int>(addr.size())) != 0)
+    throw DMITIGR_NET_EXCEPTION{"bind"};
+}
+
+/// Connects `sockets` to remote `addr`.
+inline void connect_socket(const Socket_native socket, const Socket_address& addr)
+{
+  if (::connect(socket, addr.addr(), addr.size()) != 0)
+    throw DMITIGR_NET_EXCEPTION{"connect"};
+}
+
+/// Shutdowns the `socket`.
+inline void shutdown_socket(const Socket_native socket, const int how)
+{
+  if (auto e = ::shutdown(socket, how); e != 0)
+    throw DMITIGR_NET_EXCEPTION{"shutdown"};
+}
 
 /**
  * @brief Performs the polling of the `socket`.

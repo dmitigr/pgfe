@@ -14,6 +14,8 @@ dmitigr_set_library_info(net 0 1 "Networking library")
 
 set(dmitigr_net_headers
   address.hpp
+  client.hpp
+  conversions.hpp
   descriptor.hpp
   endpoint.hpp
   exceptions.hpp

@@ -16,7 +16,7 @@ class Socket_guard;
 
 enum class Communication_mode;
 enum class Socket_readiness;
-enum class Ip_version;
+enum class Protocol_family;
 
 class Descriptor;
 class Ip_address;

@@ -56,11 +56,10 @@ inline void lowercase(std::string& str, const std::locale& loc = {})
  * @returns The modified copy of the `str` with all of uppercase characters
  * replaced by the corresponding lowercase characters.
  */
-inline std::string to_lowercase(const std::string_view str, const std::locale& loc = {})
+inline std::string to_lowercase(std::string str, const std::locale& loc = {})
 {
-  std::string result{str};
-  lowercase(result, loc);
-  return result;
+  lowercase(str, loc);
+  return str;
 }
 
 /**
@@ -78,11 +77,10 @@ inline void uppercase(std::string& str, const std::locale& loc = {})
  * @returns The modified copy of the `str` with all of lowercase characters
  * replaced by the corresponding uppercase characters.
  */
-inline std::string to_uppercase(const std::string_view str, const std::locale& loc = {})
+inline std::string to_uppercase(std::string str, const std::locale& loc = {})
 {
-  std::string result{str};
-  uppercase(result, loc);
-  return result;
+  uppercase(str, loc);
+  return str;
 }
 
 /**

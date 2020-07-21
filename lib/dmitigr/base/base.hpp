@@ -25,6 +25,7 @@
 
 #include "dmitigr/base/basics.hpp"
 #include "dmitigr/base/debug.hpp"
+#include "dmitigr/base/endianness.hpp"
 #include "dmitigr/base/filesystem.hpp"
 #include "dmitigr/base/macros.hpp"
 #include "dmitigr/base/version.hpp"

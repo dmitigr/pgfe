@@ -25,8 +25,6 @@
 #include <io.h>
 #include <stdio.h>
 
-#include <direct.h> // _getcwd()
-
 #else // Unix
 
 #include <pwd.h>
@@ -36,56 +34,6 @@
 #endif
 
 namespace dmitigr::os::env {
-
-namespace detail {
-
-inline char* os_cwd()
-{
-  static const auto getcwd__ = [](char* const buffer, const std::size_t size) -> char*
-  {
-#ifdef _WIN32
-    return _getcwd(buffer, int(size));
-#else
-    return getcwd(buffer, size);
-#endif
-  };
-
-  constexpr std::size_t max_path_size = 128 * 128;
-  std::size_t sz = 16;
-  auto* buf = static_cast<char*>(std::calloc(1, sz));
-  while (!getcwd__(buf, sz)) {
-    if (errno == ERANGE) {
-      sz *= 2;
-      if (sz > max_path_size) {
-        std::free(buf);
-        return nullptr;
-      } else {
-        if (auto* new_buf = static_cast<char*>(std::realloc(buf, sz)))
-          buf = new_buf;
-        else {
-          std::free(buf);
-          return nullptr;
-        }
-      }
-    } else { // ENOMEM
-      DMITIGR_ASSERT_NOTHROW(!buf);
-      return nullptr;
-    }
-  }
-
-  return buf;
-}
-
-} // namespace detail
-
-/**
- * @returns The current working directory of the running process.
- */
-inline std::string current_working_directory()
-{
-  std::unique_ptr<char[], void (*)(void*)> guarded{detail::os_cwd(), &std::free};
-  return guarded ? guarded.get() : std::string{};
-}
 
 /**
  * @returns The current username of the running process.

@@ -14,7 +14,7 @@ dmitigr_set_library_info(os 0 1 "OS interaction")
 
 set(dmitigr_os_headers
   env.hpp
-  exceptions.hpp
+  log.hpp
   proc.hpp
   types_fwd.hpp
   )

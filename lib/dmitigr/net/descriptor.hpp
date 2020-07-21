@@ -63,6 +63,11 @@ public:
    * @throws `std::runtime_error` on failure.
    */
   virtual void close() = 0;
+
+  /**
+   * @returns Native handle (i.e. socket or named pipe).
+   */
+  virtual std::intptr_t native_handle() = 0;
 };
 
 namespace detail {
@@ -95,7 +100,7 @@ public:
   {
     if (net::is_socket_valid(socket_)) {
       try {
-        shutdown__();
+        close();
       } catch (const std::exception& e) {
         std::fprintf(stderr, "%s\n", e.what());
       } catch (...) {
@@ -146,12 +151,17 @@ public:
   void close() override
   {
     if (!is_shutted_down_) {
-      shutdown__();
+      graceful_shutdown();
       is_shutted_down_ = true;
     }
 
     if (socket_.close() != 0)
-      throw os::Sys_exception{"closesocket"};
+      throw Sys_exception{"closesocket"};
+  }
+
+  std::intptr_t native_handle() noexcept override
+  {
+    return socket_;
   }
 
 private:
@@ -159,16 +169,19 @@ private:
   net::Socket_guard socket_;
 
   /**
-   * @brief Shutting down the socket.
+   * @brief Gracefully shutting down the socket.
    *
    * Shutting down the send side and receiving the data from the client
    * till the timeout or end to prevent sending a TCP RST to the client.
    */
-  void shutdown__()
+  void graceful_shutdown()
   {
-    if (::shutdown(socket_, net::sd_send) != 0)
-      throw DMITIGR_NET_EXCEPTION{"shutdown"};
-
+    if (const auto r = ::shutdown(socket_, net::sd_send)) {
+      if (errno == ENOTCONN)
+        return;
+      else
+        throw DMITIGR_NET_EXCEPTION{"shutdown"};
+    }
     while (true) {
       using Sr = net::Socket_readiness;
       const auto mask = net::poll(socket_, Sr::read_ready, std::chrono::seconds{1});
@@ -199,10 +212,10 @@ public:
   {
     if (pipe_ != INVALID_HANDLE_VALUE) {
       if (!::FlushFileBuffers(pipe_))
-        os::Sys_exception::report("FlushFileBuffers");
+        Sys_exception::report("FlushFileBuffers");
 
       if (!::DisconnectNamedPipe(pipe_))
-        os::Sys_exception::report("DisconnectNamedPipe");
+        Sys_exception::report("DisconnectNamedPipe");
     }
   }
 
@@ -222,7 +235,7 @@ public:
 
     DWORD result{};
     if (!::ReadFile(pipe_, buf, static_cast<DWORD>(len), &result, nullptr))
-      throw os::Sys_exception{"Readfile"};
+      throw Sys_exception{"Readfile"};
 
     return static_cast<std::streamsize>(result);
   }
@@ -234,7 +247,7 @@ public:
 
     DWORD result{};
     if (!::WriteFile(pipe_, buf, static_cast<DWORD>(len), &result, nullptr))
-      throw os::Sys_exception{"WriteFile"};
+      throw Sys_exception{"WriteFile"};
 
     return static_cast<std::streamsize>(result);
   }
@@ -243,14 +256,19 @@ public:
   {
     if (pipe_ != INVALID_HANDLE_VALUE) {
       if (!::FlushFileBuffers(pipe_))
-        throw os::Sys_exception{"FlushFileBuffers"};
+        throw Sys_exception{"FlushFileBuffers"};
 
       if (!::DisconnectNamedPipe(pipe_))
-        throw os::Sys_exception{"DisconnectNamedPipe"};
+        throw Sys_exception{"DisconnectNamedPipe"};
 
       if (!pipe_.close())
-        throw os::Sys_exception{"CloseHandle"};
+        throw Sys_exception{"CloseHandle"};
     }
+  }
+
+  std::intptr_t native_handle() noexcept override
+  {
+    return reinterpret_cast<std::intptr_t>(pipe_.handle());
   }
 
 private:

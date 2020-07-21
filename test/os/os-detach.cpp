@@ -22,7 +22,7 @@ int main(int, char* argv[])
     log_file = std::filesystem::absolute(dirname/"os-proc-detach.log");
     proc::detach([]
     {
-      const auto cleanup = []
+      static const auto cleanup = []
       {
         std::clog << "Cleaning up..." << std::endl;
         {
@@ -44,7 +44,7 @@ int main(int, char* argv[])
       std::signal(SIGTERM, &std::quick_exit);
 
       std::clog << "Detached process done." << std::endl;
-    }, pid_file, log_file);
+    }, dirname, pid_file, log_file);
   } catch (const std::exception& e) {
     report_failure(argv[0], e);
     return 1;
