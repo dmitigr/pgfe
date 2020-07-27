@@ -32,7 +32,7 @@ public:
    * @par Requires
    * `(index < field_count())`.
    */
-  virtual const Data* data(std::size_t index) const = 0;
+  virtual const Data* data(std::size_t index = 0) const = 0;
 
   /**
    * @overload

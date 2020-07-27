@@ -23,38 +23,36 @@ Hello, World
 #include <dmitigr/pgfe.hpp>
 #include <iostream>
 
-int main()
-{
-  namespace pgfe = dmitigr::pgfe;
-  try {
-    const auto conn = pgfe::Connection_options::make(pgfe::Communication_mode::net)->
-      set_net_hostname("localhost")->
-      set_database("pgfe_test")->
-      set_username("pgfe_test")->
-      set_password("pgfe_test")->
-      make_connection();
+namespace pgfe = dmitigr::pgfe;
 
-    conn->connect();
-    conn->execute("SELECT generate_series($1::int, $2::int) AS natural", 1, 3);
-    conn->for_each([](const auto* const row) {
-      std::cout << pgfe::to<int>(row->data("natural")) << "\n";
-    });
-    std::cout << "The " << conn->completion()->operation_name() << " query is done.\n";
+int main() try {
+  // Making the connection.
+  const auto conn = pgfe::Connection_options::make(pgfe::Communication_mode::net)->
+    set_net_hostname("localhost")->
+    set_database("pgfe_test")->
+    set_username("pgfe_test")->
+    set_password("pgfe_test")->
+    make_connection();
 
-    // As a sample of error handling let's provoke syntax error and handle it away.
-    try {
-      conn->perform("PROVOKE SYNTAX ERROR");
-    } catch (const pgfe::Server_exception& e) {
-      if (e.error()->code() == pgfe::Server_errc::c42_syntax_error)
-        std::cout << "Error " << e.error()->sqlstate() << " is handled as expected.\n";
-      else
-        throw;
-    }
-  } catch (const std::exception& e) {
-    std::cerr << "Oops: " << e.what() << std::endl;
-    return 1;
-  }
-}
+  // Connecting.
+  conn->connect();
+
+  // Executing the query (positional parameters).
+  conn->execute("select generate_series($1::int, $2::int)", 1, 3);
+  conn->for_each([](auto* row){ std::cout << pgfe::to<int>(row->data()) << "\n"; });
+
+  // Invoking the function.
+  conn->invoke("current_database");
+  conn->for_each([](auto* row){ std::cout << pgfe::to<std::string>(row->data()) << "\n"; });
+
+  // Provoking the syntax error.
+  conn->perform("provoke syntax error");
+ } catch (const pgfe::c42_Syntax_error& e) {
+  std::cout << "Error " << e.error()->sqlstate() << " is handled as expected.\n";
+ } catch (const std::exception& e) {
+  std::cerr << "Oops: " << e.what() << std::endl;
+  return 1;
+ }
 ```
 
 Features
@@ -64,7 +62,8 @@ Features
   - work with database connections (in both blocking and non-blocking IO manner);
   - execute prepared statements (named parameters are supported);
   - conveniently call functions and procedures;
-  - deal with [SQLSTATE][errcodes] codes as simple as with enums;
+  - conveniently handle errors by either via exceptions or error codes;
+  - exception class and enum entry for each predefined [SQLSTATE][errcodes] code;
   - easily convert the data from the client side representation to the server
     side representation and vice versa (conversions of multidimensional
     [PostgreSQL] arrays to/from any combinations of STL containers are supported
@@ -76,7 +75,6 @@ Features
 Features of the future
 ----------------------
 
-  - exception class for each [SQLSTATE][errcodes] code;
   - [Large Objects][lob] via IO streams of the Standard C++ library;
   - the COPY command;
   - conversions for `dmitigr::pgfe::Composite` data type;

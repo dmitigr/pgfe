@@ -130,7 +130,7 @@ public:
     return communication_mode_;
   }
 
-  Connection_options* set_connect_timeout(std::optional<std::chrono::milliseconds> value) override
+  iConnection_options* set_connect_timeout(std::optional<std::chrono::milliseconds> value) override
   {
     if (value)
       validate(is_non_negative(value->count()), "connect timeout");
@@ -144,7 +144,7 @@ public:
     return connect_timeout_;
   }
 
-  Connection_options* set_wait_response_timeout(std::optional<std::chrono::milliseconds> value) override
+  iConnection_options* set_wait_response_timeout(std::optional<std::chrono::milliseconds> value) override
   {
     if (value)
       validate(is_non_negative(value->count()), "wait response timeout");
@@ -158,7 +158,7 @@ public:
     return wait_response_timeout_;
   }
 
-  Connection_options* set_wait_last_response_timeout(std::optional<std::chrono::milliseconds> value) override
+  iConnection_options* set_wait_last_response_timeout(std::optional<std::chrono::milliseconds> value) override
   {
     if (value)
       validate(is_non_negative(value->count()), "wait last response timeout");

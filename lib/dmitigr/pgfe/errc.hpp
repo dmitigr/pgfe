@@ -355,6 +355,9 @@ enum class Server_errc {
   /** 22030 */
   c22_duplicate_json_object_key_value = 3452652,
 
+  /** 22031 */
+  c22_invalid_argument_for_sql_json_datetime_function = 3452653,
+
   /** 22032 */
   c22_invalid_json_text = 3452654,
 
@@ -388,14 +391,14 @@ enum class Server_errc {
   /** 2203C */
   c22_object_not_found = 3452664,
 
-  /** 2203F */
-  c22_json_scalar_required = 3452667,
-
   /** 2203D */
   c22_too_many_json_array_elements = 3452665,
 
   /** 2203E */
   c22_too_many_json_object_members = 3452666,
+
+  /** 2203F */
+  c22_json_scalar_required = 3452667,
 
   /*
    * Class 23 - Integrity Constraint Violation

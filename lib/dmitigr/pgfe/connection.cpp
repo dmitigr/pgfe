@@ -61,7 +61,7 @@ public:
 
     const auto throw_timeout = []()
     {
-      throw detail::iClient_exception{Client_errc::timed_out, "connection timeout"};
+      throw Timed_out{"connection timeout"};
     };
 
     if (is_connected())
@@ -196,7 +196,7 @@ public:
         if (timeout)
           *timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
       } else // Timeout
-        throw detail::iClient_exception{Client_errc::timed_out, "wait response timeout"};
+        throw Timed_out{"wait response timeout"};
     }
 
     DMITIGR_ASSERT(is_invariant_ok());
@@ -233,7 +233,7 @@ public:
       if (timeout) {
         *timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
         if (timeout <= milliseconds::zero()) // Timeout
-          throw detail::iClient_exception{Client_errc::timed_out, "wait last response timeout"};
+          throw Timed_out{"wait last response timeout"};
       }
     }
     DMITIGR_ASSERT(!is_awaiting_response());
@@ -288,8 +288,17 @@ protected:
 
   void throw_if_error()
   {
-    if (const std::shared_ptr<Error> ei{release_error()}; ei)
-      throw iServer_exception(ei);
+    if (std::shared_ptr<Error> ei{release_error()}) {
+      // Attempting to throw a custom exception.
+      if (const auto& eh = error_handler(); eh && eh(ei))
+        return;
+
+      // Attempting to throw a predefined exception.
+      throw_server_exception(ei);
+
+      // Fallback - throwing an exception with unrecognized error code.
+      throw Server_exception{std::move(ei)};
+    }
   }
 };
 
@@ -666,6 +675,18 @@ public:
   void dismiss_notification() override
   {
     dismiss_signal<pq_Notification>();
+  }
+
+  void set_error_handler(Error_handler handler) override
+  {
+    error_handler_ = std::move(handler);
+
+    DMITIGR_ASSERT(is_invariant_ok());
+  }
+
+  const Error_handler& error_handler() override
+  {
+    return error_handler_;
   }
 
   void set_notice_handler(const std::function<void(std::unique_ptr<Notice>&&)>& handler) override
@@ -1062,6 +1083,7 @@ private:
   iConnection_options options_;
 
   // Persistent data / public-modifiable data
+  Error_handler error_handler_;
   std::function<void(std::unique_ptr<Notice>&&)> notice_handler_;
   std::function<void(std::unique_ptr<Notification>&&)> notification_handler_;
   Data_format default_result_format_{Data_format::text};

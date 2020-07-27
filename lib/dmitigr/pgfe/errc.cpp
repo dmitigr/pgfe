@@ -194,6 +194,8 @@ DMITIGR_PGFE_INLINE const char* to_literal(const Server_errc errc)
     return "c22_invalid_xml_processing_instruction";
   case Server_errc::c22_duplicate_json_object_key_value:
     return "c22_duplicate_json_object_key_value";
+  case Server_errc::c22_invalid_argument_for_sql_json_datetime_function:
+    return "c22_invalid_argument_for_sql_json_datetime_function";
   case Server_errc::c22_invalid_json_text:
     return "c22_invalid_json_text";
   case Server_errc::c22_invalid_json_subscript:
@@ -216,12 +218,12 @@ DMITIGR_PGFE_INLINE const char* to_literal(const Server_errc errc)
     return "c22_json_number_not_found";
   case Server_errc::c22_object_not_found:
     return "c22_object_not_found";
-  case Server_errc::c22_json_scalar_required:
-    return "c22_json_scalar_required";
   case Server_errc::c22_too_many_json_array_elements:
     return "c22_too_many_json_array_elements";
   case Server_errc::c22_too_many_json_object_members:
     return "c22_too_many_json_object_members";
+  case Server_errc::c22_json_scalar_required:
+    return "c22_json_scalar_required";
   case Server_errc::c23_integrity_constraint_violation:
     return "c23_integrity_constraint_violation";
   case Server_errc::c23_restrict_violation:
