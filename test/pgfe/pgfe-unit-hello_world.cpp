@@ -3,7 +3,7 @@
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
 #include <dmitigr/pgfe.hpp>
-#include <iostream>
+#include <cstdio>
 
 namespace pgfe = dmitigr::pgfe;
 
@@ -19,19 +19,33 @@ int main() try {
   // Connecting.
   conn->connect();
 
-  // Executing the query (positional parameters).
+  // Using Pgfe's conversion function.
+  using pgfe::to;
+
+  // Executing query with positional parameters.
   conn->execute("select generate_series($1::int, $2::int)", 1, 3);
-  conn->for_each([](auto* row){ std::cout << pgfe::to<int>(row->data()) << "\n"; });
+  conn->for_each([](auto* r){ std::printf("Number %i\n", to<int>(r->data())); });
+
+  // Prepare and execute the statement with named parameters.
+  auto* ps = conn->prepare_statement("select :begin b, :end e");
+  ps->set_parameter("begin", 0);
+  ps->set_parameter("end", 1);
+  ps->execute();
+  ps->connection()->for_each([](auto* r) {
+    std::printf("Range [%i, %i]\n", to<int>(r->data("b")), to<int>(r->data("e")));
+  });
 
   // Invoking the function.
-  conn->invoke("current_database");
-  conn->for_each([](auto* row){ std::cout << pgfe::to<std::string>(row->data()) << "\n"; });
+  conn->invoke("cos", .5f);
+  conn->for_each([](auto* r){
+    std::printf("cos(%f) = %f\n", .5f, to<float>(r->data()));
+  });
 
   // Provoking the syntax error.
   conn->perform("provoke syntax error");
  } catch (const pgfe::c42_Syntax_error& e) {
-  std::cout << "Error " << e.error()->sqlstate() << " is handled as expected.\n";
+  std::printf("Error %s is handled as expected.\n", e.error()->sqlstate().c_str());
  } catch (const std::exception& e) {
-  std::cerr << "Oops: " << e.what() << std::endl;
+  std::printf("Oops: %s\n", e.what());
   return 1;
  }

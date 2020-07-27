@@ -352,6 +352,9 @@ public:
    */
   virtual const Error_handler& error_handler() = 0;
 
+  /// An alias of a notice handler.
+  using Notice_handler = std::function<void(std::unique_ptr<Notice>&&)>;
+
   /**
    * @brief Sets the handler for notices.
    *
@@ -365,12 +368,15 @@ public:
    *
    * @see handle_signals(), notice_handler().
    */
-  virtual void set_notice_handler(const std::function<void(std::unique_ptr<Notice>&&)>& handler) = 0;
+  virtual void set_notice_handler(Notice_handler handler) = 0;
 
   /**
    * @returns The current notice handler.
    */
-  virtual std::function<void(std::unique_ptr<Notice>&&)> notice_handler() const = 0;
+  virtual const Notice_handler& notice_handler() const = 0;
+
+  /// An alias of a notification handler.
+  using Notification_handler = std::function<void(std::unique_ptr<Notification>&&)>;
 
   /**
    * @brief Sets the handler for notifications.
@@ -384,12 +390,12 @@ public:
    *
    * @see handle_signals().
    */
-  virtual void set_notification_handler(const std::function<void(std::unique_ptr<Notification>&&)>& handler) = 0;
+  virtual void set_notification_handler(Notification_handler handler) = 0;
 
   /**
    * @returns The current notification handler.
    */
-  virtual std::function<void(std::unique_ptr<Notification>&&)> notification_handler() const = 0;
+  virtual const Notification_handler& notification_handler() const = 0;
 
   /**
    * @brief Call signals handlers.
@@ -696,10 +702,14 @@ public:
 
   /**
    * @overload
-   *
-   * @remarks The statement will be send as-is without any preparsing.
    */
   virtual void prepare_statement_async(const std::string& statement, const std::string& name = {}) = 0;
+
+  /**
+   * @brief Same as prepare_statement_async() except the statement will be send
+   * as-is, i.e. without preparsing.
+   */
+  virtual void prepare_statement_async_as_is(const std::string& statement, const std::string& name = {}) = 0;
 
   /**
    * @returns `(prepare_statement_async(), wait_response_throw(), prepared_statement())`
@@ -718,10 +728,14 @@ public:
 
   /**
    * @overload
-   *
-   * @remarks The statement will be send as-is without any preparsing.
    */
   virtual Prepared_statement* prepare_statement(const std::string& statement, const std::string& name = {}) = 0;
+
+  /**
+   * @brief Same as prepare_statement() except the statement will be send as-is,
+   * i.e. without preparsing.
+   */
+  virtual Prepared_statement* prepare_statement_as_is(const std::string& statement, const std::string& name = {}) = 0;
 
   /**
    * @brief Submits a request to a PostgreSQL server to describe

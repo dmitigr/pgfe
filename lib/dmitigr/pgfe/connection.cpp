@@ -263,6 +263,12 @@ public:
 
   Prepared_statement* prepare_statement(const std::string& statement, const std::string& name = {}) override
   {
+    const iSql_string s{statement};
+    return prepare_statement(&s, name);
+  }
+
+  Prepared_statement* prepare_statement_as_is(const std::string& statement, const std::string& name = {}) override
+  {
     return prepare_statement__(statement, name);
   }
 
@@ -689,26 +695,26 @@ public:
     return error_handler_;
   }
 
-  void set_notice_handler(const std::function<void(std::unique_ptr<Notice>&&)>& handler) override
+  void set_notice_handler(Notice_handler handler) override
   {
-    notice_handler_ = handler;
+    notice_handler_ = std::move(handler);
 
     DMITIGR_ASSERT(is_invariant_ok());
   }
 
-  std::function<void(std::unique_ptr<Notice>&&)> notice_handler() const override
+  const Notice_handler& notice_handler() const override
   {
     return notice_handler_;
   }
 
-  void set_notification_handler(const std::function<void(std::unique_ptr<Notification>&&)>& handler) override
+  void set_notification_handler(Notification_handler handler) override
   {
-    notification_handler_ = handler;
+    notification_handler_ = std::move(handler);
 
     DMITIGR_ASSERT(is_invariant_ok());
   }
 
-  std::function<void(std::unique_ptr<Notification>&&)> notification_handler() const override
+  const Notification_handler& notification_handler() const override
   {
     return notification_handler_;
   }
@@ -871,9 +877,15 @@ public:
     prepare_statement_async__(s->to_query_string().c_str(), name.c_str(), s); // can throw
   }
 
-  void prepare_statement_async(const std::string& query, const std::string& name = {}) override
+  void prepare_statement_async(const std::string& statement, const std::string& name = {}) override
   {
-    prepare_statement_async__(query.c_str(), name.c_str(), nullptr); // can throw
+    const iSql_string s{statement};
+    prepare_statement_async(&s, name);
+  }
+
+  void prepare_statement_async_as_is(const std::string& statement, const std::string& name = {}) override
+  {
+    prepare_statement_async__(statement.c_str(), name.c_str(), nullptr); // can throw
   }
 
   void describe_prepared_statement_async(const std::string& name) override
