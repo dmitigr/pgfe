@@ -18,18 +18,7 @@ namespace dmitigr::pgfe::detail {
 class iData : public Data {
 protected:
   using Format = Data_format;
-
-  virtual bool is_invariant_ok() = 0;
 };
-
-inline bool iData::is_invariant_ok()
-{
-  const bool size_ok = ((size() == 0) == is_empty());
-  const bool empty_ok = !is_empty() || ((size() == 0) && !std::strcmp(bytes(), ""));
-  const bool bytes_ok = bytes() && (format() == Data_format::binary || bytes()[size()] == '\0');
-  const bool memory_ok = !memory() || (memory() == bytes());
-  return size_ok && empty_ok && bytes_ok && memory_ok;
-}
 
 // =============================================================================
 
@@ -38,7 +27,7 @@ inline bool iData::is_invariant_ok()
  */
 class container_Data_base : public iData {
 protected:
-  bool is_invariant_ok() override
+  bool is_invariant_ok() const override
   {
     const bool idata_ok = iData::is_invariant_ok();
     return idata_ok;
@@ -103,13 +92,13 @@ public:
     return storage_.size();
   }
 
-  void* memory() noexcept override
+  const void* memory() const noexcept override
   {
     return storage_.data();
   }
 
 protected:
-  bool is_invariant_ok() override
+  bool is_invariant_ok() const override
   {
     const bool memory_ok = memory();
     const bool container_data_ok = container_Data::is_invariant_ok();
@@ -152,13 +141,13 @@ public:
     return (format_ == Data_format::binary) ? storage_.size() : storage_.size() - 1;
   }
 
-  void* memory() noexcept override
+  const void* memory() const noexcept override
   {
     return storage_.data();
   }
 
 protected:
-  bool is_invariant_ok() override
+  bool is_invariant_ok() const override
   {
     const bool memory_ok = memory();
     const bool container_data_ok = container_Data::is_invariant_ok();
@@ -173,7 +162,7 @@ protected:
  */
 class memory_Data_base : public iData {
 protected:
-  bool is_invariant_ok() override
+  bool is_invariant_ok() const override
   {
     const bool memory_ok = memory();
     const bool idata_ok = iData::is_invariant_ok();
@@ -225,7 +214,7 @@ public:
     return static_cast<const char*>(storage_.get());
   }
 
-  void* memory() noexcept override
+  const void* memory() const noexcept override
   {
     return storage_.get();
   }
@@ -289,13 +278,13 @@ public:
     return "";
   }
 
-  void* memory() noexcept override
+  const void* memory() const noexcept override
   {
     return nullptr;
   }
 
 private:
-  bool is_invariant_ok() override
+  bool is_invariant_ok() const override
   {
     const bool empty_ok = is_empty();
     const bool memory_ok = !memory();
@@ -308,85 +297,28 @@ private:
 
 // =============================================================================
 
+// =============================================================================
+
 /**
  * @brief The implementation of the Data view.
  */
-class view_Data final : public iData {
+class readonly_Data_view final : public Data_view {
 public:
-  /**
-   * @brief The default constructor.
-   */
-  view_Data() = default;
+  using Super = Data_view;
+  using Super::Super;
 
-  /**
-   * @brief The constructor.
-   */
-  view_Data(const char* const bytes, const std::size_t size, const Format format)
-    : format_(format)
-    , size_(size)
-    , bytes_(bytes)
-  {
-    DMITIGR_ASSERT(is_invariant_ok());
-  }
-
-  /** Non copyable. */
-  view_Data(const view_Data&) = delete;
-
-  /**
-   * @brief The move constructor.
-   */
-  view_Data(view_Data&&) = default;
-
-  /** Non copyable. */
-  view_Data& operator=(const view_Data&) = delete;
-
-  /**
-   * @brief The move assignment operator.
-   */
-  view_Data& operator=(view_Data&&) = default;
-
-  std::unique_ptr<Data> to_data() const override
-  {
-    return std::make_unique<vector_Data>(reinterpret_cast<const unsigned char*>(bytes_), size_, format_);
-  }
-
-  Format format() const noexcept override
-  {
-    return format_;
-  }
-
-  std::size_t size() const noexcept override
-  {
-    return size_;
-  }
-
-  bool is_empty() const noexcept override
-  {
-    return (size() == 0);
-  }
-
-  const char* bytes() const noexcept override
-  {
-    return bytes_;
-  }
-
-  void* memory() noexcept override
+  const void* memory() const noexcept override
   {
     return nullptr;
   }
 
 protected:
-  bool is_invariant_ok() override
+  bool is_invariant_ok() const override
   {
     const bool memory_ok = !memory();
-    const bool idata_ok = iData::is_invariant_ok();
-    return memory_ok && idata_ok;
+    const bool super_ok = Super::is_invariant_ok();
+    return memory_ok && super_ok;
   }
-
-private:
-  Format format_{Format::text};
-  std::size_t size_{};
-  const char* bytes_{};  // No ownership
 };
 
 } // namespace dmitigr::pgfe::detail
@@ -394,6 +326,15 @@ private:
 // =============================================================================
 
 namespace dmitigr::pgfe {
+
+DMITIGR_PGFE_INLINE bool Data::is_invariant_ok() const
+{
+  const bool size_ok = ((size() == 0) == is_empty());
+  const bool empty_ok = !is_empty() || ((size() == 0) && !std::strcmp(bytes(), ""));
+  const bool bytes_ok = bytes() && (format() == Data_format::binary || bytes()[size()] == '\0');
+  const bool memory_ok = !memory() || (memory() == bytes());
+  return size_ok && empty_ok && bytes_ok && memory_ok;
+}
 
 DMITIGR_PGFE_INLINE std::unique_ptr<Data>
 Data::make(const char* const bytes, const std::size_t size, const Data_format format)
@@ -439,14 +380,56 @@ Data::make(std::vector<unsigned char> storage, const Data_format format)
 DMITIGR_PGFE_INLINE std::unique_ptr<Data>
 Data::make_no_copy(const char* const bytes, const std::size_t size, const Data_format format)
 {
-  using detail::view_Data;
+  using detail::readonly_Data_view;
   using detail::empty_Data;
 
   DMITIGR_REQUIRE(bytes && (format == Data_format::binary || bytes[size] == '\0'), std::invalid_argument);
   if (size > 0)
-    return std::make_unique<view_Data>(bytes, size, format);
+    return std::make_unique<readonly_Data_view>(bytes, size, format);
   else
     return std::make_unique<empty_Data>(format);
+}
+
+// -----------------------------------------------------------------------------
+// Data_view
+// -----------------------------------------------------------------------------
+
+DMITIGR_PGFE_INLINE Data_view::Data_view(const char* const bytes, const std::size_t size, const Format format)
+  : format_(format)
+  , size_(size)
+  , bytes_(bytes)
+{
+  DMITIGR_REQUIRE(bytes, std::invalid_argument);
+  DMITIGR_ASSERT(is_invariant_ok());
+}
+
+DMITIGR_PGFE_INLINE Data_view::Data_view(Data_view&& rhs)
+  : format_{rhs.format_}
+  , size_{rhs.size_}
+  , bytes_{rhs.bytes_}
+{
+  rhs.format_ = Format::text;
+  rhs.size_ = 0;
+  rhs.bytes_ = "";
+}
+
+DMITIGR_PGFE_INLINE Data_view& Data_view::operator=(Data_view&& rhs)
+{
+  Data_view tmp{std::move(rhs)};
+  swap(tmp);
+  return *this;
+}
+
+DMITIGR_PGFE_INLINE void Data_view::swap(Data_view& rhs) noexcept
+{
+  std::swap(format_, rhs.format_);
+  std::swap(size_, rhs.size_);
+  std::swap(bytes_, rhs.bytes_);
+}
+
+std::unique_ptr<Data> Data_view::to_data() const
+{
+  return std::make_unique<detail::vector_Data>(reinterpret_cast<const unsigned char*>(bytes_), size_, format_);
 }
 
 namespace {

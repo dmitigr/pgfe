@@ -246,11 +246,11 @@ public:
   }
 
 private:
-  template<typename T>
-  Prepared_statement* prepare_statement__(T&& statement, const std::string& name)
+  template<typename M, typename T>
+  Prepared_statement* prepare_statement__(M&& prepare, T&& statement, const std::string& name)
   {
     DMITIGR_REQUIRE(is_ready_for_request(), std::logic_error);
-    prepare_statement_async(std::forward<T>(statement), name);
+    (this->*prepare)(std::forward<T>(statement), name);
     wait_response_throw();
     return prepared_statement();
   }
@@ -258,7 +258,8 @@ private:
 public:
   Prepared_statement* prepare_statement(const Sql_string* const statement, const std::string& name = {}) override
   {
-    return prepare_statement__(statement, name);
+    using Prepare = void(iConnection::*)(const Sql_string*, const std::string&);
+    return prepare_statement__(static_cast<Prepare>(&iConnection::prepare_statement_async), statement, name);
   }
 
   Prepared_statement* prepare_statement(const std::string& statement, const std::string& name = {}) override
@@ -269,7 +270,7 @@ public:
 
   Prepared_statement* prepare_statement_as_is(const std::string& statement, const std::string& name = {}) override
   {
-    return prepare_statement__(statement, name);
+    return prepare_statement__(&iConnection::prepare_statement_async_as_is, statement, name);
   }
 
   Prepared_statement* describe_prepared_statement(const std::string& name) override

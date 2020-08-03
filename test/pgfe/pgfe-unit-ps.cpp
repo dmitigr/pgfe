@@ -22,7 +22,7 @@ int main(int, char* argv[])
     ASSERT(conn->is_connected());
 
     {
-      auto* const ps1 = conn->prepare_statement("SELECT $1::integer", "ps1");
+      auto* const ps1 = conn->prepare_statement_as_is("SELECT $1::integer", "ps1");
       ASSERT(ps1);
       ASSERT(!ps1->is_preparsed());
       ASSERT(!ps1->is_described());

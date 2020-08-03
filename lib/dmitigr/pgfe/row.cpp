@@ -39,7 +39,7 @@ public:
     const int fc = pq_result.field_count();
     DMITIGR_ASSERT(fc >= 0);
     for (int f = 0; f < fc; ++f)
-      datas_[f] = view_Data(pq_result.data_value(0, f),
+      datas_[f] = readonly_Data_view(pq_result.data_value(0, f),
         std::size_t(pq_result.data_size(0, f)), pq_result.field_format(f));
     DMITIGR_ASSERT(is_invariant_ok());
   }
@@ -87,13 +87,13 @@ public:
     return &info_;
   }
 
-  const view_Data* data(const std::size_t index) const override
+  const readonly_Data_view* data(const std::size_t index) const override
   {
     DMITIGR_REQUIRE(index < field_count(), std::out_of_range);
     return data__(index);
   }
 
-  const view_Data* data(const std::string& name, const std::size_t offset) const override
+  const readonly_Data_view* data(const std::string& name, const std::size_t offset) const override
   {
     const auto index = field_index_throw(name, offset);
     return data__(index);
@@ -108,14 +108,14 @@ protected:
   }
 
 private:
-  const view_Data* data__(const std::size_t index) const noexcept
+  const readonly_Data_view* data__(const std::size_t index) const noexcept
   {
     constexpr int row = 0;
     return !info_.pq_result_.is_data_null(row, static_cast<int>(index)) ? &datas_[index] : nullptr;
   }
 
   pq_Row_info info_; // contains pq::Result
-  std::vector<view_Data> datas_;
+  std::vector<readonly_Data_view> datas_;
 };
 
 } // namespace dmitigr::pgfe::detail

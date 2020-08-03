@@ -36,6 +36,9 @@ namespace dmitigr::os::proc {
  * @param log_file_openmode The openmode to use upon opening the specified
  * `log_file`.
  *
+ * @par Requires
+ * `(startup && !working_directory.empty() && !pid_file.empty() && !log_file.empty)`.
+ *
  * @remarks The function returns in the detached (forked) process!
  */
 inline void detach(const std::function<void()>& startup,

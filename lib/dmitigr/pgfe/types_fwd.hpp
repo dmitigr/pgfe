@@ -46,6 +46,7 @@ class Connection;
 class Connection_options;
 class Connection_pool;
 class Data;
+class Data_view;
 class Error;
 class Message;
 class Notice;
