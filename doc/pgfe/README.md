@@ -77,6 +77,7 @@ Features
   - execute prepared statements (named parameters are supported);
   - conveniently call functions and procedures;
   - conveniently handle errors by either via exceptions or error codes;
+  - conveniently work with [large objects][lob];
   - exception class and enum entry for each predefined [SQLSTATE][errcodes] code;
   - easily convert the data from the client side representation to the server
     side representation and vice versa (conversions of multidimensional
@@ -86,13 +87,12 @@ Features
   - separate SQL and C++ code (e.g., by placing SQL code into a text file);
   - simple and thread-safe connection pool.
 
-Features of the future
-----------------------
+Major features of the nearcome release
+--------------------------------------
 
-  - [Large Objects][lob] via IO streams of the Standard C++ library;
-  - the COPY command;
-  - conversions for `dmitigr::pgfe::Composite` data type;
-  - yet more convenient work with arrays of variable dimensions at runtime.
+  - support of COPY command;
+  - conversions of composite types;
+  - yet more powerful support of arrays of variable dimensions at runtime.
 
 Usage
 =====
@@ -106,7 +106,6 @@ Tutorial
 Logically, Pgfe library consists of the following parts:
 
   - main (client/server communication);
-  - large objects (feature of the future, see the above TODO-list);
   - data types conversions;
   - errors (exceptions and error codes);
   - utilities.
