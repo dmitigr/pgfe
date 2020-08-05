@@ -35,6 +35,9 @@ enum class Transaction_status;
 enum class Client_errc;
 enum class Server_errc;
 
+enum class Large_object_open_mode;
+enum class Large_object_seek_whence;
+
 // -----------------------------------------------------------------------------
 // Classes
 // -----------------------------------------------------------------------------
@@ -48,6 +51,7 @@ class Connection_pool;
 class Data;
 class Data_view;
 class Error;
+class Large_object;
 class Message;
 class Notice;
 class Notification;

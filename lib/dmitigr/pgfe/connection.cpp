@@ -9,6 +9,7 @@
 #include "dmitigr/pgfe/data.hpp"
 #include "dmitigr/pgfe/error.hpp"
 #include "dmitigr/pgfe/exceptions.hpp"
+#include "dmitigr/pgfe/large_object.hpp"
 #include "dmitigr/pgfe/notice.hpp"
 #include "dmitigr/pgfe/notification.hpp"
 #include "dmitigr/pgfe/pq.hpp"
@@ -938,6 +939,38 @@ public:
     return default_result_format_;
   }
 
+  Oid create_large_object(const Oid oid) override
+  {
+    DMITIGR_REQUIRE(is_ready_for_request(), std::logic_error);
+    return (oid == invalid_oid) ? ::lo_creat(conn_, static_cast<int>(
+        Large_object_open_mode::reading | Large_object_open_mode::writing)) :
+      ::lo_create(conn_, oid);
+  }
+
+  Large_object open_large_object(const Oid oid, const Large_object_open_mode mode) override
+  {
+    DMITIGR_REQUIRE(is_ready_for_request(), std::logic_error);
+    return Large_object{this, ::lo_open(conn_, oid, static_cast<int>(mode))};
+  }
+
+  bool remove_large_object(const Oid oid) override
+  {
+    DMITIGR_REQUIRE(is_ready_for_request(), std::logic_error);
+    return ::lo_unlink(conn_, oid);
+  }
+
+  Oid import_large_object(const std::filesystem::path& filename, const Oid oid) override
+  {
+    DMITIGR_REQUIRE(is_ready_for_request(), std::logic_error);
+    return ::lo_import_with_oid(conn_, filename.c_str(), oid);
+  }
+
+  bool export_large_object(Oid oid, const std::filesystem::path& filename) override
+  {
+    DMITIGR_REQUIRE(is_ready_for_request(), std::logic_error);
+    return ::lo_export(conn_, oid, filename.c_str()) == 1; // lo_export returns -1 on failure
+  }
+
   void for_each(const std::function<void(const Row*)>& body) override
   {
     DMITIGR_REQUIRE(body, std::invalid_argument);
@@ -1018,6 +1051,37 @@ public:
   {
     const auto[storage, size] = to_hex_storage(binary_data);
     return std::string(reinterpret_cast<const char*>(storage.get()), size);
+  }
+
+private:
+  bool close(Large_object& lo) override
+  {
+    return ::lo_close(conn_, lo.descriptor()) == 0;
+  }
+
+  std::int_fast64_t seek(Large_object& lo, const std::int_fast64_t offset, const Large_object_seek_whence whence) override
+  {
+    return ::lo_lseek64(conn_, lo.descriptor(), offset, static_cast<int>(whence));
+  }
+
+  std::int_fast64_t tell(Large_object& lo) override
+  {
+    return ::lo_tell64(conn_, lo.descriptor());
+  }
+
+  bool truncate(Large_object& lo, const std::int_fast64_t new_size) override
+  {
+    return ::lo_truncate64(conn_, lo.descriptor(), static_cast<pg_int64>(new_size)) == 0;
+  }
+
+  int read(Large_object& lo, char* const buf, const std::size_t size) override
+  {
+    return ::lo_read(conn_, lo.descriptor(), buf, size);
+  }
+
+  int write(Large_object& lo, const char* const buf, const std::size_t size) override
+  {
+    return ::lo_write(conn_, lo.descriptor(), buf, size);
   }
 
 protected:

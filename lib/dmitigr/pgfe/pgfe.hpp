@@ -38,6 +38,7 @@
 #include "dmitigr/pgfe/errc.hpp"
 #include "dmitigr/pgfe/error.hpp"
 #include "dmitigr/pgfe/exceptions.hpp"
+#include "dmitigr/pgfe/large_object.hpp"
 #include "dmitigr/pgfe/message.hpp"
 #include "dmitigr/pgfe/misc.hpp"
 #include "dmitigr/pgfe/notice.hpp"

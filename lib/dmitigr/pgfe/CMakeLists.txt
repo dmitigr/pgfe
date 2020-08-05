@@ -284,6 +284,7 @@ set(dmitigr_pgfe_headers
   errc.hpp
   error.hpp
   exceptions.hpp
+  large_object.hpp
   message.hpp
   misc.hpp
   notice.hpp
@@ -317,6 +318,7 @@ set(dmitigr_pgfe_implementations
   errc.cpp
   error.cpp
   exceptions.cpp
+  large_object.cpp
   misc.cpp
   notice.cpp
   notification.cpp

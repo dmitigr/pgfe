@@ -964,6 +964,84 @@ public:
 
   // ---------------------------------------------------------------------------
 
+  /// @name Large objects
+  /// @{
+
+  /**
+   * @brief Submits a request to create the large object and waits the result.
+   *
+   * @param oid A desired oid. If `invalid_oid` assumes unused oid.
+   *
+   * @returns: A valid oid if successful, or `invalid_oid` otherwise.
+   *
+   * @par Requires
+   * `(is_ready_for_request())`.
+   *
+   * @par Exception safety guarantee
+   * Strong.
+   */
+  virtual Oid create_large_object(Oid oid = invalid_oid) = 0;
+
+  /**
+   * @brief Submits a request to open the large object and waits the result.
+   *
+   * @returns: A valid instance if successful, or invalid instance otherwise.
+   *
+   * @par Requires
+   * `(is_ready_for_request())`.
+   *
+   * @par Exception safety guarantee
+   * Strong.
+   */
+  virtual Large_object open_large_object(Oid oid, Large_object_open_mode mode) = 0;
+
+  /**
+   * @brief Submits a request to remove the large object and waits the result.
+   *
+   * @returns: `true` if successful, or `false` otherwise.
+   *
+   * @par Requires
+   * `(is_ready_for_request())`.
+   *
+   * @par Exception safety guarantee
+   * Strong.
+   */
+  virtual bool remove_large_object(Oid oid) = 0;
+
+  /**
+   * @brief Submits multiple requests to import the specified file as a large
+   * object.
+   *
+   * @returns The OID of the new large object on success, or `invalid_oid`
+   * otherwise.
+   *
+   * @par Requires
+   * `(is_ready_for_request())`.
+   *
+   * @par Exception safety guarantee
+   * Strong.
+   */
+  virtual Oid import_large_object(const std::filesystem::path& filename,
+    Oid oid = invalid_oid) = 0;
+
+  /**
+   * @brief Submits multiple requests to export the specified large object
+   * to the specified file.
+   *
+   * @returns `true` on success, or `false` otherwise.
+   *
+   * @par Requires
+   * `(is_ready_for_request())`.
+   *
+   * @par Exception safety guarantee
+   * Strong.
+   */
+  virtual bool export_large_object(Oid oid, const std::filesystem::path& filename) = 0;
+
+  /// @}
+
+  // ---------------------------------------------------------------------------
+
   /// @name Utilities
   /// @{
 
@@ -1104,8 +1182,18 @@ public:
   ///@}
 private:
   friend detail::iConnection;
+  friend Large_object;
 
   Connection() = default;
+
+  // ===========================================================================
+
+  virtual bool close(Large_object& lo) = 0;
+  virtual std::int_fast64_t seek(Large_object& lo, std::int_fast64_t offset, Large_object_seek_whence whence) = 0;
+  virtual std::int_fast64_t tell(Large_object& lo) = 0;
+  virtual bool truncate(Large_object& lo, std::int_fast64_t new_size) = 0;
+  virtual int read(Large_object& lo, char* buf, std::size_t size) = 0;
+  virtual int write(Large_object& lo, const char* buf, std::size_t size) = 0;
 
   // ===========================================================================
 

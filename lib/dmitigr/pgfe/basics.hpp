@@ -11,6 +11,12 @@ namespace dmitigr {
 
 namespace pgfe {
 
+/// An alias for Oid.
+using Oid = unsigned int;
+
+/// Denotes invalid Oid.
+constexpr Oid invalid_oid = 0;
+
 /**
  * @ingroup main
  *
