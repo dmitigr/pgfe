@@ -20,10 +20,12 @@ function(dmitigr_append_cppfs libraries)
       list(APPEND ${libraries} stdc++fs)
     endif()
   elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "7")
-      list(APPEND ${libraries} c++experimental)
-    elseif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9")
-      list(APPEND ${libraries} c++fs)
+    if (DMITIGR_CEFEIKA_CLANG_LINK_FILESYSTEM)
+      if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS "7")
+        list(APPEND ${libraries} c++experimental)
+      elseif(CMAKE_CXX_COMPILER_VERSION VERSION_LESS "9")
+        list(APPEND ${libraries} c++fs)
+      endif()
     endif()
   endif()
   set(${libraries} ${${libraries}} PARENT_SCOPE)
@@ -139,3 +141,26 @@ macro(dmitigr_set_library_info_lib_variables lib)
   set(dmitigr_lib_internal_name ${dmitigr_${lib}_internal_name})
   set(dmitigr_lib_product_name ${dmitigr_${lib}_product_name})
 endmacro()
+
+# ------------------------------------------------------------------------------
+
+function(dmitigr_cefeika_get_deps res_var lib)
+  foreach(dep ${dmitigr_cefeika_${lib}_deps})
+    # Getting dependencies of dep
+    dmitigr_cefeika_get_deps(dep_deps ${dep})
+
+    # Adding dependencies of dep to the result
+    foreach(d ${dep_deps})
+      if (NOT ${d} IN_LIST result)
+        list(APPEND result ${d})
+      endif()
+    endforeach()
+
+    # Adding dep itself to the result
+    if (NOT ${dep} IN_LIST result)
+      list(APPEND result ${dep})
+    endif()
+  endforeach()
+
+  set(${res_var} ${result} PARENT_SCOPE)
+endfunction()

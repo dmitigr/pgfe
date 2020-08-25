@@ -32,6 +32,8 @@ set(DMITIGR_CEFEIKA_WITH_ZLIB False CACHE BOOL
   "Link to Zlib where possible?")
 set(DMITIGR_LIBRARIAN_DEBUG FALSE CACHE BOOL
   "Print librarian.cmake debug output?")
+set(DMITIGR_CEFEIKA_CLANG_LINK_FILESYSTEM TRUE CACHE BOOL
+  "Link automatically to a separate filesystem library (actual for Clang 9-)?")
 
 if(NOT DMITIGR_CEFEIKA_HEADER_ONLY)
   if(BUILD_SHARED_LIBS)
@@ -104,15 +106,6 @@ set(CMAKE_CXX_STANDARD 17)
 set(CXX_STANDARD_REQUIRED ON)
 
 # ------------------------------------------------------------------------------
-# Include directories
-# ------------------------------------------------------------------------------
-
-include_directories(BEFORE
-  ${CMAKE_CURRENT_SOURCE_DIR}/lib
-  ${CMAKE_CURRENT_BINARY_DIR}/lib
-  )
-
-# ------------------------------------------------------------------------------
 # Third-party dependencies
 # ------------------------------------------------------------------------------
 
@@ -172,11 +165,11 @@ foreach(lib ${dmitigr_cefeika_libraries})
 
   add_subdirectory(lib/dmitigr/${lib})
 
-  # ------------------------------------
-  # Unconditional preprocessing
-  # ------------------------------------
-
   dmitigr_set_library_info_lib_variables(${lib})
+
+  # -------------
+  # Documentation
+  # -------------
 
   configure_file(doc/Doxyfile.in
     ${CMAKE_CURRENT_SOURCE_DIR}/doc/${lib}/Doxyfile @ONLY
@@ -295,12 +288,22 @@ foreach(lib ${dmitigr_cefeika_libraries})
     target_include_directories(${lib}
       PRIVATE ${dmitigr_${lib}_target_include_directories_private}
       PUBLIC  ${dmitigr_${lib}_target_include_directories_public})
+
+    target_include_directories(${lib} BEFORE PRIVATE
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib>
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/lib>
+      )
   else() # header-only
     target_compile_definitions(${lib}
       INTERFACE ${dmitigr_${lib}_target_compile_definitions_interface})
 
     target_include_directories(${lib}
       INTERFACE ${dmitigr_${lib}_target_include_directories_interface})
+
+    target_include_directories(${lib} BEFORE INTERFACE
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/lib>
+      $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/lib>
+      )
   endif()
 
   # ------------------------------------
@@ -365,12 +368,22 @@ foreach(lib ${dmitigr_cefeika_libraries})
   # ------------------------------------
 
   add_custom_command(TARGET dmitigr_cefeika_uninstall PRE_BUILD
-    COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CEFEIKA_CMAKE_INSTALL_DIR}/dmitigr_${lib}*
-    COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CEFEIKA_DOC_INSTALL_DIR}/dmitigr_${lib}*
-    COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CEFEIKA_LIB_INSTALL_DIR}/dmitigr_${lib}*
-    COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CEFEIKA_LIB_INSTALL_DIR}/libdmitigr_${lib}*
-    COMMAND cmake -E remove -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CEFEIKA_INCLUDE_INSTALL_DIR}/dmitigr/${lib}*
-    COMMAND cmake -E remove_directory ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CEFEIKA_INCLUDE_INSTALL_DIR}/dmitigr/${lib})
+    COMMAND cmake -E rm -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CEFEIKA_CMAKE_INSTALL_DIR}/dmitigr_${lib}*
+    COMMAND cmake -E rm -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CEFEIKA_DOC_INSTALL_DIR}/dmitigr_${lib}*
+    COMMAND cmake -E rm -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CEFEIKA_LIB_INSTALL_DIR}/dmitigr_${lib}*
+    COMMAND cmake -E rm -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CEFEIKA_LIB_INSTALL_DIR}/libdmitigr_${lib}*
+    COMMAND cmake -E rm -rf ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CEFEIKA_INCLUDE_INSTALL_DIR}/dmitigr/${lib}*
+    COMMAND cmake -E rm -rf ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CEFEIKA_INCLUDE_INSTALL_DIR}/dmitigr/${lib})
+
+  dmitigr_cefeika_get_deps(res ${lib})
+  foreach(dep ${res})
+    string(FIND "${dep}" "thirdparty_" pos)
+    if (pos EQUAL 0)
+      string(SUBSTRING "${dep}" 11 -1 dep)
+      add_custom_command(TARGET dmitigr_cefeika_uninstall PRE_BUILD
+        COMMAND cmake -E rm -rf ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CEFEIKA_INCLUDE_INSTALL_DIR}/dmitigr/thirdparty/*${dep}*)
+    endif()
+  endforeach()
 endforeach()
 
 # ------------------------------------------------------------------------------
