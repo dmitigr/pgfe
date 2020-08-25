@@ -212,18 +212,32 @@ public:
   /// @{
 
   /**
+   * @brief If input is available from the server, read it.
+   *
+   * This function should be called every time when the value returned by
+   * collect_server_messages() is Response_status::unready and the socket is in
+   * read-ready state.
+   */
+  virtual void read_server_input() = 0;
+
+  /**
    * @brief Collects and queue the messages of all kinds which was sent by the server.
+   *
+   * @returns The value of type Response_status.
+   *
+   * @param wait_response Indicates whether to wait for response (which assumes
+   * the possible thread block).
    *
    * @par Requires
    * `is_connected()`.
    *
    * @par Effects
-   * *Possible* `is_server_message_available()`.
+   * *Possible* `is_server_message_available()` and/or `is_response_available()`.
    *
    * @par Exception safety guarantee
    * Basic.
    */
-  virtual void collect_server_messages() = 0;
+  virtual Response_status collect_server_messages(bool wait_response = false) = 0;
 
   /**
    * @returns `(is_signal_available() || is_response_available())`

@@ -25,6 +25,8 @@
 #include <queue>
 #include <variant>
 
+#include <iostream>
+
 namespace dmitigr::pgfe::detail {
 
 /**
@@ -188,16 +190,19 @@ public:
       timeout = options()->wait_response_timeout();
 
     while (true) {
-      collect_server_messages();
+      const auto s = collect_server_messages(!timeout);
       handle_signals();
-      if (is_response_available())
+      if (s == Response_status::unready) {
+        const auto moment_of_wait = system_clock::now();
+        if (wait_socket_readiness(Socket_readiness::read_ready, timeout) == Socket_readiness::read_ready) {
+          if (timeout)
+            *timeout -= duration_cast<milliseconds>(system_clock::now() - moment_of_wait);
+        } else // timeout expired
+          throw Timed_out{"wait response timeout expired"};
+
+        read_server_input();
+      } else
         break;
-      const auto timepoint1 = system_clock::now();
-      if (wait_socket_readiness(Socket_readiness::read_ready, timeout) == Socket_readiness::read_ready) {
-        if (timeout)
-          *timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
-      } else // Timeout
-        throw Timed_out{"wait response timeout"};
     }
 
     DMITIGR_ASSERT(is_invariant_ok());
@@ -296,6 +301,9 @@ protected:
 
   void throw_if_error()
   {
+    if (!error())
+      return;
+
     if (std::shared_ptr<Error> ei{release_error()}) {
       // Attempting to throw a custom exception.
       if (const auto& eh = error_handler(); eh && eh(ei))
@@ -477,19 +485,27 @@ protected:
   }
 
 public:
-  void collect_server_messages() override
+  void read_server_input() override
+  {
+    if (!::PQconsumeInput(conn_))
+      throw std::runtime_error{error_message()};
+  }
+
+  Response_status collect_server_messages(const bool wait_response) override
   {
     DMITIGR_REQUIRE(is_connected(), std::logic_error);
 
-    const auto consume_input = [this]()
+    if (is_response_available())
+      return Response_status::ready;
+
+    const auto collect_notifications = [this]
     {
-      while (socket_readiness(Socket_readiness::read_ready) == Socket_readiness::read_ready) {
-        if (!::PQconsumeInput(conn_))
-          throw std::runtime_error(error_message());
-      }
+      // Note: notifications are collected by libpq from ::PQisBusy() and ::PQgetResult().
+      while (auto* const n = ::PQnotifies(conn_))
+        signals_.push_back(pq_Notification{n});
     };
 
-    const auto is_get_result_would_block = [this]()
+    const auto is_get_result_would_block = [this, &collect_notifications]
     {
       /*
        * Checking for nonblocking result and collecting notices btw.
@@ -497,157 +513,146 @@ public:
        * called (indirectly) from ::PQisBusy().
        * Note: ::PQisBusy() calls a routine (pqParseInput3() from fe-protocol3.c)
        * which parses consumed input and stores notifications and notices if
-       * available. (::PQnotifies() calls this routine as well.)
+       * are available. (::PQnotifies() calls this routine as well.)
        */
       const int result = ::PQisBusy(conn_);
-
-      /*
-       * Collecting notifications.
-       * Note: notifications are collected by libpq after ::PQisBusy() was called.
-       */
-      while (auto* const n = ::PQnotifies(conn_))
-        signals_.push_back(pq_Notification(n));
-
-      return result;
+      collect_notifications();
+      return result == 1;
     };
 
-    const auto is_pending_result_error = [this]()
-    {
-      return pending_result_ && (pending_result_.status() == PGRES_FATAL_ERROR);
-    };
+    /*
+     * According to https://www.postgresql.org/docs/current/libpq-async.html,
+     * "PQgetResult() must be called repeatedly until it returns a null pointer,
+     * indicating that the command is done."
+     */
+    if (wait_response) {
+      if (pq::Result r{::PQgetResult(conn_)}) {
+        pending_results_.push(std::move(r));
+        if (pending_results_.front().status() == PGRES_FATAL_ERROR)
+          while (pq::Result{::PQgetResult(conn_)}); // getting complete error
+      }
+      collect_notifications();
+    }
 
-    const auto is_request_done = [&]()
-    {
-      consume_input();
+    bool get_would_block{};
+    if (pending_results_.empty() || pending_results_.front().status() != PGRES_SINGLE_TUPLE) {
+      while ( !(get_would_block = is_get_result_would_block())) {
+        if (pq::Result r{::PQgetResult(conn_)}) {
+          pending_results_.push(std::move(r));
+          if (pending_results_.front().status() == PGRES_SINGLE_TUPLE)
+            break; // optimization: skip is_get_result_would_block() here
+        } else
+          break;
+      }
+    }
 
-      if (!is_get_result_would_block()) {
-        pq::Result tmp{::PQgetResult(conn_)};
-        if (is_pending_result_error()) {
-          /*
-           * According to https://www.postgresql.org/docs/10/static/libpq-async.html#LIBPQ-PQGETRESULT
-           *
-           * "Even when PQresultStatus indicates a fatal error, PQgetResult
-           * should be called until it returns a null pointer, to allow libpq
-           * to process the error information completely."
-           *
-           * We have stored the result with PGRES_FATAL_ERROR in the pending_result_ before.
-           * Now we have called ::PQgetResult() second time and we can assert that it returned
-           * nullptr (because it's logical and because the libpq documentation says nothing
-           * about what to do when the result is not null in this case).
-           */
-          DMITIGR_ASSERT(!tmp && !response_);
-          response_ = problem<simple_Error>(pending_result_.pg_result());
-          pending_result_.reset();
-        } else {
-          DMITIGR_ASSERT(!pending_result_);
-          pending_result_ = std::move(tmp);
-        }
-        return !bool(pending_result_);
-      } else
-        return false; // busy
-    };
-
-    const auto next_result = [&]()
-    {
-      DMITIGR_ASSERT(!is_pending_result_error());
-      if (pending_result_)
-        return std::move(pending_result_);
-      else
-        return !is_get_result_would_block() ? pq::Result{::PQgetResult(conn_)} : pq::Result{};
-    };
-
-    if (is_pending_result_error())
-      goto almost_done;
-
-    // Attempt to consume some input into the internal buffer even if the response is already available.
-    consume_input();
-
-    if (is_response_available())
-      goto done;
-
-    if (auto r = next_result(); !r) {
-      DMITIGR_ASSERT(::PQisBusy(conn_) || requests_.empty());
-      goto done;
-    } else /* processing the new result */ {
-      DMITIGR_ASSERT(!pending_result_ && r && (r.status() != PGRES_NONFATAL_ERROR) && !response_ && !requests_.empty());
-      const auto s = r.status();
+    if (!pending_results_.empty()) {
+      DMITIGR_ASSERT(!response_);
+      const auto set_response = [this, get_would_block](auto&& response)
+      {
+        response_ = std::move(response);
+        pending_results_.pop();
+        if (pending_results_.empty() && !get_would_block)
+          requests_.pop();
+      };
+      auto& r = pending_results_.front();
       const auto op_id = requests_.front();
-      switch (s) {
-      case PGRES_SINGLE_TUPLE:
+      const auto rstatus = r.status();
+      DMITIGR_ASSERT(rstatus != PGRES_NONFATAL_ERROR);
+
+      switch (rstatus) {
+      case PGRES_SINGLE_TUPLE: {
         DMITIGR_ASSERT(op_id == Request_id::perform || op_id == Request_id::execute);
         if (!shared_field_names_)
           shared_field_names_ = pq_Row_info::make_shared_field_names(r);
-        response_ = pq_Row(pq_Row_info(std::move(r), shared_field_names_));
-        goto done;
+        response_ = pq_Row{pq_Row_info{std::move(r), shared_field_names_}};
+        pending_results_.pop();
+        return Response_status::ready;
+      }
 
-      case PGRES_TUPLES_OK:
+      case PGRES_TUPLES_OK: {
         DMITIGR_ASSERT(op_id == Request_id::perform || op_id == Request_id::execute);
-        response_ = simple_Completion(r.command_tag());
-        goto almost_done;
+        if (!get_would_block) {
+          set_response(simple_Completion{r.command_tag()});
+          shared_field_names_.reset();
+          return Response_status::ready;
+        } else
+          return Response_status::unready;
+      }
 
       case PGRES_FATAL_ERROR:
-        pending_result_ = std::move(r); // the error information may be incomplete at the moment!
-        goto almost_done;
+        if (!get_would_block) {
+          set_response(problem<simple_Error>(r.pg_result()));
+          shared_field_names_.reset();
+          request_prepared_statement_.reset();
+          request_prepared_statement_name_.reset();
+          return Response_status::ready;
+        } else
+          return Response_status::unready;
 
-      case PGRES_COMMAND_OK:
+      case PGRES_COMMAND_OK: {
+        if (get_would_block)
+          return Response_status::unready;
+
         switch (op_id) {
         case Request_id::perform:
           [[fallthrough]];
 
         case Request_id::execute:
-          response_ = simple_Completion(r.command_tag());
-          goto almost_done;
+          set_response(simple_Completion{r.command_tag()});
+          return Response_status::ready;
 
         case Request_id::prepare_statement:
           DMITIGR_ASSERT(request_prepared_statement_);
-          response_ = register_ps(std::move(*request_prepared_statement_));
-          goto almost_done;
+          set_response(register_ps(std::move(*request_prepared_statement_)));
+          request_prepared_statement_.reset();
+          return Response_status::ready;
 
         case Request_id::describe_prepared_statement: {
           DMITIGR_ASSERT(request_prepared_statement_name_);
           auto* p = ps(*request_prepared_statement_name_);
           if (!p)
-            p = register_ps(pq_Prepared_statement(std::move(*request_prepared_statement_name_), this, r.field_count()));
+            p = register_ps(pq_Prepared_statement{std::move(*request_prepared_statement_name_),
+                                                  this, static_cast<std::size_t>(r.field_count())});
           p->set_description(std::move(r));
-          response_ = p;
-          goto almost_done;
+          set_response(std::move(p));
+          request_prepared_statement_name_.reset();
+          return Response_status::ready;
         }
 
         case Request_id::unprepare_statement:
           DMITIGR_ASSERT(request_prepared_statement_name_ && std::strcmp(r.command_tag(), "DEALLOCATE") == 0);
           unregister_ps(*request_prepared_statement_name_);
-          response_ = simple_Completion("unprepare_statement");
-          goto almost_done;
+          set_response(simple_Completion{"unprepare_statement"});
+          request_prepared_statement_name_.reset();
+          return Response_status::ready;
 
-        default: DMITIGR_ASSERT(!true);
-        } // PGRES_COMMAND_OK
+        default: DMITIGR_ASSERT_ALWAYS(!true);
+        } // switch (op_id)
+      } // PGRES_COMMAND_OK
 
       case PGRES_EMPTY_QUERY:
-        response_ = simple_Completion(std::string{});
-        goto almost_done;
+        if (!get_would_block) {
+          set_response(simple_Completion{std::string{}});
+          return Response_status::ready;
+        } else
+          return Response_status::unready;
 
       case PGRES_BAD_RESPONSE:
-        response_ = simple_Completion("invalid response");
-        goto almost_done;
+        if (!get_would_block) {
+          set_response(simple_Completion{"invalid response"});
+          return Response_status::ready;
+        } else
+          return Response_status::unready;
 
-      default: DMITIGR_ASSERT(!true);
-      } // switch (status)
-    } // if (next result)
+      default: DMITIGR_ASSERT_ALWAYS(!true);
+      } // switch (rstatus)
+    } else if (get_would_block)
+      return Response_status::unready;
+    else
+      return Response_status::empty;
 
-  almost_done:
-    if (is_request_done()) {
-      shared_field_names_.reset();
-      request_prepared_statement_.reset();
-      request_prepared_statement_name_.reset();
-
-      if (error())
-        requests_.clear();
-      else
-        requests_.pop();
-    }
-
-  done:
-    DMITIGR_ASSERT(is_invariant_ok());
+    DMITIGR_ASSERT_ALWAYS(!true);
   }
 
   bool is_signal_available() const noexcept override
@@ -1113,7 +1118,7 @@ protected:
       !session_start_time_ &&
       signals_.empty() &&
       !response_ &&
-      !pending_result_ &&
+      pending_results_.empty() &&
       !transaction_block_status_ &&
       !server_pid_ &&
       named_prepared_statements_.empty() &&
@@ -1126,6 +1131,16 @@ protected:
       session_data_empty ||
       ((communication_status() == Communication_status::failure) || (communication_status() == Communication_status::connected));
     const bool iconnection_ok = iConnection::is_invariant_ok();
+
+    // std::clog << conn_ok << " "
+    //           << polling_status_ok << " "
+    //           << requests_ok << " "
+    //           << request_prepared_ok << " "
+    //           << shared_field_names_ok << " "
+    //           << session_start_time_ok << " "
+    //           << session_data_ok << " "
+    //           << iconnection_ok << " "
+    //           << std::endl;
 
     return
       conn_ok &&
@@ -1173,6 +1188,11 @@ private:
   // Session data
   // ---------------------------------------------------------------------------
 
+  class Results_queue final : public std::queue<pq::Result> {
+  public:
+    void clear() { c.clear(); }
+  };
+
   std::optional<std::chrono::system_clock::time_point> session_start_time_;
 
   using Signal_ = std::variant<std::monostate, simple_Notice, pq_Notification>;
@@ -1181,7 +1201,7 @@ private:
   using Response_ = std::optional<std::variant<std::monostate,
     simple_Error, pq_Row, simple_Completion, pq_Prepared_statement*>>;
   mutable Response_ response_;
-  pq::Result pending_result_;
+  Results_queue pending_results_;
   mutable std::optional<Transaction_block_status> transaction_block_status_;
   mutable std::optional<std::int_fast32_t> server_pid_;
   mutable std::list<pq_Prepared_statement> named_prepared_statements_;
@@ -1236,7 +1256,7 @@ private:
     session_start_time_.reset();
     signals_.clear();
     response_.reset();
-    pending_result_.reset();
+    pending_results_.clear();
     transaction_block_status_.reset();
     server_pid_.reset();
     named_prepared_statements_.clear();

@@ -151,7 +151,8 @@ int main(int, char* argv[])
         conn->wait_response();
         ASSERT(conn->error());
         ASSERT(conn->error()->code() == pgfe::Server_errc::c42_syntax_error);
-        ASSERT(conn->release_error());
+        const auto e = conn->release_error();
+        ASSERT(e);
         ASSERT(!conn->error());
         ASSERT(conn->transaction_block_status() == Transaction_block_status::failed);
         conn->perform_async("END");

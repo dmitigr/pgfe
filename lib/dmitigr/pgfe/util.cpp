@@ -26,6 +26,7 @@ DMITIGR_PGFE_INLINE int sqlstate_string_to_int(const std::string& code)
     std::isalnum(code[3], l) &&
     std::isalnum(code[4], l), std::invalid_argument);
 
+  errno = 0;
   const long int result = std::strtol(code.c_str(), nullptr, 36);
   DMITIGR_ASSERT(errno == 0);
   DMITIGR_ASSERT(result >= 0 && result <= std::numeric_limits<int>::max());

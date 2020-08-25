@@ -33,14 +33,14 @@ public:
    */
   explicit pq_Row(pq_Row_info&& info)
     : info_{std::move(info)}
-    , datas_{decltype (datas_)::size_type(info_.pq_result_.field_count())}
   {
     const auto& pq_result = info_.pq_result_;
     const int fc = pq_result.field_count();
     DMITIGR_ASSERT(fc >= 0);
+    datas_.reserve(fc);
     for (int f = 0; f < fc; ++f)
-      datas_[f] = readonly_Data_view(pq_result.data_value(0, f),
-        std::size_t(pq_result.data_size(0, f)), pq_result.field_format(f));
+      datas_.emplace_back(pq_result.data_value(0, f),
+        pq_result.data_size(0, f), pq_result.field_format(f));
     DMITIGR_ASSERT(is_invariant_ok());
   }
 

@@ -192,6 +192,24 @@ enum class Problem_severity {
   panic = 700
 };
 
+// =============================================================================
+
+/**
+ * @ingroup main
+ *
+ * @brief A response status.
+ */
+enum class Response_status {
+  /** No response available. */
+  empty = 0,
+
+  /** Response is available. */
+  ready = 100,
+
+  /** Response is not ready, socket polling is required. */
+  unready = 200
+};
+
 } // namespace dmitigr::pgfe
 
 #endif // DMITIGR_PGFE_BASICS_HPP
