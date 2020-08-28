@@ -12,33 +12,15 @@
 
 namespace dmitigr::pgfe::detail {
 
-/**
- * @brief The base implementation of Data.
- */
+/// The base implementation of Data.
 class iData : public Data {
 protected:
   using Format = Data_format;
 };
 
-// =============================================================================
-
-/**
- * @brief The implementation base for Data based on containers.
- */
-class container_Data_base : public iData {
-protected:
-  bool is_invariant_ok() const override
-  {
-    const bool idata_ok = iData::is_invariant_ok();
-    return idata_ok;
-  }
-};
-
-/**
- * @brief The generic implementation base of Data based on containers.
- */
+/// The base implementation of Data based on containers.
 template<class Container>
-class container_Data : public container_Data_base {
+class container_Data : public iData {
 public:
   using Storage = Container;
 
@@ -68,14 +50,9 @@ protected:
   Storage storage_;
 };
 
-/**
- * @brief The implementation of Data based on `std::string`.
- */
+/// The implementation of Data based on `std::string`.
 class string_Data final : public container_Data<std::string> {
 public:
-  /**
-   * @brief See Data::make().
-   */
   string_Data(std::string storage, const Format format)
     : container_Data(std::move(storage), format)
   {
@@ -91,96 +68,18 @@ public:
   {
     return storage_.size();
   }
-
-  const void* memory() const noexcept override
-  {
-    return storage_.data();
-  }
-
-protected:
-  bool is_invariant_ok() const override
-  {
-    const bool memory_ok = memory();
-    const bool container_data_ok = container_Data::is_invariant_ok();
-    return memory_ok && container_data_ok;
-  }
-};
-
-/**
- * @brief The implementation of Data based on `std::vector<unsigned char>`.
- */
-class vector_Data final : public container_Data<std::vector<unsigned char>> {
-public:
-  /**
-   * @brief See Data::make().
-   */
-  template<class S>
-  vector_Data(S&& storage, const Format format)
-    : container_Data(std::forward<S>(storage), format)
-  {
-    DMITIGR_ASSERT(is_invariant_ok());
-  }
-
-  /**
-   * @overload
-   */
-  vector_Data(const unsigned char* const bytes, const std::size_t size, const Format format)
-    : container_Data(std::vector<unsigned char>((format == Data_format::binary) ? size : size + 1), format)
-  {
-    std::copy(bytes, bytes + size, begin(storage_));
-    DMITIGR_ASSERT(is_invariant_ok());
-  }
-
-  std::unique_ptr<Data> to_data() const override
-  {
-    return std::make_unique<vector_Data>(storage_, format_);
-  }
-
-  std::size_t size() const noexcept override
-  {
-    return (format_ == Data_format::binary) ? storage_.size() : storage_.size() - 1;
-  }
-
-  const void* memory() const noexcept override
-  {
-    return storage_.data();
-  }
-
-protected:
-  bool is_invariant_ok() const override
-  {
-    const bool memory_ok = memory();
-    const bool container_data_ok = container_Data::is_invariant_ok();
-    return memory_ok && container_data_ok;
-  }
 };
 
 // =============================================================================
 
 /**
- * @brief The implementation base for Data based on a custom heap storage.
- */
-class memory_Data_base : public iData {
-protected:
-  bool is_invariant_ok() const override
-  {
-    const bool memory_ok = memory();
-    const bool idata_ok = iData::is_invariant_ok();
-    return memory_ok && idata_ok;
-  }
-};
-
-/**
  * @brief The generic implementation of Data based on a custom heap storage.
  */
 template<typename T, class Deleter = std::default_delete<T>>
-class memory_Data final : public memory_Data_base {
+class memory_Data final : public iData {
 public:
   using Storage = std::unique_ptr<T, Deleter>;
 
-  /**
-   * @brief See Data::make().
-   */
   memory_Data(Storage&& storage, const std::size_t size, const Format format)
     : format_(format)
     , size_(size)
@@ -191,7 +90,7 @@ public:
 
   std::unique_ptr<Data> to_data() const override
   {
-    return std::make_unique<vector_Data>(static_cast<unsigned char*>(storage_.get()), size_, format_);
+    return Data::make(std::string_view{static_cast<char*>(storage_.get()), size_}, format_);
   }
 
   Format format() const noexcept override
@@ -212,11 +111,6 @@ public:
   const char* bytes() const noexcept override
   {
     return static_cast<const char*>(storage_.get());
-  }
-
-  const void* memory() const noexcept override
-  {
-    return storage_.get();
   }
 
 private:
@@ -244,9 +138,6 @@ using custom_memory_Data = memory_Data<void, void(*)(void*)>;
  */
 class empty_Data final : public iData {
 public:
-  /**
-   * @brief See Data::make().
-   */
   explicit empty_Data(const Format format)
     : format_(format)
   {
@@ -278,47 +169,8 @@ public:
     return "";
   }
 
-  const void* memory() const noexcept override
-  {
-    return nullptr;
-  }
-
 private:
-  bool is_invariant_ok() const override
-  {
-    const bool empty_ok = is_empty();
-    const bool memory_ok = !memory();
-    const bool idata_ok = iData::is_invariant_ok();
-    return empty_ok && memory_ok && idata_ok;
-  }
-
   const Format format_{Format::text};
-};
-
-// =============================================================================
-
-// =============================================================================
-
-/**
- * @brief The implementation of the Data view.
- */
-class readonly_Data_view final : public Data_view {
-public:
-  using Super = Data_view;
-  using Super::Super;
-
-  const void* memory() const noexcept override
-  {
-    return nullptr;
-  }
-
-protected:
-  bool is_invariant_ok() const override
-  {
-    const bool memory_ok = !memory();
-    const bool super_ok = Super::is_invariant_ok();
-    return memory_ok && super_ok;
-  }
 };
 
 } // namespace dmitigr::pgfe::detail
@@ -331,36 +183,7 @@ DMITIGR_PGFE_INLINE bool Data::is_invariant_ok() const
 {
   const bool size_ok = ((size() == 0) == is_empty());
   const bool empty_ok = !is_empty() || ((size() == 0) && !std::strcmp(bytes(), ""));
-  const bool bytes_ok = bytes() && (format() == Data_format::binary || bytes()[size()] == '\0');
-  const bool memory_ok = !memory() || (memory() == bytes());
-  return size_ok && empty_ok && bytes_ok && memory_ok;
-}
-
-DMITIGR_PGFE_INLINE std::unique_ptr<Data>
-Data::make(const char* const bytes, const std::size_t size, const Data_format format)
-{
-  using detail::vector_Data;
-  using detail::empty_Data;
-
-  DMITIGR_REQUIRE(bytes && (format == Data_format::binary || bytes[size] == '\0'), std::invalid_argument);
-  if (size > 0)
-    return std::make_unique<vector_Data>(reinterpret_cast<const unsigned char*>(bytes), size, format);
-  else
-    return std::make_unique<empty_Data>(format);
-}
-
-DMITIGR_PGFE_INLINE std::unique_ptr<Data>
-Data::make(const char* const bytes)
-{
-  return make(bytes, std::strlen(bytes), Data_format::text);
-}
-
-DMITIGR_PGFE_INLINE std::unique_ptr<Data>
-Data::make(std::unique_ptr<void, void(*)(void*)>&& storage, const std::size_t size, const Data_format format)
-{
-  DMITIGR_REQUIRE(storage && (format == Data_format::binary || static_cast<const char*>(storage.get())[size] == '\0'),
-    std::invalid_argument);
-  return std::make_unique<detail::custom_memory_Data>(std::move(storage), size, format);
+  return size_ok && empty_ok;
 }
 
 DMITIGR_PGFE_INLINE std::unique_ptr<Data>
@@ -370,31 +193,41 @@ Data::make(std::string storage, const Data_format format)
 }
 
 DMITIGR_PGFE_INLINE std::unique_ptr<Data>
-Data::make(std::vector<unsigned char> storage, const Data_format format)
+Data::make(const std::string_view bytes, const Data_format format)
 {
-  DMITIGR_REQUIRE(format == Data_format::binary || (!storage.empty() && storage.back() == '\0'),
-    std::invalid_argument);
-  return std::make_unique<detail::vector_Data>(std::move(storage), format);
+  using detail::array_memory_Data;
+  using detail::empty_Data;
+
+  if (bytes.size() > 0) {
+    std::unique_ptr<char[]> storage{new char[bytes.size() + 1]};
+    std::memcpy(storage.get(), bytes.data(), bytes.size());
+    storage.get()[bytes.size()] = '\0';
+    return std::make_unique<array_memory_Data>(std::move(storage), bytes.size(), format);
+  } else
+    return std::make_unique<empty_Data>(format);
 }
 
 DMITIGR_PGFE_INLINE std::unique_ptr<Data>
-Data::make_no_copy(const char* const bytes, const std::size_t size, const Data_format format)
+Data::make(std::unique_ptr<void, void(*)(void*)>&& storage, const std::size_t size, const Data_format format)
 {
-  using detail::readonly_Data_view;
-  using detail::empty_Data;
+  DMITIGR_REQUIRE(storage, std::invalid_argument);
+  return std::make_unique<detail::custom_memory_Data>(std::move(storage), size, format);
+}
 
-  DMITIGR_REQUIRE(bytes && (format == Data_format::binary || bytes[size] == '\0'), std::invalid_argument);
-  if (size > 0)
-    return std::make_unique<readonly_Data_view>(bytes, size, format);
+DMITIGR_PGFE_INLINE std::unique_ptr<Data>
+Data::make_no_copy(const std::string_view bytes, const Data_format format)
+{
+  if (bytes.size() > 0)
+    return std::make_unique<Data_view>(bytes.data(), bytes.size(), format);
   else
-    return std::make_unique<empty_Data>(format);
+    return std::make_unique<detail::empty_Data>(format);
 }
 
 // -----------------------------------------------------------------------------
 // Data_view
 // -----------------------------------------------------------------------------
 
-DMITIGR_PGFE_INLINE Data_view::Data_view(const char* const bytes, const std::size_t size, const Format format)
+DMITIGR_PGFE_INLINE Data_view::Data_view(const char* const bytes, const int size, const Format format)
   : format_(format)
   , size_(size)
   , bytes_(bytes)
@@ -429,7 +262,9 @@ DMITIGR_PGFE_INLINE void Data_view::swap(Data_view& rhs) noexcept
 
 std::unique_ptr<Data> Data_view::to_data() const
 {
-  return std::make_unique<detail::vector_Data>(reinterpret_cast<const unsigned char*>(bytes_), size_, format_);
+  std::unique_ptr<char[]> storage{new char[size_]};
+  std::memcpy(storage.get(), bytes_, size_);
+  return std::make_unique<detail::array_memory_Data>(std::move(storage), size_, format_);
 }
 
 namespace {

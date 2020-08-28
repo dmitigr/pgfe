@@ -37,7 +37,7 @@ public:
     , channel_name_(pgnotify_->relname)
   {
     if (pgnotify_->extra)
-      payload_ = readonly_Data_view(pgnotify_->extra, std::strlen(pgnotify_->extra), Data_format::text);
+      payload_ = Data_view(pgnotify_->extra, std::strlen(pgnotify_->extra), Data_format::text);
     DMITIGR_ASSERT(is_invariant_ok());
   }
 
@@ -67,7 +67,7 @@ public:
     return channel_name_;
   }
 
-  const readonly_Data_view* payload() const noexcept override
+  const Data_view* payload() const noexcept override
   {
     return payload_ ? &*payload_ : nullptr;
   }
@@ -83,7 +83,7 @@ protected:
 
 private:
   std::unique_ptr< ::PGnotify> pgnotify_;
-  std::optional<readonly_Data_view> payload_;
+  std::optional<Data_view> payload_;
   std::string channel_name_;
 };
 

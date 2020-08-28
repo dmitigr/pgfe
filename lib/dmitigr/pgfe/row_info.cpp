@@ -5,18 +5,14 @@
 #include "dmitigr/pgfe/compositional.hpp"
 #include "dmitigr/pgfe/pq.hpp"
 #include "dmitigr/pgfe/row_info.hpp"
-#include "dmitigr/pgfe/util.hpp"
 
 #include <algorithm>
 #include <limits>
 #include <vector>
-#include <type_traits>
 
 namespace dmitigr::pgfe::detail {
 
-/**
- * @brief The base implementation of Row_info.
- */
+/// The base implementation of Row_info.
 class iRow_info : public Row_info {
 public:
   virtual std::uint_fast32_t table_oid(const std::size_t) const override = 0;
@@ -62,25 +58,23 @@ public:
   }
 
 protected:
-  virtual bool is_invariant_ok() = 0;
+  virtual bool is_invariant_ok() const
+  {
+    return detail::is_invariant_ok(*this);
+  }
 
   virtual std::size_t field_index_throw(const std::string& name, std::size_t offset = 0) const override = 0;
 };
-
-inline bool iRow_info::is_invariant_ok()
-{
-  const bool compositional_ok = detail::is_invariant_ok(*this);
-  return compositional_ok;
-}
 
 /**
  * @brief The implementation of Row_info based on libpq.
  */
 class pq_Row_info final : public iRow_info {
 public:
-  /**
-   * @brief The constructor.
-   */
+  /// Default-constructible.
+  pq_Row_info() = default;
+
+  /// The constructor.
   explicit pq_Row_info(pq::Result&& pq_result)
     : pq_result_(std::move(pq_result))
     , shared_field_names_(make_shared_field_names(pq_result_)) // note pq_result_
@@ -88,9 +82,7 @@ public:
     DMITIGR_ASSERT(is_invariant_ok());
   }
 
-  /**
-   * @overload
-   */
+  /// @overload
   pq_Row_info(pq::Result&& pq_result,
     const std::shared_ptr<std::vector<std::string>>& shared_field_names)
     : pq_result_(std::move(pq_result))
@@ -99,34 +91,29 @@ public:
     DMITIGR_ASSERT(is_invariant_ok());
   }
 
-  /** Non copyable. */
+  /// Non copy-constructible.
   pq_Row_info(const pq_Row_info&) = delete;
 
-  /**
-   * @brief The move constuctor.
-   */
+  /// Move-constructible.
   pq_Row_info(pq_Row_info&&) = default;
 
-  /** Non copyable. */
+  /// Non copy-assignable.
   pq_Row_info& operator=(const pq_Row_info&) = delete;
 
-  /**
-   * @brief The move assignment operator.
-   */
+  /// Non move-assignable.
   pq_Row_info& operator=(pq_Row_info&&) = default;
 
-  /**
-   * @returns The shared vector of field names to use across multiple rows.
-   */
+  /// @returns The shared vector of field names to use across multiple rows.
   static std::shared_ptr<std::vector<std::string>> make_shared_field_names(const pq::Result& pq_result)
   {
     DMITIGR_ASSERT(pq_result);
-    auto result = std::make_shared<std::vector<std::string>>(pq_result.field_count());
-    const auto fc = pq_result.field_count();
-    using Counter = std::remove_const_t<decltype (fc)>;
-    for (Counter i = 0; i < fc; ++i)
-      (*result)[i] = pq_result.field_name(i);
-    return result;
+    const int fc = pq_result.field_count();
+    std::vector<std::string> result;
+    result.reserve(fc);
+    for (int i = 0; i < fc; ++i)
+      result.emplace_back(pq_result.field_name(i));
+
+    return std::make_shared<decltype(result)>(std::move(result));
   }
 
   // ---------------------------------------------------------------------------
@@ -218,7 +205,7 @@ public:
   }
 
 protected:
-  bool is_invariant_ok() override
+  bool is_invariant_ok() const override
   {
     const bool size_ok =
       shared_field_names_ &&
@@ -227,10 +214,9 @@ protected:
 
     const bool field_names_ok = [this]()
     {
-      const auto fc = field_count();
-      using Counter = std::remove_const_t<decltype (fc)>;
-      for (Counter i = 0; i < fc; ++i) {
-        if (pq_result_.field_name(int(i)) != (*shared_field_names_)[i])
+      const std::size_t fc = field_count();
+      for (std::size_t i = 0; i < fc; ++i) {
+        if (pq_result_.field_name(static_cast<int>(i)) != (*shared_field_names_)[i])
           return false;
       }
       return true;

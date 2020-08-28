@@ -10,7 +10,7 @@
 
 namespace dmitigr::pgfe::detail {
 
-inline bool is_invariant_ok(Compositional& o)
+inline bool is_invariant_ok(const Compositional& o)
 {
   const bool fields_ok = !o.has_fields() || ((o.field_count() > 0));
   const bool field_names_ok = [&]()

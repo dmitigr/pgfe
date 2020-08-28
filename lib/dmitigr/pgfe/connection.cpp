@@ -14,18 +14,15 @@
 #include "dmitigr/pgfe/notification.hpp"
 #include "dmitigr/pgfe/pq.hpp"
 #include "dmitigr/pgfe/prepared_statement_impl.hpp"
+#include "dmitigr/pgfe/response_variant.hpp"
 #include "dmitigr/pgfe/row.hpp"
 #include "dmitigr/pgfe/row_info.hpp"
 #include "dmitigr/pgfe/sql_string.hpp"
 #include "dmitigr/pgfe/util.hpp"
 #include <dmitigr/base/debug.hpp>
 
-#include <list>
 #include <optional>
 #include <queue>
-#include <variant>
-
-#include <iostream>
 
 namespace dmitigr::pgfe::detail {
 
@@ -407,7 +404,7 @@ public:
     reset_session();
 
     ::PQfinish(conn_); // Discarding unhandled notifications btw.
-    conn_ = nullptr;
+    conn_ = {};
     DMITIGR_ASSERT(communication_status() == Communication_status::disconnected);
 
     DMITIGR_ASSERT(is_invariant_ok());
@@ -491,6 +488,11 @@ public:
       throw std::runtime_error{error_message()};
   }
 
+  /*
+   * According to https://www.postgresql.org/docs/current/libpq-async.html,
+   * "PQgetResult() must be called repeatedly until it returns a null pointer,
+   * indicating that the command is done."
+   */
   Response_status collect_server_messages(const bool wait_response) override
   {
     DMITIGR_REQUIRE(is_connected(), std::logic_error);
@@ -498,45 +500,32 @@ public:
     if (is_response_available())
       return Response_status::ready;
 
-    const auto collect_notifications = [this]
-    {
-      // Note: notifications are collected by libpq from ::PQisBusy() and ::PQgetResult().
-      while (auto* const n = ::PQnotifies(conn_))
-        signals_.push_back(pq_Notification{n});
-    };
-
-    const auto is_get_result_would_block = [this, &collect_notifications]
-    {
-      /*
-       * Checking for nonblocking result and collecting notices btw.
-       * Note: notice_receiver() (which is the Notice collector) will be
-       * called (indirectly) from ::PQisBusy().
-       * Note: ::PQisBusy() calls a routine (pqParseInput3() from fe-protocol3.c)
-       * which parses consumed input and stores notifications and notices if
-       * are available. (::PQnotifies() calls this routine as well.)
-       */
-      const int result = ::PQisBusy(conn_);
-      collect_notifications();
-      return result == 1;
-    };
-
-    /*
-     * According to https://www.postgresql.org/docs/current/libpq-async.html,
-     * "PQgetResult() must be called repeatedly until it returns a null pointer,
-     * indicating that the command is done."
-     */
+    // Optimization for case when wait_response.
     if (wait_response) {
       if (pq::Result r{::PQgetResult(conn_)}) {
         pending_results_.push(std::move(r));
         if (pending_results_.front().status() == PGRES_FATAL_ERROR)
           while (pq::Result{::PQgetResult(conn_)}); // getting complete error
       }
-      collect_notifications();
     }
 
+    // Common case.
     bool get_would_block{};
     if (pending_results_.empty() || pending_results_.front().status() != PGRES_SINGLE_TUPLE) {
-      while ( !(get_would_block = is_get_result_would_block())) {
+      static const auto is_get_result_would_block = [](PGconn* const conn)
+      {
+        /*
+         * Checking for nonblocking result and collecting notices btw.
+         * Note: notice_receiver() (which is the Notice collector) will be
+         * called (indirectly) from ::PQisBusy().
+         * Note: ::PQisBusy() calls a routine (pqParseInput3() from fe-protocol3.c)
+         * which parses consumed input and stores notifications and notices if
+         * are available. (::PQnotifies() calls this routine as well.)
+         */
+        return ::PQisBusy(conn) == 1;
+      };
+
+      while ( !(get_would_block = is_get_result_would_block(conn_))) {
         if (pq::Result r{::PQgetResult(conn_)}) {
           pending_results_.push(std::move(r));
           if (pending_results_.front().status() == PGRES_SINGLE_TUPLE)
@@ -546,6 +535,14 @@ public:
       }
     }
 
+    /*
+     * Collecting notifications
+     * Note: notifications are collected by libpq from ::PQisBusy() and ::PQgetResult().
+     */
+    while (auto* const n = ::PQnotifies(conn_))
+      notifications_.push(pq_Notification{n});
+
+    // Processing the result.
     if (!pending_results_.empty()) {
       DMITIGR_ASSERT(!response_);
       const auto set_response = [this, get_would_block](auto&& response)
@@ -565,7 +562,7 @@ public:
         DMITIGR_ASSERT(op_id == Request_id::perform || op_id == Request_id::execute);
         if (!shared_field_names_)
           shared_field_names_ = pq_Row_info::make_shared_field_names(r);
-        response_ = pq_Row{pq_Row_info{std::move(r), shared_field_names_}};
+        response_ = pq_Row{std::move(r), shared_field_names_};
         pending_results_.pop();
         return Response_status::ready;
       }
@@ -657,37 +654,37 @@ public:
 
   bool is_signal_available() const noexcept override
   {
-    return !signals_.empty();
+    return !notices_.empty() || !notifications_.empty();
   }
 
   const simple_Notice* notice() const noexcept override
   {
-    return signal_ptr<simple_Notice>();
+    return !notices_.empty() ? &notices_.front() : nullptr;
   }
 
   std::unique_ptr<Notice> pop_notice() override
   {
-    return pop_signal<Notice, simple_Notice>();
+    return pop_signal(notices_);
   }
 
   void dismiss_notice() override
   {
-    dismiss_signal<simple_Notice>();
+    notices_.pop();
   }
 
   const pq_Notification* notification() const noexcept override
   {
-    return signal_ptr<pq_Notification>();
+    return !notifications_.empty() ? &notifications_.front() : nullptr;
   }
 
   std::unique_ptr<Notification> pop_notification() override
   {
-    return pop_signal<Notification, pq_Notification>();
+    return pop_signal(notifications_);
   }
 
   void dismiss_notification() override
   {
-    dismiss_signal<pq_Notification>();
+    notifications_.pop();
   }
 
   void set_error_handler(Error_handler handler) override
@@ -728,30 +725,18 @@ public:
 
   void handle_signals() override
   {
-    const auto handle_notice = notice_handler();
-    const auto handle_notification = notification_handler();
-    if (handle_notice && handle_notification) {
-      while (is_signal_available()) {
-        std::visit(
-          [&](auto& signal)
-          {
-            using T = std::decay_t<decltype (signal)>;
-            auto signal_ptr = std::make_unique<T>(std::move(signal));
-            if constexpr (std::is_same_v<T, simple_Notice>)
-              handle_notice(std::move(signal_ptr));
-            else if constexpr (std::is_same_v<T, pq_Notification>)
-              handle_notification(std::move(signal_ptr));
-            else
-              DMITIGR_ASSERT(!true);
-          }, signals_.front());
-        signals_.pop_front();
+    if (!notices_.empty()) {
+      if (const auto& handle_notice = notice_handler()) {
+        while (auto n = pop_notice())
+          handle_notice(std::move(n));
       }
-    } else if (handle_notice) {
-      while (auto n = pop_notice())
-        handle_notice(std::move(n));
-    } else if (handle_notification) {
-      while (auto n = pop_notification())
-        handle_notification(std::move(n));
+    }
+
+    if (!notifications_.empty()) {
+      if (const auto& handle_notification = notification_handler()) {
+        while (auto n = pop_notification())
+          handle_notification(std::move(n));
+      }
     }
   }
 
@@ -762,7 +747,17 @@ public:
 
   bool is_response_available() const noexcept override
   {
-    return bool(response_);
+    return static_cast<bool>(response_);
+  }
+
+  const Response* response() const noexcept override
+  {
+    return response_.response();
+  }
+
+  std::unique_ptr<Response> release_response() override
+  {
+    return response_.release_response();
   }
 
   void dismiss_response() noexcept override
@@ -772,37 +767,37 @@ public:
 
   const simple_Error* error() const noexcept override
   {
-    return response_ptr<simple_Error>();
+    return response_.error();
   }
 
   std::unique_ptr<Error> release_error() override
   {
-    return release_response<Error, simple_Error>();
+    return response_.release_error();
   }
 
   const pq_Row* row() const noexcept override
   {
-    return response_ptr<pq_Row>();
+    return response_.row();
   }
 
   std::unique_ptr<Row> release_row() override
   {
-    return release_response<Row, pq_Row>();
+    return response_.release_row();
   }
 
   const simple_Completion* completion() const noexcept override
   {
-    return response_ptr<simple_Completion>();
+    return response_.completion();
   }
 
   std::unique_ptr<Completion> release_completion() override
   {
-    return release_response<Completion, simple_Completion>();
+    return response_.release_completion();
   }
 
   pq_Prepared_statement* prepared_statement() const override
   {
-    return response_ptr<pq_Prepared_statement>();
+    return response_.prepared_statement();
   }
 
   pq_Prepared_statement* prepared_statement(const std::string& name) const override
@@ -861,7 +856,7 @@ private:
     try {
       pq_Prepared_statement ps{name, this, preparsed};
       constexpr int n_params{0};
-      constexpr const ::Oid* const param_types{nullptr};
+      constexpr const ::Oid* const param_types{};
       const int send_ok = ::PQsendPrepare(conn_, name, query, n_params, param_types);
       if (!send_ok)
         throw std::runtime_error(error_message());
@@ -1116,7 +1111,7 @@ protected:
       ((communication_status() == Communication_status::connected) == bool(session_start_time_));
     const bool session_data_empty =
       !session_start_time_ &&
-      signals_.empty() &&
+      (notices_.empty() && notifications_.empty()) &&
       !response_ &&
       pending_results_.empty() &&
       !transaction_block_status_ &&
@@ -1181,27 +1176,20 @@ private:
   Data_format default_result_format_{Data_format::text};
 
   // Persistent data / private-modifiable data
-  ::PGconn* conn_{nullptr};
+  ::PGconn* conn_{};
   std::optional<Communication_status> polling_status_;
 
   // ---------------------------------------------------------------------------
   // Session data
   // ---------------------------------------------------------------------------
 
-  class Results_queue final : public std::queue<pq::Result> {
-  public:
-    void clear() { c.clear(); }
-  };
-
   std::optional<std::chrono::system_clock::time_point> session_start_time_;
 
-  using Signal_ = std::variant<std::monostate, simple_Notice, pq_Notification>;
-  mutable std::list<Signal_> signals_;
+  mutable std::queue<simple_Notice> notices_;
+  mutable std::queue<pq_Notification> notifications_;
 
-  using Response_ = std::optional<std::variant<std::monostate,
-    simple_Error, pq_Row, simple_Completion, pq_Prepared_statement*>>;
-  mutable Response_ response_;
-  Results_queue pending_results_;
+  mutable pq_Response_variant response_;
+  std::queue<pq::Result> pending_results_;
   mutable std::optional<Transaction_block_status> transaction_block_status_;
   mutable std::optional<std::int_fast32_t> server_pid_;
   mutable std::list<pq_Prepared_statement> named_prepared_statements_;
@@ -1220,12 +1208,7 @@ private:
     unprepare_statement
   };
 
-  class Requests_queue final : public std::queue<Request_id> {
-  public:
-    void clear() { c.clear(); }
-  };
-
-  Requests_queue requests_; // for now only 1 request can be queued
+  std::queue<Request_id> requests_; // for now only 1 request can be queued
   std::optional<pq_Prepared_statement> request_prepared_statement_;
   std::optional<std::string> request_prepared_statement_name_;
 
@@ -1238,7 +1221,7 @@ private:
     DMITIGR_ASSERT(arg);
     DMITIGR_ASSERT(r);
     auto const cn = static_cast<pq_Connection*>(arg);
-    cn->signals_.push_back(problem<simple_Notice>(r));
+    cn->notices_.push(problem<simple_Notice>(r));
   }
 
   static void default_notice_handler(std::unique_ptr<Notice>&& n)
@@ -1254,15 +1237,16 @@ private:
   void reset_session()
   {
     session_start_time_.reset();
-    signals_.clear();
+    notices_ = {};
+    notifications_ = {};
     response_.reset();
-    pending_results_.clear();
+    pending_results_ = {};
     transaction_block_status_.reset();
     server_pid_.reset();
     named_prepared_statements_.clear();
     unnamed_prepared_statement_.reset();
     shared_field_names_.reset();
-    requests_.clear();
+    requests_ = {};
     request_prepared_statement_.reset();
     request_prepared_statement_name_.reset();
   }
@@ -1320,84 +1304,16 @@ private:
   // Server messages helpers
   // ---------------------------------------------------------------------------
 
-  template<class T, class V>
-  T* variant_ptr(V&& variant) const
+  template<typename Q>
+  std::unique_ptr<typename Q::value_type> pop_signal(Q& queue)
   {
-    return std::visit(
-      [](auto& value) -> T*
-      {
-        using U = std::decay_t<decltype (value)>;
-
-        T* result{};
-        if constexpr (std::is_same_v<T, U>)
-          result = &value;
-        else if constexpr (std::is_same_v<T*, U>)
-          result = value;
-
-        return result;
-      }, std::forward<V>(variant));
-  }
-
-  template<class S>
-  std::enable_if_t<std::is_base_of_v<Signal, S>, decltype (signals_)::iterator> signal_iterator() const
-  {
-    return std::find_if(begin(signals_), end(signals_),
-      [](auto& variant)
-      {
-        return std::visit(
-          [](auto& signal)
-          {
-            using T = std::decay_t<decltype (signal)>;
-            if constexpr (std::is_same_v<S, T>)
-              return true;
-            else
-              return false;
-          }, variant);
-      });
-  }
-
-  template<class R>
-  std::enable_if_t<std::is_base_of_v<Response, R>, R*> response_ptr() const
-  {
-    return response_ ? variant_ptr<R>(*response_) : nullptr;
-  }
-
-  template<class S>
-  std::enable_if_t<std::is_base_of_v<Signal, S>, S*> signal_ptr() const
-  {
-    const auto i = signal_iterator<S>();
-    return (i != end(signals_)) ? &std::get<S>(*i) : nullptr;
-  }
-
-  template<class Abstract, class Concrete>
-  std::enable_if_t<(std::is_base_of_v<Abstract, Concrete> &&
-    std::is_base_of_v<Signal, Concrete>), std::unique_ptr<Abstract>> pop_signal()
-  {
-    if (const auto i = signal_iterator<Concrete>(); i != end(signals_)) {
-      auto result = std::make_unique<Concrete>(std::move(std::get<Concrete>(*i)));
-      signals_.erase(i);
-      return result;
+    if (!queue.empty()) {
+      using V = typename Q::value_type;
+      auto r = std::make_unique<V>(std::move(queue.front()));
+      queue.pop();
+      return r;
     } else
-      return nullptr;
-  }
-
-  template<class Concrete>
-  std::enable_if_t<std::is_base_of_v<Signal, Concrete>, void> dismiss_signal()
-  {
-    if (const auto i = signal_iterator<Concrete>(); i != end(signals_))
-      signals_.erase(i);
-  }
-
-  template<class Abstract, class Concrete>
-  std::enable_if_t<(std::is_base_of_v<Abstract, Concrete> &&
-    std::is_base_of_v<Response, Concrete>), std::unique_ptr<Abstract>> release_response()
-  {
-    if (auto* const response = response_ptr<Concrete>()) {
-      auto result = std::make_unique<Concrete>(std::move(*response));
-      response_.reset();
-      return result;
-    } else
-      return nullptr;
+      return {};
   }
 
   template<class Problem>

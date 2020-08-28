@@ -218,7 +218,7 @@ struct Array_data_conversions_opts<Container<Optional<T>, Allocator<Optional<T>>
   static std::unique_ptr<Data> to_data(const Type& value, Types&& ... args)
   {
     using StringConversions = Array_string_conversions_opts<Type>;
-    return Data::make(StringConversions::to_string(value, std::forward<Types>(args)...));
+    return Data::make(StringConversions::to_string(value, std::forward<Types>(args)...), Data_format::text);
   }
 };
 

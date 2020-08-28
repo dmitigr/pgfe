@@ -53,14 +53,15 @@ int main(int, char* argv[])
       ASSERT(!conn->is_ready_for_request());
       ASSERT(conn->result_format() == pgfe::Data_format::text);
 
+      std::string_view empty;
       ASSERT(is_logic_throw_works([&]() { conn->to_quoted_literal(""); }));
       ASSERT(is_logic_throw_works([&]() { conn->to_quoted_identifier(""); }));
       ASSERT(is_logic_throw_works([&]() { conn->to_hex_data(nullptr); }));
       ASSERT(is_logic_throw_works([&]() { conn->to_hex_string(nullptr); }));
-      ASSERT(is_logic_throw_works([&]() { conn->to_hex_data(pgfe::Data::make("", 0, pgfe::Data_format::text).get()); }));
-      ASSERT(is_logic_throw_works([&]() { conn->to_hex_string(pgfe::Data::make("", 0, pgfe::Data_format::text).get()); }));
-      ASSERT(is_logic_throw_works([&]() { conn->to_hex_data(pgfe::Data::make("", 0, pgfe::Data_format::binary).get()); }));
-      ASSERT(is_logic_throw_works([&]() { conn->to_hex_string(pgfe::Data::make("", 0, pgfe::Data_format::binary).get()); }));
+      ASSERT(is_logic_throw_works([&]() { conn->to_hex_data(pgfe::Data::make(empty, pgfe::Data_format::text).get()); }));
+      ASSERT(is_logic_throw_works([&]() { conn->to_hex_string(pgfe::Data::make(empty, pgfe::Data_format::text).get()); }));
+      ASSERT(is_logic_throw_works([&]() { conn->to_hex_data(pgfe::Data::make(empty, pgfe::Data_format::binary).get()); }));
+      ASSERT(is_logic_throw_works([&]() { conn->to_hex_string(pgfe::Data::make(empty, pgfe::Data_format::binary).get()); }));
     }
 
     using pgfe::Communication_mode;
@@ -448,8 +449,8 @@ int main(int, char* argv[])
 
       // to_hex_data(), to_hex_string()
       {
-        std::vector<unsigned char> storage = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-        const auto data  = pgfe::Data::make(storage);
+        std::string storage{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+        const auto data  = pgfe::Data::make(storage, pgfe::Data_format::binary);
         const auto hex_data = conn->to_hex_data(data.get());
         const auto data2 = pgfe::to_binary_data(hex_data.get());
         ASSERT(data->size() == data2->size());

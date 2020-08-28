@@ -25,6 +25,9 @@ inline bool iCompletion::is_invariant_ok()
  */
 class simple_Completion final : public iCompletion {
 public:
+  /// Default constructible.
+  simple_Completion() = default;
+
   /**
    * @brief The constructor.
    */

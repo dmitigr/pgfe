@@ -74,7 +74,7 @@ struct Generic_data_conversions final {
   template<typename U, typename ... Types>
   static std::enable_if_t<std::is_same_v<Type, std::decay_t<U>>, std::unique_ptr<Data>> to_data(U&& value, Types&& ... args)
   {
-    return Data::make(StringConversions::to_string(std::forward<U>(value), std::forward<Types>(args)...));
+    return Data::make(StringConversions::to_string(std::forward<U>(value), std::forward<Types>(args)...), Data_format::text);
   }
 };
 
@@ -328,7 +328,7 @@ struct Char_data_conversions final {
   template<typename ... Types>
   static std::unique_ptr<Data> to_data(Type value, Types&& ...)
   {
-    return Data::make(Char_string_conversions::to_string(value));
+    return Data::make(Char_string_conversions::to_string(value), Data_format::text);
   }
 };
 
@@ -407,7 +407,7 @@ struct Bool_data_conversions final {
   template<typename ... Types>
   static std::unique_ptr<Data> to_data(Type value, Types&& ...)
   {
-    return Data::make(Bool_string_conversions::to_string(value));
+    return Data::make(Bool_string_conversions::to_string(value), Data_format::text);
   }
 };
 
@@ -437,7 +437,7 @@ struct String_view_data_conversions final {
   template<typename ... Types>
   static std::unique_ptr<Data> to_data(Type value, Types&& ...)
   {
-    return Data::make_no_copy(value.data(), value.size(), Data_format::text);
+    return Data::make_no_copy({value.data(), value.size()}, Data_format::text);
   }
 };
 

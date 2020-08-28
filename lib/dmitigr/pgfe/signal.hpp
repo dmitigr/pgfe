@@ -15,7 +15,6 @@ namespace dmitigr::pgfe {
  * @brief An asynchronous (unprompted) message from a PostgreSQL server.
  */
 class Signal : public Server_message {
-private:
   friend Notice;
   friend Notification;
 

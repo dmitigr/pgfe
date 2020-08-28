@@ -72,7 +72,7 @@ int main() try {
 Features
 ========
 
-  - fast (currently, slower than plain libpq by factor of 1.5, work in progress to make it faster!);
+  - fast (negligible overhead compared to plain libpq);
   - can be used as header-only library;
   - work with database connections (in both blocking and non-blocking IO manner);
   - execute prepared statements (named parameters are supported);

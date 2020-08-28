@@ -337,17 +337,17 @@ public:
   /**
    * @returns `nullptr` if the `position` is out of range.
    */
-  const char* field_name(const int position) const noexcept
+  const char* field_name(const int index) const noexcept
   {
-    return ::PQfname(pg_result(), position);
+    return ::PQfname(pg_result(), index);
   }
 
   /**
    * @returns -1 if the given name does not match any field.
    */
-  int field_position(const char* const field_name) const noexcept
+  int field_index(const char* const name) const noexcept
   {
-    return ::PQfnumber(pg_result(), field_name);
+    return ::PQfnumber(pg_result(), name);
   }
 
   /**

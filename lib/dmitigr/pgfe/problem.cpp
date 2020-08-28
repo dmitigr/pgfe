@@ -19,6 +19,9 @@ template<class ProblemDerived>
 class basic_Problem final : public ProblemDerived {
   static_assert(std::is_base_of_v<Problem, ProblemDerived>);
 public:
+  /// Default constructible.
+  basic_Problem() = default;
+
   /**
    * @brief The constructor.
    */

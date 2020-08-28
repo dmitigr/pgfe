@@ -45,6 +45,7 @@ void test_pq()
       PQnfields(res);
       PQfformat(res, 0);
       PQgetvalue(res, 0, 0);
+      PQgetisnull(res, 0, 0);
       PQclear(res);
       break;
     default:
@@ -52,7 +53,8 @@ void test_pq()
       PQfinish(conn);
       throw std::runtime_error{PQresultErrorMessage(res)};
     }
-    PQfreemem(PQnotifies(conn));
+    while (auto* n = PQnotifies(conn))
+      PQfreemem(n);
   }
 
   PQfinish(conn);

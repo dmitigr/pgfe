@@ -12,7 +12,6 @@
 #include "dmitigr/pgfe/types_fwd.hpp"
 #include <dmitigr/base/debug.hpp>
 
-
 #include <chrono>
 #include <cstdint>
 #include <functional>
@@ -489,6 +488,12 @@ public:
    * @returns `(error() || row() || completion() || prepared_statement())`
    */
   virtual bool is_response_available() const noexcept = 0;
+
+  /// @returns The currently available response.
+  virtual const Response* response() const noexcept = 0;
+
+  /// Releases the currently available response.
+  virtual std::unique_ptr<Response> release_response() = 0;
 
   /**
    * @brief Dismissing the last available Response.

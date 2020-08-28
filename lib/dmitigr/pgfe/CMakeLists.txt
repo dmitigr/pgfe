@@ -295,6 +295,7 @@ set(dmitigr_pgfe_headers
   prepared_statement_impl.hpp
   problem.hpp
   response.hpp
+  response_variant.hpp
   row.hpp
   row_conversions.hpp
   row_info.hpp
