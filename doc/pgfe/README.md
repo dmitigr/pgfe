@@ -8,7 +8,16 @@ done to ensure that the performance is at its best. Pgfe is a part of the
 [Dmitigr Cefeika][dmitigr_cefeika] project, but also available as a standalone
 project [here][dmitigr_pgfe].
 
-**ATTENTION, this software is "beta" quality, and the API is a subject to change!**
+Upcoming release 2.0
+====================
+
+**ATTENTION, API breaking changes staring from commit [62ceba3][v20alpha1]!**
+
+I'm currently working on Pgfe 2.0. The current stage is early alpha. Nonetheless,
+I recommend to switch to the new API despite the fact that it's still a subject
+to change while work on release 2.0 is in progress. (Although I don't think the
+changes will be significant.) Efforts will be made to make the API of Pgfe 2.0
+as stable as possible.
 
 Documentation
 =============
@@ -47,7 +56,7 @@ int main() try {
   conn.prepare_statement("select :begin b, :end e")->
     bind("begin", 0).bind("end", 1).execute([](auto&& r)
   {
-    std::printf("Range [%i, %i]\n", to<int>(r.data("b")), to<int>(r.data("e")));
+    std::printf("Range [%i, %i]\n", to<int>(r["b"]), to<int>(r["e"]));
   });
 
   // Invoking the function.
@@ -609,6 +618,8 @@ Copyright (C) [Dmitry Igrishin][dmitigr_mail]
 [dmitigr_pgfe]: https://github.com/dmitigr/pgfe.git
 [dmitigr_pgfe_doc]: http://dmitigr.ru/en/projects/cefeika/pgfe/doc/
 [dmitigr_pgfe_doc_diagram]: http://dmitigr.ru/en/projects/cefeika/pgfe/doc/dmitigr_pgfe_overview.violet.html
+
+[v20alpha1]: https://github.com/dmitigr/pgfe/commit/62ceba3e4e1285178d223fdadaf6ca87c6d514d9
 
 [PostgreSQL]: https://www.postgresql.org/
 [dollar-quoting]: https://www.postgresql.org/docs/current/static/sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING
