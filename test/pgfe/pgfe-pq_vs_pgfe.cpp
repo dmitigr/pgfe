@@ -39,22 +39,18 @@ void test_pq()
     case PGRES_TUPLES_OK:
       PQclear(res);
       break;
-    case PGRES_SINGLE_TUPLE:
-      // std::cout << PQgetvalue(res, 0, 0) << "\n";
+    case PGRES_SINGLE_TUPLE: {
       PQgetlength(res, 0, 0);
-      PQnfields(res);
       PQfformat(res, 0);
       PQgetvalue(res, 0, 0);
       PQgetisnull(res, 0, 0);
       PQclear(res);
       break;
-    default:
+    } default:
       PQclear(res);
       PQfinish(conn);
       throw std::runtime_error{PQresultErrorMessage(res)};
     }
-    while (auto* n = PQnotifies(conn))
-      PQfreemem(n);
   }
 
   PQfinish(conn);
@@ -62,15 +58,16 @@ void test_pq()
 
 void test_pgfe()
 {
-  namespace test = dmitigr::pgfe::test;
-  auto conn = test::make_connection();
-  conn->connect();
-  conn->perform(query);
-  conn->for_each([](const auto* const r)
-  {
-    (void)r;
-    // std::cout << r->data()->bytes() << std::endl;
-  });
+  namespace pgfe = dmitigr::pgfe;
+  pgfe::Connection conn{pgfe::Connection_options{
+    pgfe::Communication_mode::net}.net_address("127.0.0.1").username("pgfe_test")
+      .password("pgfe_test").database("pgfe_test").connect_timeout(std::chrono::seconds{7})};
+  conn.connect();
+  conn.perform(query);
+  while (conn.wait_response()) {
+    if (auto r = conn.row())
+      r.data();
+  }
 }
 
 int main()

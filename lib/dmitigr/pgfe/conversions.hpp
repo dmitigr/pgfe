@@ -13,6 +13,7 @@
 #include "dmitigr/pgfe/types_fwd.hpp"
 #include <dmitigr/net/conversions.hpp>
 
+#include <cassert>
 #include <cstring>
 #include <limits>
 #include <sstream>
@@ -22,9 +23,7 @@
 
 namespace dmitigr::pgfe::detail {
 
-/**
- * @brief `T` to/from `std::string` conversions.
- */
+/// `T` to/from `std::string` conversions.
 template<typename T>
 struct Generic_string_conversions final {
   using Type = T;
@@ -37,6 +36,7 @@ struct Generic_string_conversions final {
     stream >> result;
     if (!stream.eof())
       throw std::runtime_error("invalid text representation");
+
     return result;
   }
 
@@ -47,13 +47,12 @@ struct Generic_string_conversions final {
     stream << value;
     if (stream.fail())
       throw std::runtime_error("invalid native representation");
+
     return stream.str();
   }
 };
 
-/**
- * @brief `T` to/from Data conversions.
- */
+/// `T` to/from Data conversions.
 template<typename T, class StringConversions>
 struct Generic_data_conversions final {
   using Type = T;
@@ -61,7 +60,7 @@ struct Generic_data_conversions final {
   template<typename ... Types>
   static Type to_type(const Data* const data, Types&& ... args)
   {
-    DMITIGR_REQUIRE(data, std::invalid_argument);
+    assert(data);
     return StringConversions::to_type(std::string(data->bytes(), data->size()), std::forward<Types>(args)...);
   }
 
@@ -82,9 +81,7 @@ struct Generic_data_conversions final {
 // Optimized numeric to/from std::string conversions
 // -----------------------------------------------------------------------------
 
-/**
- * @brief The common implementation of numeric to/from `std::string` conversions.
- */
+/// The common implementation of numeric to/from `std::string` conversions.
 template<typename T>
 struct Numeric_string_conversions_base {
   using Type = T;
@@ -111,9 +108,7 @@ protected:
 
 // -----------------------------------------------------------------------------
 
-/**
- * @brief The implementation of `short int` to/from `std::string` conversions.
- */
+/// The implementation of `short int` to/from `std::string` conversions.
 template<>
 struct Numeric_string_conversions<short int> final
   : private Numeric_string_conversions_base<int> {
@@ -127,13 +122,12 @@ struct Numeric_string_conversions<short int> final
     constexpr auto max = std::numeric_limits<short int>::max();
     if (result > max)
       throw std::runtime_error("numeric value " + text + " > " + std::to_string(max));
+
     return Type(result);
   }
 };
 
-/**
- * @brief The implementation of `int` to/from `std::string` conversions.
- */
+/// The implementation of `int` to/from `std::string` conversions.
 template<>
 struct Numeric_string_conversions<int> final
   : private Numeric_string_conversions_base<int> {
@@ -147,9 +141,7 @@ struct Numeric_string_conversions<int> final
   }
 };
 
-/**
- * @brief The implementation of `long int` to/from `std::string` conversions.
- */
+/// The implementation of `long int` to/from `std::string` conversions.
 template<>
 struct Numeric_string_conversions<long int> final
   : private Numeric_string_conversions_base<long int> {
@@ -163,9 +155,7 @@ struct Numeric_string_conversions<long int> final
   }
 };
 
-/**
- * @brief The implementation of `long long int` to/from `std::string` conversions.
- */
+/// The implementation of `long long int` to/from `std::string` conversions.
 template<>
 struct Numeric_string_conversions<long long int> final
   : private Numeric_string_conversions_base<long long int> {
@@ -179,9 +169,7 @@ struct Numeric_string_conversions<long long int> final
   }
 };
 
-/**
- * @brief The implementation of `float` to/from `std::string` conversions.
- */
+/// The implementation of `float` to/from `std::string` conversions.
 template<>
 struct Numeric_string_conversions<float> final
   : private Numeric_string_conversions_base<float> {
@@ -195,9 +183,7 @@ struct Numeric_string_conversions<float> final
   }
 };
 
-/**
- * @brief The implementation of `double` to/from `std::string` conversions.
- */
+/// The implementation of `double` to/from `std::string` conversions.
 template<>
 struct Numeric_string_conversions<double> final
   : private Numeric_string_conversions_base<double> {
@@ -211,9 +197,7 @@ struct Numeric_string_conversions<double> final
   }
 };
 
-/**
- * @brief The implementation of `long double` to/from `std::string` conversions.
- */
+/// The implementation of `long double` to/from `std::string` conversions.
 template<>
 struct Numeric_string_conversions<long double> final
   : private Numeric_string_conversions_base<long double> {
@@ -231,9 +215,7 @@ struct Numeric_string_conversions<long double> final
 // Optimized numeric to/from Data conversions
 // -----------------------------------------------------------------------------
 
-/**
- * @brief The common implementation of numeric to/from Data conversions.
- */
+/// The common implementation of numeric to/from Data conversions.
 template<typename T, class StringConversions>
 struct Numeric_data_conversions final {
   using Type = T;
@@ -241,7 +223,7 @@ struct Numeric_data_conversions final {
   template<typename ... Types>
   static Type to_type(const Data* const data, Types&& ... args)
   {
-    DMITIGR_REQUIRE(data, std::invalid_argument);
+    assert(data);
     if (data->format() == Data_format::binary)
       return net::conv<Type>(data->bytes(), data->size());
     else
@@ -265,9 +247,7 @@ struct Numeric_data_conversions final {
 // Forwarding string conversions
 // -----------------------------------------------------------------------------
 
-/**
- * @brief The implementation of String to/from String conversions.
- */
+/// The implementation of String to/from String conversions.
 struct Forwarding_string_conversions final {
   template<typename String, typename ... Types>
   static String to_type(String&& text, Types&& ...)
@@ -286,16 +266,14 @@ struct Forwarding_string_conversions final {
 // char conversions
 // -----------------------------------------------------------------------------
 
-/**
- * @brief The implementation of `char` to/from `std::string` conversions.
- */
+/// The implementation of `char` to/from `std::string` conversions.
 struct Char_string_conversions final {
   using Type = char;
 
   template<typename ... Types>
   static Type to_type(const std::string& text, Types&& ...)
   {
-    DMITIGR_REQUIRE(text.size() == 1, std::invalid_argument);
+    assert(text.size() == 1);
     return text[0];
   }
 
@@ -306,16 +284,14 @@ struct Char_string_conversions final {
   }
 };
 
-/**
- * @brief The implementation of `char` to/from Data conversions.
- */
+/// The implementation of `char` to/from Data conversions.
 struct Char_data_conversions final {
   using Type = char;
 
   template<typename ... Types>
   static Type to_type(const Data* const data, Types&& ...)
   {
-    DMITIGR_REQUIRE(data && (data->size() == 1), std::invalid_argument);
+    assert(data && (data->size() == 1));
     return data->bytes()[0];
   }
 
@@ -336,9 +312,7 @@ struct Char_data_conversions final {
 // bool conversions
 // -----------------------------------------------------------------------------
 
-/**
- * @brief The implementation of `bool` to/from `std::string` conversions.
- */
+/// The implementation of `bool` to/from `std::string` conversions.
 struct Bool_string_conversions final {
   using Type = char;
 
@@ -359,7 +333,7 @@ private:
 
   static Type to_type__(const char* const text, const std::size_t size)
   {
-    DMITIGR_ASSERT(text);
+    assert(text);
     if (std::strncmp(text, "t", size) == 0 ||
       std::strncmp(text, "true", size) == 0 ||
       std::strncmp(text, "TRUE", size) == 0 ||
@@ -381,18 +355,16 @@ private:
   }
 };
 
-/**
- * @brief The implementation of `bool` to/from Data conversions.
- */
+/// The implementation of `bool` to/from Data conversions.
 struct Bool_data_conversions final {
   using Type = char;
 
   template<typename ... Types>
   static Type to_type(const Data* const data, Types&& ...)
   {
-    DMITIGR_REQUIRE(data, std::invalid_argument);
+    assert(data);
     if (data->format() == Data_format::binary) {
-      DMITIGR_REQUIRE(data->size() == 1, std::invalid_argument);
+      assert(data->size() == 1);
       return data->bytes()[0];
     } else
       return Bool_string_conversions::to_type__(data->bytes(), data->size());
@@ -415,16 +387,14 @@ struct Bool_data_conversions final {
 // std::string_view conversions
 // -----------------------------------------------------------------------------
 
-/**
- * @brief The implementation of `std::string_view` to/from Data conversions.
- */
+/// The implementation of `std::string_view` to/from Data conversions.
 struct String_view_data_conversions final {
   using Type = std::string_view;
 
   template<typename ... Types>
   static Type to_type(const Data* const data, Types&& ...)
   {
-    DMITIGR_REQUIRE(data, std::invalid_argument);
+    assert(data);
     return Type{data->bytes(), data->size()};
   }
 
@@ -450,7 +420,7 @@ namespace dmitigr::pgfe {
  *
  * @brief The basic implementation of the conversion algorithms for numerics.
  *
- * The support of the following data formats is implemented:
+ * Support of the following data formats is implemented:
  *   - for input data  - Data_format::text, Data_format::binary;
  *   - for output data - Data_format::text.
  *
@@ -482,7 +452,7 @@ struct Conversions final : public Basic_conversions<T, detail::Generic_string_co
  *
  * @brief Full specialization of Conversions for `std::string`.
  *
- * The support of the following data formats is implemented:
+ * Support of the following data formats is implemented:
  *   - instances of the type `std::string` can be created from both Data_format::text
  *     and Data_format::binary formats;
  *   - instances of the type Data can only be created in Data_format::text format.
@@ -496,7 +466,7 @@ struct Conversions<std::string> final : public Basic_conversions<std::string,
  *
  * @brief Full specialization of Conversions for `std::string_view`.
  *
- * The support of the following data formats is implemented:
+ * Support of the following data formats is implemented:
  *   - instances of the type `std::string_view` can be created from both Data_format::text
  *     and Data_format::binary formats;
  *   - instances of the type Data can only be created in Data_format::text format.
@@ -566,7 +536,7 @@ struct Conversions<long double> final : public Numeric_conversions<long double>{
  *
  * @brief Full specialization of Conversions for `char`.
  *
- * The support of the following data formats is implemented:
+ * Support of the following data formats is implemented:
  *   - for input data  - Data_format::text, Data_format::binary;
  *   - for output data - Data_format::text.
  *
@@ -582,7 +552,7 @@ struct Conversions<char> final : public Basic_conversions<char,
  *
  * @brief Full specialization of Conversions for `bool`.
  *
- * The support of the following data formats is implemented:
+ * Support of the following data formats is implemented:
  *   - for input data  - Data_format::text, Data_format::binary;
  *   - for output data - Data_format::text.
  *
@@ -606,7 +576,7 @@ struct Conversions<std::optional<T>> final {
   template<typename ... Types>
   static Type to_type(const Data* const data, Types&& ... args)
   {
-    if (data)
+    if (data && *data)
       return Conversions<T>::to_type(data, std::forward(args)...);
     else
       return std::nullopt;
@@ -615,7 +585,7 @@ struct Conversions<std::optional<T>> final {
   template<typename ... Types>
   static Type to_type(std::unique_ptr<Data>&& data, Types&& ... args)
   {
-    if (data)
+    if (data && *data)
       return Conversions<T>::to_type(std::move(data), std::forward(args)...);
     else
       return std::nullopt;
@@ -640,43 +610,7 @@ struct Conversions<std::optional<T>> final {
   }
 
   template<typename ... Types>
-  static Type to_type(const Composite* const composite, Types&& ... args)
-  {
-    if (composite)
-      return Conversions<T>::to_type(composite, std::forward(args)...);
-    else
-      return std::nullopt;
-  }
-
-  template<typename ... Types>
-  static Type to_type(std::unique_ptr<Composite>&& composite, Types&& ... args)
-  {
-    if (composite)
-      return Conversions<T>::to_type(std::move(composite), std::forward(args)...);
-    else
-      return std::nullopt;
-  }
-
-  template<typename ... Types>
-  static std::unique_ptr<Composite> to_composite(const Type& value, Types&& ... args)
-  {
-    if (value)
-      return Conversions<T>::to_composite(*value, std::forward(args)...);
-    else
-      return nullptr;
-  }
-
-  template<typename ... Types>
-  static std::unique_ptr<Composite> to_composite(Type&& value, Types&& ... args)
-  {
-    if (value)
-      return Conversions<T>::to_composite(std::move(*value), std::forward(args)...);
-    else
-      return nullptr;
-  }
-
-  template<typename ... Types>
-  static Type to_type(const Row* const row, Types&& ... args)
+  static Type to_type(const Row& row, Types&& ... args)
   {
     if (row)
       return Conversions<T>::to_type(row, std::forward(args)...);
@@ -685,7 +619,7 @@ struct Conversions<std::optional<T>> final {
   }
 
   template<typename ... Types>
-  static Type to_type(std::unique_ptr<Row>&& row, Types&& ... args)
+  static Type to_type(Row&& row, Types&& ... args)
   {
     if (row)
       return Conversions<T>::to_type(std::move(row), std::forward(args)...);

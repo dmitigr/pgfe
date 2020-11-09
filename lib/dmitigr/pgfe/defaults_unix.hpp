@@ -17,16 +17,13 @@
 #include <optional>
 #include <string>
 
-/**
- * @brief Defaults which are sets at build time.
- */
+/// Defaults which are sets at build time.
 namespace dmitigr::pgfe::detail::defaults {
 
 constexpr const Communication_mode communication_mode{Communication_mode::uds};
 
 constexpr const std::optional<std::chrono::milliseconds> connect_timeout{10000};
 constexpr const std::optional<std::chrono::milliseconds> wait_response_timeout{};
-constexpr const std::optional<std::chrono::milliseconds> wait_last_response_timeout{};
 
 #ifndef _WIN32
 const std::filesystem::path      uds_directory{"/tmp"};

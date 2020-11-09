@@ -6,7 +6,7 @@
 
 #include <dmitigr/pgfe/conversions.hpp>
 #include <dmitigr/pgfe/exceptions.hpp>
-#include <dmitigr/pgfe/prepared_statement_dfn.hpp>
+#include <dmitigr/pgfe/prepared_statement.hpp>
 #include <dmitigr/pgfe/row.hpp>
 #include <dmitigr/pgfe/row_info.hpp>
 #include <dmitigr/pgfe/sql_string.hpp>
@@ -43,22 +43,22 @@ int main(int, char* argv[])
       ps1->describe();
       ASSERT(ps1->is_described());
       ASSERT(ps1->parameter_count() == 1);
-      ASSERT(is_logic_throw_works([&]() { ps1->set_parameter(64, 1983); }));
       ASSERT(ps1->positional_parameter_count() == 1);
       ASSERT(!ps1->parameter(0));
       ps1->set_parameter(0, 1983);
       ps1->execute();
       ASSERT(ps1->connection());
-      ASSERT(ps1->connection()->row());
-      ASSERT(ps1->connection()->row()->data(0));
-      ASSERT(pgfe::to<int>(ps1->connection()->row()->data(0)) == 1983);
-      conn->wait_last_response_throw();
+      const auto r = ps1->connection()->wait_row_then_discard();
+      ASSERT(r);
+      ASSERT(r.data());
+      ASSERT(pgfe::to<int>(r.data()) == 1983);
     }
 
-    static const auto ss = pgfe::Sql_string::make("SELECT 1::integer AS const,"
-                                                  " generate_series(:infinum::integer, :supremum::integer) AS var,"
-                                                  " 2::integer AS const");
-    auto* const ps2 = conn->prepare_statement(ss.get(), "ps2");
+    static const pgfe::Sql_string ss{
+      "SELECT 1::integer AS const,"
+        " generate_series(:infinum::integer, :supremum::integer) AS var,"
+        " 2::integer AS const"};
+    auto* const ps2 = conn->prepare_statement(ss, "ps2");
     ASSERT(ps2);
     ASSERT(ps2->is_preparsed());
     ASSERT(!ps2->is_described());
@@ -111,18 +111,18 @@ int main(int, char* argv[])
     ASSERT(ps2->parameter_type_oid(1) == integer_oid);
     const auto ri = ps2->row_info();
     ASSERT(ri);
-    ASSERT(ri->field_count() == 3);
-    ASSERT(ri->has_fields());
-    ASSERT(ri->field_name(0) == "const");
-    ASSERT(ri->field_name(1) == "var");
-    ASSERT(ri->field_name(2) == "const");
-    ASSERT(ri->field_index("const")      == 0);
-    ASSERT(ri->field_index("var")        == 1);
-    ASSERT(ri->field_index("const", 1)   == 2);
-    ASSERT(ri->has_field("const"));
-    ASSERT(ri->has_field("var"));
+    ASSERT(ri->size() == 3);
+    ASSERT(!ri->empty());
+    ASSERT(ri->name_of(0) == "const");
+    ASSERT(ri->name_of(1) == "var");
+    ASSERT(ri->name_of(2) == "const");
+    ASSERT(ri->index_of("const")      == 0);
+    ASSERT(ri->index_of("var")        == 1);
+    ASSERT(ri->index_of("const", 1)   == 2);
+    ASSERT(ri->index_of("const") != pgfe::Composite::nidx);
+    ASSERT(ri->index_of("var") != pgfe::Composite::nidx);
     for (std::size_t i = 0; i < 3; ++i) {
-      const auto fname = ri->field_name(i);
+      const auto fname = ri->name_of(i);
       ASSERT(ri->table_oid(i)        == 0);
       ASSERT(ri->table_oid(fname, i) == 0);
       ASSERT(ri->table_column_number(i)        == 0);
@@ -139,12 +139,10 @@ int main(int, char* argv[])
     //
     ps2->execute();
     int i = 1;
-    while (auto* row = conn->row()) {
-      ASSERT(std::stoi(row->data(0)->bytes()) == 1);
-      ASSERT(std::stoi(row->data(1)->bytes()) == i);
-      ASSERT(std::stoi(row->data(2)->bytes()) == 2);
-      conn->dismiss_response();
-      conn->wait_response();
+    while (auto r = conn->wait_row()) {
+      ASSERT(std::stoi(r.data(0).bytes()) == 1);
+      ASSERT(std::stoi(r.data(1).bytes()) == i);
+      ASSERT(std::stoi(r.data(2).bytes()) == 2);
       ++i;
     }
 

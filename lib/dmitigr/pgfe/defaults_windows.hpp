@@ -26,7 +26,7 @@ constexpr const Communication_mode communication_mode{Communication_mode::net};
 
 constexpr const std::optional<std::chrono::milliseconds> connect_timeout{};
 constexpr const std::optional<std::chrono::milliseconds> wait_response_timeout{};
-constexpr const std::optional<std::chrono::milliseconds> wait_last_response_timeout{};
+constexpr const std::optional<std::chrono::milliseconds> wait_completion_timeout{};
 
 #ifndef _WIN32
 const std::filesystem::path      uds_directory{""};

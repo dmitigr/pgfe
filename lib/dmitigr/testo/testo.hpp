@@ -5,15 +5,15 @@
 #ifndef DMITIGR_TESTO_TESTO_HPP
 #define DMITIGR_TESTO_TESTO_HPP
 
-#include <dmitigr/base/debug.hpp>
-
+#include <cassert>
 #include <chrono>
 #include <iostream>
 #include <stdexcept>
 #include <string_view>
 
-#define ASSERT(a) DMITIGR_ASSERT(a)
-#define DOUT(...) DMITIGR_DOUT(__VA_ARGS__)
+#ifndef ASSERT
+#define ASSERT(a) assert(a)
+#endif
 
 namespace dmitigr::testo {
 

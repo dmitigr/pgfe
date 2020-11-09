@@ -7,13 +7,10 @@
 
 #include "dmitigr/pgfe/basics.hpp"
 #include "dmitigr/pgfe/dll.hpp"
-#include "dmitigr/pgfe/types_fwd.hpp"
-
 #include <dmitigr/base/filesystem.hpp>
 
 #include <cstdint>
 #include <chrono>
-#include <memory>
 #include <optional>
 #include <string>
 
@@ -24,20 +21,10 @@ namespace dmitigr::pgfe {
  *
  * @brief Connection options.
  */
-class Connection_options {
+class Connection_options final {
 public:
-  /**
-   * @brief The destructor.
-   */
-  virtual ~Connection_options() = default;
-
-  /// @name Constructors
-  /// @{
-
-  /**
-   * @returns A new instance of the default connection options.
-   */
-  static DMITIGR_PGFE_API std::unique_ptr<Connection_options> make();
+  /// Default-constructible.
+  DMITIGR_PGFE_API Connection_options();
 
   /**
    * @returns A new instance of the default connection options.
@@ -45,24 +32,10 @@ public:
    * @par Effects
    * `(communication_mode() == value)`.
    */
-  static DMITIGR_PGFE_API std::unique_ptr<Connection_options> make(Communication_mode value);
+  DMITIGR_PGFE_API Connection_options(Communication_mode value);
 
-  /**
-   * @returns A new instance of type Connection initialized by
-   * using `this` instance.
-   *
-   * @see Connection::make().
-   */
-  virtual std::unique_ptr<Connection> make_connection() const = 0;
-
-  /**
-   * @returns A copy of this instance.
-   */
-  virtual std::unique_ptr<Connection_options> to_connection_options() const = 0;
-
-  /// @}
-
-  // --------------------------------------------------------------------------
+  /// Swaps this instance with `rhs`.
+  DMITIGR_PGFE_API void swap(Connection_options& rhs) noexcept;
 
   /// @name General options
   /// @{
@@ -75,65 +48,52 @@ public:
    *
    * @remarks The Communication_mode::uds communication mode is unavailable on
    * Microsoft Windows.
-   *
-   * @see communication_mode().
    */
-  virtual Connection_options* set(Communication_mode value) = 0;
+  DMITIGR_PGFE_API Connection_options& communication_mode(const Communication_mode value) noexcept;
 
-  /**
-   * @returns The current value of the option.
-   *
-   * @see set(Communication_mode).
-   */
-  virtual Communication_mode communication_mode() const = 0;
+  /// @returns The current value of the option.
+  Communication_mode communication_mode() const noexcept
+  {
+    return communication_mode_;
+  }
 
   /**
    * @brief Sets the timeout of the connect operation.
    *
-   * @param value - the value of `std::nullopt` means *eternity*.
+   * @param value A value of timeout. `std::nullopt` means *eternity*.
    *
-   * @see connect_timeout(), Connection::connect().
+   * @see Connection::connect().
    */
-  virtual Connection_options* set_connect_timeout(std::optional<std::chrono::milliseconds> value) = 0;
+  DMITIGR_PGFE_API Connection_options& connect_timeout(std::optional<std::chrono::milliseconds> value);
 
   /**
-   * @return The current value of the connect timeout.
+   * @returns The current value of the connect timeout.
    *
-   * @see set_connect_timeout(), Connection::connect().
+   * @see Connection::connect().
    */
-  virtual std::optional<std::chrono::milliseconds> connect_timeout() const = 0;
+  std::optional<std::chrono::milliseconds> connect_timeout() const noexcept
+  {
+    return connect_timeout_;
+  }
 
   /**
-   * @brief Sets the timeout of the wait response operation.
+   * @brief Sets the timeout of the get response operation.
    *
-   * @param value - the value of `std::nullopt` means *eternity*.
+   * @param value A value of timeout. `std::nullopt` means *eternity*.
    *
-   * @see wait_response_timeout(), Connection::wait_response().
+   * @see Connection::wait_response().
    */
-  virtual Connection_options* set_wait_response_timeout(std::optional<std::chrono::milliseconds> value) = 0;
+  DMITIGR_PGFE_API Connection_options& wait_response_timeout(std::optional<std::chrono::milliseconds> value);
 
   /**
-   * @return The current value of the wait response timeout.
+   * @returns The current value of the get response timeout.
    *
-   * @see set_wait_response_timeout(), Connection::wait_response().
+   * @see Connection::wait_response().
    */
-  virtual std::optional<std::chrono::milliseconds> wait_response_timeout() const = 0;
-
-  /**
-   * @brief Sets the timeout of the wait last response operation.
-   *
-   * @param value - the value of `std::nullopt` means *eternity*.
-   *
-   * @see wait_last_response_timeout(), Connection::wait_last_response().
-   */
-  virtual Connection_options* set_wait_last_response_timeout(std::optional<std::chrono::milliseconds> value) = 0;
-
-  /**
-   * @return The current value of the wait last response timeout.
-   *
-   * @see set_wait_last_response_timeout(), Connection::wait_last_response().
-   */
-  virtual std::optional<std::chrono::milliseconds> wait_last_response_timeout() const = 0;
+  std::optional<std::chrono::milliseconds> wait_response_timeout() const noexcept
+  {
+    return wait_response_timeout_;
+  }
 
   // ---------------------------------------------------------------------------
 
@@ -147,17 +107,14 @@ public:
    *
    * @par Exception safety guarantee
    * Strong.
-   *
-   * @see port().
    */
-  virtual Connection_options* set_port(const std::int_fast32_t value) = 0;
+  DMITIGR_PGFE_API Connection_options& port(const std::int_fast32_t value);
 
-  /**
-   * @returns The current value of the option.
-   *
-   * @see set_port().
-   */
-  virtual std::int_fast32_t port() const = 0;
+  /// @returns The current value of the option.
+  std::int_fast32_t port() const noexcept
+  {
+    return port_;
+  }
 
   /// @}
 
@@ -178,43 +135,35 @@ public:
    *
    * @par Exception safety guarantee
    * Strong.
-   *
-   * @see uds_directory().
    */
-  virtual Connection_options* set_uds_directory(std::filesystem::path value) = 0;
+  DMITIGR_PGFE_API Connection_options& uds_directory(std::filesystem::path value);
 
-  /**
-   * @returns The current value of the option.
-   *
-   * @see set_uds_directory().
-   */
-  virtual const std::filesystem::path& uds_directory() const = 0;
-
-  // ---------------------------------------------------------------------------
+  /// @returns The current value of the option.
+  const std::filesystem::path& uds_directory() const noexcept
+  {
+    return uds_directory_;
+  }
 
   /**
    * @brief Sets the obligation of verification that the PostgreSQL server
    * process is running under the specified username for successful
    * authentication.
    *
-   * @param value - the value of `std::nullopt` means *disabled*.
+   * @param value `std::nullopt` means *disabled*.
    *
    * @par Requires
    * `(communication_mode() == Communication_mode::uds && (!value || !value->empty()))`.
    *
    * @par Exception safety guarantee
    * Strong.
-   *
-   * @see uds_require_server_process_username().
    */
-  virtual Connection_options* set_uds_require_server_process_username(std::optional<std::string> value) = 0;
+  DMITIGR_PGFE_API Connection_options& uds_require_server_process_username(std::optional<std::string> value);
 
-  /**
-   * @returns The current value of the option.
-   *
-   * @see set_uds_require_server_process_username().
-   */
-  virtual const std::optional<std::string>& uds_require_server_process_username() const = 0;
+  /// @returns The current value of the option.
+  const std::optional<std::string>& uds_require_server_process_username() const noexcept
+  {
+    return uds_require_server_process_username_;
+  }
 #endif
 
   // ---------------------------------------------------------------------------
@@ -227,24 +176,21 @@ public:
    *
    * @par Exception safety guarantee
    * Strong.
-   *
-   * @see is_tcp_keepalives_enabled().
    */
-  virtual Connection_options* set_tcp_keepalives_enabled(bool value) = 0;
+  Connection_options& tcp_keepalives_enabled(bool value);
 
-  /**
-   * @returns The current value of the option.
-   *
-   * @see set_tcp_keepalives_enabled().
-   */
-  virtual bool is_tcp_keepalives_enabled() const = 0;
+  /// @returns The current value of the option.
+  bool is_tcp_keepalives_enabled() const noexcept
+  {
+    return tcp_keepalives_enabled_;
+  }
 
   // ---------------------------------------------------------------------------
 
   /**
    * @brief Sets the interval (in seconds) after which to start the keepalives.
    *
-   * @param value - the value of `std::nullopt` means *system default*.
+   * @param value `std::nullopt` means *system default*.
    *
    * @par Requires
    * `(communication_mode() == Communication_mode::net)`.
@@ -254,24 +200,21 @@ public:
    *
    * @remarks This option is system dependent and has no effect on systems where
    * the `TCP_KEEPIDLE` socket option (or its equivalent) is unavailable.
-   *
-   * @see tcp_keepalives_idle().
    */
-  virtual Connection_options* set_tcp_keepalives_idle(std::optional<std::chrono::seconds> value) = 0;
+  DMITIGR_PGFE_API Connection_options& tcp_keepalives_idle(std::optional<std::chrono::seconds> value);
 
-  /**
-   * @returns The current value of the option.
-   *
-   * @see set_tcp_keepalives_idle().
-   */
-  virtual std::optional<std::chrono::seconds> tcp_keepalives_idle() const = 0;
+  /// @returns The current value of the option.
+  std::optional<std::chrono::seconds> tcp_keepalives_idle() const noexcept
+  {
+    return tcp_keepalives_idle_;
+  }
 
   // ---------------------------------------------------------------------------
 
   /**
    * @brief Sets the interval (in seconds) between the keepalives.
    *
-   * @param value - the value of `std::nullopt` means *system default*.
+   * @param value `std::nullopt` means *system default*.
    *
    * @par Requires
    * `(communication_mode() == Communication_mode::net)`.
@@ -281,24 +224,21 @@ public:
    *
    * @remarks This option is system dependent and has no effect on systems where
    * the `TCP_KEEPINTVL` socket option (or its equivalent) is unavailable.
-   *
-   * @see tcp_keepalives_interval().
    */
-  virtual Connection_options* set_tcp_keepalives_interval(std::optional<std::chrono::seconds> value) = 0;
+  DMITIGR_PGFE_API Connection_options& tcp_keepalives_interval(std::optional<std::chrono::seconds> value);
 
-  /**
-   * @returns The current value of the option.
-   *
-   * @see set_tcp_keepalives_interval().
-   */
-  virtual std::optional<std::chrono::seconds> tcp_keepalives_interval() const = 0;
+  /// @returns The current value of the option.
+  std::optional<std::chrono::seconds> tcp_keepalives_interval() const noexcept
+  {
+    return tcp_keepalives_interval_;
+  }
 
   // ---------------------------------------------------------------------------
 
   /**
    * @brief Sets the number of keepalives before connection lost.
    *
-   * @param value - the value of `std::nullopt` means *system default*.
+   * @param value `std::nullopt` means *system default*.
    *
    * @par Requires
    * `(communication_mode() == Communication_mode::net)`.
@@ -308,17 +248,14 @@ public:
    *
    * @remarks This option is system dependent and has no effect on systems where
    * the `TCP_KEEPCNT` socket option (or its equivalent) is unavailable.
-   *
-   * @see tcp_keepalives_count().
    */
-  virtual Connection_options* set_tcp_keepalives_count(std::optional<int> value) = 0;
+  DMITIGR_PGFE_API Connection_options& tcp_keepalives_count(std::optional<int> value);
 
-  /**
-   * @returns The current value of the option.
-   *
-   * @see set_tcp_keepalives_count().
-   */
-  virtual std::optional<int> tcp_keepalives_count() const = 0;
+  /// @returns The current value of the option.
+  std::optional<int> tcp_keepalives_count() const noexcept
+  {
+    return tcp_keepalives_count_;
+  }
 
   // ---------------------------------------------------------------------------
 
@@ -326,7 +263,7 @@ public:
    * @brief Sets the numeric IP address of a PostgreSQL server
    * to avoid hostname lookup.
    *
-   * @param value - the valid IPv4 or IPv6 address.
+   * @param value A valid IPv4 or IPv6 address.
    *
    * @par Requires
    * `((communication_mode() == Communication_mode::net) && (value || net_hostname()))`.
@@ -339,23 +276,26 @@ public:
    * both `net_address` and `net_hostname` are set, the value of `net_address`
    * will be treated as the PostgreSQL server address to connect.
    *
-   * @see net_address(), set_net_hostname().
+   * @see net_hostname().
    */
-  virtual Connection_options* set_net_address(std::optional<std::string> value) = 0;
+  DMITIGR_PGFE_API Connection_options& net_address(std::optional<std::string> value);
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_net_address().
+   * @see net_hostname().
    */
-  virtual const std::optional<std::string>& net_address() const = 0;
+  const std::optional<std::string>& net_address() const noexcept
+  {
+    return net_address_;
+  }
 
   // ---------------------------------------------------------------------------
 
   /**
    * @brief Sets the name of the host to connect to.
    *
-   * @param value - must be a valid host name.
+   * @param value A valid host name.
    *
    * @par Requires
    * `((communication_mode() == Communication_mode::net) && (value || net_address()))`.
@@ -368,16 +308,19 @@ public:
    * might be required for some authentication methods or SSL certificate
    * verification.
    *
-   * @see net_hostname(), set_net_address().
+   * @see net_address().
    */
-  virtual Connection_options* set_net_hostname(std::optional<std::string> value) = 0;
+  DMITIGR_PGFE_API Connection_options& net_hostname(std::optional<std::string> value);
 
   /**
    * @returns The current value of the option.
    *
-   * @see set_net_hostname().
+   * @see net_address().
    */
-  virtual const std::optional<std::string>& net_hostname() const = 0;
+  const std::optional<std::string>& net_hostname() const noexcept
+  {
+    return net_hostname_;
+  }
 
   /// @}
 
@@ -391,17 +334,14 @@ public:
    *
    * @par Exception safety guarantee
    * strong.
-   *
-   * @see username().
    */
-  virtual Connection_options* set_username(std::string value) = 0;
+  DMITIGR_PGFE_API Connection_options& username(std::string value);
 
-  /**
-   * @returns The current value of the option.
-   *
-   * @see set_username().
-   */
-  virtual const std::string& username() const = 0;
+  /// @returns The current value of the option.
+  const std::string& username() const noexcept
+  {
+    return username_;
+  }
 
   // ---------------------------------------------------------------------------
 
@@ -410,17 +350,14 @@ public:
    *
    * @par Exception safety guarantee
    * Strong.
-   *
-   * @see database().
    */
-  virtual Connection_options* set_database(std::string value) = 0;
+  DMITIGR_PGFE_API Connection_options& database(std::string value);
 
-  /**
-   * @returns The current value of the option.
-   *
-   * @see set_database().
-   */
-  virtual const std::string& database() const = 0;
+  /// @returns The current value of the option.
+  const std::string& database() const noexcept
+  {
+    return database_;
+  }
 
   // ---------------------------------------------------------------------------
 
@@ -433,17 +370,14 @@ public:
    *
    * @par Exception safety guarantee
    * Strong.
-   *
-   * @see password().
    */
-  virtual Connection_options* set_password(std::optional<std::string> value) = 0;
+  DMITIGR_PGFE_API Connection_options& password(std::optional<std::string> value);
 
-  /**
-   * @returns The current value of the option.
-   *
-   * @see set_password().
-   */
-  virtual const std::optional<std::string>& password() const = 0;
+  /// @returns The current value of the option.
+  const std::optional<std::string>& password() const noexcept
+  {
+    return password_;
+  }
 
   // ---------------------------------------------------------------------------
 
@@ -456,17 +390,14 @@ public:
    *
    * @par Exception safety guarantee
    * Strong.
-   *
-   * @see kerberos_service_name().
    */
-  virtual Connection_options* set_kerberos_service_name(std::optional<std::string> value) = 0;
+  DMITIGR_PGFE_API Connection_options& kerberos_service_name(std::optional<std::string> value);
 
-  /**
-   * @returns The current value of the option.
-   *
-   * @see set_kerberos_service_name().
-   */
-  virtual const std::optional<std::string>& kerberos_service_name() const = 0;
+  /// @returns The current value of the option.
+  const std::optional<std::string>& kerberos_service_name() const noexcept
+  {
+    return kerberos_service_name_;
+  }
 
   /// @}
 
@@ -480,17 +411,14 @@ public:
    *
    * @par Exception safety guarantee
    * Strong.
-   *
-   * @see is_ssl_enabled().
    */
-  virtual Connection_options* set_ssl_enabled(bool value) = 0;
+  DMITIGR_PGFE_API Connection_options& ssl_enabled(bool value);
 
-  /**
-   * @returns The current value of the option.
-   *
-   * @see set_ssl_enabled().
-   */
-  virtual bool is_ssl_enabled() const = 0;
+  /// @returns The current value of the option.
+  bool is_ssl_enabled() const noexcept
+  {
+    return is_ssl_enabled_;
+  }
 
   // ---------------------------------------------------------------------------
 
@@ -503,17 +431,14 @@ public:
    *
    * @par Exception safety guarantee
    * Strong.
-   *
-   * @see is_ssl_compression_enabled().
    */
-  virtual Connection_options* set_ssl_compression_enabled(bool value) = 0;
+  DMITIGR_PGFE_API Connection_options& ssl_compression_enabled(bool value);
 
-  /**
-   * @returns The current value of the option.
-   *
-   * @see set_ssl_compression_enabled().
-   */
-  virtual bool is_ssl_compression_enabled() const = 0;
+  /// @returns The current value of the option.
+  bool is_ssl_compression_enabled() const noexcept
+  {
+    return ssl_compression_enabled_;
+  }
 
   // ---------------------------------------------------------------------------
 
@@ -525,17 +450,14 @@ public:
    *
    * @par Exception safety guarantee
    * Strong.
-   *
-   * @see ssl_certificate_file().
    */
-  virtual Connection_options* set_ssl_certificate_file(std::optional<std::filesystem::path> value) = 0;
+  DMITIGR_PGFE_API Connection_options& ssl_certificate_file(std::optional<std::filesystem::path> value);
 
-  /**
-   * @returns The current value of the option.
-   *
-   * @see set_ssl_certificate_file().
-   */
-  virtual const std::optional<std::filesystem::path>& ssl_certificate_file() const = 0;
+  /// @returns The current value of the option.
+  const std::optional<std::filesystem::path>& ssl_certificate_file() const noexcept
+  {
+    return ssl_certificate_file_;
+  }
 
   // ---------------------------------------------------------------------------
 
@@ -547,17 +469,14 @@ public:
    *
    * @par Exception safety guarantee
    * Strong.
-   *
-   * @see ssl_private_key_file().
    */
-  virtual Connection_options* set_ssl_private_key_file(std::optional<std::filesystem::path> value) = 0;
+  DMITIGR_PGFE_API Connection_options& ssl_private_key_file(std::optional<std::filesystem::path> value);
 
-  /**
-   * @returns The current value of the option.
-   *
-   * @see set_ssl_private_key_file().
-   */
-  virtual const std::optional<std::filesystem::path>& ssl_private_key_file() const = 0;
+  /// @returns The current value of the option.
+  const std::optional<std::filesystem::path>& ssl_private_key_file() const noexcept
+  {
+    return ssl_private_key_file_;
+  }
 
   // ---------------------------------------------------------------------------
 
@@ -574,17 +493,14 @@ public:
    *
    * @par Exception safety guarantee
    * Strong.
-   *
-   * @see ssl_certificate_authority_file().
    */
-  virtual Connection_options* set_ssl_certificate_authority_file(std::optional<std::filesystem::path> value) = 0;
+  DMITIGR_PGFE_API Connection_options& ssl_certificate_authority_file(std::optional<std::filesystem::path> value);
 
-  /**
-   * @returns The current value of the option.
-   *
-   * @see set_ssl_certificate_authority_file().
-   */
-  virtual const std::optional<std::filesystem::path>& ssl_certificate_authority_file() const = 0;
+  /// @returns The current value of the option.
+  const std::optional<std::filesystem::path>& ssl_certificate_authority_file() const noexcept
+  {
+    return ssl_certificate_authority_file_;
+  }
 
   // ---------------------------------------------------------------------------
 
@@ -597,17 +513,14 @@ public:
    *
    * @par Exception safety guarantee
    * Strong.
-   *
-   * @see ssl_certificate_revocation_list_file().
    */
-  virtual Connection_options* set_ssl_certificate_revocation_list_file(std::optional<std::filesystem::path> value) = 0;
+  DMITIGR_PGFE_API Connection_options& ssl_certificate_revocation_list_file(std::optional<std::filesystem::path> value);
 
-  /**
-   * @returns The current value of the option.
-   *
-   * @see set_ssl_certificate_revocation_list_file().
-   */
-  virtual const std::optional<std::filesystem::path>& ssl_certificate_revocation_list_file() const = 0;
+  /// @returns The current value of the option.
+  const std::optional<std::filesystem::path>& ssl_certificate_revocation_list_file() const noexcept
+  {
+    return ssl_certificate_revocation_list_file_;
+  }
 
   // ---------------------------------------------------------------------------
 
@@ -620,24 +533,51 @@ public:
    *
    * @par Exception safety guarantee
    * Strong.
-   *
-   * @see is_ssl_server_hostname_verification_enabled().
    */
-  virtual Connection_options* set_ssl_server_hostname_verification_enabled(bool value) = 0;
+  DMITIGR_PGFE_API Connection_options& ssl_server_hostname_verification_enabled(bool value);
 
-  /**
-   * @returns The current value of the option.
-   *
-   * @see set_ssl_server_hostname_verification_enabled().
-   */
-  virtual bool is_ssl_server_hostname_verification_enabled() const = 0;
+  /// @returns The current value of the option.
+  bool is_ssl_server_hostname_verification_enabled() const noexcept
+  {
+    return ssl_server_hostname_verification_enabled_;
+  }
 
   /// @}
 private:
-  friend detail::iConnection_options;
+  Communication_mode communication_mode_;
+  std::optional<std::chrono::milliseconds> connect_timeout_;
+  std::optional<std::chrono::milliseconds> wait_response_timeout_;
+#ifndef _WIN32
+  std::filesystem::path uds_directory_;
+  std::optional<std::string> uds_require_server_process_username_;
+#endif
+  bool tcp_keepalives_enabled_;
+  std::optional<std::chrono::seconds> tcp_keepalives_idle_;
+  std::optional<std::chrono::seconds> tcp_keepalives_interval_;
+  std::optional<int> tcp_keepalives_count_;
+  std::optional<std::string> net_address_;
+  std::optional<std::string> net_hostname_;
+  std::int_fast32_t port_;
+  std::string username_;
+  std::string database_;
+  std::optional<std::string> password_;
+  std::optional<std::string> kerberos_service_name_;
+  bool is_ssl_enabled_;
+  bool ssl_compression_enabled_;
+  std::optional<std::filesystem::path> ssl_certificate_file_;
+  std::optional<std::filesystem::path> ssl_private_key_file_;
+  std::optional<std::filesystem::path> ssl_certificate_authority_file_;
+  std::optional<std::filesystem::path> ssl_certificate_revocation_list_file_;
+  bool ssl_server_hostname_verification_enabled_;
 
-  Connection_options() = default;
+  bool is_invariant_ok() const noexcept;
 };
+
+/// Overload of Connection_options::swap().
+inline void swap(Connection_options& lhs, Connection_options& rhs) noexcept
+{
+  lhs.swap(rhs);
+}
 
 } // namespace dmitigr::pgfe
 

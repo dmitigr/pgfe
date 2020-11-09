@@ -13,9 +13,7 @@
 
 namespace dmitigr::net {
 
-/**
- * @returns The library version.
- */
+/// @returns The library version.
 constexpr std::int_fast32_t version() noexcept
 {
   // Actual values are set in CMakeLists.txt.

@@ -18,16 +18,17 @@ int main(int argc, char* argv[])
   try {
     auto [output_file, conn] = pgfe::test::arraybench::prepare(argc, argv);
     conn->perform("select dat from benchmark_test_array");
-    ASSERT(conn->row());
-    conn->for_each([&](const pgfe::Row* const r) {
+    const auto r = conn->wait_row();
+    ASSERT(r);
+    {
       using Array = std::vector<std::optional<std::string>>;
-      const auto arr = pgfe::to<Array>(r->data(0));
+      const auto arr = pgfe::to<Array>(r.data());
       for (const auto& elem : arr) {
         if (elem)
           output_file << *elem;
       }
       output_file << "\n";
-    });
+    }
   } catch (const std::exception& e) {
     report_failure(argv[0], e);
     return 1;

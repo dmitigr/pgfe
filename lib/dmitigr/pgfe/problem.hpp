@@ -5,12 +5,11 @@
 #ifndef DMITIGR_PGFE_PROBLEM_HPP
 #define DMITIGR_PGFE_PROBLEM_HPP
 
+#include "dmitigr/pgfe/dll.hpp"
+#include "dmitigr/pgfe/pq.hpp"
 #include "dmitigr/pgfe/types_fwd.hpp"
 
-#include <memory>
-#include <optional>
 #include <string>
-#include <system_error>
 
 namespace dmitigr::pgfe {
 
@@ -21,67 +20,42 @@ namespace dmitigr::pgfe {
  */
 class Problem {
 public:
-  /**
-   * @brief The destructor.
-   */
+  /// The destructor.
   virtual ~Problem() = default;
 
-  /// @name Conversions
-  /// @{
+  /// Move-constructible.
+  Problem(Problem&&) = default;
+
+  /// Move-assignable.
+  Problem& operator=(Problem&&) = default;
+
+  /// @returns The object with the corresponding SQLSTATE code.
+  const std::error_code& code() const noexcept
+  {
+    return code_;
+  }
+
+  /// @returns The SQLSTATE code of the problem.
+  const char* sqlstate() const noexcept
+  {
+    return pq_result_.er_code();
+  }
 
   /**
-   * @returns The copy of this instance.
+   * @returns The problem severity, or `-1` if the problem is not recognized
+   * by Pgfe or occured on the PostgreSQL server of version prior to 9.6.
    */
-  virtual std::unique_ptr<Problem> to_problem() const = 0;
-
-  /// @}
-
-  /**
-   * @returns The object with the corresponding PostgreSQL error code.
-   */
-  virtual std::error_code code() const = 0;
-
-  /**
-   * @returns The value of enum class that corresponds to a problem severity.
-   *
-   * @throws `std::runtime_error` if the problem occured on the PostgreSQL
-   * server of version prior to 9.6.
-   *
-   * @see severity_localized(), severity_non_localized().
-   */
-  virtual Problem_severity severity() const = 0;
-
-  /**
-   * @brief Similar to severity_non_localized(), but textual representation
-   * possibly localized.
-   *
-   * @see severity(), severity_non_localized().
-   */
-  virtual const std::string& severity_localized() const noexcept = 0;
-
-  /**
-   * @returns The textual representation of the problem severity, which can be
-   * one of the following: "LOG", "INFO", "DEBUG", "NOTICE", "WARNING", or
-   * "ERROR", "FATAL", "PANIC".
-   *
-   * @throws `std::runtime_error` if the problem occured on the PostgreSQL
-   * server of version prior to 9.6.
-   *
-   * @see severity(), severity_localized().
-   */
-  virtual const std::string& severity_non_localized() const = 0;
-
-  /**
-   * @returns The SQLSTATE code of the problem.
-   */
-  virtual const std::string& sqlstate() const noexcept = 0;
+  Problem_severity DMITIGR_PGFE_API severity() const noexcept;
 
   /**
    * @returns The brief human-readable description.
    *
    * @remarks Typically, one line.
    */
-  virtual const std::string& brief() const noexcept = 0;
+  const char* brief() const noexcept
+  {
+    return pq_result_.er_brief();
+  }
 
   /**
    * @returns The optional message carrying more detail about the problem.
@@ -89,7 +63,10 @@ public:
    * @remarks Might consist to multiple lines. Newline characters should
    * be treated as paragraph breaks, not line breaks.
    */
-  virtual const std::optional<std::string>& detail() const noexcept = 0;
+  const char* detail() const noexcept
+  {
+    return pq_result_.er_detail();
+  }
 
   /**
    * @returns The optional suggestion what to do about the problem.
@@ -100,27 +77,39 @@ public:
    * @remarks Might consist to multiple lines. Newline characters should be
    * treated as paragraph breaks, not line breaks.
    */
-  virtual const std::optional<std::string>& hint() const noexcept = 0;
+  const char* hint() const noexcept
+  {
+    return pq_result_.er_hint();
+  }
 
   /**
    * @returns The position of a character of a query string submitted.
    *
    * @remarks Positions start at `1` and measured in characters rather than bytes!
    */
-  virtual const std::optional<std::string>& query_position() const noexcept = 0;
+  const char* query_position() const noexcept
+  {
+    return pq_result_.er_query_position();
+  }
 
   /**
    * @returns: Similar to query_position(), but it is used when the position
    * refers to an internally-generated query rather than the one submitted.
    */
-  virtual const std::optional<std::string>& internal_query_position() const noexcept = 0;
+  const char* internal_query_position() const noexcept
+  {
+    return pq_result_.er_internal_query_position();
+  }
 
   /**
    * @returns The text of the failed internally-generated query.
    *
    * @remarks This could be, for example, a SQL query issued by a PL/pgSQL function.
    */
-  virtual const std::optional<std::string>& internal_query() const noexcept = 0;
+  const char* internal_query() const noexcept
+  {
+    return pq_result_.er_internal_query();
+  }
 
   /**
    * @returns The indication of the context in which the problem occurred.
@@ -130,33 +119,46 @@ public:
    *
    * @remarks The trace is one entry per line, most recent first.
    */
-  virtual const std::optional<std::string>& context() const noexcept = 0;
+  const char* context() const noexcept
+  {
+    return pq_result_.er_context();
+  }
 
-  /**
-   * @returns The name of schema, associated with the problem.
-   */
-  virtual const std::optional<std::string>& schema_name() const noexcept = 0;
+  /// @returns The name of schema, associated with the problem.
+  const char* schema_name() const noexcept
+  {
+    return pq_result_.er_schema_name();
+  }
 
   /**
    * @returns The name of table, associated with the problem.
    *
    * @remarks Refer to schema_name() for the name of the table's schema.
    */
-  virtual const std::optional<std::string>& table_name() const noexcept = 0;
+  const char* table_name() const noexcept
+  {
+    return pq_result_.er_table_name();
+  }
 
   /**
    * @returns The name of the table column, associated with the problem.
    *
    * @remarks Refer to schema_name() and table_name() to identity the table.
    */
-  virtual const std::optional<std::string>& column_name() const noexcept = 0;
+  const char* column_name() const noexcept
+  {
+    return pq_result_.er_column_name();
+  }
 
   /**
    * @returns The name of the data type, associated with the problem.
    *
    * @remarks Refer to schema_name() for the name of the data type's schema.
    */
-  virtual const std::optional<std::string>& data_type_name() const noexcept = 0;
+  const char* data_type_name() const noexcept
+  {
+    return pq_result_.er_data_type_name();
+  }
 
   /**
    * @returns The name of the constraint, associated with the problem.
@@ -164,28 +166,70 @@ public:
    * @remarks Indexes are treated as constraints, even if they weren't created
    * with constraint syntax.
    */
-  virtual const std::optional<std::string>& constraint_name() const noexcept = 0;
+  const char* constraint_name() const noexcept
+  {
+    return pq_result_.er_constraint_name();
+  }
+
+  /// @returns The file name of the source-code location reporting the problem.
+  const char* source_file() const noexcept
+  {
+    return pq_result_.er_source_file();
+  }
+
+  /// @returns The line number of the source-code location reporting the problem.
+  const char* source_line() const noexcept
+  {
+    return pq_result_.er_source_line();
+  }
+
+  /// @returns The name of the source-code function reporting the problem.
+  const char* source_function() const noexcept
+  {
+    return pq_result_.er_source_function();
+  }
+
+  /// @returns Error code that corresponds to SQLSTATE 00000.
+  static DMITIGR_PGFE_API std::error_code min_code() noexcept;
+
+  /// @returns Error code that corresponds to SQLSTATE ZZZZZ.
+  static DMITIGR_PGFE_API std::error_code max_code() noexcept;
+
+  /// @returns Error code that corresponds to SQLSTATE 03000.
+  static DMITIGR_PGFE_API std::error_code min_error_code() noexcept;
 
   /**
-   * @returns The file name of the source-code location reporting the problem.
+   * @returns The integer representation of the SQLSTATE code, or `-1` on error.
+   *
+   * @par Requires
+   * `code` must consist of five alphanumeric characters terminated by zero.
    */
-  virtual const std::optional<std::string>& source_file() const noexcept = 0;
+  static DMITIGR_PGFE_API int sqlstate_string_to_int(const char* code) noexcept;
 
   /**
-   * @returns The line number of the source-code location reporting the problem.
+   * @returns The textual representation of the SQLSTATE code, or empty string on error.
+   *
+   * @par Requires
+   * The `code` must be in range [0, 60466175].
    */
-  virtual const std::optional<std::string>& source_line() const noexcept = 0;
-
-  /**
-   * @returns The name of the source-code function reporting the problem.
-   */
-  virtual const std::optional<std::string>& source_function() const noexcept = 0;
+  static DMITIGR_PGFE_API std::string sqlstate_int_to_string(int code);
 
 private:
   friend Error;
   friend Notice;
 
+  detail::pq::Result pq_result_;
+  std::error_code code_;
+
   Problem() = default;
+
+  explicit Problem(detail::pq::Result&& result) noexcept;
+
+  virtual bool is_invariant_ok() const noexcept
+  {
+    const int cv = code().value();
+    return pq_result_ && (min_code().value() <= cv && cv <= max_code().value());
+  }
 };
 
 } // namespace dmitigr::pgfe

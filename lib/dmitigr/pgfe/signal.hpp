@@ -5,7 +5,7 @@
 #ifndef DMITIGR_PGFE_SIGNAL_HPP
 #define DMITIGR_PGFE_SIGNAL_HPP
 
-#include "dmitigr/pgfe/server_message.hpp"
+#include "dmitigr/pgfe/message.hpp"
 
 namespace dmitigr::pgfe {
 
@@ -14,7 +14,7 @@ namespace dmitigr::pgfe {
  *
  * @brief An asynchronous (unprompted) message from a PostgreSQL server.
  */
-class Signal : public Server_message {
+class Signal : public Message {
   friend Notice;
   friend Notification;
 

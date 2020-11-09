@@ -22,7 +22,7 @@ int main(int, char* argv[])
   try {
     // General test
     {
-      auto conn = pgfe::Connection::make();
+      auto conn = std::make_unique<pgfe::Connection>();
       ASSERT(conn->communication_status() == pgfe::Communication_status::disconnected);
       ASSERT(!conn->is_connected());
       ASSERT(!conn->transaction_block_status());
@@ -31,37 +31,19 @@ int main(int, char* argv[])
       ASSERT(!conn->is_ssl_secured());
       ASSERT(!conn->server_pid());
 
-      ASSERT(!conn->is_server_message_available());
-      ASSERT(!conn->is_signal_available());
-      ASSERT(!conn->notice());
-      ASSERT(!conn->pop_notice());
-      ASSERT(!conn->notification());
       ASSERT(!conn->pop_notification());
       ASSERT(conn->notice_handler()); // by default handler is set
       ASSERT(!conn->notification_handler());
       ASSERT(!conn->is_awaiting_response());
-      ASSERT(!conn->is_response_available());
+      ASSERT(!conn->has_response());
       ASSERT(!conn->error());
-      ASSERT(!conn->release_error());
-      ASSERT(!conn->row());
-      ASSERT(!conn->release_row());
-      ASSERT(!conn->completion());
-      ASSERT(!conn->release_completion());
+      ASSERT(!conn->wait_row());
+      ASSERT(!conn->wait_completion());
       ASSERT(!conn->prepared_statement());
       ASSERT(!conn->prepared_statement(""));
       ASSERT(!conn->is_ready_for_async_request());
       ASSERT(!conn->is_ready_for_request());
       ASSERT(conn->result_format() == pgfe::Data_format::text);
-
-      std::string_view empty;
-      ASSERT(is_logic_throw_works([&]() { conn->to_quoted_literal(""); }));
-      ASSERT(is_logic_throw_works([&]() { conn->to_quoted_identifier(""); }));
-      ASSERT(is_logic_throw_works([&]() { conn->to_hex_data(nullptr); }));
-      ASSERT(is_logic_throw_works([&]() { conn->to_hex_string(nullptr); }));
-      ASSERT(is_logic_throw_works([&]() { conn->to_hex_data(pgfe::Data::make(empty, pgfe::Data_format::text).get()); }));
-      ASSERT(is_logic_throw_works([&]() { conn->to_hex_string(pgfe::Data::make(empty, pgfe::Data_format::text).get()); }));
-      ASSERT(is_logic_throw_works([&]() { conn->to_hex_data(pgfe::Data::make(empty, pgfe::Data_format::binary).get()); }));
-      ASSERT(is_logic_throw_works([&]() { conn->to_hex_string(pgfe::Data::make(empty, pgfe::Data_format::binary).get()); }));
     }
 
     using pgfe::Communication_mode;
@@ -69,18 +51,17 @@ int main(int, char* argv[])
 
     // Connect with empty connection options test
     {
-      const auto conn_opts = pgfe::Connection_options::make();
-      const auto conn = pgfe::Connection::make(conn_opts.get());
+      pgfe::Connection conn;
       try {
-        conn->connect();
-        ASSERT(conn->communication_status() == Communication_status::connected);
+        conn.connect();
+        ASSERT(conn.communication_status() == Communication_status::connected);
       } catch (const std::exception& e) {
-        ASSERT(conn->communication_status() == Communication_status::failure);
+        ASSERT(conn.communication_status() == Communication_status::failure);
         if (std::string{e.what()} != "fe_sendauth: no password supplied\n")
           throw;
       }
-      conn->disconnect();
-      ASSERT(conn->communication_status() == Communication_status::disconnected);
+      conn.disconnect();
+      ASSERT(conn.communication_status() == Communication_status::disconnected);
     }
 
     using pgfe::Transaction_block_status;
@@ -92,7 +73,7 @@ int main(int, char* argv[])
 #ifndef _WIN32
       // Test the UDS connection
       {
-        auto conn = pgfe::test::make_uds_connection();
+        conn = pgfe::test::make_uds_connection();
         ASSERT(conn);
         conn->connect();
         ASSERT(conn->options()->communication_mode() == Communication_mode::uds);
@@ -122,22 +103,19 @@ int main(int, char* argv[])
         ASSERT(conn->is_awaiting_response());
         ASSERT(!conn->is_ready_for_async_request());
         ASSERT(!conn->is_ready_for_request());
-        ASSERT(!conn->is_response_available());
+        ASSERT(!conn->has_response());
         conn->wait_response();
-        conn->collect_server_messages();
         ASSERT(!conn->is_awaiting_response());
         ASSERT(conn->is_ready_for_async_request());
         ASSERT(conn->is_ready_for_request());
-        ASSERT(conn->is_response_available());
-        ASSERT(conn->is_server_message_available());
+        ASSERT(conn->has_response());
         ASSERT(conn->is_transaction_block_uncommitted());
         ASSERT(conn->transaction_block_status() == Transaction_block_status::uncommitted);
-        ASSERT(conn->completion());
-        ASSERT(conn->completion()->operation_name() == "BEGIN");
-        ASSERT(!conn->completion()->affected_row_count());
-        ASSERT(conn->release_completion());
-        ASSERT(!conn->completion());
-        ASSERT(!conn->is_response_available());
+        const auto comp = conn->wait_completion();
+        ASSERT(comp);
+        ASSERT(comp.operation_name() == "BEGIN");
+        ASSERT(!comp.affected_row_count());
+        ASSERT(!conn->has_response());
         conn->perform_async("END");
         conn->wait_response();
         ASSERT(!conn->is_transaction_block_uncommitted());
@@ -150,10 +128,8 @@ int main(int, char* argv[])
         conn->wait_response();
         conn->perform_async("PROVOKE SYNTAX ERROR");
         conn->wait_response();
-        ASSERT(conn->error());
-        ASSERT(conn->error()->code() == pgfe::Server_errc::c42_syntax_error);
-        const auto e = conn->release_error();
-        ASSERT(e);
+        const auto e = conn->error();
+        ASSERT(e && e.code() == pgfe::Server_errc::c42_syntax_error);
         ASSERT(!conn->error());
         ASSERT(conn->transaction_block_status() == Transaction_block_status::failed);
         conn->perform_async("END");
@@ -167,21 +143,21 @@ int main(int, char* argv[])
 
         ASSERT(conn->is_awaiting_response());
         conn->wait_response();
-        ASSERT(conn->completion()->operation_name() == "BEGIN");
-        conn->dismiss_response();
-        ASSERT(!conn->is_response_available());
+        auto comp = conn->wait_completion();
+        ASSERT(comp.operation_name() == "BEGIN");
+        ASSERT(!conn->has_response());
 
         ASSERT(conn->is_awaiting_response());
         conn->wait_response();
-        ASSERT(conn->completion()->operation_name() == "SAVEPOINT");
-        conn->dismiss_response();
-        ASSERT(!conn->is_response_available());
+        comp = conn->wait_completion();
+        ASSERT(comp.operation_name() == "SAVEPOINT");
+        ASSERT(!conn->has_response());
 
         ASSERT(conn->is_awaiting_response());
         conn->wait_response();
-        ASSERT(conn->completion()->operation_name() == "COMMIT");
-        conn->dismiss_response();
-        ASSERT(!conn->is_response_available());
+        comp = conn->wait_completion();
+        ASSERT(comp.operation_name() == "COMMIT");
+        ASSERT(!conn->has_response());
 
         ASSERT(!conn->is_awaiting_response());
       }
@@ -190,16 +166,16 @@ int main(int, char* argv[])
       {
         const auto old_notice_handler = conn->notice_handler();
         bool ok{};
-        conn->set_notice_handler([&ok](std::unique_ptr<pgfe::Notice>&& notice)
+        conn->set_notice_handler([&ok](const pgfe::Notice& notice)
                                  {
                                    if (!ok)
-                                     ok = std::string(notice->brief()) == "yahoo";
+                                     ok = std::string(notice.brief()) == "yahoo";
                                  });
         conn->perform_async("DO $$ BEGIN RAISE NOTICE 'yahoo'; END $$;");
         conn->wait_response();
         for (int i = 0; !ok && i < 100; ++i) {
           using namespace std::chrono_literals;
-          conn->collect_server_messages();
+          conn->collect_messages();
           std::this_thread::sleep_for(1ms);
         }
         conn->set_notice_handler(old_notice_handler);
@@ -210,22 +186,22 @@ int main(int, char* argv[])
       {
         const auto old_notification_handler = conn->notification_handler();
         bool ok{};
-        conn->set_notification_handler([&ok](std::unique_ptr<pgfe::Notification>&& notification)
+        conn->set_notification_handler([&ok](pgfe::Notification&& notification)
                                        {
                                          if (!ok)
-                                           ok = std::string(notification->payload()->bytes()) == "yahoo";
+                                           ok = std::string(notification.payload().bytes()) == "yahoo";
                                        });
         conn->perform_async("LISTEN pgfe_test; NOTIFY pgfe_test, 'yahoo'");
         conn->wait_response();
-        ASSERT(conn->completion() && conn->completion()->operation_name() == "LISTEN");
-        conn->dismiss_response();
+        auto comp = conn->wait_completion();
+        ASSERT(comp && comp.operation_name() == "LISTEN");
 
         conn->wait_response();
-        ASSERT(conn->completion() && conn->completion()->operation_name() == "NOTIFY");
-        conn->dismiss_response();
+        comp = conn->wait_completion();
+        ASSERT(comp && comp.operation_name() == "NOTIFY");
         for (int i = 0; !ok && i < 100; ++i) {
           using namespace std::chrono_literals;
-          conn->collect_server_messages();
+          conn->collect_messages();
           std::this_thread::sleep_for(1ms);
         }
         conn->set_notification_handler(old_notification_handler);
@@ -239,7 +215,7 @@ int main(int, char* argv[])
           // Prepare
           auto* ps = conn->prepare_statement("SELECT generate_series(1,3) AS n");
           ASSERT(ps == conn->prepared_statement(""));
-          ASSERT(conn->is_response_available()); // the last prepared statement is always available
+          ASSERT(!conn->has_response());
           ASSERT(!conn->is_awaiting_response());
           ASSERT(conn->is_ready_for_async_request());
           ASSERT(conn->is_ready_for_request());
@@ -247,7 +223,7 @@ int main(int, char* argv[])
           // Describe
           auto* dps = conn->describe_prepared_statement("");
           ASSERT(dps == ps);
-          ASSERT(conn->is_response_available()); // the last prepared statement is always available
+          ASSERT(!conn->has_response());
           ASSERT(!conn->is_awaiting_response());
           ASSERT(conn->is_ready_for_async_request());
           ASSERT(conn->is_ready_for_request());
@@ -260,7 +236,7 @@ int main(int, char* argv[])
           // Prepare
           auto* ps = conn->prepare_statement("SELECT generate_series(1,5) AS n", "ps1");
           ASSERT(ps == conn->prepared_statement("ps1"));
-          ASSERT(conn->is_response_available()); // the last prepared statement is always available
+          ASSERT(!conn->has_response());
           ASSERT(!conn->is_awaiting_response());
           ASSERT(conn->is_ready_for_async_request());
           ASSERT(conn->is_ready_for_request());
@@ -268,7 +244,7 @@ int main(int, char* argv[])
           // Describe
           auto* dps = conn->describe_prepared_statement("ps1");
           ASSERT(dps == ps);
-          ASSERT(conn->is_response_available()); // the last prepared statement is always available
+          ASSERT(!conn->has_response());
           ASSERT(!conn->is_awaiting_response());
           ASSERT(conn->is_ready_for_async_request());
           ASSERT(conn->is_ready_for_request());
@@ -276,8 +252,9 @@ int main(int, char* argv[])
           // Unprepare
           conn->unprepare_statement("ps1");
           ASSERT(!conn->prepared_statement("ps1"));
-          ASSERT(conn->is_response_available());
-          ASSERT(conn->completion() && (conn->completion()->operation_name() == "unprepare_statement"));
+          ASSERT(conn->has_response());
+          const auto comp = conn->wait_completion();
+          ASSERT(comp && (comp.operation_name() == "unprepare_statement"));
           ASSERT(!conn->is_awaiting_response());
           ASSERT(conn->is_ready_for_async_request());
           ASSERT(conn->is_ready_for_request());
@@ -288,16 +265,16 @@ int main(int, char* argv[])
           // Prepare
           conn->perform_async("PREPARE ps2 AS SELECT generate_series(1,7);");
           conn->wait_response();
-          ASSERT(conn->completion() && conn->completion()->operation_name() == "PREPARE");
+          auto comp = conn->wait_completion();
+          ASSERT(comp && comp.operation_name() == "PREPARE");
 
           // Describe
           ASSERT(!conn->prepared_statement("ps2"));
           auto* dps = conn->describe_prepared_statement("ps2");
           auto* ps = conn->prepared_statement("ps2");
           ASSERT(dps == ps);
-          ASSERT(ps && (ps == conn->prepared_statement()));
           ASSERT(!ps->is_preparsed() && ps->is_described());
-          ASSERT(conn->is_response_available()); // the last prepared statement is always available
+          ASSERT(!conn->has_response());
           ASSERT(!conn->is_awaiting_response());
           ASSERT(conn->is_ready_for_async_request());
           ASSERT(conn->is_ready_for_request());
@@ -305,8 +282,9 @@ int main(int, char* argv[])
           // Unprepare
           conn->unprepare_statement("ps2");
           ASSERT(!conn->prepared_statement("ps2"));
-          ASSERT(conn->is_response_available());
-          ASSERT(conn->completion() && (conn->completion()->operation_name() == "unprepare_statement"));
+          ASSERT(conn->has_response());
+          comp = conn->wait_completion();
+          ASSERT(comp && (comp.operation_name() == "unprepare_statement"));
           ASSERT(!conn->is_awaiting_response());
           ASSERT(conn->is_ready_for_async_request());
           ASSERT(conn->is_ready_for_request());
@@ -319,7 +297,7 @@ int main(int, char* argv[])
             conn->describe_prepared_statement("unprepared");
           } catch (const pgfe::Server_exception& e) {
             ASSERT(e.code() == pgfe::Server_errc::c26_invalid_sql_statement_name);
-            ASSERT(!conn->is_response_available()); // the last prepared statement is always available
+            ASSERT(!conn->has_response()); // the last prepared statement is always available
             ASSERT(!conn->is_awaiting_response());
             ASSERT(conn->is_ready_for_async_request());
             ASSERT(conn->is_ready_for_request());
@@ -335,7 +313,7 @@ int main(int, char* argv[])
             conn->unprepare_statement("unprepared");
           } catch (const pgfe::Server_exception& e) {
             ASSERT(e.code() == pgfe::Server_errc::c26_invalid_sql_statement_name);
-            ASSERT(!conn->is_response_available()); // the last prepared statement is always available
+            ASSERT(!conn->has_response()); // the last prepared statement is always available
             ASSERT(!conn->is_awaiting_response());
             ASSERT(conn->is_ready_for_async_request());
             ASSERT(conn->is_ready_for_request());
@@ -348,44 +326,30 @@ int main(int, char* argv[])
       // Execute
       {
         conn->execute("SELECT generate_series(1,3) AS num");
-        ASSERT(conn->is_response_available());
-        ASSERT(conn->row());
+        ASSERT(conn->has_response());
         int i = 1;
-        while (auto* row = conn->row()) {
-          ASSERT(std::stoi(row->data("num")->bytes()) == i);
-          conn->dismiss_response();
-          conn->wait_response();
+        while (const auto r = conn->wait_row()) {
+          ASSERT(std::stoi(r.data("num").bytes()) == i);
           ++i;
         }
-        ASSERT(conn->completion());
-      }
-
-      // Execute (rows released rather than dismissed)
-      {
-        conn->execute("SELECT generate_series(1,3) AS num");
-        ASSERT(conn->is_response_available());
-        ASSERT(conn->row());
-        int i = 1;
-        while (auto row = conn->release_row()) {
-          ASSERT(std::stoi(row->data("num")->bytes()) == i);
-          conn->wait_response();
-          ++i;
-        }
-        ASSERT(conn->completion());
+        ASSERT(conn->has_response());
+        const auto comp = conn->wait_completion();
+        ASSERT(comp);
       }
 
       // invoke 1
       {
         conn->invoke("version");
-        ASSERT(conn->row());
-        ASSERT(conn->row()->has_field("version"));
-        std::cout << "This test runs on " << conn->row()->data("version")->bytes() << std::endl;
-        conn->complete();
+        const auto r = conn->wait_row();
+        conn->wait_completion();
+        ASSERT(r);
+        ASSERT(r.index_of("version") == 0);
+        std::cout << "This test runs on " << r.data("version").bytes() << std::endl;
       }
 
       // invoke 2
       {
-        using pgfe::_;
+        using pgfe::Na;
 
         conn->perform("begin");
 
@@ -402,25 +366,34 @@ int main(int, char* argv[])
         const std::string expected_result = "id=" + std::to_string(id) + " name=" + name + " age=" + std::to_string(age);
 
         // Using positional notation.
-        conn->invoke("person_info", id, name, age);
-        ASSERT(conn->row());
-        ASSERT(conn->row()->has_field("person_info"));
-        ASSERT(conn->row()->data("person_info")->bytes() == expected_result);
-        conn->complete();
+        {
+          conn->invoke("person_info", id, name, age);
+          const auto r = conn->wait_row();
+          conn->wait_completion();
+          ASSERT(r);
+          ASSERT(r.index_of("person_info") == 0);
+          ASSERT(r.data("person_info").bytes() == expected_result);
+        }
 
         // Using named notation.
-        conn->invoke("person_info", _{"age", age}, _{"name", name}, _{"id", id});
-        ASSERT(conn->row());
-        ASSERT(conn->row()->has_field("person_info"));
-        ASSERT(conn->row()->data("person_info")->bytes() == expected_result);
-        conn->complete();
+        {
+          conn->invoke("person_info", Na{"age", age}, Na{"name", name}, Na{"id", id});
+          const auto r = conn->wait_row();
+          conn->wait_completion();
+          ASSERT(r);
+          ASSERT(r.index_of("person_info") == 0);
+          ASSERT(r.data("person_info").bytes() == expected_result);
+        }
 
         // Using mixed notation.
-        conn->invoke("person_info", id, _{"age", age}, _{"name", name});
-        ASSERT(conn->row());
-        ASSERT(conn->row()->has_field("person_info"));
-        ASSERT(conn->row()->data("person_info")->bytes() == expected_result);
-        conn->complete();
+        {
+          conn->invoke("person_info", id, Na{"age", age}, Na{"name", name});
+          const auto r = conn->wait_row();
+          conn->wait_completion();
+          ASSERT(r);
+          ASSERT(r.index_of("person_info") == 0);
+          ASSERT(r.data("person_info").bytes() == expected_result);
+        }
 
         conn->perform("rollback");
       }
@@ -431,12 +404,12 @@ int main(int, char* argv[])
         conn->set_result_format(pgfe::Data_format::binary);
         ASSERT(conn->result_format() == pgfe::Data_format::binary);
         conn->execute("SELECT 1::integer");
-        ASSERT(conn->row());
-        ASSERT(conn->row()->has_fields());
-        ASSERT(conn->row()->data(0)->format() == pgfe::Data_format::binary);
+        const auto r = conn->wait_row();
+        conn->wait_completion();
+        ASSERT(r);
+        ASSERT(!r.empty());
+        ASSERT(r.data().format() == pgfe::Data_format::binary);
         conn->set_result_format(pgfe::Data_format::text);
-        conn->dismiss_response();
-        conn->wait_response();
         ASSERT(conn->result_format() == pgfe::Data_format::text);
       }
 
@@ -449,14 +422,14 @@ int main(int, char* argv[])
 
       // to_hex_data(), to_hex_string()
       {
-        std::string storage{0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-        const auto data  = pgfe::Data::make(storage, pgfe::Data_format::binary);
+        const auto data = pgfe::Data::make(std::string{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
+          pgfe::Data_format::binary);
         const auto hex_data = conn->to_hex_data(data.get());
-        const auto data2 = pgfe::to_binary_data(hex_data.get());
+        const auto data2 = hex_data->to_bytea();
         ASSERT(data->size() == data2->size());
         ASSERT(!std::memcmp(data->bytes(), data2->bytes(), data->size()));
 
-        ASSERT(std::string(hex_data->bytes()) == conn->to_hex_string(data.get()));
+        ASSERT(std::string_view{hex_data->bytes()} == conn->to_hex_string(data.get()));
       }
     }
   } catch (const std::exception& e) {

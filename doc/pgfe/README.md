@@ -27,42 +27,39 @@ namespace pgfe = dmitigr::pgfe;
 
 int main() try {
   // Making the connection.
-  const auto conn = pgfe::Connection_options::make(pgfe::Communication_mode::net)->
-    set_net_hostname("localhost")->
-    set_database("pgfe_test")->
-    set_username("pgfe_test")->
-    set_password("pgfe_test")->
-    make_connection();
+  pgfe::Connection conn{pgfe::Connection_options{pgfe::Communication_mode::net}
+    .net_hostname("localhost").database("pgfe_test")
+    .username("pgfe_test").password("pgfe_test")};
 
   // Connecting.
-  conn->connect();
+  conn.connect();
 
   // Using Pgfe's conversion function.
   using pgfe::to;
 
   // Executing query with positional parameters.
-  conn->execute("select generate_series($1::int, $2::int)", 1, 3);
-  conn->for_each([](auto* r){ std::printf("Number %i\n", to<int>(r->data())); });
+  conn.execute([](auto&& r)
+  {
+    std::printf("Number %i\n", to<int>(r.data()));
+  }, "select generate_series($1::int, $2::int)", 1, 3);
 
   // Prepare and execute the statement with named parameters.
-  auto* ps = conn->prepare_statement("select :begin b, :end e");
-  ps->set_parameter("begin", 0);
-  ps->set_parameter("end", 1);
-  ps->execute();
-  ps->connection()->for_each([](auto* r) {
-    std::printf("Range [%i, %i]\n", to<int>(r->data("b")), to<int>(r->data("e")));
+  conn.prepare_statement("select :begin b, :end e")->
+    bind("begin", 0).bind("end", 1).execute([](auto&& r)
+  {
+    std::printf("Range [%i, %i]\n", to<int>(r.data("b")), to<int>(r.data("e")));
   });
 
   // Invoking the function.
-  conn->invoke("cos", .5f);
-  conn->for_each([](auto* r){
-    std::printf("cos(%f) = %f\n", .5f, to<float>(r->data()));
-  });
+  conn.invoke([](auto&& r)
+  {
+    std::printf("cos(%f) = %f\n", .5f, to<float>(r.data()));
+  }, "cos", .5f);
 
   // Provoking the syntax error.
-  conn->perform("provoke syntax error");
+  conn.perform("provoke syntax error");
  } catch (const pgfe::c42_Syntax_error& e) {
-  std::printf("Error %s is handled as expected.\n", e.error()->sqlstate().c_str());
+  std::printf("Error %s is handled as expected.\n", e.error()->sqlstate());
  } catch (const std::exception& e) {
   std::printf("Oops: %s\n", e.what());
   return 1;
@@ -72,7 +69,7 @@ int main() try {
 Features
 ========
 
-  - fast (negligible overhead compared to plain libpq);
+  - fast (negligible overhead compared to libpq);
   - can be used as header-only library;
   - work with database connections (in both blocking and non-blocking IO manner);
   - execute prepared statements (named parameters are supported);
@@ -92,7 +89,6 @@ Major features of the nearcome release
 --------------------------------------
 
   - support of COPY command;
-  - conversions of composite types;
   - yet more powerful support of arrays of variable dimensions at runtime.
 
 Usage
@@ -165,7 +161,7 @@ After creation of an object of type `dmitigr::pgfe::Connection` there are two
 ways to connect available:
 
   1. synchronously by using `dmitigr::pgfe::Connection::connect()`;
-  2. asynchronously by using `dmitigr::pgfe::Connection::connect_async()`.
+  2. in non-blocking IO maner by using `dmitigr::pgfe::Connection::connect_nio()`.
 
 Executing commands
 ------------------
@@ -182,11 +178,11 @@ SQL commands can be executed through either of two ways:
      + by implicitly preparing and executing an unnamed prepared statement with
        `dmitigr::pgfe::Connection::execute()`.
 
-Commands can be executed and processed asynchronously, i.e. without need of
-waiting a server response(-s), and thus, without thread blocking. For this
-purpose the methods of the class `dmitigr::pgfe::Connection` with the suffix
-`_async` shall be used, such as `dmitigr::pgfe::Connection::perform_async()`
-or `dmitigr::pgfe::Connection::prepare_statement_async()`.
+Commands can be executed and processed in non-blocking IO maner, i.e. without
+need of waiting a server response(-s), and thus, without thread blocking. For
+this purpose the methods of the class `dmitigr::pgfe::Connection` with the suffix
+`_nio` shall be used, such as `dmitigr::pgfe::Connection::perform_nio()`
+or `dmitigr::pgfe::Connection::prepare_statement_nio()`.
 
 Prepared statements can be parameterized with either positional or named
 parameters. In order to use the named parameters, a SQL string must be
@@ -332,21 +328,21 @@ void handle_error_example(dmitigr::pgfe::Connection* const conn)
     Alternatively, to process completion responses the method
     `dmitigr::pgfe::Connection::complete()` can be used.
 
-To *initiate* asynchronous (i.e. without blocking the thread) retrieving of the
-*first* response methods of the class `dmitigr::pgfe::Connection` with the
-suffix `_async` must be used. Otherwise, Pgfe will wait for the *first* response
-and if that response is `dmitigr::pgfe::Error`, an object of type
-`dmitigr::pgfe::Server_exception` will be thrown as exception. This object
-provides access to the object of type `dmitigr::pgfe::Error`, which contains
-the error details.
+To *initiate* non-blocking IO retrieving of the *first* response methods of the
+class `dmitigr::pgfe::Connection` with the suffix `_nio` should be used. Otherwise,
+Pgfe will wait for the *first* response and if that response is `dmitigr::pgfe::Error`,
+an object of type `dmitigr::pgfe::Server_exception` will be thrown as exception.
+This object provides access to the object of type `dmitigr::pgfe::Error`, which
+contains the error details.
 
 Server responses can be retrieved:
 
   - synchronously by using the methods such as
     `dmitigr::pgfe::Connection::wait_response()` and
     `dmitigr::pgfe::Connection::wait_last_response()`;
-  - asynchronously by using the methods such as
-    `dmitigr::pgfe::Connection::collect_server_messages()` and
+  - in non-blocking IO maner by using the methods such as
+    `dmitigr::pgfe::Connection::read_input()`,
+    `dmitigr::pgfe::Connection::handle_input()`,
     `dmitigr::pgfe::Connection::socket_readiness()`.
 
 Data type conversions
@@ -427,15 +423,14 @@ Signals can be handled:
   - synchronously, by using the signal handlers (see
     `dmitigr::pgfe::Connection::set_notice_handler()`,
     `dmitigr::pgfe::Connection::set_notification_handler()`);
-  - asynchronously, by using the methods that provides access to the retrieved
-    signals directly (see `dmitigr::pgfe::Connection::notice()`,
+  - in non-blocking IO maner, by using the methods that provides access to the
+    retrieved signals directly (see `dmitigr::pgfe::Connection::notice()`,
     `dmitigr::pgfe::Connection::notification()`).
 
-Signal handlers, being set, called by
-`dmitigr::pgfe::Connection::handle_signals()`. The latter is called automatically
-while waiting a response. If no handler is set, corresponding signals will be
-collected in the internal storage and *should* be popped up by using
-`dmitigr::pgfe::Connection::pop_notice()` and/or
+Signal handlers, being set, called by `dmitigr::pgfe::Connection::handle_signals()`.
+The latter is called automatically while waiting a response. If no handler is set,
+corresponding signals will be collected in the internal storage and *should* be
+popped up by using `dmitigr::pgfe::Connection::pop_notice()` and/or
 `dmitigr::pgfe::Connection::pop_notification()`.
 
 **Be aware, that if signals are not popped up from the internal storage it may

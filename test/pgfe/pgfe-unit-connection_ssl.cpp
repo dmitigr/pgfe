@@ -16,9 +16,11 @@ int main(int, char* argv[])
     conn->connect();
     ASSERT(conn->is_ssl_secured());
     conn->perform("begin");
-    ASSERT(conn->completion() && conn->completion()->operation_name() == "BEGIN");
+    auto comp = conn->wait_completion();
+    ASSERT(comp && comp.operation_name() == "BEGIN");
     conn->perform("commit");
-    ASSERT(conn->completion() && conn->completion()->operation_name() == "COMMIT");
+    comp = conn->wait_completion();
+    ASSERT(comp && comp.operation_name() == "COMMIT");
   } catch (const std::exception& e) {
     report_failure(argv[0], e);
     return 1;

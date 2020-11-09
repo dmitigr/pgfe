@@ -10,7 +10,7 @@
 #define DMITIGR_@dmitigr_lib_NAME@_DLL_HPP
 
 #ifdef _WIN32
-  #ifdef DMITIGR_CEFEIKA_DLL_BUILDING
+  #ifdef DMITIGR_@dmitigr_lib_NAME@_DLL_BUILDING
     #define DMITIGR_@dmitigr_lib_NAME@_API __declspec(dllexport)
   #else
     #if DMITIGR_@dmitigr_lib_NAME@_DLL

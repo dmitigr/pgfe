@@ -7,7 +7,7 @@
 
 #include "dmitigr/pgfe/types_fwd.hpp"
 
-#include <optional>
+#include <cstdint>
 #include <string>
 
 namespace dmitigr::pgfe {
@@ -16,58 +16,32 @@ namespace dmitigr::pgfe {
  * @ingroup main
  *
  * @brief An interface of compositional types.
- *
- * @param index - the field index specifier;
- * @param name - the field name specifier;
- * @param offset - the field offset specifier.
  */
 class Compositional {
 public:
-  /**
-   * @brief The destructor.
-   */
+  /// The destructor.
   virtual ~Compositional() = default;
 
-  /**
-   * @returns The number of fields.
-   */
-  virtual std::size_t field_count() const = 0;
+  /// @returns The number of fields.
+  virtual std::size_t size() const noexcept = 0;
+
+  /// @returns `(size() > 0)`
+  virtual bool is_empty() const noexcept = 0;
 
   /**
-   * @returns `(field_count() > 0)`
-   */
-  virtual bool has_fields() const = 0;
-
-  /**
-   * @returns The name of the field by the `index`.
+   * @returns The name of the field.
    *
    * @par Requires
-   * `(index < field_count())`.
+   * `(index < size())`.
    */
-  virtual const std::string& field_name(std::size_t index) const = 0;
+  virtual const std::string& name_of(std::size_t index) const noexcept = 0;
 
   /**
-   * @returns The field index if `has_field(name, offset)`, or
-   * `std::nullopt` otherwise.
+   * @returns The field index if presents, or `size()` othersize.
    *
-   * @remarks Since several fields can be named equally, `offset` can be
-   * specified as the starting lookup index.
+   * @param offset For cases when several fields are named equally.
    */
-  virtual std::optional<std::size_t> field_index(const std::string& name, std::size_t offset = 0) const = 0;
-
-  /**
-   * @returns The field index.
-   *
-   * @par Requires
-   * `has_field(name, offset)`.
-   */
-  virtual std::size_t field_index_throw(const std::string& name, std::size_t offset = 0) const = 0;
-
-  /**
-   * @returns `true` if this instance has the field with the specified `name`,
-   * or `false` otherwise.
-   */
-  virtual bool has_field(const std::string& name, std::size_t offset = 0) const = 0;
+  virtual std::size_t index_of(const std::string& name, std::size_t offset = 0) const noexcept = 0;
 
 private:
   friend Composite;
@@ -75,12 +49,22 @@ private:
   friend Row_info;
 
   Compositional() = default;
+
+  virtual bool is_invariant_ok() const
+  {
+    const bool fields_ok = is_empty() || size() > 0;
+    const bool field_names_ok = [this]
+    {
+      const std::size_t sz = size();
+      for (std::size_t i = 0; i < sz; ++i)
+        if (index_of(name_of(i), i) != i)
+          return false;
+      return true;
+    }();
+    return fields_ok && field_names_ok;
+  }
 };
 
 } // namespace dmitigr::pgfe
-
-#ifdef DMITIGR_PGFE_HEADER_ONLY
-#include "dmitigr/pgfe/compositional.cpp"
-#endif
 
 #endif  // DMITIGR_PGFE_COMPOSITIONAL_HPP

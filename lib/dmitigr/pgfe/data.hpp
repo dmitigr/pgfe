@@ -31,10 +31,27 @@ public:
   /// An alias of Data_format.
   using Format = Data_format;
 
-  /**
-   * The destructor.
-   */
+  /// The destructor.
   virtual ~Data() = default;
+
+  /**
+   * @returns `true` if the instance is valid.
+   *
+   * @warning The behavior is undefined if any method other than this one, the
+   * destructor or the move-assignment operator is called on an instance for
+   * which `(is_valid() == false)`. It's okay to move an instance for which
+   * `(is_valid() == false)`.
+   */
+  bool is_valid() const noexcept
+  {
+    return (static_cast<int>(format()) >= 0);
+  }
+
+  /// @returns `true` if the instance is valid
+  explicit operator bool() const noexcept
+  {
+    return is_valid();
+  }
 
   /// @name Constructors
   /// @{
@@ -43,17 +60,8 @@ public:
    * @returns A new instance of this class.
    */
   static DMITIGR_PGFE_API std::unique_ptr<Data> make(
-    std::string storage,
+    std::string&& storage,
     Data_format format);
-
-  /**
-   * @overload
-   *
-   * @remarks The `bytes` will be copied into the modifiable internal storage.
-   */
-  static DMITIGR_PGFE_API std::unique_ptr<Data> make(
-    std::string_view bytes,
-    Data_format format = Data_format::text);
 
   /**
    * @overload
@@ -66,6 +74,15 @@ public:
     Data_format format);
 
   /**
+   * @overload
+   *
+   * @remarks The `bytes` will be copied into the modifiable internal storage.
+   */
+  static DMITIGR_PGFE_API std::unique_ptr<Data> make(
+    std::string_view bytes,
+    Data_format format = Data_format::text);
+
+  /**
    * @returns A new instance of this class.
    *
    * @see Data_view.
@@ -74,10 +91,26 @@ public:
     std::string_view bytes,
     Data_format format = Data_format::text);
 
-  /**
-   * @returns The copy of this instance.
-   */
+  /// @returns The copy of this instance.
   virtual std::unique_ptr<Data> to_data() const = 0;
+
+  /**
+   * @returns The result of conversion of text representation of the PostgreSQL's
+   * Bytea data type to a plain binary data.
+   *
+   * @par Requires
+   * `(format() == Data_format::text)`.
+   *
+   * @relates Data
+   */
+  DMITIGR_PGFE_API std::unique_ptr<Data> to_bytea() const;
+
+  /**
+   * @ingroup main
+   *
+   * @brief Similar to to_bytea(const Data*).
+   */
+  static DMITIGR_PGFE_API std::unique_ptr<Data> to_bytea(const std::string& text_data);
 
   /// @}
 
@@ -86,23 +119,17 @@ public:
   /// @name Observers and modifiers
   /// @{
 
-  /**
-   * @returns The data format.
-   */
+  /// @returns The data format.
   virtual Data_format format() const noexcept = 0;
 
-  /**
-   * @returns The data size in bytes.
-   */
+  /// @returns The data size in bytes.
   virtual std::size_t size() const noexcept = 0;
 
-  /**
-   * @returns `(size() == 0)`.
-   */
+  /// @returns `(size() == 0)`.
   virtual bool is_empty() const noexcept = 0;
 
   /**
-   * @returns The pointer to the unmodifiable character array.
+   * @returns The pointer to a unmodifiable character array.
    *
    * @remarks The result is not guaranteed to be zero-terminated.
    * @remarks Any bits stored in the array shall not be altered!
@@ -125,28 +152,31 @@ protected:
  *
  * @remarks Doesn't owns the data.
  */
-class Data_view : public Data {
+class Data_view final : public Data {
 public:
+  /// Default-constructible. (Constructs invalid instance.)
+  Data_view() noexcept = default;
+
   /**
    * @brief The constructor.
    *
    * @par Requires
    * `bytes`.
    */
-  explicit DMITIGR_PGFE_API Data_view(const char* bytes = "", int size = 0,
-    Format format = Format::text);
+  DMITIGR_PGFE_API Data_view(const char* bytes, int size = 0,
+    Format format = Format::text) noexcept;
 
   /// Copy-constructible.
-  Data_view(const Data_view&) = default;
+  Data_view(const Data_view&) noexcept = default;
 
   /// Move-constructible.
-  DMITIGR_PGFE_API Data_view(Data_view&& rhs);
+  DMITIGR_PGFE_API Data_view(Data_view&& rhs) noexcept;
 
   /// Copy-assignable.
-  Data_view& operator=(const Data_view&) = default;
+  Data_view& operator=(const Data_view&) noexcept = default;
 
   /// Move-assignable.
-  DMITIGR_PGFE_API Data_view& operator=(Data_view&& rhs);
+  DMITIGR_PGFE_API Data_view& operator=(Data_view&& rhs) noexcept;
 
   /// @see Data::to_data().
   DMITIGR_PGFE_API std::unique_ptr<Data> to_data() const override;
@@ -179,30 +209,16 @@ public:
   }
 
 private:
-  Format format_{Format::text};
+  Format format_{-1}; // -1 denoted invalid instance
   int size_{};
   const char* bytes_{""};
 };
 
-/**
- * @ingroup main
- *
- * @returns The result of conversion of text representation
- * of the PostgreSQL's Bytea data type to the plain binary data.
- *
- * @par Requires
- * `(text_data && text_data->format() == Data_format::text)`.
- *
- * @relates Data
- */
-DMITIGR_PGFE_API std::unique_ptr<Data> to_binary_data(const Data* text_data);
-
-/**
- * @ingroup main
- *
- * @brief Similar to to_binary_data(const Data*).
- */
-DMITIGR_PGFE_API std::unique_ptr<Data> to_binary_data(const std::string& text_data);
+/// Overload of Data_view::swap().
+inline void swap(Data_view& lhs, Data_view& rhs) noexcept
+{
+  lhs.swap(rhs);
+}
 
 } // namespace dmitigr::pgfe
 

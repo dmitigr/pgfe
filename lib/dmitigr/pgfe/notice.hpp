@@ -8,43 +8,60 @@
 #include "dmitigr/pgfe/problem.hpp"
 #include "dmitigr/pgfe/signal.hpp"
 
-#include <string>
-#include <system_error>
-
 namespace dmitigr::pgfe {
 
 /**
  * @ingroup main
  *
- * @brief An unprompted (asynchronous) notice from a PostgreSQL server.
+ * @brief An unprompted (asynchronous) information about an activity
+ * from a PostgreSQL server.
  *
- * The notice is an information about an activity of the PostgreSQL server.
- * (For example, it might be the database administrator's commands.)
+ * In particular, notice might represents the information about the database
+ * administrator's commands.
  *
  * @remarks It should not be confused with the Notification signal.
  */
-class Notice : public Signal, public Problem {
+class Notice final : public Signal, public Problem {
 public:
-  /// @name Conversions
-  /// @{
+  /// The destructor.
+  ~Notice() override
+  {
+    pq_result_.release(); // freed in libpq/fe-protocol3.c:pqGetErrorNotice3()
+  }
 
-  /**
-   * @returns The copy of this instance.
-   */
-  virtual std::unique_ptr<Notice> to_notice() const = 0;
+  /// Default-constructible. (Constructs invalid instance.)
+  Notice() = default;
 
-  /// @}
+  /// The constructor.
+  explicit Notice(const ::PGresult* const result) noexcept
+    : Problem{detail::pq::Result{const_cast< ::PGresult*>(result)}}
+  {
+    /*
+     * In fact result is not const. So it's okay to const_cast.
+     * (Allocated in libpq/fe-protocol3.c:pqGetErrorNotice3().)
+     */
+    assert(is_invariant_ok());
+  }
+
+  /// @see Message::is_valid().
+  bool is_valid() const noexcept override
+  {
+    return static_cast<bool>(pq_result_);
+  }
 
 private:
-  friend detail::iNotice;
-
-  Notice() = default;
+  bool is_invariant_ok() const noexcept override
+  {
+    const auto sev = severity();
+    return ((static_cast<int>(sev) == -1) ||
+      (sev == Problem_severity::log) ||
+      (sev == Problem_severity::info) ||
+      (sev == Problem_severity::debug) ||
+      (sev == Problem_severity::notice) ||
+      (sev == Problem_severity::warning)) && Problem::is_invariant_ok();
+  }
 };
 
 } // namespace dmitigr::pgfe
-
-#ifdef DMITIGR_PGFE_HEADER_ONLY
-#include "dmitigr/pgfe/notice.cpp"
-#endif
 
 #endif  // DMITIGR_PGFE_NOTICE_HPP

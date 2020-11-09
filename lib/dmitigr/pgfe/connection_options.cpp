@@ -10,30 +10,29 @@
 #include "dmitigr/pgfe/defaults_unix.hpp"
 #endif
 
-#include <dmitigr/base/debug.hpp>
 #include <dmitigr/net/net.hpp>
 
 #include <algorithm>
 #include <stdexcept>
 
-namespace dmitigr::pgfe::detail {
+namespace dmitigr::pgfe {
 
 inline namespace validators {
 
 template<typename T>
-bool is_non_negative(const T value) noexcept
+inline bool is_non_negative(const T value) noexcept
 {
   return value >= 0;
 }
 
 template<typename T>
-bool is_non_empty(const T& value) noexcept
+inline bool is_non_empty(const T& value) noexcept
 {
   return !value.empty();
 }
 
 template<typename T>
-bool is_valid_port(const T value) noexcept
+inline bool is_valid_port(const T value) noexcept
 {
   return 0 < value && value < 65536;
 }
@@ -56,574 +55,409 @@ inline bool is_absolute_directory_name(const std::filesystem::path& value)
 inline void validate(const bool condition, const std::string& option_name)
 {
   if (!condition)
-    throw std::logic_error{"invalid value of \"" + option_name + "\" connection option"};
+    throw std::runtime_error{"invalid value of \"" + option_name + "\" connection option"};
 }
 
 } // namespace validators
 
-// =============================================================================
+DMITIGR_PGFE_INLINE Connection_options::Connection_options()
+  : Connection_options{detail::defaults::communication_mode}
+{}
 
-/**
- * @brief The Connection_options implementation.
+/*
+ * It's better to provide an initializers in the members declarations, but
+ * due to the bug in Microsoft Visual Studio 15.7, all of them are here.
  */
-class iConnection_options final : public Connection_options {
-public:
-  iConnection_options()
-    : iConnection_options{defaults::communication_mode}
-  {}
-
-  /*
-   * It is better to provide an initializers in the members declarations, but
-   * due to the bug in Microsoft Visual Studio 15.7, all of them are here.
-   */
-  explicit iConnection_options(const Communication_mode communication_mode)
-    : communication_mode_{communication_mode}
-    , connect_timeout_{defaults::connect_timeout}
-    , wait_response_timeout_{defaults::wait_response_timeout}
-    , wait_last_response_timeout_{defaults::wait_last_response_timeout}
+DMITIGR_PGFE_INLINE Connection_options::Connection_options(const Communication_mode communication_mode)
+  : communication_mode_{communication_mode}
+  , connect_timeout_{detail::defaults::connect_timeout}
+  , wait_response_timeout_{detail::defaults::wait_response_timeout}
 #ifndef _WIN32
-    , uds_directory_{defaults::uds_directory}
-    , uds_require_server_process_username_{defaults::uds_require_server_process_username}
+  , uds_directory_{detail::defaults::uds_directory}
+  , uds_require_server_process_username_{detail::defaults::uds_require_server_process_username}
 #endif
-    , tcp_keepalives_enabled_{defaults::tcp_keepalives_enabled}
-    , tcp_keepalives_idle_{defaults::tcp_keepalives_idle}
-    , tcp_keepalives_interval_{defaults::tcp_keepalives_interval}
-    , tcp_keepalives_count_{defaults::tcp_keepalives_count}
-    , net_address_{defaults::net_address}
-    , net_hostname_{defaults::net_hostname}
-    , port_{defaults::port}
-    , username_{defaults::username}
-    , database_{defaults::database}
-    , password_{defaults::password}
-    , kerberos_service_name_{defaults::kerberos_service_name}
-    , is_ssl_enabled_{defaults::ssl_enabled}
-    , ssl_compression_enabled_{defaults::ssl_compression_enabled}
-    , ssl_certificate_file_{defaults::ssl_certificate_file}
-    , ssl_private_key_file_{defaults::ssl_private_key_file}
-    , ssl_certificate_authority_file_{defaults::ssl_certificate_authority_file}
-    , ssl_certificate_revocation_list_file_{defaults::ssl_certificate_revocation_list_file}
-    , ssl_server_hostname_verification_enabled_{defaults::ssl_server_hostname_verification_enabled}
-  {
-    DMITIGR_REQUIRE(is_invariant_ok(), std::logic_error,
-      "invalid connection options defaults (dmitigr::pgfe must be recompiled)");
-  }
+  , tcp_keepalives_enabled_{detail::defaults::tcp_keepalives_enabled}
+  , tcp_keepalives_idle_{detail::defaults::tcp_keepalives_idle}
+  , tcp_keepalives_interval_{detail::defaults::tcp_keepalives_interval}
+  , tcp_keepalives_count_{detail::defaults::tcp_keepalives_count}
+  , net_address_{detail::defaults::net_address}
+  , net_hostname_{detail::defaults::net_hostname}
+  , port_{detail::defaults::port}
+  , username_{detail::defaults::username}
+  , database_{detail::defaults::database}
+  , password_{detail::defaults::password}
+  , kerberos_service_name_{detail::defaults::kerberos_service_name}
+  , is_ssl_enabled_{detail::defaults::ssl_enabled}
+  , ssl_compression_enabled_{detail::defaults::ssl_compression_enabled}
+  , ssl_certificate_file_{detail::defaults::ssl_certificate_file}
+  , ssl_private_key_file_{detail::defaults::ssl_private_key_file}
+  , ssl_certificate_authority_file_{detail::defaults::ssl_certificate_authority_file}
+  , ssl_certificate_revocation_list_file_{detail::defaults::ssl_certificate_revocation_list_file}
+  , ssl_server_hostname_verification_enabled_{detail::defaults::ssl_server_hostname_verification_enabled}
+{
+  if (!is_invariant_ok())
+    throw std::logic_error{"invalid connection options defaults (dmitigr::pgfe must be recompiled)"};
+}
 
-  std::unique_ptr<Connection> make_connection() const override; // defined in connection.cpp
+DMITIGR_PGFE_INLINE void Connection_options::swap(Connection_options& rhs) noexcept
+{
+  using std::swap;
+  swap(communication_mode_, rhs.communication_mode_);
+  swap(connect_timeout_, rhs.connect_timeout_);
+  swap(wait_response_timeout_, rhs.wait_response_timeout_);
+#ifndef _WIN32
+  swap(uds_directory_, rhs.uds_directory_);
+  swap(uds_require_server_process_username_, rhs.uds_require_server_process_username_);
+#endif
+  swap(tcp_keepalives_enabled_, rhs.tcp_keepalives_enabled_);
+  swap(tcp_keepalives_idle_, rhs.tcp_keepalives_idle_);
+  swap(tcp_keepalives_interval_, rhs.tcp_keepalives_interval_);
+  swap(tcp_keepalives_count_, rhs.tcp_keepalives_count_);
+  swap(net_address_, rhs.net_address_);
+  swap(net_hostname_, rhs.net_hostname_);
+  swap(port_, rhs.port_);
+  swap(username_, rhs.username_);
+  swap(database_, rhs.database_);
+  swap(password_, rhs.password_);
+  swap(kerberos_service_name_, rhs.kerberos_service_name_);
+  swap(is_ssl_enabled_, rhs.is_ssl_enabled_);
+  swap(ssl_compression_enabled_, rhs.ssl_compression_enabled_);
+  swap(ssl_certificate_file_, rhs.ssl_certificate_file_);
+  swap(ssl_private_key_file_, rhs.ssl_private_key_file_);
+  swap(ssl_certificate_authority_file_, rhs.ssl_certificate_authority_file_);
+  swap(ssl_certificate_revocation_list_file_, rhs.ssl_certificate_revocation_list_file_);
+  swap(ssl_server_hostname_verification_enabled_, rhs.ssl_server_hostname_verification_enabled_);
+}
 
-  std::unique_ptr<Connection_options> to_connection_options() const override
-  {
-    return std::make_unique<iConnection_options>(*this);
-  }
-
-  iConnection_options* set(const Communication_mode value) override
-  {
+DMITIGR_PGFE_INLINE Connection_options& Connection_options::communication_mode(const Communication_mode value) noexcept
+{
 #ifdef _WIN32
-    DMITIGR_ASSERT(value == Communication_mode::net);
+  assert(value == Communication_mode::net);
 #endif
-    communication_mode_ = value;
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
+  communication_mode_ = value;
+  assert(is_invariant_ok());
+  return *this;
+}
 
-  Communication_mode communication_mode() const override
-  {
-    return communication_mode_;
-  }
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::connect_timeout(std::optional<std::chrono::milliseconds> value)
+{
+  if (value)
+    validate(is_non_negative(value->count()), "connect timeout");
+  connect_timeout_ = std::move(value);
+  assert(is_invariant_ok());
+  return *this;
+}
 
-  iConnection_options* set_connect_timeout(std::optional<std::chrono::milliseconds> value) override
-  {
-    if (value)
-      validate(is_non_negative(value->count()), "connect timeout");
-    connect_timeout_ = std::move(value);
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::wait_response_timeout(std::optional<std::chrono::milliseconds> value)
+{
+  if (value)
+    validate(is_non_negative(value->count()), "get response timeout");
+  wait_response_timeout_ = std::move(value);
+  assert(is_invariant_ok());
+  return *this;
+}
 
-  std::optional<std::chrono::milliseconds> connect_timeout() const override
-  {
-    return connect_timeout_;
-  }
-
-  iConnection_options* set_wait_response_timeout(std::optional<std::chrono::milliseconds> value) override
-  {
-    if (value)
-      validate(is_non_negative(value->count()), "wait response timeout");
-    wait_response_timeout_ = std::move(value);
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
-
-  std::optional<std::chrono::milliseconds> wait_response_timeout() const override
-  {
-    return wait_response_timeout_;
-  }
-
-  iConnection_options* set_wait_last_response_timeout(std::optional<std::chrono::milliseconds> value) override
-  {
-    if (value)
-      validate(is_non_negative(value->count()), "wait last response timeout");
-    wait_last_response_timeout_ = std::move(value);
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
-
-  std::optional<std::chrono::milliseconds> wait_last_response_timeout() const override
-  {
-    return wait_last_response_timeout_;
-  }
-
-  // ---------------------------------------------------------------------------
-
-  iConnection_options* set_port(const std::int_fast32_t value) override
-  {
-    validate(is_valid_port(value), "server port");
-    port_ = value;
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
-
-  std::int_fast32_t port() const override
-  {
-    return port_;
-  }
-
-  // ---------------------------------------------------------------------------
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::port(const std::int_fast32_t value)
+{
+  validate(is_valid_port(value), "server port");
+  port_ = value;
+  assert(is_invariant_ok());
+  return *this;
+}
 
 #ifndef _WIN32
-  iConnection_options* set_uds_directory(std::filesystem::path value) override
-  {
-    DMITIGR_REQUIRE(communication_mode() == Communication_mode::uds, std::logic_error);
-    validate(is_absolute_directory_name(value), "UDS directory");
-    uds_directory_ = std::move(value);
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::uds_directory(std::filesystem::path value)
+{
+  assert(communication_mode() == Communication_mode::uds);
+  validate(is_absolute_directory_name(value), "UDS directory");
+  uds_directory_ = std::move(value);
+  assert(is_invariant_ok());
+  return *this;
+}
 
-  const std::filesystem::path& uds_directory() const override
-  {
-    return uds_directory_;
-  }
-
-  // ---------------------------------------------------------------------------
-
-  iConnection_options* set_uds_require_server_process_username(std::optional<std::string> value) override
-  {
-    DMITIGR_REQUIRE(communication_mode() == Communication_mode::uds, std::logic_error);
-    if (value)
-      validate(is_non_empty(*value), "UDS require server process username");
-    uds_require_server_process_username_ = std::move(value);
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
-
-  const std::optional<std::string>& uds_require_server_process_username() const override
-  {
-    return uds_require_server_process_username_;
-  }
-
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::uds_require_server_process_username(std::optional<std::string> value)
+{
+  assert(communication_mode() == Communication_mode::uds);
+  if (value)
+    validate(is_non_empty(*value), "UDS require server process username");
+  uds_require_server_process_username_ = std::move(value);
+  assert(is_invariant_ok());
+  return *this;
+}
 #endif
 
-  // ---------------------------------------------------------------------------
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::tcp_keepalives_enabled(const bool value)
+{
+  assert(communication_mode() == Communication_mode::net);
+  tcp_keepalives_enabled_ = value;
+  assert(is_invariant_ok());
+  return *this;
+}
 
-  iConnection_options* set_tcp_keepalives_enabled(const bool value) override
-  {
-    DMITIGR_REQUIRE(communication_mode() == Communication_mode::net, std::logic_error);
-    tcp_keepalives_enabled_ = value;
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::tcp_keepalives_idle(const std::optional<std::chrono::seconds> value)
+{
+  assert(communication_mode() == Communication_mode::net);
+  if (value)
+    validate(is_non_negative(value->count()), "TCP keepalives idle");
+  tcp_keepalives_idle_ = value;
+  assert(is_invariant_ok());
+  return *this;
+}
 
-  bool is_tcp_keepalives_enabled() const override
-  {
-    return tcp_keepalives_enabled_;
-  }
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::tcp_keepalives_interval(const std::optional<std::chrono::seconds> value)
+{
+  assert(communication_mode() == Communication_mode::net);
+  if (value)
+    validate(is_non_negative(value->count()), "TCP keepalives interval");
+  tcp_keepalives_interval_ = value;
+  assert(is_invariant_ok());
+  return *this;
+}
 
-  // ---------------------------------------------------------------------------
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::tcp_keepalives_count(const std::optional<int> value)
+{
+  assert(communication_mode() == Communication_mode::net);
+  if (value)
+    validate(is_non_negative(*value), "TCP keepalives count");
+  tcp_keepalives_count_ = value;
+  assert(is_invariant_ok());
+  return *this;
+}
 
-  iConnection_options* set_tcp_keepalives_idle(const std::optional<std::chrono::seconds> value) override
-  {
-    DMITIGR_REQUIRE(communication_mode() == Communication_mode::net, std::logic_error);
-    if (value)
-      validate(is_non_negative(value->count()), "TCP keepalives idle");
-    tcp_keepalives_idle_ = value;
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::net_address(std::optional<std::string> value)
+{
+  assert(communication_mode() == Communication_mode::net);
+  assert(value || net_hostname());
+  if (value)
+    validate(is_ip_address(*value), "Network address");
+  net_address_ = std::move(value);
+  assert(is_invariant_ok());
+  return *this;
+}
 
-  std::optional<std::chrono::seconds> tcp_keepalives_idle() const override
-  {
-    return tcp_keepalives_idle_;
-  }
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::net_hostname(std::optional<std::string> value)
+{
+  assert(communication_mode() == Communication_mode::net);
+  assert(value || net_address());
+  if (value)
+    validate(is_hostname(*value), "Network host name");
+  net_hostname_ = std::move(value);
+  assert(is_invariant_ok());
+  return *this;
+}
 
-  // ---------------------------------------------------------------------------
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::username(std::string value)
+{
+  validate(is_non_empty(value), "username");
+  username_ = std::move(value);
+  assert(is_invariant_ok());
+  return *this;
+}
 
-  iConnection_options* set_tcp_keepalives_interval(const std::optional<std::chrono::seconds> value) override
-  {
-    DMITIGR_REQUIRE(communication_mode() == Communication_mode::net, std::logic_error);
-    if (value)
-      validate(is_non_negative(value->count()), "TCP keepalives interval");
-    tcp_keepalives_interval_ = value;
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::database(std::string value)
+{
+  validate(is_non_empty(value), "database");
+  database_ = std::move(value);
+  assert(is_invariant_ok());
+  return *this;
+}
 
-  std::optional<std::chrono::seconds> tcp_keepalives_interval() const override
-  {
-    return tcp_keepalives_interval_;
-  }
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::password(std::optional<std::string> value)
+{
+  if (value)
+    validate(is_non_empty(*value), "password");
+  password_ = std::move(value);
+  assert(is_invariant_ok());
+  return *this;
+}
 
-  // ---------------------------------------------------------------------------
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::kerberos_service_name(std::optional<std::string> value)
+{
+  if (value)
+    validate(is_non_empty(*value), "Kerberos service name");
+  kerberos_service_name_ = std::move(value);
+  assert(is_invariant_ok());
+  return *this;
+}
 
-  iConnection_options* set_tcp_keepalives_count(const std::optional<int> value) override
-  {
-    DMITIGR_REQUIRE(communication_mode() == Communication_mode::net, std::logic_error);
-    if (value)
-      validate(is_non_negative(*value), "TCP keepalives count");
-    tcp_keepalives_count_ = value;
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::ssl_enabled(const bool value)
+{
+  is_ssl_enabled_ = value;
+  assert(is_invariant_ok());
+  return *this;
+}
 
-  std::optional<int> tcp_keepalives_count() const override
-  {
-    return tcp_keepalives_count_;
-  }
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::ssl_compression_enabled(const bool value)
+{
+  assert(is_ssl_enabled());
+  ssl_compression_enabled_ = value;
+  assert(is_invariant_ok());
+  return *this;
+}
 
-  // ---------------------------------------------------------------------------
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::ssl_certificate_file(std::optional<std::filesystem::path> value)
+{
+  assert(is_ssl_enabled());
+  if (value)
+    validate(is_non_empty(*value), "SSL certificate file");
+  ssl_certificate_file_ = std::move(value);
+  assert(is_invariant_ok());
+  return *this;
+}
 
-  iConnection_options* set_net_address(std::optional<std::string> value) override
-  {
-    DMITIGR_REQUIRE(communication_mode() == Communication_mode::net, std::logic_error);
-    if (value)
-      validate(is_ip_address(*value), "Network address");
-    else
-      DMITIGR_REQUIRE(net_hostname(), std::logic_error);
-    net_address_ = std::move(value);
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::ssl_private_key_file(std::optional<std::filesystem::path> value)
+{
+  assert(is_ssl_enabled());
+  if (value)
+    validate(is_non_empty(*value), "SSL private key file");
+  ssl_private_key_file_ = std::move(value);
+  assert(is_invariant_ok());
+  return *this;
+}
 
-  const std::optional<std::string>& net_address() const override
-  {
-    return net_address_;
-  }
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::ssl_certificate_authority_file(std::optional<std::filesystem::path> value)
+{
+  assert(is_ssl_enabled());
+  if (value)
+    validate(is_non_empty(*value), "SSL certificate authority file");
+  ssl_certificate_authority_file_ = std::move(value);
+  assert(is_invariant_ok());
+  return *this;
+}
 
-  // ---------------------------------------------------------------------------
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::ssl_certificate_revocation_list_file(std::optional<std::filesystem::path> value)
+{
+  assert(is_ssl_enabled());
+  if (value)
+    validate(is_non_empty(*value), "SSL certificate revocation list file");
+  ssl_certificate_revocation_list_file_ = std::move(value);
+  assert(is_invariant_ok());
+  return *this;
+}
 
-  iConnection_options* set_net_hostname(std::optional<std::string> value) override
-  {
-    DMITIGR_REQUIRE(communication_mode() == Communication_mode::net, std::logic_error);
-    if (value)
-      validate(is_hostname(*value), "Network host name");
-    else
-      DMITIGR_REQUIRE(net_address(), std::logic_error);
-    net_hostname_ = std::move(value);
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::ssl_server_hostname_verification_enabled(const bool value)
+{
+  assert(is_ssl_enabled());
+  assert(ssl_certificate_authority_file());
+  ssl_server_hostname_verification_enabled_ = value;
+  assert(is_invariant_ok());
+  return *this;
+}
 
-  const std::optional<std::string>& net_hostname() const override
-  {
-    return net_hostname_;
-  }
-
-  // ---------------------------------------------------------------------------
-
-  iConnection_options* set_username(std::string value) override
-  {
-    validate(is_non_empty(value), "username");
-    username_ = std::move(value);
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
-
-  const std::string& username() const override
-  {
-    return username_;
-  }
-
-  // ---------------------------------------------------------------------------
-
-  iConnection_options* set_database(std::string value) override
-  {
-    validate(is_non_empty(value), "database");
-    database_ = std::move(value);
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
-
-  const std::string& database() const override
-  {
-    return database_;
-  }
-
-  // ---------------------------------------------------------------------------
-
-  iConnection_options* set_password(std::optional<std::string> value) override
-  {
-    if (value)
-      validate(is_non_empty(*value), "password");
-    password_ = std::move(value);
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
-
-  const std::optional<std::string>& password() const override
-  {
-    return password_;
-  }
-
-  // ---------------------------------------------------------------------------
-
-  iConnection_options* set_kerberos_service_name(std::optional<std::string> value) override
-  {
-    if (value)
-      validate(is_non_empty(*value), "Kerberos service name");
-    kerberos_service_name_ = std::move(value);
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
-
-  const std::optional<std::string>& kerberos_service_name() const override
-  {
-    return kerberos_service_name_;
-  }
-
-  // ---------------------------------------------------------------------------
-
-  iConnection_options* set_ssl_enabled(const bool value) override
-  {
-    is_ssl_enabled_ = value;
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
-
-  bool is_ssl_enabled() const override
-  {
-    return is_ssl_enabled_;
-  }
-
-  // ---------------------------------------------------------------------------
-
-  iConnection_options* set_ssl_compression_enabled(const bool value) override
-  {
-    DMITIGR_REQUIRE(is_ssl_enabled(), std::logic_error);
-    ssl_compression_enabled_ = value;
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
-
-  bool is_ssl_compression_enabled() const override
-  {
-    return ssl_compression_enabled_;
-  }
-
-  // ---------------------------------------------------------------------------
-
-  iConnection_options* set_ssl_certificate_file(std::optional<std::filesystem::path> value) override
-  {
-    DMITIGR_REQUIRE(is_ssl_enabled(), std::logic_error);
-    if (value)
-      validate(is_non_empty(*value), "SSL certificate file");
-    ssl_certificate_file_ = std::move(value);
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
-
-  const std::optional<std::filesystem::path>& ssl_certificate_file() const override
-  {
-    return ssl_certificate_file_;
-  }
-
-  // ---------------------------------------------------------------------------
-
-  iConnection_options* set_ssl_private_key_file(std::optional<std::filesystem::path> value) override
-  {
-    DMITIGR_REQUIRE(is_ssl_enabled(), std::logic_error);
-    if (value)
-      validate(is_non_empty(*value), "SSL private key file");
-    ssl_private_key_file_ = std::move(value);
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
-
-  const std::optional<std::filesystem::path>& ssl_private_key_file() const override
-  {
-    return ssl_private_key_file_;
-  }
-
-  // ---------------------------------------------------------------------------
-
-  iConnection_options* set_ssl_certificate_authority_file(std::optional<std::filesystem::path> value) override
-  {
-    DMITIGR_REQUIRE(is_ssl_enabled(), std::logic_error);
-    if (value)
-      validate(is_non_empty(*value), "SSL certificate authority file");
-    ssl_certificate_authority_file_ = std::move(value);
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
-
-  const std::optional<std::filesystem::path>& ssl_certificate_authority_file() const override
-  {
-    return ssl_certificate_authority_file_;
-  }
-
-  // ---------------------------------------------------------------------------
-
-  iConnection_options* set_ssl_certificate_revocation_list_file(std::optional<std::filesystem::path> value) override
-  {
-    DMITIGR_REQUIRE(is_ssl_enabled(), std::logic_error);
-    if (value)
-      validate(is_non_empty(*value), "SSL certificate revocation list file");
-    ssl_certificate_revocation_list_file_ = std::move(value);
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
-
-  const std::optional<std::filesystem::path>& ssl_certificate_revocation_list_file() const override
-  {
-    return ssl_certificate_revocation_list_file_;
-  }
-
-  // ---------------------------------------------------------------------------
-
-  iConnection_options* set_ssl_server_hostname_verification_enabled(const bool value) override
-  {
-    DMITIGR_REQUIRE(is_ssl_enabled() && ssl_certificate_authority_file(), std::logic_error);
-    ssl_server_hostname_verification_enabled_ = value;
-    DMITIGR_ASSERT(is_invariant_ok());
-    return this;
-  }
-
-  bool is_ssl_server_hostname_verification_enabled() const override
-  {
-    return ssl_server_hostname_verification_enabled_;
-  }
-
-private:
-  virtual bool is_invariant_ok()
-  {
+DMITIGR_PGFE_INLINE bool Connection_options::is_invariant_ok() const noexcept
+{
 #ifdef _WIN32
-    const bool communication_mode_ok = (communication_mode_ == Communication_mode::net);
-    constexpr bool uds_ok = true;
+  const bool communication_mode_ok = (communication_mode_ == Communication_mode::net);
+  constexpr bool uds_ok = true;
 #else
-    constexpr bool communication_mode_ok = true;
-    const bool uds_ok = !(communication_mode_ == Communication_mode::uds) ||
-      (is_absolute_directory_name(uds_directory_) &&
-        is_valid_port(port_) &&
-        (!uds_require_server_process_username_ || !uds_require_server_process_username_->empty()));
+  constexpr bool communication_mode_ok = true;
+  const bool uds_ok = !(communication_mode_ == Communication_mode::uds) ||
+    (is_absolute_directory_name(uds_directory_) &&
+      is_valid_port(port_) &&
+      (!uds_require_server_process_username_ || !uds_require_server_process_username_->empty()));
 #endif
-    const bool tcp_ok = !(communication_mode_ == Communication_mode::net) ||
-      ((!tcp_keepalives_idle_ || is_non_negative(tcp_keepalives_idle_->count())) &&
-        (!tcp_keepalives_interval_ || is_non_negative(tcp_keepalives_interval_->count())) &&
-        (!tcp_keepalives_count_ || is_non_negative(tcp_keepalives_count_)) &&
-        (net_address_ || net_hostname_) &&
-        (!net_address_ || is_ip_address(*net_address_)) &&
-        (!net_hostname_ || is_hostname(*net_hostname_)) &&
-        is_valid_port(port_));
-    const bool auth_ok =
-      !username_.empty() &&
-      !database_.empty() &&
-      (!password_ || !password_->empty()) &&
-      (!kerberos_service_name_ || !kerberos_service_name_->empty());
-    const bool ssl_ok =
-      (!ssl_certificate_file_ || !ssl_certificate_file_->empty()) &&
-      (!ssl_private_key_file_ || !ssl_private_key_file_->empty()) &&
-      (!ssl_certificate_authority_file_ || !ssl_certificate_authority_file_->empty()) &&
-      (!ssl_certificate_revocation_list_file_ || !ssl_certificate_revocation_list_file_->empty()) &&
-      (!ssl_server_hostname_verification_enabled_ || ssl_certificate_authority_file_);
+  const bool tcp_ok = !(communication_mode_ == Communication_mode::net) ||
+    ((!tcp_keepalives_idle_ || is_non_negative(tcp_keepalives_idle_->count())) &&
+      (!tcp_keepalives_interval_ || is_non_negative(tcp_keepalives_interval_->count())) &&
+      (!tcp_keepalives_count_ || is_non_negative(tcp_keepalives_count_)) &&
+      (net_address_ || net_hostname_) &&
+      (!net_address_ || is_ip_address(*net_address_)) &&
+      (!net_hostname_ || is_hostname(*net_hostname_)) &&
+      is_valid_port(port_));
+  const bool auth_ok =
+    !username_.empty() &&
+    !database_.empty() &&
+    (!password_ || !password_->empty()) &&
+    (!kerberos_service_name_ || !kerberos_service_name_->empty());
+  const bool ssl_ok =
+    (!ssl_certificate_file_ || !ssl_certificate_file_->empty()) &&
+    (!ssl_private_key_file_ || !ssl_private_key_file_->empty()) &&
+    (!ssl_certificate_authority_file_ || !ssl_certificate_authority_file_->empty()) &&
+    (!ssl_certificate_revocation_list_file_ || !ssl_certificate_revocation_list_file_->empty()) &&
+    (!ssl_server_hostname_verification_enabled_ || ssl_certificate_authority_file_);
 
-    return communication_mode_ok && uds_ok && tcp_ok && auth_ok && ssl_ok;
-  }
+  return communication_mode_ok && uds_ok && tcp_ok && auth_ok && ssl_ok;
+}
 
-  Communication_mode communication_mode_;
-  std::optional<std::chrono::milliseconds> connect_timeout_;
-  std::optional<std::chrono::milliseconds> wait_response_timeout_;
-  std::optional<std::chrono::milliseconds> wait_last_response_timeout_;
-#ifndef _WIN32
-  std::filesystem::path uds_directory_;
-  std::optional<std::string> uds_require_server_process_username_;
-#endif
-  bool tcp_keepalives_enabled_;
-  std::optional<std::chrono::seconds> tcp_keepalives_idle_;
-  std::optional<std::chrono::seconds> tcp_keepalives_interval_;
-  std::optional<int> tcp_keepalives_count_;
-  std::optional<std::string> net_address_;
-  std::optional<std::string> net_hostname_;
-  std::int_fast32_t port_;
-  std::string username_;
-  std::string database_;
-  std::optional<std::string> password_;
-  std::optional<std::string> kerberos_service_name_;
-  bool is_ssl_enabled_;
-  bool ssl_compression_enabled_;
-  std::optional<std::filesystem::path> ssl_certificate_file_;
-  std::optional<std::filesystem::path> ssl_private_key_file_;
-  std::optional<std::filesystem::path> ssl_certificate_authority_file_;
-  std::optional<std::filesystem::path> ssl_certificate_revocation_list_file_;
-  bool ssl_server_hostname_verification_enabled_;
-};
+namespace detail::pq {
 
-// =============================================================================
+// -----------------------------------------------------------------------------
+// Connection_options
+// -----------------------------------------------------------------------------
 
-/**
- * @brief A generator of connection options for libpq from Connection_options.
- */
-class pq_Connection_options final {
+/// Connection options for libpq from Connection_options.
+class Connection_options final {
 public:
-  /**
-   * @brief The constructor.
-   */
-  explicit pq_Connection_options(const Connection_options* const o)
+  /// The constructor.
+  explicit Connection_options(const pgfe::Connection_options& o)
   {
-    DMITIGR_ASSERT(o);
-
-    switch (o->communication_mode()) {
+    switch (o.communication_mode()) {
     case Communication_mode::net: {
       constexpr auto z = std::chrono::seconds::zero();
-      values_[host] = o->net_hostname().value_or("");
-      values_[hostaddr] = o->net_address().value_or("");
-      values_[port] = std::to_string(o->port());
-      values_[keepalives] = std::to_string(o->is_tcp_keepalives_enabled());
-      values_[keepalives_idle] = std::to_string(o->tcp_keepalives_idle().value_or(z).count());
-      values_[keepalives_interval] = std::to_string(o->tcp_keepalives_interval().value_or(z).count());
-      values_[keepalives_count] = std::to_string(o->tcp_keepalives_count().value_or(0));
+      values_[host] = o.net_hostname().value_or("");
+      values_[hostaddr] = o.net_address().value_or("");
+      values_[port] = std::to_string(o.port());
+      values_[keepalives] = std::to_string(o.is_tcp_keepalives_enabled());
+      values_[keepalives_idle] = std::to_string(o.tcp_keepalives_idle().value_or(z).count());
+      values_[keepalives_interval] = std::to_string(o.tcp_keepalives_interval().value_or(z).count());
+      values_[keepalives_count] = std::to_string(o.tcp_keepalives_count().value_or(0));
       break;
     }
 #ifndef _WIN32
     case Communication_mode::uds:
-      values_[host] = o->uds_directory().generic_string();
-      values_[port] = std::to_string(o->port());
-      values_[requirepeer] = o->uds_require_server_process_username().value_or("");
+      values_[host] = o.uds_directory().generic_string();
+      values_[port] = std::to_string(o.port());
+      values_[requirepeer] = o.uds_require_server_process_username().value_or("");
       break;
 #endif
     }
 
-    values_[dbname] = o->database();
-    values_[user] = o->username();
-    values_[password] = o->password().value_or("");
+    values_[dbname] = o.database();
+    values_[user] = o.username();
+    values_[password] = o.password().value_or("");
 
-    if (o->is_ssl_enabled()) {
-      if (o->is_ssl_server_hostname_verification_enabled()) {
+    if (o.is_ssl_enabled()) {
+      if (o.is_ssl_server_hostname_verification_enabled()) {
         values_[sslmode] = "verify-full";
       } else {
-        if (o->ssl_certificate_authority_file())
+        if (o.ssl_certificate_authority_file())
           values_[sslmode] = "verify-ca";
         else
           values_[sslmode] = "require";
       }
 
-      values_[sslcompression] = std::to_string(o->is_ssl_compression_enabled());
-      values_[sslcert] = o->ssl_certificate_file().value_or(std::filesystem::path{}).generic_string();
-      values_[sslkey] = o->ssl_private_key_file().value_or(std::filesystem::path{}).generic_string();
-      values_[sslrootcert] = o->ssl_certificate_authority_file().value_or(std::filesystem::path{}).generic_string();
-      values_[sslcrl] = o->ssl_certificate_revocation_list_file().value_or(std::filesystem::path{}).generic_string();
+      values_[sslcompression] = std::to_string(o.is_ssl_compression_enabled());
+      values_[sslcert] = o.ssl_certificate_file().value_or(std::filesystem::path{}).generic_string();
+      values_[sslkey] = o.ssl_private_key_file().value_or(std::filesystem::path{}).generic_string();
+      values_[sslrootcert] = o.ssl_certificate_authority_file().value_or(std::filesystem::path{}).generic_string();
+      values_[sslcrl] = o.ssl_certificate_revocation_list_file().value_or(std::filesystem::path{}).generic_string();
     } else {
       values_[sslmode] = "disable";
     }
 
-    values_[krbsrvname] = o->kerberos_service_name().value_or("");
+    values_[krbsrvname] = o.kerberos_service_name().value_or("");
     values_[gsslib] = "";
 
     // -------------------------------------------------------------------------
@@ -642,64 +476,55 @@ public:
     update_cache();
   }
 
-  /**
-   * @brief The copy constructor.
-   */
-  pq_Connection_options(const pq_Connection_options& rhs)
+  /// Copy-constructible.
+  Connection_options(const Connection_options& rhs)
   {
     for (decltype (+Keyword_count_) i = host; i < Keyword_count_; ++i)
       values_[i] = rhs.values_[i];
     update_cache();
   }
 
-  /**
-   * @brief The move constructor.
-   */
-  pq_Connection_options(pq_Connection_options&& rhs)
+  /// Move-constructible.
+  Connection_options(Connection_options&& rhs)
   {
     for (decltype (+Keyword_count_) i = host; i < Keyword_count_; ++i)
       values_[i] = std::move(rhs.values_[i]);
     update_cache();
   }
 
-  /**
-   * @brief The copy assignment operator.
-   */
-  pq_Connection_options& operator=(const pq_Connection_options& rhs)
+  /// Copy-assignable.
+  Connection_options& operator=(const Connection_options& rhs)
   {
     if (this != &rhs) {
-      pq_Connection_options tmp(rhs);
+      Connection_options tmp(rhs);
       swap(tmp);
     }
     return *this;
   }
 
-  /**
-   * @brief The move assignment operator.
-   */
-  pq_Connection_options& operator=(pq_Connection_options&& rhs)
+  /// Move-assignable.
+  Connection_options& operator=(Connection_options&& rhs)
   {
     if (this != &rhs) {
-      pq_Connection_options tmp(std::move(rhs));
+      Connection_options tmp{std::move(rhs)};
       swap(tmp);
     }
     return *this;
   }
 
-  /**
-   * @brief The swap operation.
-   */
-  void swap(pq_Connection_options& rhs)
+  /// Swaps the instances.
+  void swap(Connection_options& rhs) noexcept
   {
+    using std::swap;
     for (decltype (+Keyword_count_) i = host; i < Keyword_count_; ++i) {
-      std::swap(pq_keywords_[i], rhs.pq_keywords_[i]);
-      std::swap(pq_values_[i], rhs.pq_values_[i]);
-      std::swap(values_[i], rhs.values_[i]);
+      swap(pq_keywords_[i], rhs.pq_keywords_[i]);
+      swap(pq_values_[i], rhs.pq_values_[i]);
+      swap(values_[i], rhs.values_[i]);
     }
   }
 
   /**
-   * @returns The libpq parameter keywords.
+   * @returns Parameter keywords for libpq.
    *
    * @see https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-PARAMKEYWORDS
    */
@@ -709,7 +534,7 @@ public:
   }
 
   /**
-   * @returns The libpq parameter values.
+   * @returns Parameter values for libpq.
    *
    * @see keywords().
    */
@@ -718,31 +543,18 @@ public:
     return pq_values_;
   }
 
-  /**
-   * @returns The total count of keyword/value pairs.
-   */
+  /// @returns The total count of keyword/value pairs.
   static std::size_t count()
   {
     return Keyword_count_;
   }
 
 private:
-  constexpr bool is_invariant_ok() const
-  {
-    constexpr auto keywords_count = sizeof(pq_keywords_) / sizeof(*pq_keywords_);
-    constexpr auto values_count = sizeof(values_) / sizeof(*values_);
-    static_assert(sizeof(pq_keywords_) == sizeof(pq_values_));
-    static_assert(keywords_count == (1 + values_count));
-    return true;
-  }
-
-  // ===========================================================================
-
   /**
    * @brief A libpq keyword.
    *
    * @remarks The keyword "host" is used in update_cache() as the initial value
-   * in for-loop. Thus, it must be 0!
+   * in for-loop. Thus, it must be `0`!
    */
   enum Keyword : std::size_t {
     host = 0, hostaddr, port,
@@ -756,13 +568,11 @@ private:
     gsslib, passfile, connect_timeout, client_encoding, options,
     application_name, fallback_application_name, service, target_session_attrs,
 
-    // The last member is special - it denotes keyword count
+    // The last member is special - it denotes keyword count.
     Keyword_count_
   };
 
-  /**
-   * @returns The libpq keyword literal.
-   */
+  /// @returns The keyword literal for libpq.
   static const char* to_literal(const Keyword keyword)
   {
     switch (keyword) {
@@ -795,7 +605,8 @@ private:
     case target_session_attrs: return "target_session_attrs";
     case Keyword_count_:;
     }
-    DMITIGR_ASSERT_ALWAYS(!true);
+    assert(false);
+    std::terminate();
   }
 
   /**
@@ -813,28 +624,22 @@ private:
     pq_keywords_[Keyword_count_] = nullptr;
     pq_values_[Keyword_count_] = nullptr;
 
-    DMITIGR_ASSERT(is_invariant_ok());
+    assert(is_invariant_ok());
   }
 
   const char* pq_keywords_[Keyword_count_ + 1];
   const char* pq_values_[Keyword_count_ + 1];
   std::string values_[Keyword_count_];
+
+  constexpr bool is_invariant_ok() const
+  {
+    constexpr auto keywords_count = sizeof(pq_keywords_) / sizeof(*pq_keywords_);
+    constexpr auto values_count = sizeof(values_) / sizeof(*values_);
+    static_assert(sizeof(pq_keywords_) == sizeof(pq_values_));
+    static_assert(keywords_count == (1 + values_count));
+    return true;
+  }
 };
 
-} // namespace dmitigr::pgfe::detail
-
-// =============================================================================
-
-namespace dmitigr::pgfe {
-
-DMITIGR_PGFE_INLINE std::unique_ptr<Connection_options> Connection_options::make()
-{
-  return std::make_unique<detail::iConnection_options>();
-}
-
-DMITIGR_PGFE_INLINE std::unique_ptr<Connection_options> Connection_options::make(const Communication_mode value)
-{
-  return std::make_unique<detail::iConnection_options>(value);
-}
-
+} // namespace detail::pq
 } // namespace dmitigr::pgfe

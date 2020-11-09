@@ -42,16 +42,6 @@ if (UNIX AND NOT CMAKE_SYSTEM_NAME MATCHES MSYS|MinGW|Cygwin)
     endif()
   endif()
 
-  if(NOT DEFINED DMITIGR_PGFE_CONNECTION_WAIT_LAST_RESPONSE_TIMEOUT)
-    set(DMITIGR_PGFE_CONNECTION_WAIT_LAST_RESPONSE_TIMEOUT "" CACHE
-      STRING "Integer (in milliseconds).")
-  endif()
-  if (NOT "${DMITIGR_PGFE_CONNECTION_WAIT_LAST_RESPONSE_TIMEOUT}" STREQUAL "")
-    if(NOT "${DMITIGR_PGFE_CONNECTION_WAIT_LAST_RESPONSE_TIMEOUT}" MATCHES ^[0-9]+$)
-      message(FATAL_ERROR "Invalid value of DMITIGR_PGFE_CONNECTION_WAIT_LAST_RESPONSE_TIMEOUT")
-    endif()
-  endif()
-
   if(NOT DEFINED DMITIGR_PGFE_CONNECTION_UDS_DIRECTORY)
     set(DMITIGR_PGFE_CONNECTION_UDS_DIRECTORY "/tmp" CACHE
       PATH "Absolute name of the directory where the Unix-domain socket file is located")
@@ -291,47 +281,35 @@ set(dmitigr_pgfe_headers
   notification.hpp
   parameterizable.hpp
   pq.hpp
-  prepared_statement_dfn.hpp
-  prepared_statement_impl.hpp
+  prepared_statement.hpp
   problem.hpp
   response.hpp
-  response_variant.hpp
   row.hpp
   row_conversions.hpp
   row_info.hpp
-  server_message.hpp
   signal.hpp
   sql_string.hpp
   sql_vector.hpp
   std_system_error.hpp
-  util.hpp
   types_fwd.hpp
   )
 
 set(dmitigr_pgfe_implementations
   completion.cpp
-  composite.cpp
-  compositional.cpp
   connection.cpp
   connection_options.cpp
   connection_pool.cpp
   data.cpp
   errc.cpp
-  error.cpp
   exceptions.cpp
   large_object.cpp
   misc.cpp
-  notice.cpp
-  notification.cpp
-  parameterizable.cpp
-  prepared_statement_impl.cpp
+  prepared_statement.cpp
   problem.cpp
-  row.cpp
   row_info.cpp
   sql_string.cpp
   sql_vector.cpp
   std_system_error.cpp
-  util.cpp
   )
 
 set(dmitigr_pgfe_cmake_unpreprocessed

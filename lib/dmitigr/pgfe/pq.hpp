@@ -6,12 +6,12 @@
 #define DMITIGR_PGFE_PQ_HPP
 
 #include "dmitigr/pgfe/basics.hpp"
-
-#include <dmitigr/base/debug.hpp>
 #include <dmitigr/str/str.hpp>
 
 #include <libpq-fe.h>
 
+#include <algorithm>
+#include <cassert>
 #include <memory>
 
 namespace std {
@@ -40,57 +40,50 @@ template<> struct default_delete<::PGresult> final {
   }
 };
 
+/**
+ * @internal
+ *
+ * @brief The default deleter for `::PGconn`.
+ */
+template<> struct default_delete<::PGconn> final {
+  void operator()(::PGconn* const ptr) const
+  {
+    ::PQfinish(ptr);
+  }
+};
+
 } // namespace std
 
-/**
- * @brief The layer of abstraction over libpq.
- */
+/// The abstraction layer over libpq.
 namespace dmitigr::pgfe::detail::pq {
 
-/**
- * @returns The integer identifier of the specified format.
- */
-inline int to_int(const Data_format format)
+/// @returns The integer identifier of the specified format.
+inline int to_int(const Data_format format) noexcept
 {
-  switch (format) {
-  case Data_format::text:   return 0;
-  case Data_format::binary: return 1;
-  }
-  DMITIGR_ASSERT_ALWAYS(!true);
+  assert(static_cast<int>(format) == 0 || static_cast<int>(format) == 1);
+  return static_cast<int>(format);
 }
 
-/**
- * @returns Data_format converted from integer.
- */
-inline Data_format to_data_format(const int format)
+/// @returns Data_format converted from integer.
+inline Data_format to_data_format(const int format) noexcept
 {
-  switch (format) {
-  case 0: return Data_format::text;
-  case 1: return Data_format::binary;
-  }
-  DMITIGR_ASSERT_ALWAYS(!true);
+  assert(format == 0 || format == 1);
+  return Data_format{format};
 }
 
-/**
- * @brief Represents libpq's result.
- */
-class Result {
+/// Represents libpq's result.
+class Result final {
 public:
-  /**
-   * @brief Denotes a result status.
-   */
+  /// Denotes a result status.
   using Status = ::ExecStatusType;
 
-  /**
-   * @brief The default constructor.
-   */
+  /// The default constructor. (Constructs invalid instance.)
   Result() = default;
 
-  /**
-   * @brief The constructor.
-   */
+  /// The constructor.
   explicit Result(::PGresult* const pgresult) noexcept
-    : pgresult_(pgresult)
+    : status_{pgresult ? ::PQresultStatus(pgresult) : static_cast<Status>(-1)}
+    , pgresult_(pgresult)
   {}
 
   /**
@@ -113,25 +106,61 @@ public:
     set_attributes(attributes, sizeof (attributes) / sizeof (::PGresAttDesc));
   }
 
+  /// Non copy-constructible.
   Result(const Result&) = delete;
-  Result& operator=(const Result&) = delete;
-  Result(Result&&) = default;
-  Result& operator=(Result&&) = default;
 
-  /**
-   * @returns `true` if this instance is set to a some `::PGresult`.
-   */
-  explicit operator bool() const noexcept
+  /// Non copy-assignable.
+  Result& operator=(const Result&) = delete;
+
+  /// Move-constructible.
+  Result(Result&& rhs) noexcept
+    : status_{rhs.status_}
+    , pgresult_{std::move(rhs.pgresult_)}
   {
-    return bool(pgresult_);
+    rhs.status_ = static_cast<Status>(-1);
   }
 
-  /**
-   * @brief Resets the current instance to the specified `pgresult`.
-   */
+  /// Move-assignable.
+  Result& operator=(Result&& rhs) noexcept
+  {
+    if (this != &rhs) {
+      Result tmp{std::move(rhs)};
+      swap(tmp);
+    }
+    return *this;
+  }
+
+  /// @returns `true` if this instance is set to a some `::PGresult`.
+  explicit operator bool() const noexcept
+  {
+    return static_cast<bool>(pgresult_);
+  }
+
+  /// Resets the current instance to the specified `pgresult`.
   void reset(::PGresult* const pgresult = nullptr) noexcept
   {
+    status_ = pgresult ? ::PQresultStatus(pgresult) : static_cast<Status>(-1);
     pgresult_.reset(pgresult);
+  }
+
+  /// Releases the underlying result.
+  ::PGresult* release() noexcept
+  {
+    return pgresult_.release();
+  }
+
+  /// @returns The raw pointer to the libpq's result.
+  const ::PGresult* native_handle() const noexcept
+  {
+    return pgresult_.get();
+  }
+
+  /// Swaps this instance with `rhs`.
+  void swap(Result& rhs) noexcept
+  {
+    using std::swap;
+    swap(status_, rhs.status_);
+    swap(pgresult_, rhs.pgresult_);
   }
 
   /**
@@ -142,170 +171,132 @@ public:
    */
   Status status() const noexcept
   {
-    return ::PQresultStatus(pg_result());
+    return status_;
   }
 
-  /**
-   * @returns The command status tag from a SQL command.
-   */
+  /// @returns The command status tag from a SQL command.
   const char* command_tag() const noexcept
   {
-    return ::PQcmdStatus(const_cast< ::PGresult*>(pg_result()));
+    return ::PQcmdStatus(const_cast< ::PGresult*>(native_handle()));
   }
 
-  /**
-   * @returns The number of rows affected by a SQL command.
-   */
-  const char* affected_rows_count() const noexcept
+  /// @returns The number of rows affected by a SQL command.
+  const char* affected_row_count() const noexcept
   {
-    return ::PQcmdTuples(const_cast< ::PGresult*>(pg_result()));
+    return ::PQcmdTuples(const_cast< ::PGresult*>(native_handle()));
   }
+
+  // ===========================================================================
 
   /// @name Error report.
   /// @{
 
-  /**
-   * @returns The item of the error report.
-   */
+  /// @returns The item of the error report.
   const char* er_severity_localized() const noexcept
   {
-    return str::literal(::PQresultErrorField(pg_result(), PG_DIAG_SEVERITY));
+    return ::PQresultErrorField(native_handle(), PG_DIAG_SEVERITY);
   }
 
-  /**
-   * @returns The item of the error report.
-   */
+  /// @returns The item of the error report.
   const char* er_severity_non_localized() const noexcept
   {
-    return str::literal(::PQresultErrorField(pg_result(), PG_DIAG_SEVERITY_NONLOCALIZED));
+    return ::PQresultErrorField(native_handle(), PG_DIAG_SEVERITY_NONLOCALIZED);
   }
 
-  /**
-   * @returns The item of the error report.
-   */
+  /// @returns The item of the error report.
   const char* er_code() const noexcept
   {
-    return str::literal(::PQresultErrorField(pg_result(), PG_DIAG_SQLSTATE));
+    return str::coalesce({::PQresultErrorField(native_handle(), PG_DIAG_SQLSTATE), "00000"});
   }
 
-  /**
-   * @returns The item of the error report.
-   */
+  /// @returns The item of the error report.
   const char* er_brief() const noexcept
   {
-    return str::literal(::PQresultErrorField(pg_result(), PG_DIAG_MESSAGE_PRIMARY));
+    return str::literal(::PQresultErrorField(native_handle(), PG_DIAG_MESSAGE_PRIMARY));
   }
 
-  /**
-   * @returns The item of the error report.
-   */
+  /// @returns The item of the error report.
   const char* er_detail() const noexcept
   {
-    return str::literal(::PQresultErrorField(pg_result(), PG_DIAG_MESSAGE_DETAIL));
+    return ::PQresultErrorField(native_handle(), PG_DIAG_MESSAGE_DETAIL);
   }
 
-  /**
-   * @returns The item of the error report.
-   */
+  /// @returns The item of the error report.
   const char* er_hint() const noexcept
   {
-    return str::literal(::PQresultErrorField(pg_result(), PG_DIAG_MESSAGE_HINT));
+    return ::PQresultErrorField(native_handle(), PG_DIAG_MESSAGE_HINT);
   }
 
-  /**
-   * @returns The item of the error report.
-   */
+  /// @returns The item of the error report.
   const char* er_query_position() const noexcept
   {
-    return str::literal(::PQresultErrorField(pg_result(), PG_DIAG_STATEMENT_POSITION));
+    return ::PQresultErrorField(native_handle(), PG_DIAG_STATEMENT_POSITION);
   }
 
-  /**
-   * @returns The item of the error report.
-   */
+  /// @returns The item of the error report.
   const char* er_internal_query_position() const noexcept
   {
-    return str::literal(::PQresultErrorField(pg_result(), PG_DIAG_INTERNAL_POSITION));
+    return ::PQresultErrorField(native_handle(), PG_DIAG_INTERNAL_POSITION);
   }
 
-  /**
-   * @returns The item of the error report.
-   */
+  /// @returns The item of the error report.
   const char* er_internal_query() const noexcept
   {
-    return str::literal(::PQresultErrorField(pg_result(), PG_DIAG_INTERNAL_QUERY));
+    return ::PQresultErrorField(native_handle(), PG_DIAG_INTERNAL_QUERY);
   }
 
-  /**
-   * @returns The item of the error report.
-   */
+  /// @returns The item of the error report.
   const char* er_context() const noexcept
   {
-    return str::literal(::PQresultErrorField(pg_result(), PG_DIAG_CONTEXT));
+    return ::PQresultErrorField(native_handle(), PG_DIAG_CONTEXT);
   }
 
-  /**
-   * @returns The item of the error report.
-   */
+  /// @returns The item of the error report.
   const char* er_schema_name() const noexcept
   {
-    return str::literal(::PQresultErrorField(pg_result(), PG_DIAG_SCHEMA_NAME));
+    return ::PQresultErrorField(native_handle(), PG_DIAG_SCHEMA_NAME);
   }
 
-  /**
-   * @returns The item of the error report.
-   */
+  /// @returns The item of the error report.
   const char* er_table_name() const noexcept
   {
-    return str::literal(::PQresultErrorField(pg_result(), PG_DIAG_TABLE_NAME));
+    return ::PQresultErrorField(native_handle(), PG_DIAG_TABLE_NAME);
   }
 
-  /**
-   * @returns The item of the error report.
-   */
+  /// @returns The item of the error report.
   const char* er_column_name() const noexcept
   {
-    return str::literal(::PQresultErrorField(pg_result(), PG_DIAG_COLUMN_NAME));
+    return ::PQresultErrorField(native_handle(), PG_DIAG_COLUMN_NAME);
   }
 
-  /**
-   * @returns The item of the error report.
-   */
-  const char* er_datatype_name() const noexcept
+  /// @returns The item of the error report.
+  const char* er_data_type_name() const noexcept
   {
-    return str::literal(::PQresultErrorField(pg_result(), PG_DIAG_DATATYPE_NAME));
+    return ::PQresultErrorField(native_handle(), PG_DIAG_DATATYPE_NAME);
   }
 
-  /**
-   * @returns The item of the error report.
-   */
+  /// @returns The item of the error report.
   const char* er_constraint_name() const noexcept
   {
-    return str::literal(::PQresultErrorField(pg_result(), PG_DIAG_CONSTRAINT_NAME));
+    return ::PQresultErrorField(native_handle(), PG_DIAG_CONSTRAINT_NAME);
   }
 
-  /**
-   * @returns The item of the error report.
-   */
+  /// @returns The item of the error report.
   const char* er_source_file() const noexcept
   {
-    return str::literal(::PQresultErrorField(pg_result(), PG_DIAG_SOURCE_FILE));
+    return ::PQresultErrorField(native_handle(), PG_DIAG_SOURCE_FILE);
   }
 
-  /**
-   * @returns The item of the error report.
-   */
+  /// @returns The item of the error report.
   const char* er_source_line() const noexcept
   {
-    return str::literal(::PQresultErrorField(pg_result(), PG_DIAG_SOURCE_LINE));
+    return ::PQresultErrorField(native_handle(), PG_DIAG_SOURCE_LINE);
   }
 
-  /**
-   * @returns The item of the error report.
-   */
+  /// @returns The item of the error report.
   const char* er_source_function() const noexcept
   {
-    return str::literal(::PQresultErrorField(pg_result(), PG_DIAG_SOURCE_FUNCTION));
+    return ::PQresultErrorField(native_handle(), PG_DIAG_SOURCE_FUNCTION);
   }
 
   /// @}
@@ -323,31 +314,25 @@ public:
    */
   int row_count() const noexcept
   {
-    return ::PQntuples(pg_result());
+    return ::PQntuples(native_handle());
   }
 
-  /**
-   * @returns The number of fields.
-   */
+  /// @returns The number of fields.
   int field_count() const noexcept
   {
-    return ::PQnfields(pg_result());
+    return ::PQnfields(native_handle());
   }
 
-  /**
-   * @returns `nullptr` if the `position` is out of range.
-   */
+  /// @returns `nullptr` if the `position` is out of range.
   const char* field_name(const int index) const noexcept
   {
-    return ::PQfname(pg_result(), index);
+    return ::PQfname(native_handle(), index);
   }
 
-  /**
-   * @returns -1 if the given name does not match any field.
-   */
+  /// @returns -1 if the given name does not match any field.
   int field_index(const char* const name) const noexcept
   {
-    return ::PQfnumber(pg_result(), name);
+    return ::PQfnumber(native_handle(), name);
   }
 
   /**
@@ -356,7 +341,7 @@ public:
    */
   ::Oid field_table_oid(const int position) const noexcept
   {
-    return ::PQftable(pg_result(), position);
+    return ::PQftable(native_handle(), position);
   }
 
   /**
@@ -366,55 +351,43 @@ public:
    */
   int field_table_column(const int position) const noexcept
   {
-    return ::PQftablecol(pg_result(), position);
+    return ::PQftablecol(native_handle(), position);
   }
 
-  /**
-   * @returns The data format of the field.
-   */
+  /// @returns The data format of the field.
   Data_format field_format(const int position) const noexcept
   {
-    return to_data_format(::PQfformat(pg_result(), position));
+    return to_data_format(::PQfformat(native_handle(), position));
   }
 
-  /**
-   * @returns The data type OID of the field.
-   */
+  /// @returns The data type OID of the field.
   ::Oid field_type_oid(const int position) const noexcept
   {
-    return ::PQftype(pg_result(), position);
+    return ::PQftype(native_handle(), position);
   }
 
-  /**
-   * @returns -1 to denote *no information available*.
-   */
+  /// @returns -1 to denote *no information available*.
   int field_type_modifier(const int position) const noexcept
   {
-    return ::PQfmod(pg_result(), position);
+    return ::PQfmod(native_handle(), position);
   }
 
-  /**
-   * @returns -1 to denote *variable-size*.
-   */
+  /// @returns -1 to denote *variable-size*.
   int field_type_size(const int position) const noexcept
   {
-    return ::PQfsize(pg_result(), position);
+    return ::PQfsize(native_handle(), position);
   }
 
-  /**
-   * @returns `true` if the field is null, or `false` otherwise.
-   */
+  /// @returns `true` if the field is null.
   bool is_data_null(const int row_number, const int field_number) const noexcept
   {
-    return ::PQgetisnull(pg_result(), row_number, field_number);
+    return ::PQgetisnull(native_handle(), row_number, field_number);
   }
 
-  /**
-   * @returns The actual length of a field data value in bytes.
-   */
+  /// @returns The actual length of a field data value in bytes.
   int data_size(const int row_number, const int field_number) const noexcept
   {
-    return ::PQgetlength(pg_result(), row_number, field_number);
+    return ::PQgetlength(native_handle(), row_number, field_number);
   }
 
   /**
@@ -427,19 +400,19 @@ public:
    */
   const char* data_value(const int row_number, const int field_number) const noexcept
   {
-    return ::PQgetvalue(pg_result(), row_number, field_number);
+    return ::PQgetvalue(native_handle(), row_number, field_number);
   }
 
   /**
    * @brief Sets the value of the field's data.
    *
-   * @returns `true` on success, or `false` otherwise.
+   * @returns `true` on success.
    *
    * @remarks The `value` is copied into the private storage.
    */
   bool set_data_value(const int row_number, const int field_number, const char* const value, const int size) noexcept
   {
-    return ::PQsetvalue(const_cast< ::PGresult*>(pg_result()), row_number, field_number, const_cast<char*>(value), size);
+    return ::PQsetvalue(const_cast< ::PGresult*>(native_handle()), row_number, field_number, const_cast<char*>(value), size);
   }
 
   /// @}
@@ -449,20 +422,16 @@ public:
   /// @name ::PQdescribePrepared() result inspectors
   /// @{
 
-  /**
-   * @returns The number of parameters of a prepared statement.
-   */
+  /// @returns The number of parameters of a prepared statement.
   int ps_param_count() const noexcept
   {
-    return ::PQnparams(pg_result());
+    return ::PQnparams(native_handle());
   }
 
-  /**
-   * @returns The data type of a prepared statement parameter.
-   */
+  /// @returns The data type of a prepared statement parameter.
   ::Oid ps_param_type_oid(const int position) const noexcept
   {
-    return ::PQparamtype(pg_result(), position);
+    return ::PQparamtype(native_handle(), position);
   }
 
   /// @}
@@ -475,26 +444,25 @@ public:
   /**
    * @brief Sets the attributes of this instance.
    *
-   * @returns `true` on success, or `false` otherwise.
+   * @returns `true` on success.
    */
   bool set_attributes(::PGresAttDesc* const attributes, const int attribute_count)
   {
-    return ::PQsetResultAttrs(const_cast< ::PGresult*>(pg_result()), attribute_count, attributes);
-  }
-
-  /**
-   * @returns The raw pointer to the libpq's result.
-   */
-  const ::PGresult* pg_result() const noexcept
-  {
-    return pgresult_.get();
+    return ::PQsetResultAttrs(const_cast< ::PGresult*>(native_handle()), attribute_count, attributes);
   }
 
   /// @}
 
 private:
+  Status status_{static_cast<Status>(-1)}; // optimization
   std::unique_ptr< ::PGresult> pgresult_;
 };
+
+/// Overload of Result::swap().
+inline void swap(Result& lhs, Result& rhs) noexcept
+{
+  lhs.swap(rhs);
+}
 
 } // namespace dmitigr::pgfe::detail::pq
 

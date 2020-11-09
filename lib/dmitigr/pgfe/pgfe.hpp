@@ -49,13 +49,11 @@
 #include "dmitigr/pgfe/row.hpp"
 #include "dmitigr/pgfe/row_conversions.hpp"
 #include "dmitigr/pgfe/row_info.hpp"
-#include "dmitigr/pgfe/server_message.hpp"
 #include "dmitigr/pgfe/signal.hpp"
 #include "dmitigr/pgfe/sql_string.hpp"
 #include "dmitigr/pgfe/sql_vector.hpp"
 #include "dmitigr/pgfe/std_system_error.hpp"
 #include "dmitigr/pgfe/types_fwd.hpp"
-#include "dmitigr/pgfe/util.hpp"
 #include "dmitigr/pgfe/version.hpp"
 
 #endif  // DMITIGR_PGFE_PGFE_HPP

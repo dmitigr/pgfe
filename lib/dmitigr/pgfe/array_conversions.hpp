@@ -9,10 +9,10 @@
 #include "dmitigr/pgfe/conversions_api.hpp"
 #include "dmitigr/pgfe/data.hpp"
 #include "dmitigr/pgfe/exceptions.hpp"
-#include <dmitigr/base/debug.hpp>
 #include <dmitigr/str/str.hpp>
 
 #include <algorithm>
+#include <cassert>
 #include <locale>
 #include <memory>
 #include <optional>
@@ -22,9 +22,7 @@
 namespace dmitigr::pgfe {
 namespace detail {
 
-/**
- * @returns The PostgreSQL array literal representation of the `container`.
- */
+/// @returns The PostgreSQL array literal representation of the `container`.
 template<typename T,
   template<class> class Optional,
   template<class, class> class Container,
@@ -33,17 +31,15 @@ template<typename T,
 std::string to_array_literal(const Container<Optional<T>, Allocator<Optional<T>>>& container,
   char delimiter = ',', Types&& ... args);
 
-/**
- * @returns The container representation of the PostgreSQL array `literal`.
- */
+/// @returns The container representation of the PostgreSQL array `literal`.
 template<class Container, typename ... Types>
 Container to_container(const char* literal, char delimiter = ',', Types&& ... args);
 
 // =============================================================================
 
 /**
- * @brief The compile-time converter from the "container of values" type to the
- * "container of optionals" type.
+ * The compile-time converter from a "container of values" type
+ * to a "container of optionals" type.
  */
 template<typename T>
 struct Cont_of_opts final {
@@ -51,11 +47,10 @@ struct Cont_of_opts final {
 };
 
 /**
- * @brief The full specialization of the structure template Cont_of_opts.
+ * @brief Forces treating `std::string` as a non-container type.
  *
- * This specialization is needed to force treating `std::string` as a
- * non-container type. Without this specialization, `std::string` will be
- * translated to `std::basic_string<Optional<char>, ...>`.
+ * Without this specialization, `std::string` treated as
+ * `std::basic_string<Optional<char>, ...>`.
  *
  * @remarks This is a workaround for GCC since the partial specialization by
  * `std::basic_string<CharT, Traits, Allocator>` (see below) does not works.
@@ -66,24 +61,21 @@ struct Cont_of_opts<std::string> final {
 };
 
 /**
- * @brief The partial specialization of the structure template Cont_of_opts.
+ * @brief Forces treating `std::basic_string<>` as a non-container type.
  *
- * This specialization is needed to force treating `std::basic_string<>` as a
- * non-container type. Without this specialization, `std::basic_string<CharT, ...>`
- * will be translated to `std::basic_string<Optional<CharT>, ...>`.
+ * Without this specialization, `std::basic_string<CharT, ...>` treated as
+ * `std::basic_string<Optional<CharT>, ...>`.
  *
- * @remarks This specialization does not works with GCC (tested with version 8).
- * (And it does not needs to MSVC.) Thus, this specialization is not required at
- * all. It's exists just in case.
+ * @remarks This specialization doesn't works with GCC (tested with version 8),
+ * and doesn't needs to MSVC. It's exists just in case, probably, for other
+ * compilers.
  */
 template<class CharT, class Traits, class Allocator>
 struct Cont_of_opts<std::basic_string<CharT, Traits, Allocator>> final {
   using Type = std::basic_string<CharT, Traits, Allocator>;
 };
 
-/**
- * @brief The partial specialization of the structure template Cont_of_opts.
- */
+/// The partial specialization of Cont_of_opts.
 template<typename T,
   template<class, class> class Container,
   template<class> class Allocator>
@@ -94,26 +86,22 @@ public:
   using Type = Container<std::optional<Elem>, Allocator<std::optional<Elem>>>;
 };
 
-/**
- * @brief The convenient alias of the structure template Cont_of_opts.
- */
+/// The convenient alias of Cont_of_opts.
 template<typename T>
 using Cont_of_opts_t = typename Cont_of_opts<T>::Type;
 
 // =====================================
 
 /**
- * @brief The compile-time converter from the "container of optionals"
- * to the "container of values".
+ * The compile-time converter from a "container of optionals"
+ * to a "container of values".
  */
 template<typename T>
 struct Cont_of_vals final {
   using Type = T;
 };
 
-/**
- * @brief The partial specialization of the structure template Cont_of_vals.
- */
+/// The partial specialization of Cont_of_vals.
 template<typename T,
   template<class> class Optional,
   template<class, class> class Container,
@@ -125,9 +113,7 @@ public:
   using Type = Container<Elem, Allocator<Elem>>;
 };
 
-/**
- * @brief The convenient alias of the structure template Cont_of_vals.
- */
+/// The convenient alias of the structure template Cont_of_vals.
 template<typename T>
 using Cont_of_vals_t = typename Cont_of_vals<T>::Type;
 
@@ -146,9 +132,7 @@ template<typename T,
 Cont_of_vals_t<Container<Optional<T>, Allocator<Optional<T>>>>
 to_container_of_values(Container<Optional<T>, Allocator<Optional<T>>>&& container);
 
-/**
- * @returns The container of optionals converted from the container of values.
- */
+/// @returns The container of optionals converted from the container of values.
 template<template<class> class Optional,
   typename T,
   template<class, class> class Container,
@@ -158,19 +142,13 @@ to_container_of_optionals(Container<T, Allocator<T>>&& container);
 
 // =============================================================================
 
-/**
- * @brief Nullable array to/from `std::string` conversions.
- */
+/// Nullable array to/from `std::string` conversions.
 template<typename> struct Array_string_conversions_opts;
 
-/**
- * @brief Nullable array to/from Data conversions.
- */
+/// Nullable array to/from Data conversions.
 template<typename> struct Array_data_conversions_opts;
 
-/**
- * @brief The partial specialization of Array_string_conversions_opts.
- */
+/// The partial specialization of Array_string_conversions_opts.
 template<typename T,
   template<class> class Optional,
   template<class, class> class Container,
@@ -191,9 +169,7 @@ struct Array_string_conversions_opts<Container<Optional<T>, Allocator<Optional<T
   }
 };
 
-/**
- * @brief The partial specialization of Array_data_conversions_opts.
- */
+/// The partial specialization of Array_data_conversions_opts.
 template<typename T,
   template<class> class Optional,
   template<class, class> class Container,
@@ -204,7 +180,7 @@ struct Array_data_conversions_opts<Container<Optional<T>, Allocator<Optional<T>>
   template<typename ... Types>
   static Type to_type(const Data* const data, Types&& ... args)
   {
-    DMITIGR_REQUIRE(data && data->format() == Data_format::text, std::invalid_argument);
+    assert(data && data->format() == Data_format::text);
     return to_container<Type>(data->bytes(), ',', std::forward<Types>(args)...);
   }
 
@@ -224,19 +200,13 @@ struct Array_data_conversions_opts<Container<Optional<T>, Allocator<Optional<T>>
 
 // =============================================================================
 
-/**
- * @brief Non-nullable array to/from `std::string` conversions.
- */
+/// Non-nullable array to/from `std::string` conversions.
 template<typename> struct Array_string_conversions_vals;
 
-/**
- * @brief Non-nullable array to/from Data conversions.
- */
+/// Non-nullable array to/from Data conversions.
 template<typename> struct Array_data_conversions_vals;
 
-/**
- * @brief The partial specialization of Array_string_conversions_vals.
- */
+/// The partial specialization of Array_string_conversions_vals.
 template<typename T,
   template<class, class> class Container,
   template<class> class Allocator>
@@ -260,9 +230,7 @@ private:
   using Cont = Cont_of_opts_t<Type>;
 };
 
-/**
- * @brief The partial specialization of Array_data_conversions_vals.
- */
+/// The partial specialization of Array_data_conversions_vals.
 template<typename T,
   template<class, class> class Container,
   template<class> class Allocator>
@@ -300,13 +268,12 @@ private:
  * @brief Fills the container with values extracted from the PostgreSQL array
  * literal.
  *
- * The class template Filler_of_deepest_container is a functor for filling the
- * deepest (sub-)container of STL-container (of container ...) with a values
- * extracted from the PostgreSQL array literals. I.e., it is a filler of a
- * STL-container of the highest dimensionality.
+ * This functor is for filling the deepest (sub-)container of STL-container (of
+ * container ...) with a values extracted from the PostgreSQL array literals.
+ * I.e., it's a filler of a STL-container of the highest dimensionality.
  *
  * @par Requires
- * See the requirements of the API. Also, `T` must not be a container.
+ * See the requirements of the API. Also, `T` mustn't be container.
  */
 template<typename T,
   template<class> class Optional,
@@ -335,7 +302,7 @@ public:
     : cont_(c)
   {}
 
-  constexpr void operator()(int /*dimension*/)
+  constexpr void operator()(const int /*dimension*/)
   {}
 
   template<typename ... Types>
@@ -359,14 +326,10 @@ private:
 
 // =====================================
 
-/**
- * @brief Special overloads.
- */
+/// Special overloads.
 namespace arrays {
 
-/**
- * @brief Used by: fill_container()
- */
+/// Used by fill_container().
 template<typename T, typename ... Types>
 const char* fill_container(T& /*result*/, const char* /*literal*/,
   const char /*delimiter*/, Types&& ... /*args*/)
@@ -374,18 +337,14 @@ const char* fill_container(T& /*result*/, const char* /*literal*/,
   throw Insufficient_array_dimensionality{};
 }
 
-/**
- * @brief Used by to_array_literal().
- */
+/// Used by to_array_literal()
 template<typename T>
 const char* quote_for_array_element(const T&)
 {
   return "\"";
 }
 
-/**
- * @brief Used by to_array_literal().
- */
+/// Used by to_array_literal().
 template<typename T,
   template<class> class Optional,
   template<class, class> class Container,
@@ -395,9 +354,7 @@ const char* quote_for_array_element(const Container<Optional<T>, Allocator<Optio
   return "";
 }
 
-/**
- * @brief Used by to_array_literal().
- */
+/// Used by to_array_literal().
 template<typename T, typename ... Types>
 std::string to_array_literal(const T& element,
   const char /*delimiter*/, Types&& ... args)
@@ -405,9 +362,7 @@ std::string to_array_literal(const T& element,
   return Conversions<T>::to_string(element, std::forward<Types>(args)...);
 }
 
-/**
- * @brief Used by to_array_literal().
- */
+/// Used by to_array_literal().
 template<class CharT, class Traits, class Allocator, typename ... Types>
 std::string to_array_literal(const std::basic_string<CharT, Traits, Allocator>& element,
   const char /*delimiter*/, Types&& ... args)
@@ -426,9 +381,7 @@ std::string to_array_literal(const std::basic_string<CharT, Traits, Allocator>& 
   return result;
 }
 
-/**
- * @brief Used by to_container_of_values().
- */
+/// Used by to_container_of_values().
 template<typename T>
 T to_container_of_values(T&& element)
 {
@@ -449,12 +402,12 @@ Optional<std::string> to_container_of_optionals(std::string&& element)
 /**
  * @overload
  *
- * @remarks It does not works with GCC (tested on version 8). (And it does not
- * needs to MSVC.) Thus, this specialization is not required at all. It is
- * exists just in case.
+ * @remarks It does'nt works with GCC (tested on version 8), and it does not
+ * needs to MSVC. It's exists just in case, probably, for other compilers.
  */
 template<template<class> class Optional, class CharT, class Traits, class Allocator>
-Optional<std::basic_string<CharT, Traits, Allocator>> to_container_of_optionals(std::basic_string<CharT, Traits, Allocator>&& element)
+Optional<std::basic_string<CharT, Traits, Allocator>>
+to_container_of_optionals(std::basic_string<CharT, Traits, Allocator>&& element)
 {
   using String = std::basic_string<CharT, Traits, Allocator>;
   return Optional<String>{std::move(element)};
@@ -478,9 +431,6 @@ Optional<T> to_container_of_optionals(T&& element)
 /**
  * @brief PostgreSQL array parsing routine.
  *
- * @returns The pointer that points to a next character after the last closing
- * curly bracket found in the `literal`.
- *
  * Calls `handler(dimension)` every time the opening curly bracket is reached.
  * Here, dimension - is a zero-based index of type `int` of the reached
  * dimension of the literal.
@@ -493,12 +443,15 @@ Optional<T> to_container_of_optionals(T&& element)
  *   - dimension -- is a zero-based index of type `int` of the element dimension;
  *   - args -- extra arguments for passing to the conversion routine.
  *
+ * @returns The pointer that points to a next character after the last closing
+ * curly bracket found in the `literal`.
+ *
  * @throws Client_exception.
  */
 template<class F, typename ... Types>
 const char* parse_array_literal(const char* literal, const char delimiter, F& handler, Types&& ... args)
 {
-  DMITIGR_ASSERT(literal);
+  assert(literal);
 
   /*
    * Syntax of the array literals:
@@ -518,10 +471,10 @@ const char* parse_array_literal(const char* literal, const char delimiter, F& ha
          in_quoted_element, in_unquoted_element } state = in_beginning;
 
   int  dimension{};
-  bool is_element_extracted{};
   char previous_char{};
   char previous_nonspace_char{};
   std::string element;
+  const std::locale loc;
   while (const char c = *literal) {
     switch (state) {
     case in_beginning: {
@@ -529,7 +482,7 @@ const char* parse_array_literal(const char* literal, const char delimiter, F& ha
         handler(dimension);
         dimension = 1;
         state = in_dimension;
-      } else if (std::isspace(c, std::locale{})) {
+      } else if (std::isspace(c, loc)) {
         ;
       } else
         throw Malformed_array_literal{};
@@ -538,9 +491,9 @@ const char* parse_array_literal(const char* literal, const char delimiter, F& ha
     }
 
     case in_dimension: {
-      DMITIGR_ASSERT(dimension > 0);
+      assert(dimension > 0);
 
-      if (std::isspace(c, std::locale{})) {
+      if (std::isspace(c, loc)) {
         ;
       } else if (c == delimiter) {
         if (previous_nonspace_char == delimiter || previous_nonspace_char == '{')
@@ -571,27 +524,25 @@ const char* parse_array_literal(const char* literal, const char delimiter, F& ha
     case in_quoted_element: {
       if (c == '\\' && previous_char != '\\') {
         ; // The escape character '\\' must be skipped.
-      } else if (c == '"' && previous_char != '\\') {
-        is_element_extracted = true;
-        break;
-      } else
+      } else if (c == '"' && previous_char != '\\')
+        goto element_extracted;
+      else
         element += c;
 
       goto preparing_to_the_next_iteration;
     }
 
     case in_unquoted_element: {
-      if (c == delimiter || c == '{' || c == '}') {
-        is_element_extracted = true;
-        break;
-      } else
+      if (c == delimiter || c == '{' || c == '}')
+        goto element_extracted;
+      else
         element += c;
 
       goto preparing_to_the_next_iteration;
     }
     } // switch (state)
 
-    DMITIGR_ASSERT(is_element_extracted);
+  element_extracted:
     {
       if (element.empty())
         throw Malformed_array_literal{};
@@ -606,8 +557,7 @@ const char* parse_array_literal(const char* literal, const char delimiter, F& ha
 
       handler(std::move(element), is_element_null, dimension, std::forward<Types>(args)...);
 
-      element = std::string(); // The element was moved and must be recreated!
-      is_element_extracted = false;
+      element = std::string{}; // The element was moved and must be recreated!
 
       if (state == in_unquoted_element) {
         /*
@@ -622,7 +572,7 @@ const char* parse_array_literal(const char* literal, const char delimiter, F& ha
     } // extracted element processing
 
   preparing_to_the_next_iteration:
-    if (!std::isspace(c, std::locale{}))
+    if (!std::isspace(c, loc))
       previous_nonspace_char = c;
     previous_char = c;
     ++literal;
@@ -651,8 +601,8 @@ template<typename T,
 const char* fill_container(Container<Optional<T>, Allocator<Optional<T>>>& result,
   const char* literal, const char delimiter, Types&& ... args)
 {
-  DMITIGR_ASSERT(result.empty());
-  DMITIGR_ASSERT(literal);
+  assert(result.empty());
+  assert(literal);
 
   /*
    * Note: On MSVS the "fatal error C1001: An internal error has occurred in the compiler."
@@ -706,6 +656,7 @@ const char* fill_container(Container<Optional<T>, Allocator<Optional<T>>>& resul
   }
 }
 
+/// @returns PostgreSQL array literal converted from the given `container`.
 template<typename T,
   template<class> class Optional,
   template<class, class> class Container,
@@ -743,6 +694,7 @@ std::string to_array_literal(const Container<Optional<T>, Allocator<Optional<T>>
   return result;
 }
 
+/// @returns A container converted from PostgreSQL array literal.
 template<class Container, typename ... Types>
 Container to_container(const char* const literal, const char delimiter, Types&& ... args)
 {
@@ -751,6 +703,11 @@ Container to_container(const char* const literal, const char delimiter, Types&& 
   return result;
 }
 
+/**
+ * @returns A container of non-null values converted from PostgreSQL array literal.
+ *
+ * @throws Improper_value_type_of_container.
+ */
 template<typename T,
   template<class> class Optional,
   template<class, class> class Container,
@@ -772,6 +729,7 @@ auto to_container_of_values(Container<Optional<T>, Allocator<Optional<T>>>&& con
   return result;
 }
 
+/// @returns A container of nullable values converted from PostgreSQL array literal.
 template<template<class> class Optional,
   typename T,
   template<class, class> class Container,
@@ -795,27 +753,27 @@ auto to_container_of_optionals(Container<T, Allocator<T>>&& container)
 /**
  * @ingroup conversions
  *
- * @brief The partial specialization of Conversions for nullable arrays
- * (containers with optional values).
+ * @brief The partial specialization of Conversions for nullable arrays (i.e.
+ * containers with optional values).
  *
  * @par Requirements
  * @parblock
  * Requirements to the type T of elements of array:
- *   - DefaultConstructable, CopyConstructable;
- *   - Convertible (there shall be a suitable specialization of Conversions).
+ *   - default-constructible, copy-constructible;
+ *   - convertible (there shall be a suitable specialization of Conversions).
  *
  * Requirements to the type Optional:
- *   - DefaultConstructable and CopyConstructable;
+ *   - default-constructible, copy-constructible;
  *   - implemented operator bool() that returns true if the value is not null, or
  *     false otherwise. (For default constructed Optional<T> it should return false);
  *   - implemented operator*() that returns a reference to the value of type T.
  * @endparblock
  *
- * @tparam T - the type of the elements of the Container (which
- *             may be a container of optionals);
- * @tparam Optional - the optional template class, such as `std::optional`;
- * @tparam Container - the container template class, such as `std::vector`;
- * @tparam Allocator - the allocator template class, such as `std::allocator`.
+ * @tparam T The type of the elements of the Container (which may be a container
+ * of optionals).
+ * @tparam Optional The optional template class, such as `std::optional`.
+ * @tparam Container The container template class, such as `std::vector`.
+ * @tparam Allocator The allocator template class, such as `std::allocator`.
  *
  * The support of the following data formats is implemented:
  *   - for input data  - Data_format::text;
@@ -838,13 +796,13 @@ struct Conversions<Container<Optional<T>, Allocator<Optional<T>>>> final
  * @par Requirements
  * @parblock
  * Requirements to the type T of elements of array:
- *   - DefaultConstructable, CopyConstructable;
- *   - Convertible (there shall be a suitable specialization of Conversions).
+ *   - default-constructible, copy-constructible;
+ *   - convertible (there shall be a suitable specialization of Conversions).
  * @endparblock
  *
- * @tparam T - the type of the elements of the Container (which may be a container);
- * @tparam Container - the container template class, such as `std::vector`;
- * @tparam Allocator - the allocator template class, such as `std::allocator`.
+ * @tparam T The type of the elements of the Container (which may be a container).
+ * @tparam Container The container template class, such as `std::vector`.
+ * @tparam Allocator The allocator template class, such as `std::allocator`.
  *
  * @throws An instance of type Improper_value_type_of_container when converting
  * the PostgreSQL array representations with at least one `NULL` element.
@@ -867,9 +825,9 @@ struct Conversions<Container<T, Allocator<T>>>
  * This is a workaround for GCC. When using multidimensional STL-containers GCC
  * (at least version 8.1) incorrectly choises the specialization of
  * `Conversions<Container<Optional<T>, Allocator<Optional<T>>>>` by deducing
- * `Optional` as an STL container, insead of choising
- * `Conversions<Container<T>, Allocator<T>>`.
- * Thus, the nested vector in `std::vector<std::vector<int>>` treated as `Optional`.
+ * `Optional` as an STL container, instead of choising
+ * `Conversions<Container<T>, Allocator<T>>` and thus, the nested vector in
+ * `std::vector<std::vector<int>>` treated as `Optional`.
  */
 template<typename T,
   template<class, class> class Container,

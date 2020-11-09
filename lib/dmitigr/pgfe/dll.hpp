@@ -10,7 +10,7 @@
 #define DMITIGR_PGFE_DLL_HPP
 
 #ifdef _WIN32
-  #ifdef DMITIGR_CEFEIKA_DLL_BUILDING
+  #ifdef DMITIGR_PGFE_DLL_BUILDING
     #define DMITIGR_PGFE_API __declspec(dllexport)
   #else
     #if DMITIGR_PGFE_DLL

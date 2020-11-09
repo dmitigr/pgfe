@@ -8,8 +8,7 @@
 #include "dmitigr/pgfe/problem.hpp"
 #include "dmitigr/pgfe/response.hpp"
 
-#include <string>
-#include <system_error>
+#include <cassert>
 
 namespace dmitigr::pgfe {
 
@@ -18,28 +17,35 @@ namespace dmitigr::pgfe {
  *
  * @brief A error message from a PostgreSQL server.
  */
-class Error : public Response, public Problem {
+class Error final : public Response, public Problem {
 public:
-  /// @name Conversions
-  /// @{
+  /// Default-constructible. (Constructs invalid instance.)
+  Error() = default;
 
-  /**
-   * @returns The copy of this instance.
-   */
-  virtual std::unique_ptr<Error> to_error() const = 0;
+  /// The constructor.
+  explicit Error(detail::pq::Result&& result) noexcept
+    : Problem{std::move(result)}
+  {
+    assert(is_invariant_ok());
+  }
 
-  /// @}
+  /// @see Message::is_valid().
+  bool is_valid() const noexcept override
+  {
+    return static_cast<bool>(pq_result_);
+  }
 
 private:
-  friend detail::iError;
-
-  Error() = default;
+  bool is_invariant_ok() const noexcept override
+  {
+    const auto sev = severity();
+    return ((static_cast<int>(sev) == -1) ||
+      (sev == Problem_severity::error) ||
+      (sev == Problem_severity::fatal) ||
+      (sev == Problem_severity::panic)) && Problem::is_invariant_ok();
+  }
 };
 
 } // namespace dmitigr::pgfe
-
-#ifdef DMITIGR_PGFE_HEADER_ONLY
-#include "dmitigr/pgfe/error.cpp"
-#endif
 
 #endif  // DMITIGR_PGFE_ERROR_HPP

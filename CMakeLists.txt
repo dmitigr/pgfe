@@ -2,8 +2,8 @@
 # Copyright (C) Dmitry Igrishin
 # For conditions of distribution and use, see file LICENSE.txt
 
-cmake_minimum_required(VERSION 3.17)
-cmake_policy(VERSION 3.17)
+cmake_minimum_required(VERSION 3.13)
+cmake_policy(VERSION 3.13)
 project(dmitigr_cefeika)
 
 if (NOT (UNIX OR WIN32))
@@ -117,6 +117,11 @@ if ("ws" IN_LIST dmitigr_cefeika_libraries)
   add_subdirectory(thirdparty/uv)
   add_subdirectory(thirdparty/usockets)
   add_subdirectory(thirdparty/uwebsockets)
+endif()
+
+if ("wscl" IN_LIST dmitigr_cefeika_libraries)
+  add_subdirectory(thirdparty/buffer)
+  add_subdirectory(thirdparty/uwsc)
 endif()
 
 # ------------------------------------------------------------------------------
@@ -261,7 +266,7 @@ foreach(lib ${dmitigr_cefeika_libraries})
     set(output_name "dmitigr_${lib}")
     if(BUILD_SHARED_LIBS)
       target_compile_definitions(${lib}
-        PRIVATE DMITIGR_CEFEIKA_DLL_BUILDING
+        PRIVATE DMITIGR_${LIB}_DLL_BUILDING
         PUBLIC  DMITIGR_${LIB}_DLL)
     elseif(WIN32)
       set(output_name "dmitigr_${lib}_static")

@@ -33,9 +33,7 @@ namespace dmitigr::pgfe {
  *   static std::string to_string(const T& value, Types&& ... args);                   // 2
  *   static T to_type(const Data* data, Types&& ... args);                             // 3
  *   static std::unique_ptr<Data> to_data(const T& value, Types&& ... args);           // 4
- *   static T to_type(const Composite* composite, Types&& ... args);                   // 5
- *   static std::unique_ptr<Composite> to_composite(const T& value, Types&& ... args); // 6
- *   static T to_type(const Row* row, Types&& ... args);                               // 7
+ *   static T to_type(const Row& row, Types&& ... args);                               // 5
  * };
  * @endcode
  *
@@ -47,9 +45,7 @@ namespace dmitigr::pgfe {
  *   static std::string to_string(T&& value, Types&& ... args);                   // 12
  *   static T to_type(std::unique_ptr<Data>&& data, Types&& ... args);            // 13
  *   static std::unique_ptr<Data> to_data(T&& value, Types&& ... args);           // 14
- *   static T to_type(std::unique_ptr<Composite>&& composite, Types&& ... args);  // 15
- *   static std::unique_ptr<Composite> to_composite(T&& value, Types&& ... args); // 16
- *   static T to_type(std::unique_ptr<Row>&& row, Types&& ... args);              // 17
+ *   static T to_type(Row&& row, Types&& ... args);                               // 15
  * };
  * @endcode
  *
@@ -70,28 +66,19 @@ namespace dmitigr::pgfe {
  *   value of a prepared statement parameter from the client representation
  *   to the server representation;
  *
- *   - (5) and (15) are used when a value of type Composite needs to be converted
- *   to the value of type `T`;
- *
- *   - (6) and (16) are used when a value of type `T` needs to be converted to
- *   the value of type Composite. Normally, these conversions are used to convert
- *   a value of a prepared statement parameter from the client representation
- *   to the server representation;
- *
- *   - (7) and (17) are used when a value of type Row needs to be converted to
+ *   - (5) and (15) are used when a value of type Row needs to be converted to
  *   the value of type `T`. These conversions might be used to convert an entire
  *   row from a server representation to a natural client representation.
  *
  * Variadic arguments (args) are *optional* and may be used in cases when
  * some extra information (for example, a server version) need to be passed into
- * the conversion routine. The absence of these arguments for conversion
- * routines means *the latest default*. In particular it means that there is no
- * guarantee that conversion will work properly with data from PostgreSQL
- * servers of older versions than the latest one. If the application works with
- * multiple PostgreSQL servers of the same (latest) versions these arguments can
- * be just ignored.
+ * the conversion routine. Absence of these arguments for conversion routines
+ * means *the latest default*. In particular it means that there is no guarantee
+ * that conversion will work properly with data from PostgreSQL servers of older
+ * versions than the latest one. If the application works with multiple PostgreSQL
+ * servers of the same (latest) versions these arguments can be just ignored.
  *
- * @remarks The implementation of generic conversions will throw exceptions of
+ * @remarks An implementation of generic conversions will throw exceptions of
  * type `std::runtime_error` if the following is not fulfilled:
  *   - effect of `operator>>` must be `(stream.eof() == true)`;
  *   - effect of `operator<<` must be `(stream.fail() == false)`.
@@ -110,9 +97,9 @@ template<typename> struct Conversions;
  * @brief Converts the value of type Data to the value of type `T` by using
  * the specialization of struct template Conversions.
  *
- * @param data - the object to convert.
- * @param args - the optional arguments to be passed to the conversion routines.
- * @tparam T - the destination data type of the conversion.
+ * @tparam T A destination data type of the conversion.
+ * @param data An object to convert.
+ * @param args Optional arguments to be passed to the conversion routines.
  *
  * @par Requires
  * `(data != nullptr)`.
@@ -140,71 +127,15 @@ inline T to(std::unique_ptr<Data>&& data, Types&& ... args)
 /**
  * @ingroup conversions
  *
- * @brief Converts the value of type `T` to the value of type Data by using
- * the specialization of the struct template Conversions.
- *
- * @param value - the value of the type T to convert;
- * @param args - the optional arguments to be passed to the conversion routines;
- * @tparam T - the destination data type of the conversion.
- */
-template<typename T, typename ... Types>
-inline std::unique_ptr<Data> to_data(T&& value, Types&& ... args)
-{
-  return Conversions<std::decay_t<T>>::to_data(std::forward<T>(value), std::forward<Types>(args)...);
-}
-
-// =============================================================================
-
-/**
- * @ingroup conversions
- *
- * @brief Converts the value of type Composite to the value of type `T` by using
- * the specialization of struct template Conversions.
- *
- * @param composite - the object to convert.
- * @param args - the optional arguments to be passed to the conversion routines.
- * @tparam T - the destination data type of the conversion.
- *
- * @par Requires
- * `(composite != nullptr)`.
- */
-template<typename T, typename ... Types>
-inline T to(const Composite* const composite, Types&& ... args)
-{
-  return Conversions<T>::to_type(composite, std::forward<Types>(args)...);
-}
-
-/**
- * @ingroup conversions
- *
  * @overload
- *
- * @par Requires
- * `(composite != nullptr)`.
  */
 template<typename T, typename ... Types>
-inline T to(std::unique_ptr<Composite>&& composite, Types&& ... args)
+inline T to(const Data& data, Types&& ... args)
 {
-  return Conversions<T>::to_type(std::move(composite), std::forward<Types>(args)...);
+  return to<T>(&data, std::forward<Types>(args)...);
 }
 
-/**
- * @ingroup conversions
- *
- * @brief Converts the value of type `T` to the value of type Composite by using
- * the specialization of the struct template Conversions.
- *
- * @param value - the value of the type T to convert;
- * @param args - the optional arguments to be passed to the conversion routines;
- * @tparam T - the destination data type of the conversion.
- */
-template<typename T, typename ... Types>
-inline std::unique_ptr<Composite> to_composite(T&& value, Types&& ... args)
-{
-  return Conversions<std::decay_t<T>>::to_composite(std::forward<T>(value), std::forward<Types>(args)...);
-}
-
-// =============================================================================
+// -----------------------------------------------------------------------------
 
 /**
  * @ingroup conversions
@@ -212,15 +143,15 @@ inline std::unique_ptr<Composite> to_composite(T&& value, Types&& ... args)
  * @brief Converts the value of type Row to the value of type `T` by using
  * the specialization of struct template Conversions.
  *
- * @param row - the object to convert.
- * @param args - the optional arguments to be passed to the conversion routines.
- * @tparam T - the destination data type of the conversion.
+ * @tparam T A destination data type of the conversion.
+ * @param row An object to convert.
+ * @param args Optional arguments to be passed to the conversion routines.
  *
  * @par Requires
- * `(row != nullptr)`.
+ * `(row)`.
  */
 template<typename T, typename ... Types>
-inline T to(const Row* const row, Types&& ... args)
+inline T to(const Row& row, Types&& ... args)
 {
   return Conversions<T>::to_type(row, std::forward<Types>(args)...);
 }
@@ -231,12 +162,30 @@ inline T to(const Row* const row, Types&& ... args)
  * @overload
  *
  * @par Requires
- * `(row != nullptr)`.
+ * `(row)`.
  */
 template<typename T, typename ... Types>
-inline T to(std::unique_ptr<Row>&& row, Types&& ... args)
+inline T to(Row&& row, Types&& ... args)
 {
   return Conversions<T>::to_type(std::move(row), std::forward<Types>(args)...);
+}
+
+// -----------------------------------------------------------------------------
+
+/**
+ * @ingroup conversions
+ *
+ * @brief Converts the value of type `T` to the value of type Data by using
+ * the specialization of the struct template Conversions.
+ *
+ * @tparam T A destination data type of the conversion.
+ * @param value A value of the type T to convert.
+ * @param args Optional arguments to be passed to the conversion routines.
+ */
+template<typename T, typename ... Types>
+inline std::unique_ptr<Data> to_data(T&& value, Types&& ... args)
+{
+  return Conversions<std::decay_t<T>>::to_data(std::forward<T>(value), std::forward<Types>(args)...);
 }
 
 } // namespace dmitigr::pgfe

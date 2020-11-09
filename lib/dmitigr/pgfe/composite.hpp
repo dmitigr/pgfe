@@ -8,11 +8,13 @@
 #include "dmitigr/pgfe/compositional.hpp"
 #include "dmitigr/pgfe/conversions.hpp"
 #include "dmitigr/pgfe/data.hpp"
-#include "dmitigr/pgfe/dll.hpp"
 
+#include <algorithm>
+#include <cassert>
 #include <memory>
 #include <string>
 #include <type_traits>
+#include <utility>
 #include <vector>
 
 namespace dmitigr::pgfe {
@@ -21,264 +23,263 @@ namespace dmitigr::pgfe {
  * @ingroup main
  *
  * @brief A composite type.
+ *
+ * @remarks Fields removing will not invalidate pointers returned by data().
  */
-class Composite : public Compositional {
+class Composite final : public Compositional {
 public:
-  /// @name Constructors
-  /// @{
+  /// Default-constructible
+  Composite() = default;
 
-  /**
-   * @returns A new instance of this class.
-   */
-  static DMITIGR_PGFE_API std::unique_ptr<Composite> make();
+  /// See Composite::make().
+  explicit Composite(std::vector<std::pair<std::string, std::unique_ptr<Data>>>&& datas) noexcept
+    : datas_{std::move(datas)}
+  {
+    assert(is_invariant_ok());
+  }
 
-  /**
-   * @overload
-   */
-  static DMITIGR_PGFE_API std::unique_ptr<Composite> make(std::vector<std::pair<std::string, std::unique_ptr<Data>>>&& v);
+  /// Copy-constructible.
+  Composite(const Composite& rhs)
+    : datas_{rhs.datas_.size()}
+  {
+    std::transform(cbegin(rhs.datas_), cend(rhs.datas_), begin(datas_),
+      [](const auto& pair) { return std::make_pair(pair.first, pair.second->to_data()); });
 
-  /**
-   * @returns A copy of this instance.
-   */
-  virtual std::unique_ptr<Composite> to_composite() const = 0;
+    assert(is_invariant_ok());
+  }
 
-  /// @}
+  /// Copy-assignable.
+  Composite& operator=(const Composite& rhs)
+  {
+    if (this != &rhs) {
+      Composite tmp{rhs};
+      swap(tmp);
+    }
+    return *this;
+  }
 
-  /// @name Observers
-  /// @{
+  /// Move-constructible.
+  Composite(Composite&& rhs) = default;
+
+  /// Move-assignable.
+  Composite& operator=(Composite&& rhs) = default;
+
+  /// Swaps the instances.
+  void swap(Composite& rhs) noexcept
+  {
+    datas_.swap(rhs.datas_);
+  }
+
+  /// @see Compositional::size().
+  std::size_t size() const noexcept override
+  {
+    return datas_.size();
+  }
+
+  /// @see Compositional::is_empty().
+  bool is_empty() const noexcept override
+  {
+    return datas_.empty();
+  }
+
+  /// @see Compositional::name_of().
+  const std::string& name_of(const std::size_t index) const noexcept override
+  {
+    assert(index < size());
+    return datas_[index].first;
+  }
+
+  /// @see Compositional::index_of().
+  std::size_t index_of(const std::string& name, const std::size_t offset = 0) const noexcept override
+  {
+    const auto sz = size();
+    const auto b = cbegin(datas_);
+    const auto e = cend(datas_);
+    const auto i = std::find_if(std::min(b + offset, b + sz), e,
+      [&name](const auto& pair) { return pair.first == name; });
+    return i - b;
+  }
 
   /**
    * @returns The field data of this composite, or `nullptr` if NULL.
    *
-   * @param index - see Compositional;
+   * @param index See Compositional.
    *
    * @par Requires
-   * `(index < field_count())`.
+   * `(index < size())`.
    */
-  virtual const Data* data(std::size_t index) const = 0;
+  const std::unique_ptr<Data>& data(const std::size_t index) const noexcept
+  {
+    assert(index < size());
+    return datas_[index].second;
+  }
+
+  /// @overload
+  std::unique_ptr<Data>& data(const std::size_t index) noexcept
+  {
+    return const_cast<std::unique_ptr<Data>&>(static_cast<const Composite*>(this)->data(index));
+  }
 
   /**
    * @overload
    *
-   * @param name - see Compositional;
-   * @param offset - see Compositional.
+   * @param name See Compositional.
+   * @param offset See Compositional.
    *
    * @par Requires
    * `has_field(name, offset)`.
    */
-  virtual const Data* data(const std::string& name, std::size_t offset = 0) const = 0;
+  const std::unique_ptr<Data>& data(const std::string& name, const std::size_t offset = 0) const
+  {
+    return data(index_of(name, offset));
+  }
 
-  /// @}
-
-  // ---------------------------------------------------------------------------
-
-  /// @name Modifiers
-  /// @{
-
-  /**
-   * @brief Sets the object of type Data to the field of the composite.
-   *
-   * @param index - see Compositional;
-   * @param data - the data to set.
-   *
-   * @par Exception safety guarantee
-   * Strong.
-   *
-   * @par Requires
-   * `(index < field_count())`.
-   */
-  virtual void set_data(std::size_t index, std::unique_ptr<Data>&& data) = 0;
+  /// @overload
+  std::unique_ptr<Data>& data(const std::string& name, const std::size_t offset = 0) noexcept
+  {
+    return const_cast<std::unique_ptr<Data>&>(static_cast<const Composite*>(this)->data(name, offset));
+  }
 
   /**
-   * @overload
-   */
-  virtual void set_data(std::size_t index, std::nullptr_t data) = 0;
-
-  /**
-   * @overload
-   *
    * @brief Sets the data of the specified index with the value of type T,
    * implicitly converted to the Data by using to_data().
    */
   template<typename T>
-  std::enable_if_t<!std::is_same_v<Data*, T>> set_data(std::size_t index, T&& value)
+  std::enable_if_t<!std::is_same_v<Data*, T>> set_data(const std::size_t index, T&& value)
   {
-    set_data(index, to_data(std::forward<T>(value)));
+    data(index) = to_data(std::forward<T>(value));
   }
 
-  /**
-   * @overload
-   *
-   * @param name - see Compositional;
-   * @param data - the data to set.
-   *
-   * @par Requires
-   * `has_field(name, 0)`.
-   */
-  virtual void set_data(const std::string& name, std::unique_ptr<Data>&& data) = 0;
-
-  /**
-   * @overload
-   */
-  virtual void set_data(const std::string& name, std::nullptr_t data) = 0;
-
-  /**
-   * @overload
-   */
+  /// @overload
   template<typename T>
   std::enable_if_t<!std::is_same_v<Data*, T>> set_data(const std::string& name, T&& value)
   {
-    set_data(field_index_throw(name), to_data(std::forward<T>(value)));
+    set_data(index_of(name), std::forward<T>(value));
   }
-
-  /**
-   * @brief Release the object of type Data from the composite.
-   *
-   * @param index - see Compositional.
-   *
-   * @returns The released object of type Data.
-   *
-   * @par Effects
-   * `(data(index) == nullptr)`.
-   *
-   * @par Exception safety guarantee
-   * Strong.
-   *
-   * @par Requires
-   * `(index < field_count())`.
-   */
-  virtual std::unique_ptr<Data> release_data(std::size_t index) = 0;
-
-  /**
-   * @overload
-   *
-   * @param name - see Compositional;
-   * @param offset - see Compositional.
-   *
-   * @par Requires
-   * `has_field(name, offset)`.
-   */
-  virtual std::unique_ptr<Data> release_data(const std::string& name, std::size_t offset = 0) = 0;
 
   /**
    * @brief Appends the field to this composite.
    *
-   * @param name - see Compositional.
-   * @param data - the data to set.
+   * @param name See Compositional.
+   * @param data A data to set.
    *
    * @par Exception safety guarantee
    * Strong.
    */
-  virtual void append_field(const std::string& name, std::unique_ptr<Data>&& data = {}) = 0;
-
-  /**
-   * @overload
-   */
-  template<typename T>
-  void append_field(const std::string& name, T&& value)
+  void append(const std::string& name, std::unique_ptr<Data>&& data) noexcept
   {
-    append_field(name, to_data(std::forward<T>(value)));
+    datas_.emplace_back(name, std::move(data));
+    assert(is_invariant_ok());
+  }
+
+  /// @overload
+  template<typename T>
+  void append(const std::string& name, T&& value)
+  {
+    append(name, to_data(std::forward<T>(value)));
+  }
+
+  /// Appends `rhs` to the end of the instance.
+  void append(Composite&& rhs)
+  {
+    datas_.insert(cend(datas_),
+      std::make_move_iterator(begin(rhs.datas_)),
+      std::make_move_iterator(end(rhs.datas_)));
+    assert(is_invariant_ok());
   }
 
   /**
    * @brief Inserts new field to this composite.
    *
-   * @param index - the index of the field before which the new field will be inserted;
-   * @param name - the name of the new field;
-   * @param data - the data to set to the new field.
+   * @param index An index of a field before which
+   * a new field will be inserted.
+   * @param name A name of a new field.
+   * @param data A data of a new field.
    *
    * @par Exception safety guarantee
    * Strong.
    *
    * @par Requires
-   * `(index < field_count())`.
+   * `(index < size())`.
    */
-  virtual void insert_field(std::size_t index, const std::string& name, std::unique_ptr<Data>&& data = {}) = 0;
-
-  /**
-   * @overload
-   */
-  template<typename T>
-  void insert_field(std::size_t index, const std::string& name, T&& value)
+  void insert(const std::size_t index, const std::string& name, std::unique_ptr<Data>&& data = {})
   {
-    insert_field(index, name, to_data(std::forward<T>(value)));
+    assert(index < size());
+    datas_.insert(begin(datas_) + index, std::make_pair(name, std::move(data)));
+    assert(is_invariant_ok());
+  }
+
+  /// @overload
+  template<typename T>
+  void insert(std::size_t index, const std::string& name, T&& value)
+  {
+    insert(index, name, to_data(std::forward<T>(value)));
   }
 
   /**
    * @overload
    *
-   * @param name - the name of the field before which the new field will be inserted;
-   * @param new_field_name - the name of the new field;
-   * @param data - the data to set to the new field.
+   * @param name A name of a field before which a new field will be inserted.
+   * @param new_field_name A name of a new field.
+   * @param data A data of a new field.
    *
    * @par Requires
    * `has_field(name, 0)`.
    */
-  virtual void insert_field(const std::string& name, const std::string& new_field_name, std::unique_ptr<Data>&& data) = 0;
-
-  /**
-   * @overload
-   */
-  template<typename T>
-  void insert_field(const std::string& name, const std::string& new_field_name, T&& value)
+  void insert(const std::string& name, const std::string& new_field_name, std::unique_ptr<Data>&& data)
   {
-    insert_field(name, new_field_name, to_data(std::forward<T>(value)));
+    insert(index_of(name), new_field_name, std::move(data));
+  }
+
+  /// @overload
+  template<typename T>
+  void insert(const std::string& name, const std::string& new_field_name, T&& value)
+  {
+    insert(name, new_field_name, to_data(std::forward<T>(value)));
   }
 
   /**
    * @brief Removes field from this composite.
    *
    * @par Requires
-   * `(index < field_count())`.
+   * `(index < size())`.
    *
    * @par Exception safety guarantee
    * Strong.
    */
-  virtual void remove_field(std::size_t index) = 0;
+  void remove(const std::size_t index) noexcept
+  {
+    assert(index < size());
+    datas_.erase(cbegin(datas_) + index);
+    assert(is_invariant_ok());
+  }
 
   /**
    * @overload
    *
-   * @param name - see Compositional;
-   * @param offset - see Compositional.
+   * @param name See Compositional.
+   * @param offset See Compositional.
    *
    * @par Effects
    * `!has_field(name, offset)`.
    */
-  virtual void remove_field(const std::string& name, std::size_t offset = 0) = 0;
-
-  /// @}
-
-  // ---------------------------------------------------------------------------
-
-  /// @name Conversions
-  /// @{
-
-  /**
-   * @returns The result of conversion of this instance to the instance of type `std::vector`.
-   */
-  virtual std::vector<std::pair<std::string, std::unique_ptr<Data>>> to_vector() const = 0;
-
-  /**
-   * @returns The result of conversion of this instance to the instance of type `std::vector`.
-   *
-   * @par Effects
-   * `!has_fields()`.
-   */
-  virtual std::vector<std::pair<std::string, std::unique_ptr<Data>>> move_to_vector() = 0;
-
-  /// @}
+  void remove(const std::string& name, const std::size_t offset = 0) noexcept
+  {
+    if (const auto index = index_of(name, offset); index != size())
+      datas_.erase(cbegin(datas_) + index);
+    assert(is_invariant_ok());
+  }
 
 private:
-  friend detail::iComposite;
-
-  Composite() = default;
+  std::vector<std::pair<std::string, std::unique_ptr<Data>>> datas_;
 };
 
-} // namespace dmitigr::pgfe
+/// Overload of Composite::swap().
+inline void swap(Composite& lhs, Composite& rhs) noexcept
+{
+  lhs.swap(rhs);
+}
 
-#ifdef DMITIGR_PGFE_HEADER_ONLY
-#include "dmitigr/pgfe/composite.cpp"
-#endif
+} // namespace dmitigr::pgfe
 
 #endif  // DMITIGR_PGFE_COMPOSITE_HPP

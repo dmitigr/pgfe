@@ -8,17 +8,20 @@
 #include "dmitigr/pgfe/connection.hpp"
 #include "dmitigr/pgfe/dll.hpp"
 
+#include <cassert>
+#include <functional>
+#include <memory>
+#include <mutex>
+#include <vector>
+
 namespace dmitigr::pgfe {
 
 /**
  * @ingroup utilities
  *
- * @brief A pool of connections to a PostgreSQL server.
- *
- * @par Thread-safety
- * All functions except make() are thread-safe.
+ * @brief A thread-safe pool of connections to a PostgreSQL server.
  */
-class Connection_pool {
+class Connection_pool final {
 public:
   /**
    * @brief A connection handle.
@@ -41,69 +44,105 @@ public:
     Handle& operator=(const Handle&) = delete;
 
     /// Move-constructible.
-    Handle(Handle&& rhs) noexcept = default;
+    Handle(Handle&& rhs) = default;
 
     /// Move-assignable.
-    Handle& operator=(Handle&& rhs) noexcept = default;
+    Handle& operator=(Handle&& rhs) = default;
 
     /// @returns The Connection.
-    DMITIGR_PGFE_API Connection* connection();
+    Connection& operator*()
+    {
+      return const_cast<Connection&>(static_cast<const Handle*>(this)->operator*());
+    }
 
     /// @overload
-    DMITIGR_PGFE_API const Connection* connection() const;
+    const Connection& operator*() const
+    {
+      assert(is_valid());
+      return *connection_;
+    }
+
+    /// @returns The Connection.
+    Connection* operator->()
+    {
+      return const_cast<Connection*>(static_cast<const Handle*>(this)->operator->());
+    }
 
     /// @overload
-    DMITIGR_PGFE_API Connection* operator->();
+    const Connection* operator->() const
+    {
+      assert(is_valid());
+      return connection_.get();
+    }
 
-    /// @overload
-    DMITIGR_PGFE_API const Connection* operator->() const;
-
-    /// @returns `true` if handle is valid, or `false` otherwise.
-    DMITIGR_PGFE_API bool is_valid() const;
+    /// @returns `true` if handle is valid.
+    bool is_valid() const noexcept
+    {
+      return static_cast<bool>(connection_);
+    }
 
     /// @returns `is_valid()`.
-    explicit DMITIGR_PGFE_API operator bool() const;
+    explicit operator bool() const noexcept
+    {
+      return is_valid();
+    }
 
     /// @returns The Connection_pool.
-    DMITIGR_PGFE_API Connection_pool* pool();
+    Connection_pool* pool() noexcept
+    {
+      return const_cast<Connection_pool*>(static_cast<const Handle*>(this)->pool());
+    }
 
     /// @overload
-    DMITIGR_PGFE_API const Connection_pool* pool() const;
+    const Connection_pool* pool() const noexcept
+    {
+      return pool_;
+    }
 
     /// @see Connection_pool::release().
-    DMITIGR_PGFE_API void release();
+    void release() noexcept
+    {
+      if (pool_)
+        pool_->release(*this);
+    }
 
   private:
-    friend detail::iConnection_pool;
+    friend Connection_pool;
 
-    /// The default constructor. Constructs invalid instance.
+    /// Default-constructible. (Constructs invalid instance.)
     Handle();
 
     /// The constructor.
-    Handle(detail::iConnection_pool* pool, std::unique_ptr<Connection>&& connection,
+    Handle(Connection_pool* pool, std::unique_ptr<Connection>&& connection,
       std::size_t connection_index);
 
-    detail::iConnection_pool* pool_{};
+    Connection_pool* pool_{};
     std::unique_ptr<Connection> connection_;
     std::size_t connection_index_{};
   };
 
-  /**
-   * @brief The destructor.
-   */
-  virtual ~Connection_pool() = default;
+  /// Default-constructible. (Constructs invalid instance.)
+  Connection_pool() = default;
 
   /**
    * @returns New instance of the pool.
    *
-   * @param count The number of connections in the pool.
-   * @param options The connection options to be used for connections of pool.
-   *
-   * @par Requires
-   * `(count > 0)`.
+   * @param count A number of connections in the pool.
+   * @param options A connection options to be used for connections of pool.
    */
-  static DMITIGR_PGFE_API std::unique_ptr<Connection_pool> make(std::size_t count,
-    const Connection_options* options = nullptr);
+  explicit DMITIGR_PGFE_API Connection_pool(std::size_t count, const Connection_options& options = {});
+
+  /// @returns `true` if this instance is valid.
+  bool is_valid() const noexcept
+  {
+    return !connections_.empty();
+  }
+
+  /// @returns `is_valid()`.
+  explicit operator bool() const noexcept
+  {
+    return is_valid();
+  }
 
   /**
    * @brief Sets the handler which will be called just after connecting to the
@@ -113,14 +152,17 @@ public:
    *
    * @see connect_handler().
    */
-  virtual void set_connect_handler(std::function<void(Connection*)> handler) = 0;
+  DMITIGR_PGFE_API void set_connect_handler(std::function<void(Connection&)> handler) noexcept;
 
   /**
    * @returns The current connect handler.
    *
    * @see set_connect_handler().
    */
-  virtual const std::function<void(Connection*)>& connect_handler() const = 0;
+  const std::function<void(Connection&)>& connect_handler() const noexcept
+  {
+    return connect_handler_;
+  }
 
   /**
    * @brief Sets the handler which will be called just after returning a connection
@@ -130,35 +172,41 @@ public:
    *
    * @see release_handler().
    */
-  virtual void set_release_handler(std::function<void(Connection*)> handler) = 0;
+  DMITIGR_PGFE_API void set_release_handler(std::function<void(Connection&)> handler) noexcept;
 
-  /**
-   * @returns The current release handler.
-   */
-  virtual const std::function<void(Connection*)>& release_handler() const = 0;
+  /// @returns The current release handler.
+  const std::function<void(Connection&)>& release_handler() const noexcept
+  {
+    return release_handler_;
+  }
 
   /**
    * @brief Opens the connections to the server.
    *
-   * @par Requires
-   * `is_connected()`.
+   * @par Effects
+   * `(is_connected() == is_valid())` on success.
    */
-  virtual void connect() = 0;
-
-  /// Closes the connections to the server.
-  virtual void disconnect() = 0;
-
-  /// @returns `true` if the pool is connected, or `false` otherwise.
-  virtual bool is_connected() const = 0;
+  DMITIGR_PGFE_API void connect();
 
   /**
-   * @returns The connection handle `h`. If there is no free connections
-   * in the pool at the time of call then `h.is_valid() == false`.
+   * Closes the connections to the server.
+   *
+   * @remarks Connections which are busy will not be affected by calling this method.
    */
-  virtual Handle connection() = 0;
+  DMITIGR_PGFE_API void disconnect() noexcept;
+
+  /// @returns `true` if the pool is connected.
+  DMITIGR_PGFE_API bool is_connected() const noexcept;
 
   /**
-   * @returns the connection of `handle` back to the pool.
+   * @returns The connection handle `h`. If `!is_connected()` or there is no free
+   * connections in the pool at the time of call then `(h.is_valid() == false)`.
+   */
+  DMITIGR_PGFE_API Handle connection();
+
+  /**
+   * Returns the connection of `handle` back to the pool if `is_connected()`,
+   * or closes it otherwise.
    *
    * @par Effects
    *   -# `(!handle.pool() && !handle.connection())`;
@@ -166,15 +214,19 @@ public:
    *
    * @see Handle::release().
    */
-  virtual void release(Handle& handle) = 0;
+  DMITIGR_PGFE_API void release(Handle& handle) noexcept;
 
   /// @returns The size of the pool.
-  virtual std::size_t size() const = 0;
+  DMITIGR_PGFE_API std::size_t size() const noexcept;
 
 private:
-  friend detail::iConnection_pool;
+  friend Handle;
 
-  Connection_pool() = default;
+  mutable std::mutex mutex_;
+  bool is_connected_{};
+  std::vector<std::pair<std::unique_ptr<Connection>, bool>> connections_;
+  std::function<void(Connection&)> connect_handler_;
+  std::function<void(Connection&)> release_handler_;
 };
 
 } // namespace dmitigr::pgfe

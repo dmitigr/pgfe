@@ -16,22 +16,10 @@ namespace dmitigr::pgfe {
 /**
  * @ingroup conversions
  *
- * @brief Full specialization of Conversions for `std::unique_ptr<Row>`.
+ * @brief Full specialization of Conversions for `Row`.
  */
-template<> struct Conversions<std::unique_ptr<Row>> {
-  static std::unique_ptr<Row>&& to_type(std::unique_ptr<Row>&& row)
-  {
-    return std::move(row);
-  }
-};
-
-/**
- * @ingroup conversions
- *
- * @brief Full specialization of Conversions for `std::shared_ptr<Row>`.
- */
-template<> struct Conversions<std::shared_ptr<Row>> {
-  static std::shared_ptr<Row> to_type(std::unique_ptr<Row>&& row)
+template<> struct Conversions<Row> {
+  static Row&& to_type(Row&& row) noexcept
   {
     return std::move(row);
   }
@@ -42,14 +30,30 @@ template<> struct Conversions<std::shared_ptr<Row>> {
  *
  * @brief The generic implementation for collecting rows into any STL-compatible
  * container.
+ *
+ * Conversion is performed by applying the conversion routine
+ * `Conversions<typename Container::value_type>::to_type()` to each row.
+ *
+ * Example of usage:
+ * @code
+ * void f(Connection& conn)
+ * {
+ *   Row_collector<std::vector<Person>> persons;
+ *   conn.execute([&persons](auto&& row)
+ *   {
+ *     persons.collect(std::move(row));
+ *   }, "select * from person");
+ *   // persons now filled with instances of type Person
+ * }
+ * @endcode
  */
 template<class Container>
 struct Row_collector {
-  /** The alias of underlying container type. */
+  /// The alias of underlying container type.
   using Underlying_type = Container;
 
   /**
-   * @brief Appends the result of conversion of `row` to the value of type
+   * Appends the result of conversion of `row` to the value of type
    * `Container::value_type` to the end of container.
    */
   template<class Row>
@@ -58,9 +62,7 @@ struct Row_collector {
     container.emplace_back(to<typename Container::value_type>(std::forward<Row>(row)));
   }
 
-  /**
-   * @brief The resulting container.
-   */
+  /// The resulting container.
   Container container;
 };
 
@@ -72,16 +74,14 @@ struct Row_collector {
 template<class T>
 struct Row_collector<std::vector<T>> {
 private:
-  /** Denotes the increment of memory allocation for underlying container.  */
+  /// Denotes the increment of memory allocation for underlying container.
   constexpr static std::size_t delta_ = 16;
 
 public:
-  /** The alias of underlying container type. */
+  /// The alias of underlying container type.
   using Underlying_type = std::vector<T>;
 
-  /**
-   * @brief The default constructor
-   */
+  /// Default-constructible.
   Row_collector()
   {
     container.reserve(delta_);

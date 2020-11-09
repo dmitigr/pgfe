@@ -5,9 +5,7 @@
 #ifndef DMITIGR_PGFE_TYPES_FWD_HPP
 #define DMITIGR_PGFE_TYPES_FWD_HPP
 
-/**
- * @brief The API.
- */
+/// The API.
 namespace dmitigr::pgfe {
 
 /**
@@ -61,7 +59,6 @@ class Problem;
 class Response;
 class Row;
 class Row_info;
-class Server_message;
 class Signal;
 class Sql_string;
 class Sql_vector;
@@ -72,37 +69,19 @@ class Server_exception;
 template<typename> struct Conversions;
 template<typename> class Entity_vector;
 
-/**
- * @brief The implementation details.
- */
+/// The implementation details.
 namespace detail {
-
-class iCompletion;
-class iComposite;
-class iConnection;
-class iConnection_options;
-class iConnection_pool;
-class iData;
-class iError;
-class iNotice;
-class iNotification;
-class iPrepared_statement;
-class iRow;
-class iRow_info;
-class iSql_string;
-class iSql_vector;
-
-class pq_Connection;
-class pq_Connection_options;
-class pq_Notification;
-class pq_Prepared_statement;
-class pq_Row;
-class pq_Row_info;
 
 template<typename> struct Generic_string_conversions;
 template<typename T, class StringConversions = Generic_string_conversions<T>> struct Generic_data_conversions;
 template<typename> struct Numeric_string_conversions;
 template<typename T, class StringConversions = Numeric_string_conversions<T>> struct Numeric_data_conversions;
+
+/// The abstraction layer over libpq.
+namespace pq {
+class Connection_options;
+class Result;
+} // namespace pq
 
 } // namespace detail
 
