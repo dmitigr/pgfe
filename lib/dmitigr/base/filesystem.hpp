@@ -6,7 +6,7 @@
 #define DMITIGR_BASE_FILESYSTEM_HPP
 
 #if (defined(__clang__) && (__clang_major__ < 7)) || \
-    (defined(__GNUG__)  && (__GNUC__ < 8))
+    (defined(__GNUG__)  && (__GNUC__ < 8) && !defined (__clang__))
   #include <experimental/filesystem>
   namespace std {
   namespace filesystem = experimental::filesystem;
