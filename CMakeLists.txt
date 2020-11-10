@@ -32,10 +32,10 @@ set(DMITIGR_CEFEIKA_WITH_ZLIB False CACHE BOOL
   "Link to Zlib where possible?")
 set(DMITIGR_LIBRARIAN_DEBUG FALSE CACHE BOOL
   "Print librarian.cmake debug output?")
-set(DMITIGR_CEFEIKA_CLANG_LINK_FILESYSTEM TRUE CACHE BOOL
-  "Link automatically to a separate filesystem library (actual for Clang 9-)?")
+set(DMITIGR_CEFEIKA_CLANG_USE_LIBCPP TRUE CACHE BOOL
+  "Use libc++ with Clang?")
 
-if(NOT DMITIGR_CEFEIKA_HEADER_ONLY)
+if (NOT DMITIGR_CEFEIKA_HEADER_ONLY)
   if(BUILD_SHARED_LIBS)
     message("The mode of building shared Dmitigr Cefeika libraries is set.")
   else()
@@ -49,6 +49,12 @@ if(NOT DMITIGR_CEFEIKA_HEADER_ONLY)
   message("Dmitigr Cefeika build type it set to ${CMAKE_BUILD_TYPE}")
 else()
   message("Dmitigr Cefeika header-only mode is set.")
+endif()
+
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+  if (DMITIGR_CEFEIKA_CLANG_USE_LIBCPP)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
+  endif()
 endif()
 
 # ------------------------------------------------------------------------------
