@@ -16,11 +16,7 @@
 
 namespace std {
 
-/**
- * @internal
- *
- * @brief The default deleter for ::PGnotify.
- */
+/// The default deleter for ::PGnotify.
 template<> struct default_delete<::PGnotify> final {
   void operator()(::PGnotify* const ptr) const
   {
@@ -28,11 +24,7 @@ template<> struct default_delete<::PGnotify> final {
   }
 };
 
-/**
- * @internal
- *
- * @brief The default deleter for `::PGresult`.
- */
+/// The default deleter for `::PGresult`.
 template<> struct default_delete<::PGresult> final {
   void operator()(::PGresult* const ptr) const
   {
@@ -40,11 +32,7 @@ template<> struct default_delete<::PGresult> final {
   }
 };
 
-/**
- * @internal
- *
- * @brief The default deleter for `::PGconn`.
- */
+/// The default deleter for `::PGconn`.
 template<> struct default_delete<::PGconn> final {
   void operator()(::PGconn* const ptr) const
   {

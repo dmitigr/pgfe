@@ -411,7 +411,7 @@ public:
   /**
    * @brief Sets the handler for custom errors.
    *
-   * @param hander A handler to set.
+   * @param handler A handler to set.
    *
    * @par Exception safety guarantee
    * Strong.

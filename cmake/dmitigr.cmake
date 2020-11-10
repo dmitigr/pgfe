@@ -50,7 +50,19 @@ function(dmitigr_target_compile_options t)
   elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     target_compile_options(${t} PRIVATE
       -pedantic
-      -Weverything)
+      -Weverything
+      -Wno-c++98-compat
+      -Wno-c++98-compat-pedantic
+      -Wno-documentation-unknown-command
+      -Wno-disabled-macro-expansion
+      -Wno-weak-vtables
+      -Wno-ctad-maybe-unsupported
+      -Wno-padded
+      -Wno-exit-time-destructors
+      -Wno-global-constructors
+      -Wno-covered-switch-default
+      -Wno-switch-enum # but -Wswitch still active!
+      )
   elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_compile_options(${t} PRIVATE
       /W4

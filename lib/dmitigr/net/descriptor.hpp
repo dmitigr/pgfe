@@ -124,7 +124,7 @@ public:
     DMITIGR_REQUIRE(len <= max_read_size(), std::invalid_argument);
 
     constexpr int flags{};
-    const int result = ::recv(socket_, buf, static_cast<int>(len), flags);
+    const auto result = ::recv(socket_, buf, static_cast<std::size_t>(len), flags);
     if (net::is_socket_error(result))
       throw DMITIGR_NET_EXCEPTION{"recv"};
 
@@ -141,7 +141,7 @@ public:
 #else
     constexpr int flags{MSG_NOSIGNAL};
 #endif
-    const int result = ::send(socket_, buf, static_cast<int>(len), flags);
+    const auto result = ::send(socket_, buf, static_cast<std::size_t>(len), flags);
     if (net::is_socket_error(result))
       throw DMITIGR_NET_EXCEPTION{"send"};
 
@@ -190,7 +190,7 @@ private:
 
       std::array<char, 1024> trashcan;
       constexpr int flags{};
-      if (const int r = ::recv(socket_, trashcan.data(), static_cast<int>(trashcan.size()), flags); net::is_socket_error(r))
+      if (const auto r = ::recv(socket_, trashcan.data(), trashcan.size(), flags); net::is_socket_error(r))
         throw DMITIGR_NET_EXCEPTION{"recv"};
       else if (r == 0)
         break; // the end (ok)

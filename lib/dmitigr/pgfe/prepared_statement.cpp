@@ -16,7 +16,7 @@ DMITIGR_PGFE_INLINE std::size_t Prepared_statement::positional_parameter_count()
   const auto b = cbegin(parameters_);
   const auto e = cend(parameters_);
   const auto i = std::find_if_not(b, e, [](const auto& p) { return p.name.empty(); });
-  return i - b;
+  return static_cast<std::size_t>(i - b);
 }
 
 DMITIGR_PGFE_INLINE std::size_t Prepared_statement::parameter_index(const std::string& name) const noexcept
@@ -24,7 +24,7 @@ DMITIGR_PGFE_INLINE std::size_t Prepared_statement::parameter_index(const std::s
   const auto b = cbegin(parameters_);
   const auto e = cend(parameters_);
   const auto i = std::find_if(b, e, [&name](const auto& p) { return p.name == name; });
-  return i - b;
+  return static_cast<std::size_t>(i - b);
 }
 
 DMITIGR_PGFE_INLINE std::uint_fast32_t Prepared_statement::parameter_type_oid(const std::size_t index) const noexcept
@@ -88,14 +88,14 @@ DMITIGR_PGFE_INLINE void Prepared_statement::execute_nio()
 
   // All values are NULLs. (Can throw.)
   const int param_count = static_cast<int>(parameter_count());
-  std::vector<const char*> values(param_count, nullptr);
-  std::vector<int> lengths(param_count, 0);
-  std::vector<int> formats(param_count, 0);
+  std::vector<const char*> values(static_cast<unsigned>(param_count), nullptr);
+  std::vector<int> lengths(static_cast<unsigned>(param_count), 0);
+  std::vector<int> formats(static_cast<unsigned>(param_count), 0);
 
   connection_->requests_.push(Connection::Request_id::execute); // can throw
   try {
     // Prepare the input for libpq.
-    for (int i = 0; i < param_count; ++i) {
+    for (unsigned i = 0; i < static_cast<unsigned>(param_count); ++i) {
       if (const Data* const d = bound(i)) {
         values[i] = d->bytes();
         lengths[i] = static_cast<int>(d->size());

@@ -123,7 +123,7 @@ private:
   bool is_invariant_ok() const override
   {
     const bool info_ok = (info_.pq_result_.status() == PGRES_SINGLE_TUPLE);
-    return info_ok && Compositional::is_invariant_ok();;
+    return info_ok && Compositional::is_invariant_ok();
   }
 };
 

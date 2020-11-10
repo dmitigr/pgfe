@@ -27,7 +27,7 @@ public:
   DMITIGR_PGFE_API Connection_options();
 
   /**
-   * @returns A new instance of the default connection options.
+   * @brief Constructs the default connection options.
    *
    * @par Effects
    * `(communication_mode() == value)`.

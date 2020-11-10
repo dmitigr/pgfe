@@ -388,6 +388,12 @@ public:
     return bind(index, std::move(d));
   }
 
+  /// @overload
+  Prepared_statement& bind_no_copy(const std::size_t index, const Data& data) noexcept
+  {
+    return bind(index, &data);
+  }
+
   /**
    * @overload
    *
@@ -402,6 +408,12 @@ public:
     assert(idx < parameter_count());
     Data_ptr d{data, Data_deletion_required{false}};
     return bind(idx, std::move(d));
+  }
+
+  /// @overload
+  Prepared_statement& bind_no_copy(const std::string& name, const Data& data) noexcept
+  {
+    return bind_no_copy(name, &data);
   }
 
   /**

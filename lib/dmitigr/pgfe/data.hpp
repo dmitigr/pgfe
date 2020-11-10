@@ -193,7 +193,7 @@ public:
   /// @see Data::size().
   std::size_t size() const noexcept override
   {
-    return size_;
+    return static_cast<std::size_t>(size_);
   }
 
   /// @see Data::is_empty().

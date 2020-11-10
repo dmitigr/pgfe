@@ -10,6 +10,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <limits>
 #include <string>
 #include <system_error>
 #include <type_traits>
@@ -143,12 +144,12 @@ public:
     const auto fam = to_native(family());
     const std::string::size_type result_max_size = (fam == AF_INET) ? 16 : 46;
     std::string result(result_max_size, '\0');
-    inet_ntop__(fam, binary(), result.data(), result.size());
+    inet_ntop__(fam, binary(), result.data(), static_cast<unsigned>(result.size()));
 
     // Trimming right zeros.
     const auto b = cbegin(result);
     const auto i = std::find(b, cend(result), '\0');
-    result.resize(i - b);
+    result.resize(static_cast<std::string::size_type>(i - b));
 
     return result;
   }
@@ -194,7 +195,7 @@ private:
    *
    * @param dst - the output parameter for storing the result.
    */
-  static void inet_ntop__(const int af, const void* const src, char* const dst, const std::size_t dst_size)
+  static void inet_ntop__(const int af, const void* const src, char* const dst, const unsigned dst_size)
   {
     DMITIGR_ASSERT((af == AF_INET || af == AF_INET6) && src && dst && dst_size >= 16);
     if (!::inet_ntop(af, src, dst, dst_size))
@@ -287,10 +288,12 @@ public:
   }
 
   /// @returns The size of underlying binary data.
-  std::size_t size() const
+  unsigned size() const
   {
     return std::visit([](const auto& addr) {
-      return sizeof(std::decay_t<decltype(addr)>);
+      constexpr auto sz = sizeof(std::decay_t<decltype(addr)>);
+      static_assert(sz <= std::numeric_limits<unsigned>::max());
+      return static_cast<unsigned>(sz);
     }, binary_);
   }
 

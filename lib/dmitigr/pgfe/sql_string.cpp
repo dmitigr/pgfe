@@ -464,7 +464,7 @@ private:
     const auto e = cend(fragments);
     auto result = std::make_pair(e, e);
 
-    const auto is_nearby_string = [](const std::string& str, const std::locale& loc)
+    const auto is_nearby_string = [](const std::string& str, const std::locale& strloc)
     {
       std::string::size_type count{};
       for (const auto c : str) {
@@ -472,7 +472,7 @@ private:
           ++count;
           if (count > 1)
             return false;
-        } else if (!is_space(c, loc))
+        } else if (!is_space(c, strloc))
           break;
       }
       return true;
@@ -579,13 +579,13 @@ void Sql_string::push_positional_parameter(const std::string& str)
   push_back_fragment(Fragment::Type::positional_parameter, str);
 
   using Size = std::vector<bool>::size_type;
-  const std::size_t position = stoi(str);
-  if (position < 1 || position > max_parameter_count())
+  const int position = stoi(str);
+  if (position < 1 || static_cast<Size>(position) > max_parameter_count())
     throw std::runtime_error{"invalid parameter position \"" + str + "\""};
-  else if (Size(position) > positional_parameters_.size())
-    positional_parameters_.resize(position, false);
+  else if (static_cast<Size>(position) > positional_parameters_.size())
+    positional_parameters_.resize(static_cast<Size>(position), false);
 
-  positional_parameters_[Size(position) - 1] = true; // set parameter presence flag
+  positional_parameters_[static_cast<Size>(position) - 1] = true; // set parameter presence flag
 
   assert(is_invariant_ok());
 }
@@ -673,7 +673,7 @@ std::size_t Sql_string::unique_fragment_index(
   const auto b = cbegin(unique_fragments);
   const auto e = cend(unique_fragments);
   const auto i = find_if(b, e, [&str](const auto& pi) { return (pi->str == str); });
-  return i - b;
+  return static_cast<std::size_t>(i - b);
 }
 
 // -----------------------------------------------------------------------------

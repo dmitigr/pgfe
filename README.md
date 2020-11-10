@@ -11,7 +11,7 @@ project [here][dmitigr_pgfe].
 Upcoming release 2.0
 ====================
 
-**ATTENTION, API breaking changes staring from commit [62ceba3][v20alpha1]!**
+**ATTENTION, API breaking changes starting from commit [62ceba3][v20alpha1]!**
 
 I'm currently working on Pgfe 2.0. The current stage is early alpha. Nonetheless,
 I recommend to switch to the new API despite the fact that it's still a subject

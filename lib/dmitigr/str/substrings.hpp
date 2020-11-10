@@ -27,7 +27,7 @@ position_of_non_space(const std::string_view str, const std::string_view::size_t
   const auto b = cbegin(str);
   const auto e = cend(str);
   const auto i = std::find_if(b + pos, e, std::bind(is_non_space_character, std::placeholders::_1, loc));
-  return (i != e) ? i - b : std::string_view::npos;
+  return (i != e) ? static_cast<std::string_view::size_type>(i - b) : std::string_view::npos;
 }
 
 /**

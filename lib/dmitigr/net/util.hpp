@@ -16,9 +16,7 @@ namespace dmitigr::net {
  */
 inline bool is_hostname_valid(const std::string& hostname)
 {
-  /**
-   * @returns `true` if `ch` is a valid hostname character, or `false` otherwise.
-   */
+  /// Returns `true` if `ch` is a valid hostname character.
   static const auto is_hostname_char = [](const char ch)
   {
     static const std::locale l;

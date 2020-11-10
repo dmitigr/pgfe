@@ -274,9 +274,10 @@ DMITIGR_PGFE_INLINE void Data_view::swap(Data_view& rhs) noexcept
 
 std::unique_ptr<Data> Data_view::to_data() const
 {
-  std::unique_ptr<char[]> storage{new char[size_]};
-  std::memcpy(storage.get(), bytes_, size_);
-  return std::make_unique<detail::array_memory_Data>(std::move(storage), size_, format_);
+  const std::size_t sz = static_cast<std::size_t>(size_);
+  std::unique_ptr<char[]> storage{new char[sz]};
+  std::memcpy(storage.get(), bytes_, sz);
+  return std::make_unique<detail::array_memory_Data>(std::move(storage), sz, format_);
 }
 
 } // namespace dmitigr::pgfe

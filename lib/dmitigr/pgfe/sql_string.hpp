@@ -54,9 +54,9 @@ public:
   Sql_string() = default;
 
   /**
-   * @returns A new instance of this class.
+   * @brief The constructor.
    *
-   * @param input Any part of SQL statement, which may contain multiple
+   * @param text Any part of SQL statement, which may contain multiple
    * commands and comments. Comments can contain an associated extra data.
    *
    * @remarks While the SQL input may contain multiple commands, the parser
@@ -434,12 +434,12 @@ private:
   static bool is_blank_string(const std::string& str, const std::locale& loc) noexcept
   {
     return all_of(cbegin(str), cend(str), [&loc](const auto& c){return is_space(c, loc);});
-  };
+  }
 
   static bool is_comment(const Fragment& f) noexcept
   {
     return (f.type == Fragment::Type::one_line_comment || f.type == Fragment::Type::multi_line_comment);
-  };
+  }
 
   static bool is_text(const Fragment& f) noexcept
   {

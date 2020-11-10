@@ -95,9 +95,10 @@ public:
     const auto sz = size();
     const auto b = cbegin(datas_);
     const auto e = cend(datas_);
-    const auto i = std::find_if(std::min(b + offset, b + sz), e,
+    using Diff = decltype(b)::difference_type;
+    const auto i = std::find_if(std::min(b + static_cast<Diff>(offset), b + static_cast<Diff>(sz)), e,
       [&name](const auto& pair) { return pair.first == name; });
-    return i - b;
+    return static_cast<std::size_t>(i - b);
   }
 
   /**
@@ -205,7 +206,9 @@ public:
   void insert(const std::size_t index, const std::string& name, std::unique_ptr<Data>&& data = {})
   {
     assert(index < size());
-    datas_.insert(begin(datas_) + index, std::make_pair(name, std::move(data)));
+    const auto b = begin(datas_);
+    using Diff = decltype(b)::difference_type;
+    datas_.insert(b + static_cast<Diff>(index), std::make_pair(name, std::move(data)));
     assert(is_invariant_ok());
   }
 
@@ -250,7 +253,9 @@ public:
   void remove(const std::size_t index) noexcept
   {
     assert(index < size());
-    datas_.erase(cbegin(datas_) + index);
+    const auto b = cbegin(datas_);
+    using Diff = decltype(b)::difference_type;
+    datas_.erase(b + static_cast<Diff>(index));
     assert(is_invariant_ok());
   }
 
@@ -265,8 +270,11 @@ public:
    */
   void remove(const std::string& name, const std::size_t offset = 0) noexcept
   {
-    if (const auto index = index_of(name, offset); index != size())
-      datas_.erase(cbegin(datas_) + index);
+    if (const auto index = index_of(name, offset); index != size()) {
+      const auto b = cbegin(datas_);
+      using Diff = decltype(b)::difference_type;
+      datas_.erase(b + static_cast<Diff>(index));
+    }
     assert(is_invariant_ok());
   }
 

@@ -177,7 +177,9 @@ public:
   void insert(const std::size_t index, Sql_string sql_string)
   {
     assert(index < size());
-    storage_.insert(begin(storage_) + index, std::move(sql_string));
+    const auto b = begin(storage_);
+    using Diff = decltype(b)::difference_type;
+    storage_.insert(b + static_cast<Diff>(index), std::move(sql_string));
   }
 
   /**
@@ -189,7 +191,9 @@ public:
   void erase(const std::size_t index) noexcept
   {
     assert(index < size());
-    storage_.erase(begin(storage_) + index);
+    const auto b = begin(storage_);
+    using Diff = decltype(b)::difference_type;
+    storage_.erase(b + static_cast<Diff>(index));
   }
 
   /// @returns The result of conversion of this instance to the instance of type `std::string`.
@@ -205,7 +209,7 @@ public:
   {
     decltype(storage_) result;
     storage_.swap(result);
-    return std::move(result);
+    return result;
   }
 
 private:

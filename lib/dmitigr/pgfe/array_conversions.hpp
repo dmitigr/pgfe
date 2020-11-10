@@ -483,7 +483,7 @@ const char* parse_array_literal(const char* literal, const char delimiter, F& ha
         dimension = 1;
         state = in_dimension;
       } else if (std::isspace(c, loc)) {
-        ;
+        // Skip space.
       } else
         throw Malformed_array_literal{};
 
@@ -494,7 +494,7 @@ const char* parse_array_literal(const char* literal, const char delimiter, F& ha
       assert(dimension > 0);
 
       if (std::isspace(c, loc)) {
-        ;
+        // Skip space.
       } else if (c == delimiter) {
         if (previous_nonspace_char == delimiter || previous_nonspace_char == '{')
           throw Malformed_array_literal{};
@@ -523,7 +523,7 @@ const char* parse_array_literal(const char* literal, const char delimiter, F& ha
 
     case in_quoted_element: {
       if (c == '\\' && previous_char != '\\') {
-        ; // The escape character '\\' must be skipped.
+        // Skip escape character '\\'.
       } else if (c == '"' && previous_char != '\\')
         goto element_extracted;
       else

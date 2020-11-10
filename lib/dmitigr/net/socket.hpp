@@ -95,7 +95,8 @@ inline bool is_socket_valid(const Socket_native socket)
  * @returns `true` if the `function_result` is represents an indication
  * of the socket API function failure, or `false` otherwise.
  */
-inline bool is_socket_error(const int function_result)
+template<typename Integer>
+inline bool is_socket_error(const Integer function_result)
 {
 #ifdef _WIN32
   return (function_result == SOCKET_ERROR);
@@ -129,7 +130,7 @@ inline void set_timeout(const Socket_native socket,
   const auto rcv_micro = chrono::duration_cast<chrono::microseconds>(rcv_timeout - rcv_timeout_s);
   const auto snd_micro = chrono::duration_cast<chrono::microseconds>(snd_timeout - snd_timeout_s);
   timeval rcv_tv{rcv_s, static_cast<decltype(rcv_tv.tv_usec)>(rcv_micro.count())};
-  timeval snd_tv{snd_s, static_cast<decltype(snd_tv.tv_usec)>(rcv_micro.count())};
+  timeval snd_tv{snd_s, static_cast<decltype(snd_tv.tv_usec)>(snd_micro.count())};
   char* const rcv_to = reinterpret_cast<char*>(&rcv_tv);
   char* const snd_to = reinterpret_cast<char*>(&snd_tv);
   const auto rrcv = setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, rcv_to, sizeof(rcv_tv));
@@ -293,7 +294,7 @@ inline Socket_guard make_tcp_socket(const Protocol_family family)
 /// Binds `socket` to `addr`.
 inline void bind_socket(const Socket_native socket, const Socket_address& addr)
 {
-  if (::bind(socket, addr.addr(), static_cast<int>(addr.size())) != 0)
+  if (::bind(socket, addr.addr(), addr.size()) != 0)
     throw DMITIGR_NET_EXCEPTION{"bind"};
 }
 

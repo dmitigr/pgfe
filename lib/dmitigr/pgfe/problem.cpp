@@ -66,7 +66,7 @@ DMITIGR_PGFE_INLINE int Problem::sqlstate_string_to_int(const char* const code) 
   const long int result = std::strtol(cod.data(), nullptr, 36);
   assert(errno == 0);
   assert(min_code().value() <= result && result <= max_code().value());
-  return result;
+  return static_cast<int>(result);
 }
 
 DMITIGR_PGFE_INLINE std::string Problem::sqlstate_int_to_string(const int code)

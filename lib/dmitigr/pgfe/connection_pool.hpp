@@ -125,7 +125,7 @@ public:
   Connection_pool() = default;
 
   /**
-   * @returns New instance of the pool.
+   * @brief The constructor.
    *
    * @param count A number of connections in the pool.
    * @param options A connection options to be used for connections of pool.

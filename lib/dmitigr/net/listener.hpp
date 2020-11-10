@@ -32,8 +32,7 @@ class Listener_options final {
 public:
 #ifdef _WIN32
   /**
-   * @returns A new instance of the options for
-   * listeners of Windows Named Pipes (WNP).
+   * @brief Constructs the options for listeners of Windows Named Pipes (WNP).
    *
    * @param pipe_name - the pipe name.
    *
@@ -47,8 +46,7 @@ public:
   }
 #else
   /**
-   * @returns The new instance of the options for
-   * listeners of Unix Domain Sockets (UDS).
+   * @brief Constructs the options for listeners of Unix Domain Sockets (UDS).
    *
    * @param path - the path to the UDS.
    * @param backlog - the maximum size of the queue of pending connections.
@@ -70,7 +68,7 @@ public:
   /**
    * @overload
    *
-   * @returns A new instance of the options for listeners of network protocols.
+   * @brief Constructs the options for listeners of network protocols.
    *
    * @param address - the address to use for binding on;
    * @param port - the port number to use for binding on;
@@ -90,9 +88,7 @@ public:
     DMITIGR_ASSERT(is_invariant_ok());
   }
 
-  /**
-   * @returns The endpoint identifier.
-   */
+  /// @returns The endpoint identifier.
   const Endpoint& endpoint() const noexcept
   {
     return endpoint_;

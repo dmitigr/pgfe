@@ -19,12 +19,13 @@ namespace dmitigr::str {
  * @par Requires
  * `(pos < str.size())`.
  */
-inline std::size_t
+inline auto
 line_number_by_position(const std::string& str, const std::string::size_type pos)
 {
   DMITIGR_REQUIRE(pos < str.size(), std::out_of_range,
     "invalid position for dmitigr::str::line_number_by_position()");
-  return std::count(cbegin(str), cbegin(str) + pos, '\n');
+  using Diff = decltype(cbegin(str))::difference_type;
+  return std::count(cbegin(str), cbegin(str) + static_cast<Diff>(pos), '\n');
 }
 
 /**

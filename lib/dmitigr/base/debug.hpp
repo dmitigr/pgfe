@@ -23,53 +23,53 @@ constexpr bool is_debug_enabled = true;
 
 } // namespace dmitigr
 
-#define DMITIGR_DOUT__(...) {                                           \
+#define DMITIGR_DOUT_PRIVATE(...) do {                                  \
     std::fprintf(stderr, "Debug output from " __FILE__ ":" DMITIGR_XSTRINGIZED(__LINE__) ": " __VA_ARGS__); \
-  }
+  } while (false)
 
-#define DMITIGR_ASSERT__(a, t) {                                        \
+#define DMITIGR_ASSERT_PRIVATE(a, t) do {                               \
     if (!(a)) {                                                         \
-      DMITIGR_DOUT__("assertion (%s) failed\n", #a)                     \
-      if constexpr (t)                                                  \
-        throw std::logic_error{"assertion (" #a ") failed at " __FILE__ ":" DMITIGR_XSTRINGIZED(__LINE__)}; \
+      DMITIGR_DOUT_PRIVATE("assertion (%s) failed\n", #a);              \
+        if constexpr (t)                                                \
+          throw std::logic_error{"assertion (" #a ") failed at " __FILE__ ":" DMITIGR_XSTRINGIZED(__LINE__)}; \
     }                                                                   \
-  }
+  } while (false)
 
 /**
  * @brief Prints the debug output even when `(is_debug_enabled == false)`.
  */
-#define DMITIGR_DOUT_ALWAYS(...) DMITIGR_DOUT__(__VA_ARGS__)
+#define DMITIGR_DOUT_ALWAYS(...) DMITIGR_DOUT_PRIVATE(__VA_ARGS__)
 
 /**
  * @brief Checks the assertion even when `(is_debug_enabled == false)`.
  *
  * @throws An instance of `std::logic_error` if assertion failure.
  */
-#define DMITIGR_ASSERT_ALWAYS(a) DMITIGR_ASSERT__(a, true)
+#define DMITIGR_ASSERT_ALWAYS(a) DMITIGR_ASSERT_PRIVATE(a, true)
 
 /**
  * @brief Checks the assertion even when `(is_debug_enabled == false)`.
  */
-#define DMITIGR_ASSERT_NOTHROW_ALWAYS(a) DMITIGR_ASSERT__(a, false)
+#define DMITIGR_ASSERT_NOTHROW_ALWAYS(a) DMITIGR_ASSERT_PRIVATE(a, false)
 
-#define DMITIGR_IF_DEBUG__(code) if constexpr (dmitigr::is_debug_enabled) { code }
+#define DMITIGR_IF_DEBUG_PRIVATE(code) do { if constexpr (dmitigr::is_debug_enabled) { code } } while (false)
 
 /**
  * @brief Prints the debug output only when `(is_debug_enabled == true)`.
  */
-#define DMITIGR_DOUT(...) { DMITIGR_IF_DEBUG__(DMITIGR_DOUT_ALWAYS(__VA_ARGS__)) }
+#define DMITIGR_DOUT(...) DMITIGR_IF_DEBUG_PRIVATE(DMITIGR_DOUT_ALWAYS(__VA_ARGS__))
 
 /**
  * @brief Checks the assertion only when `(is_debug_enabled == true)`.
  *
  * @throws An instance of `std::logic_error` if assertion failure.
  */
-#define DMITIGR_ASSERT(a) { DMITIGR_IF_DEBUG__(DMITIGR_ASSERT_ALWAYS(a)) }
+#define DMITIGR_ASSERT(a) DMITIGR_IF_DEBUG_PRIVATE(DMITIGR_ASSERT_ALWAYS(a);)
 
 /**
  * @brief Checks the assertion only when `(is_debug_enabled == true)`.
  */
-#define DMITIGR_ASSERT_NOTHROW(a) { DMITIGR_IF_DEBUG__(DMITIGR_ASSERT_NOTHROW_ALWAYS(a)) }
+#define DMITIGR_ASSERT_NOTHROW(a) DMITIGR_IF_DEBUG_PRIVATE(DMITIGR_ASSERT_NOTHROW_ALWAYS(a);)
 
 /**
  * @throws An instance of type `Exc` with a
@@ -105,7 +105,7 @@ constexpr bool is_debug_enabled = true;
 /**
  * @brief Expands to `macro_name`.
  */
-#define DMITIGR_REQUIRE_NAME__(_1, _2, _3, macro_name, ...) macro_name
+#define DMITIGR_REQUIRE_NAME_PRIVATE(_1, _2, _3, macro_name, ...) macro_name
 
 /**
  * @brief Expands to
@@ -115,6 +115,7 @@ constexpr bool is_debug_enabled = true;
  * @remarks The dummy argument `ARG` is used to avoid the warning that ISO
  * C++11 requires at least one argument for the "..." in a variadic macro.
  */
-#define DMITIGR_REQUIRE(...) DMITIGR_EXPAND(DMITIGR_REQUIRE_NAME__(__VA_ARGS__, DMITIGR_REQUIRE3, DMITIGR_REQUIRE2, ARG)(__VA_ARGS__))
+#define DMITIGR_REQUIRE(...) \
+  DMITIGR_EXPAND(DMITIGR_REQUIRE_NAME_PRIVATE(__VA_ARGS__, DMITIGR_REQUIRE3, DMITIGR_REQUIRE2, ARG)(__VA_ARGS__))
 
 #endif  // DMITIGR_BASE_DEBUG_HPP
