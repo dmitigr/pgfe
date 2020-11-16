@@ -62,6 +62,8 @@ function(dmitigr_target_compile_options t)
       -Wno-global-constructors
       -Wno-covered-switch-default
       -Wno-switch-enum # but -Wswitch still active!
+      -Wno-unused-private-field
+      -Wno-reserved-id-macro
       )
   elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
     target_compile_options(${t} PRIVATE

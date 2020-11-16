@@ -94,12 +94,16 @@ struct Numeric_string_conversions_base {
   }
 
 protected:
-  template<typename R, typename ... ArgTypes>
-  static Type to_numeric__(const std::string& text, R(*converter)(const std::string&, std::size_t*, ArgTypes ...))
+  template<typename R, typename ... Types>
+  static Type to_numeric__(const std::string& text, R(*converter)(const std::string&, std::size_t*, Types ...))
   {
     Type result;
     std::size_t idx;
-    result = converter(text, &idx);
+    if constexpr (std::is_floating_point_v<R>) // workaround for GCC 7.5
+      result = converter(text, &idx);
+    else
+      result = converter(text, &idx, 10);
+
     if (idx != text.size())
       throw std::runtime_error{"the input string contains symbols not convertible to numeric"};
 
