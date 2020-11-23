@@ -378,9 +378,9 @@ void foo(Connection& conn)
   conn.execute([](auto&& row)
   {
     using dmitigr::pgfe::to;
-    auto str = to<std::string>(row["str"]);
-    std::printf("%s\n", str.data());
-  }, "select 'row'||generate_series($1::int, $2::int) str", 1, 3);
+    auto name = to<std::string>(row["name"]);
+    std::printf("%s\n", name.data());
+  }, "select name from usr where id = $1", 3); // where id = 3
 }
 ```
 
