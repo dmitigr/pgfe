@@ -5,27 +5,25 @@
 #ifndef DMITIGR_NET_ENDPOINT_HPP
 #define DMITIGR_NET_ENDPOINT_HPP
 
-#include <dmitigr/base/debug.hpp>
-#include <dmitigr/base/filesystem.hpp>
+#include <dmitigr/misc/filesystem.hpp>
 
+#include <cassert>
 #include <optional>
 #include <string>
 #include <utility>
 
 namespace dmitigr::net {
 
-/**
- * @brief A communication mode.
- */
+/// A communication mode.
 enum class Communication_mode {
 #ifndef _WIN32
-  /** A Unix Domain Socket. */
+  /// A Unix Domain Socket.
   uds = 0,
 #else
-  /** A Windows Named Pipe. */
+  /// A Windows Named Pipe.
   wnp = 10,
 #endif
-  /** A network. */
+  /// A network.
   net = 100
 };
 
@@ -54,7 +52,7 @@ public:
     : wnp_pipe_name_{std::move(pipe_name)}
     , wnp_server_name_{std::move(server_name)}
   {
-    DMITIGR_ASSERT(is_invariant_ok());
+    assert(is_invariant_ok());
   }
 #else
   /**
@@ -63,7 +61,7 @@ public:
   explicit Endpoint(std::filesystem::path path)
     : uds_path_{std::move(path)}
   {
-    DMITIGR_ASSERT(is_invariant_ok());
+    assert(is_invariant_ok());
   }
 #endif
 
@@ -74,7 +72,7 @@ public:
     : net_address_{std::move(address)}
     , net_port_{port}
   {
-    DMITIGR_ASSERT(is_invariant_ok());
+    assert(is_invariant_ok());
   }
 
   /**

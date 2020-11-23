@@ -9,6 +9,7 @@
 #include "dmitigr/net/endpoint.hpp"
 #include "dmitigr/net/socket.hpp"
 
+#include <cassert>
 #include <memory>
 #include <utility>
 
@@ -74,7 +75,7 @@ inline std::unique_ptr<Descriptor> make_tcp_connection(const Client_options& opt
   case Communication_mode::net:
     return std::make_unique<Sockdesc>(make_tcp_connection({remote.net_address().value(), remote.net_port().value()}));
   }
-  DMITIGR_ASSERT_ALWAYS(!true);
+  assert(false);
 }
 
 } // namespace dmitigr::net

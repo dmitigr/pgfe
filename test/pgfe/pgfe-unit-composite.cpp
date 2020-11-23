@@ -1,10 +1,10 @@
 // -*- C++ -*-
 // Copyright (C) Dmitry Igrishin
-// For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
+// For conditions of distribution and use, see files LICENSE.txt
 
+#include <dmitigr/misc/testo.hpp>
 #include <dmitigr/pgfe/composite.hpp>
 #include <dmitigr/pgfe/data.hpp>
-#include <dmitigr/testo.hpp>
 
 int main(int, char* argv[])
 {

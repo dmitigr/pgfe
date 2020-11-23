@@ -1,10 +1,10 @@
 // -*- C++ -*-
 // Copyright (C) Dmitry Igrishin
-// For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
+// For conditions of distribution and use, see files LICENSE.txt
 
+#include <dmitigr/misc/testo.hpp>
 #include <dmitigr/pgfe/exceptions.hpp>
 #include <dmitigr/pgfe/conversions.hpp>
-#include <dmitigr/testo.hpp>
 
 #include <limits>
 #include <optional>
@@ -286,7 +286,7 @@ int main(int, char* argv[])
         const auto data = pgfe::Data::make(valid_literal);
         const auto native_arr = pgfe::to<Arr>(data.get());
         ASSERT((native_arr == Arr{1,{}}));
-        ASSERT(is_runtime_throw_works([&] { const auto native_vec = pgfe::to<Vec>(data.get()); }));
+        ASSERT(is_throw_works<std::runtime_error>([&] { const auto native_vec = pgfe::to<Vec>(data.get()); }));
       }
 
       {

@@ -6,7 +6,7 @@
 #define DMITIGR_OS_LOG_HPP
 
 #include "dmitigr/os/proc.hpp"
-#include <dmitigr/base/filesystem.hpp>
+#include <dmitigr/misc/filesystem.hpp>
 
 #include <fstream>
 #include <iostream>

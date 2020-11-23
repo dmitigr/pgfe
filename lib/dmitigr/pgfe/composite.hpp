@@ -282,7 +282,7 @@ private:
   std::vector<std::pair<std::string, std::unique_ptr<Data>>> datas_;
 };
 
-/// Overload of Composite::swap().
+/// Composite is swappable.
 inline void swap(Composite& lhs, Composite& rhs) noexcept
 {
   lhs.swap(rhs);

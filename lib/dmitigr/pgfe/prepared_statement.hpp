@@ -11,7 +11,7 @@
 #include "dmitigr/pgfe/response.hpp"
 #include "dmitigr/pgfe/row_info.hpp"
 #include "dmitigr/pgfe/types_fwd.hpp"
-#include <dmitigr/mem/mem.hpp>
+#include <dmitigr/misc/mem.hpp>
 
 #include <algorithm>
 #include <cassert>
@@ -33,7 +33,7 @@ namespace dmitigr::pgfe {
  */
 class Named_argument final {
 public:
-  /// Constructs the named argument bound to NULL.
+  /// Constructs the named argument bound to `NULL`.
   Named_argument(std::string name, std::nullptr_t) noexcept
     : name_{std::move(name)}
   {
@@ -46,7 +46,7 @@ public:
    * @par Effects
    * `(is_data_owner() == false)`.
    *
-   * @remarks No deep copy of `data` is performed.
+   * @remarks No deep copy of `data` performed.
    */
   Named_argument(std::string name, const Data* const data) noexcept
     : name_{std::move(name)}
@@ -136,7 +136,7 @@ private:
  *
  * @brief The alias of Named_argument.
  */
-using Na = Named_argument;
+using a = Named_argument;
 
 /**
  * @ingroup main

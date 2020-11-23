@@ -1,6 +1,6 @@
 // -*- C++ -*-
 // Copyright (C) Dmitry Igrishin
-// For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
+// For conditions of distribution and use, see files LICENSE.txt
 
 #include "pgfe-unit-benchmark_array.hpp"
 

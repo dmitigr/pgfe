@@ -122,13 +122,13 @@ DMITIGR_PGFE_INLINE void Prepared_statement::execute_nio()
 
 DMITIGR_PGFE_INLINE void Prepared_statement::describe_nio()
 {
-  connection_->describe_statement_nio(name_);
+  connection_->describe_nio(name_);
   assert(is_invariant_ok());
 }
 
 DMITIGR_PGFE_INLINE void Prepared_statement::describe()
 {
-  connection_->describe_statement(name_);
+  connection_->describe(name_);
   assert(is_invariant_ok());
 }
 

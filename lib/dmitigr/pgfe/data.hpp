@@ -214,7 +214,7 @@ private:
   const char* bytes_{""};
 };
 
-/// Overload of Data_view::swap().
+/// Data_view is swappable.
 inline void swap(Data_view& lhs, Data_view& rhs) noexcept
 {
   lhs.swap(rhs);

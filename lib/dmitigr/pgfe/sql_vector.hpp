@@ -216,7 +216,7 @@ private:
   mutable std::vector<Sql_string> storage_;
 };
 
-/// Overload of Sql_vector::swap().
+/// Sql_vector is swappable.
 inline void swap(Sql_vector& lhs, Sql_vector& rhs) noexcept
 {
   lhs.swap(rhs);

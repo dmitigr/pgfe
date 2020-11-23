@@ -199,7 +199,7 @@ private:
   int desc_{-1};
 };
 
-/// Overload of Large_object::swap().
+/// Large_object is swappable.
 inline void swap(Large_object& lhs, Large_object& rhs) noexcept
 {
   lhs.swap(rhs);

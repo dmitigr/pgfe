@@ -1,0 +1,12 @@
+No close-delimiter
+--AaB03x
+content-disposition: form-data; name="field1"
+content-type: text/plain;charset=UTF-8
+
+Field1 data.
+--AaB03x
+content-disposition: form-data; name="field2"
+content-type: text/plain;charset=UTF-8
+
+Field2 data.
+--AaB03x

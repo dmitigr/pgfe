@@ -6,7 +6,7 @@
 #define DMITIGR_PGFE_PQ_HPP
 
 #include "dmitigr/pgfe/basics.hpp"
-#include <dmitigr/str/str.hpp>
+#include <dmitigr/misc/str.hpp>
 
 #include <libpq-fe.h>
 
@@ -446,7 +446,7 @@ private:
   std::unique_ptr< ::PGresult> pgresult_;
 };
 
-/// Overload of Result::swap().
+/// Result is swappable.
 inline void swap(Result& lhs, Result& rhs) noexcept
 {
   lhs.swap(rhs);

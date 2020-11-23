@@ -454,7 +454,7 @@ private:
   struct Extra;
 };
 
-/// Overload of Sql_string::swap().
+/// Sql_string is swappable.
 inline void swap(Sql_string& lhs, Sql_string& rhs) noexcept
 {
   lhs.swap(rhs);

@@ -5,10 +5,10 @@
 #ifndef DMITIGR_NET_ADDRESS_HPP
 #define DMITIGR_NET_ADDRESS_HPP
 
-#include <dmitigr/base/debug.hpp>
-#include <dmitigr/base/filesystem.hpp>
+#include <dmitigr/misc/filesystem.hpp>
 
 #include <algorithm>
+#include <cassert>
 #include <cstring>
 #include <limits>
 #include <string>
@@ -85,7 +85,7 @@ public:
   {
     Ip_address result;
     const auto binsz = bin.size();
-    DMITIGR_REQUIRE(binsz == 4 || binsz == 16, std::invalid_argument);
+    assert(binsz == 4 || binsz == 16);
     if (binsz == 4)
       result.init< ::in_addr>(bin);
     else
@@ -167,7 +167,7 @@ private:
   template<typename Addr>
   void init(const std::string_view bin)
   {
-    DMITIGR_ASSERT(sizeof(Addr) == bin.size());
+    assert(sizeof(Addr) == bin.size());
     Addr tmp;
     std::memcpy(&tmp, bin.data(), bin.size());
     binary_ = tmp;
@@ -181,7 +181,7 @@ private:
    */
   static int inet_pton__(const int af, const char* const src, void* const dst)
   {
-    DMITIGR_ASSERT((af == AF_INET || af == AF_INET6) && src && dst);
+    assert((af == AF_INET || af == AF_INET6) && src && dst);
     const int result = ::inet_pton(af, src, dst);
     if (result < 0)
       // FIXME: use WSAGetLastError() on Windows and error on Unix.
@@ -197,7 +197,7 @@ private:
    */
   static void inet_ntop__(const int af, const void* const src, char* const dst, const unsigned dst_size)
   {
-    DMITIGR_ASSERT((af == AF_INET || af == AF_INET6) && src && dst && dst_size >= 16);
+    assert((af == AF_INET || af == AF_INET6) && src && dst && dst_size >= 16);
     if (!::inet_ntop(af, src, dst, dst_size))
       // FIXME: use WSAGetLastError() on Windows and error on Unix.
       throw std::system_error{int(std::errc::address_family_not_supported), std::system_category()};

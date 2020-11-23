@@ -7,7 +7,7 @@
 
 #include "dmitigr/pgfe/basics.hpp"
 #include "dmitigr/pgfe/dll.hpp"
-#include <dmitigr/base/filesystem.hpp>
+#include <dmitigr/misc/filesystem.hpp>
 
 #include <cstdint>
 #include <chrono>
@@ -573,7 +573,7 @@ private:
   bool is_invariant_ok() const noexcept;
 };
 
-/// Overload of Connection_options::swap().
+/// Connection_options is swappable.
 inline void swap(Connection_options& lhs, Connection_options& rhs) noexcept
 {
   lhs.swap(rhs);

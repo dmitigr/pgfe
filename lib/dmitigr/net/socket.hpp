@@ -7,9 +7,10 @@
 
 #include "dmitigr/net/address.hpp"
 #include "dmitigr/net/exceptions.hpp"
-#include <dmitigr/base/basics.hpp>
+#include <dmitigr/misc/basics.hpp>
 
 #include <algorithm>
+#include <cassert>
 #include <chrono>
 #include <limits>
 #include <system_error>
@@ -328,7 +329,7 @@ inline void shutdown_socket(const Socket_native socket, const int how)
 inline Socket_readiness poll(const Socket_native socket,
   const Socket_readiness mask, const std::chrono::milliseconds timeout)
 {
-  DMITIGR_ASSERT_ALWAYS(is_socket_valid(socket));
+  assert(is_socket_valid(socket));
 
   using std::chrono::seconds;
   using std::chrono::milliseconds;
@@ -343,9 +344,9 @@ inline Socket_readiness poll(const Socket_native socket,
     using Tv_usec = decltype (tv.tv_usec);
 
     const auto secs = duration_cast<seconds>(timeout);
-    DMITIGR_ASSERT_ALWAYS(secs.count() <= std::numeric_limits<Tv_sec>::max());
+    assert(secs.count() <= std::numeric_limits<Tv_sec>::max());
     const auto microsecs = duration_cast<microseconds>(timeout - secs);
-    DMITIGR_ASSERT_ALWAYS(microsecs.count() <= std::numeric_limits<Tv_usec>::max());
+    assert(microsecs.count() <= std::numeric_limits<Tv_usec>::max());
 
     tv_p->tv_sec  = static_cast<Tv_sec>(secs.count());
     tv_p->tv_usec = static_cast<Tv_usec>(microsecs.count());

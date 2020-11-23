@@ -10,9 +10,9 @@
 #include "dmitigr/net/endpoint.hpp"
 #include "dmitigr/net/socket.hpp"
 #include "dmitigr/net/types_fwd.hpp"
-#include <dmitigr/base/debug.hpp>
-#include <dmitigr/base/filesystem.hpp>
+#include <dmitigr/misc/filesystem.hpp>
 
+#include <cassert>
 #include <chrono>
 #include <memory>
 #include <optional>
@@ -42,7 +42,7 @@ public:
   explicit Listener_options(std::string pipe_name)
     : endpoint_{std::move(pipe_name)}
   {
-    DMITIGR_ASSERT(is_invariant_ok());
+    assert(is_invariant_ok());
   }
 #else
   /**
@@ -61,8 +61,8 @@ public:
     : endpoint_{std::move(path)}
     , backlog_{backlog}
   {
-    DMITIGR_REQUIRE(backlog > 0, std::out_of_range);
-    DMITIGR_ASSERT(is_invariant_ok());
+    assert(backlog > 0);
+    assert(is_invariant_ok());
   }
 #endif
   /**
@@ -84,8 +84,8 @@ public:
     : endpoint_{std::move(address), port}
     , backlog_{backlog}
   {
-    DMITIGR_REQUIRE(port > 0 && backlog > 0, std::out_of_range);
-    DMITIGR_ASSERT(is_invariant_ok());
+    assert(port > 0 && backlog > 0);
+    assert(is_invariant_ok());
   }
 
   /// @returns The endpoint identifier.
@@ -229,9 +229,9 @@ public:
   {
     const auto cm = options_.endpoint().communication_mode();
 #ifdef _WIN32
-    DMITIGR_ASSERT(cm == Communication_mode::net);
+    assert(cm == Communication_mode::net);
 #else
-    DMITIGR_ASSERT(cm == Communication_mode::uds || cm == Communication_mode::net);
+    assert(cm == Communication_mode::uds || cm == Communication_mode::net);
 #endif
 
     net_initialize();
@@ -249,7 +249,7 @@ public:
 
   void listen() override
   {
-    DMITIGR_REQUIRE(!is_listening(), std::logic_error);
+    assert(!is_listening());
 
     const auto& eid = options_.endpoint();
 
@@ -293,8 +293,8 @@ public:
     using std::chrono::milliseconds;
     using Sr = net::Socket_readiness;
 
-    DMITIGR_REQUIRE(timeout >= milliseconds{-1}, std::invalid_argument);
-    DMITIGR_REQUIRE(is_listening(), std::logic_error);
+    assert(timeout >= milliseconds{-1});
+    assert(is_listening());
 
     const auto mask = net::poll(socket_, Sr::read_ready, timeout);
     return bool(mask & Sr::read_ready);
@@ -302,7 +302,7 @@ public:
 
   std::unique_ptr<Descriptor> accept() override
   {
-    DMITIGR_REQUIRE(is_listening(), std::logic_error);
+    assert(is_listening());
 
     constexpr sockaddr* addr{};
 #ifdef _WIN32
@@ -374,11 +374,9 @@ public:
     : options_{std::move(options)}
     , pipe_path_{"\\\\.\\pipe\\"}
   {
-    DMITIGR_REQUIRE((options_.endpoint().communication_mode() == Communication_mode::wnp), std::invalid_argument);
-
+    assert((options_.endpoint().communication_mode() == Communication_mode::wnp));
     pipe_path_.append(options_.endpoint().wnp_server_name().value());
-
-    DMITIGR_ASSERT(is_invariant_ok());
+    assert(is_invariant_ok());
   }
 
   const Listener_options& options() const override
@@ -393,8 +391,7 @@ public:
 
   void listen() override
   {
-    DMITIGR_REQUIRE(!is_listening(), std::logic_error);
-
+    assert(!is_listening());
     is_listening_ = true;
   }
 
@@ -402,8 +399,8 @@ public:
   {
     using std::chrono::milliseconds;
 
-    DMITIGR_REQUIRE(timeout >= milliseconds{-1}, std::invalid_argument);
-    DMITIGR_REQUIRE(is_listening(), std::logic_error);
+    assert(timeout >= milliseconds{-1});
+    assert(is_listening());
 
     if (pipe_ != INVALID_HANDLE_VALUE)
       return true;
@@ -422,7 +419,7 @@ public:
         goto have_waited;
 
       case ERROR_IO_PENDING: {
-        DMITIGR_ASSERT_ALWAYS(timeout.count() <= std::numeric_limits<DWORD>::max());
+        assert(timeout.count() <= std::numeric_limits<DWORD>::max());
         const DWORD tout = (timeout.count() == -1) ? INFINITE : static_cast<DWORD>(timeout.count());
         const DWORD r = ::WaitForSingleObject(ol.hEvent, tout);
         if (r == WAIT_OBJECT_0) {
@@ -455,7 +452,7 @@ public:
   std::unique_ptr<Descriptor> accept() override
   {
     wait();
-    DMITIGR_ASSERT(pipe_ != INVALID_HANDLE_VALUE);
+    assert(pipe_ != INVALID_HANDLE_VALUE);
     return std::make_unique<pipe_Descriptor>(std::move(pipe_));
   }
 

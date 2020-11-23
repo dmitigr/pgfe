@@ -111,9 +111,9 @@ public:
   }
 
   /// @returns The error response (aka error report).
-  const Error* error() const noexcept
+  const Error& error() const noexcept
   {
-    return error_.get();
+    return *error_;
   }
 
 private:

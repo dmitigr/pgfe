@@ -1,6 +1,6 @@
 /* -*- SQL -*-
  * Copyright (C) Dmitry Igrishin
- * For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
+ * For conditions of distribution and use, see files LICENSE.txt
  */
 
 -- This query calculates :n + 1

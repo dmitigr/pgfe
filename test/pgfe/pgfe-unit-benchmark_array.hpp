@@ -1,6 +1,6 @@
 // -*- C++ -*-
 // Copyright (C) Dmitry Igrishin
-// For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
+// For conditions of distribution and use, see files LICENSE.txt
 
 #ifndef DMITIGR_CEFEIKA_TESTS_PGFE_UNIT_BENCHMARK_ARRAY_HPP
 #define DMITIGR_CEFEIKA_TESTS_PGFE_UNIT_BENCHMARK_ARRAY_HPP

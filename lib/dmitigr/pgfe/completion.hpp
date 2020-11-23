@@ -104,7 +104,7 @@ private:
   }
 };
 
-/// Overload of Completion::swap().
+/// Completion is swappable.
 inline void swap(Completion& lhs, Completion& rhs) noexcept
 {
   lhs.swap(rhs);

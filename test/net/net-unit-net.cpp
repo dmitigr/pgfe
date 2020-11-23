@@ -1,9 +1,9 @@
 // -*- C++ -*-
 // Copyright (C) Dmitry Igrishin
-// For conditions of distribution and use, see files LICENSE.txt or net.hpp
+// For conditions of distribution and use, see files LICENSE.txt
 
+#include <dmitigr/misc/testo.hpp>
 #include <dmitigr/net.hpp>
-#include <dmitigr/testo.hpp>
 
 int main(int, char* argv[])
 {

@@ -1,6 +1,6 @@
 // -*- C++ -*-
 // Copyright (C) Dmitry Igrishin
-// For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
+// For conditions of distribution and use, see files LICENSE.txt
 
 #include <dmitigr/pgfe.hpp>
 #include <cstdio>
@@ -26,8 +26,8 @@ int main() try {
   }, "select generate_series($1::int, $2::int)", 1, 3);
 
   // Prepare and execute the statement with named parameters.
-  conn.prepare_statement("select :begin b, :end e")->
-    bind("begin", 0).bind("end", 1).execute([](auto&& r)
+  conn.prepare("select :begin b, :end e")
+    ->bind("begin", 0).bind("end", 1).execute([](auto&& r)
   {
     std::printf("Range [%i, %i]\n", to<int>(r["b"]), to<int>(r["e"]));
   });
@@ -41,7 +41,7 @@ int main() try {
   // Provoking the syntax error.
   conn.perform("provoke syntax error");
  } catch (const pgfe::c42_Syntax_error& e) {
-  std::printf("Error %s is handled as expected.\n", e.error()->sqlstate());
+  std::printf("Error %s is handled as expected.\n", e.error().sqlstate());
  } catch (const std::exception& e) {
   std::printf("Oops: %s\n", e.what());
   return 1;

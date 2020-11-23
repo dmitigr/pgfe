@@ -11,9 +11,9 @@
 
 #include "dmitigr/os/log.hpp"
 #include "dmitigr/os/proc.hpp"
-#include <dmitigr/base/debug.hpp>
-#include <dmitigr/base/filesystem.hpp>
+#include <dmitigr/misc/filesystem.hpp>
 
+#include <cassert>
 #include <cstdlib>
 #include <cstring>
 #include <iostream>
@@ -47,10 +47,10 @@ inline void detach(const std::function<void()>& startup,
   const std::filesystem::path& log_file,
   const std::ios_base::openmode log_file_openmode = std::ios_base::app | std::ios_base::ate | std::ios_base::out)
 {
-  DMITIGR_REQUIRE(startup, std::invalid_argument);
-  DMITIGR_REQUIRE(!working_directory.empty(), std::invalid_argument);
-  DMITIGR_REQUIRE(!pid_file.empty(), std::invalid_argument);
-  DMITIGR_REQUIRE(!log_file.empty(), std::invalid_argument);
+  assert(startup);
+  assert(!working_directory.empty());
+  assert(!pid_file.empty());
+  assert(!log_file.empty());
 
   // Forking for a first time
   if (const auto pid = ::fork(); pid < 0) {

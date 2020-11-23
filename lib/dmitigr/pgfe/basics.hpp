@@ -5,7 +5,7 @@
 #ifndef DMITIGR_PGFE_BASICS_HPP
 #define DMITIGR_PGFE_BASICS_HPP
 
-#include <dmitigr/base/basics.hpp>
+#include <dmitigr/misc/basics.hpp>
 
 #include <string_view>
 

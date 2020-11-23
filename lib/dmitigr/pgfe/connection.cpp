@@ -315,20 +315,20 @@ DMITIGR_PGFE_INLINE Response_status Connection::handle_input(const bool wait_res
       request_prepared_statement_ = {};
       request_prepared_statement_name_.reset();
     } else if (rstatus == PGRES_COMMAND_OK) {
-      assert(req_id != Request_id::prepare_statement || request_prepared_statement_);
-      assert(req_id != Request_id::describe_statement || request_prepared_statement_name_);
-      assert(req_id != Request_id::unprepare_statement || request_prepared_statement_name_);
-      if (req_id == Request_id::prepare_statement) {
+      assert(req_id != Request_id::prepare || request_prepared_statement_);
+      assert(req_id != Request_id::describe || request_prepared_statement_name_);
+      assert(req_id != Request_id::unprepare || request_prepared_statement_name_);
+      if (req_id == Request_id::prepare) {
         last_prepared_statement_ = register_ps(std::move(request_prepared_statement_));
         assert(!request_prepared_statement_);
-      } else if (req_id == Request_id::describe_statement) {
+      } else if (req_id == Request_id::describe) {
         last_prepared_statement_ = ps(*request_prepared_statement_name_);
         if (!last_prepared_statement_)
           last_prepared_statement_ = register_ps(Prepared_statement{std::move(*request_prepared_statement_name_),
             this, static_cast<std::size_t>(response_.field_count())});
         last_prepared_statement_->set_description(std::move(response_));
         request_prepared_statement_name_.reset();
-      } else if (req_id == Request_id::unprepare_statement) {
+      } else if (req_id == Request_id::unprepare) {
         assert(request_prepared_statement_name_ && !std::strcmp(response_.command_tag(), "DEALLOCATE"));
         unregister_ps(*request_prepared_statement_name_);
         request_prepared_statement_name_.reset();
@@ -409,12 +409,12 @@ DMITIGR_PGFE_INLINE Completion Connection::completion() noexcept
       get_ready_to_next_query();
       return result;
     }
-    case Request_id::prepare_statement:
+    case Request_id::prepare:
       [[fallthrough]];
-    case Request_id::describe_statement:
+    case Request_id::describe:
       return {};
-    case Request_id::unprepare_statement: {
-      Completion result{"unprepare_statement"};
+    case Request_id::unprepare: {
+      Completion result{"unprepare"};
       get_ready_to_next_query();
       return result;
     }
@@ -452,12 +452,12 @@ DMITIGR_PGFE_INLINE void Connection::perform_nio(const std::string& queries)
   assert(is_invariant_ok());
 }
 
-DMITIGR_PGFE_INLINE void Connection::describe_statement_nio(const std::string& name)
+DMITIGR_PGFE_INLINE void Connection::describe_nio(const std::string& name)
 {
   assert(is_ready_for_nio_request());
   assert(!request_prepared_statement_name_);
 
-  requests_.push(Request_id::describe_statement); // can throw
+  requests_.push(Request_id::describe); // can throw
   try {
     auto name_copy = name;
     const int send_ok = ::PQsendDescribePrepared(conn(), name.c_str());
@@ -472,7 +472,7 @@ DMITIGR_PGFE_INLINE void Connection::describe_statement_nio(const std::string& n
   assert(is_invariant_ok());
 }
 
-DMITIGR_PGFE_INLINE void Connection::unprepare_statement_nio(const std::string& name)
+DMITIGR_PGFE_INLINE void Connection::unprepare_nio(const std::string& name)
 {
   assert(!name.empty());
   assert(!request_prepared_statement_name_);
@@ -482,7 +482,7 @@ DMITIGR_PGFE_INLINE void Connection::unprepare_statement_nio(const std::string& 
 
   perform_nio(query); // can throw
   assert(requests_.front() == Request_id::perform);
-  requests_.front() = Request_id::unprepare_statement; // cannot throw
+  requests_.front() = Request_id::unprepare; // cannot throw
   request_prepared_statement_name_ = std::move(name_copy); // cannot throw
 
   assert(is_invariant_ok());
@@ -627,14 +627,14 @@ DMITIGR_PGFE_INLINE void Connection::default_notice_handler(const Notice& n) noe
 }
 
 DMITIGR_PGFE_INLINE void
-Connection::prepare_statement_nio__(const char* const query, const char* const name, const Sql_string* const preparsed)
+Connection::prepare_nio__(const char* const query, const char* const name, const Sql_string* const preparsed)
 {
   assert(query);
   assert(name);
   assert(is_ready_for_nio_request());
   assert(!request_prepared_statement_);
 
-  requests_.push(Request_id::prepare_statement); // can throw
+  requests_.push(Request_id::prepare); // can throw
   try {
     Prepared_statement ps{name, this, preparsed};
     constexpr int n_params{0};

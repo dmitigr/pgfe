@@ -50,7 +50,6 @@ public:
    */
   explicit Connection(Options options = {})
     : options_{std::move(options)}
-    , notice_handler_{&default_notice_handler}
   {}
 
   /// Non copy-constructible.
@@ -59,11 +58,44 @@ public:
   /// Non copy-assignable.
   Connection& operator=(const Connection&) = delete;
 
-  /// Non move-constructible.
-  Connection(Connection&& rhs) = delete;
+  /// Move-constructible.
+  Connection(Connection&& rhs) noexcept
+  {
+    swap(rhs);
+  }
 
-  /// Non move-assignable.
-  Connection& operator=(Connection&& rhs) = delete;
+  /// Move-assignable.
+  Connection& operator=(Connection&& rhs) noexcept
+  {
+    if (this != &rhs) {
+      Connection tmp{std::move(rhs)};
+      swap(tmp);
+    }
+    return *this;
+  }
+
+  /// Swaps this instance with `rhs`.
+  void swap(Connection& rhs) noexcept
+  {
+    using std::swap;
+    swap(options_, rhs.options_);
+    swap(error_handler_, rhs.error_handler_);
+    swap(notice_handler_, rhs.notice_handler_);
+    swap(notification_handler_, rhs.notification_handler_);
+    swap(default_result_format_, rhs.default_result_format_);
+    swap(conn_, rhs.conn_);
+    swap(polling_status_, rhs.polling_status_);
+    swap(session_start_time_, rhs.session_start_time_);
+    swap(response_, rhs.response_);
+    swap(response_status_, rhs.response_status_);
+    swap(last_prepared_statement_, rhs.last_prepared_statement_);
+    swap(shared_field_names_, rhs.shared_field_names_);
+    swap(named_prepared_statements_, rhs.named_prepared_statements_);
+    unnamed_prepared_statement_.swap(rhs.unnamed_prepared_statement_);
+    swap(requests_, rhs.requests_);
+    request_prepared_statement_.swap(rhs.request_prepared_statement_);
+    swap(request_prepared_statement_name_, rhs.request_prepared_statement_name_);
+  }
 
   /// @name General observers
   /// @{
@@ -540,7 +572,7 @@ public:
    *
    * @remarks The object pointed by the returned value is owned by this instance.
    *
-   * @see describe_statement(), describe_statement_nio().
+   * @see describe(), describe_nio().
    */
   Prepared_statement* prepared_statement(const std::string& name) const noexcept
   {
@@ -603,7 +635,7 @@ public:
    * if one of them provokes an Error, then the transaction will be aborted and
    * the queries which were not yet executed will be rejected.
    *
-   * @see prepare_statement_nio().
+   * @see prepare_nio().
    */
   DMITIGR_PGFE_API void perform_nio(const std::string& queries);
 
@@ -666,25 +698,25 @@ public:
    * This forces parameters `$1` and `$2` to be treated as of type `integer`
    * and thus the corresponding overload will be used in this case.
    *
-   * @see unprepare_statement_nio().
+   * @see unprepare_nio().
    */
-  void prepare_statement_nio(const Sql_string& statement, const std::string& name = {})
+  void prepare_nio(const Sql_string& statement, const std::string& name = {})
   {
     assert(!statement.has_missing_parameters());
-    prepare_statement_nio__(statement.to_query_string().c_str(), name.c_str(), &statement); // can throw
+    prepare_nio__(statement.to_query_string().c_str(), name.c_str(), &statement); // can throw
   }
 
   /**
-   * @brief Same as prepare_statement_nio() except the statement will be send
+   * @brief Same as prepare_nio() except the statement will be send
    * as-is, i.e. without preparsing.
    */
-  void prepare_statement_nio_as_is(const std::string& statement, const std::string& name = {})
+  void prepare_nio_as_is(const std::string& statement, const std::string& name = {})
   {
-    prepare_statement_nio__(statement.c_str(), name.c_str(), nullptr); // can throw
+    prepare_nio__(statement.c_str(), name.c_str(), nullptr); // can throw
   }
 
   /**
-   * @returns `(prepare_statement_nio(), wait_response_throw(), prepared_statement())`
+   * @returns `(prepare_nio(), wait_response_throw(), prepared_statement())`
    *
    * @par Requires
    * `(statement && !statement->has_missing_parameters() && is_ready_for_request())`.
@@ -692,23 +724,23 @@ public:
    * @par Exception safety guarantee
    * Basic.
    *
-   * @remarks See remarks of prepare_statement_nio().
+   * @remarks See remarks of prepare_nio().
    *
-   * @see unprepare_statement().
+   * @see unprepare().
    */
-  Prepared_statement* prepare_statement(const Sql_string& statement, const std::string& name = {})
+  Prepared_statement* prepare(const Sql_string& statement, const std::string& name = {})
   {
     using M = void(Connection::*)(const Sql_string&, const std::string&);
-    return prepare_statement__(static_cast<M>(&Connection::prepare_statement_nio), statement, name);
+    return prepare__(static_cast<M>(&Connection::prepare_nio), statement, name);
   }
 
   /**
-   * @brief Same as prepare_statement() except the statement will be send as-is,
+   * @brief Same as prepare() except the statement will be send as-is,
    * i.e. without preparsing.
    */
-  Prepared_statement* prepare_statement_as_is(const std::string& statement, const std::string& name = {})
+  Prepared_statement* prepare_as_is(const std::string& statement, const std::string& name = {})
   {
-    return prepare_statement__(&Connection::prepare_statement_nio_as_is, statement, name);
+    return prepare__(&Connection::prepare_nio_as_is, statement, name);
   }
 
   /**
@@ -731,12 +763,12 @@ public:
    * @par Exception safety guarantee
    * Strong.
    *
-   * @see describe_statement().
+   * @see describe().
    */
-  DMITIGR_PGFE_API void describe_statement_nio(const std::string& name);
+  DMITIGR_PGFE_API void describe_nio(const std::string& name);
 
   /**
-   * @returns `(describe_statement_nio(), wait_response_throw(), prepared_statement())`
+   * @returns `(describe_nio(), wait_response_throw(), prepared_statement())`
    *
    * @par Requires
    * `is_ready_for_request()`.
@@ -744,12 +776,12 @@ public:
    * @par Exception safety guarantee
    * Basic.
    *
-   * @see unprepare_statement().
+   * @see unprepare().
    */
-  Prepared_statement* describe_statement(const std::string& name)
+  Prepared_statement* describe(const std::string& name)
   {
     assert(is_ready_for_request());
-    describe_statement_nio(name);
+    describe_nio(name);
     return wait_prepared_statement__();
   }
 
@@ -775,12 +807,12 @@ public:
    * @remarks It's impossible to unprepare an unnamed prepared statement
    * at the moment.
    *
-   * @see unprepare_statement().
+   * @see unprepare().
    */
-  DMITIGR_PGFE_API void unprepare_statement_nio(const std::string& name);
+  DMITIGR_PGFE_API void unprepare_nio(const std::string& name);
 
   /**
-   * @returns `(unprepare_statement_nio(const std::string& name), wait_response_throw())`
+   * @returns `(unprepare_nio(const std::string& name), wait_response_throw())`
    *
    * @par Requires
    * `is_ready_for_request()`.
@@ -788,10 +820,10 @@ public:
    * @par Exception safety guarantee
    * Basic.
    */
-  Completion unprepare_statement(const std::string& name)
+  Completion unprepare(const std::string& name)
   {
     assert(is_ready_for_request());
-    unprepare_statement_nio(name);
+    unprepare_nio(name);
     wait_response_throw();
     auto result = completion();
     wait_response_throw();
@@ -816,7 +848,7 @@ public:
    * @par Exception safety guarantee
    * Basic.
    *
-   * @remarks See remarks of prepare_statement().
+   * @remarks See remarks of prepare().
    *
    * @see process_responses().
    */
@@ -824,7 +856,7 @@ public:
   std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
   execute(F&& callback, const Sql_string& statement, Types&& ... parameters)
   {
-    auto* const ps = prepare_statement(statement);
+    auto* const ps = prepare(statement);
     ps->bind_many(std::forward<Types>(parameters)...);
     return ps->execute(std::forward<F>(callback));
   }
@@ -886,7 +918,7 @@ public:
    *
    * @remarks It may be problematic to invoke overloaded functions with same
    * number of parameters. A SQL query with explicit type casts should be
-   * executed is such a case. See remarks of prepare_statement_nio().
+   * executed is such a case. See remarks of prepare_nio().
    *
    * @see invoke_unexpanded(), call(), execute(), process_responses().
    */
@@ -1166,7 +1198,7 @@ private:
 
   // Persistent data / public-modifiable data
   Error_handler error_handler_;
-  Notice_handler notice_handler_;
+  Notice_handler notice_handler_{&default_notice_handler};
   Notification_handler notification_handler_;
   Data_format default_result_format_{Data_format::text};
 
@@ -1182,9 +1214,9 @@ private:
   enum class Request_id {
     perform = 1,
     execute,
-    prepare_statement,
-    describe_statement,
-    unprepare_statement
+    prepare,
+    describe,
+    unprepare
   };
 
   std::optional<std::chrono::system_clock::time_point> session_start_time_;
@@ -1229,10 +1261,10 @@ private:
   // Prepared statement helpers
   // ---------------------------------------------------------------------------
 
-  void prepare_statement_nio__(const char* const query, const char* const name, const Sql_string* const preparsed);
+  void prepare_nio__(const char* const query, const char* const name, const Sql_string* const preparsed);
 
   template<typename M, typename T>
-  Prepared_statement* prepare_statement__(M&& prepare, T&& statement, const std::string& name)
+  Prepared_statement* prepare__(M&& prepare, T&& statement, const std::string& name)
   {
     assert(is_ready_for_request());
     (this->*prepare)(std::forward<T>(statement), name);
@@ -1375,6 +1407,12 @@ Prepared_statement::execute(F&& callback)
   execute_nio();
   assert(is_invariant_ok());
   return connection_->process_responses(std::forward<F>(callback));
+}
+
+/// Connection is swappable.
+inline void swap(Connection& lhs, Connection& rhs) noexcept
+{
+  lhs.swap(rhs);
 }
 
 } // namespace dmitigr::pgfe

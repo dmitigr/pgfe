@@ -5,8 +5,6 @@
 #ifndef DMITIGR_OS_ENV_HPP
 #define DMITIGR_OS_ENV_HPP
 
-#include <dmitigr/base/debug.hpp>
-
 #include <cstddef>
 #include <cstdlib>
 #include <optional>
