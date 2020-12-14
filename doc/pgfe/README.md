@@ -146,7 +146,7 @@ non-blocking IO maner, i.e. without need of waiting a server response(-s), and t
 without thread blocking. In the latter case the methods of the class `Connection` with
 the suffix `_nio` shall be used.
 
-By using "simple query" protocol it's easy to perform single commands:
+With Pgfe it's easy to execute single commands:
 
 ```cpp
 // Example 3. Executing single commands.
