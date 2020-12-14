@@ -175,7 +175,7 @@ When using "extended query" protocol in its simplest form unnamed statements are
 prepared implicitly:
 
 ```cpp
-// Example 5. Preparing unnamed statements (`BEGIN`, `SELECT`, `ROLLBACK`) implicitly.
+// Example 4. Preparing unnamed statements (`BEGIN`, `SELECT`, `ROLLBACK`) implicitly.
 void foo(Connection& conn)
 {
   conn.execute("begin");
