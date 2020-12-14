@@ -2,8 +2,8 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt
 
-#ifndef DMITIGR_CEFEIKA_TESTS_PGFE_UNIT_HPP
-#define DMITIGR_CEFEIKA_TESTS_PGFE_UNIT_HPP
+#ifndef DMITIGR_CEFEIKA_TEST_PGFE_UNIT_HPP
+#define DMITIGR_CEFEIKA_TEST_PGFE_UNIT_HPP
 
 #include <dmitigr/misc/testo.hpp>
 #include <dmitigr/os/env.hpp>
@@ -18,7 +18,7 @@
 
 namespace dmitigr::pgfe::test {
 
-inline Connection_options connection_options()
+inline auto connection_options()
 {
   return pgfe::Connection_options{pgfe::Communication_mode::net}
     .net_address("127.0.0.1")
@@ -28,14 +28,14 @@ inline Connection_options connection_options()
     .connect_timeout(std::chrono::seconds{7});
 }
 
-inline std::unique_ptr<Connection> make_connection()
+inline auto make_connection()
 {
   const auto conn_opts = connection_options();
   return std::make_unique<pgfe::Connection>(conn_opts);
 }
 
 #ifndef _WIN32
-inline std::unique_ptr<Connection> make_uds_connection()
+inline auto make_uds_connection()
 {
   return std::make_unique<pgfe::Connection>(
     pgfe::Connection_options{pgfe::Communication_mode::uds}
@@ -44,7 +44,7 @@ inline std::unique_ptr<Connection> make_uds_connection()
 }
 #endif
 
-inline std::unique_ptr<Connection> make_ssl_connection()
+inline auto make_ssl_connection()
 {
   auto conn_opts = connection_options();
   conn_opts.ssl_enabled(true);
@@ -70,4 +70,4 @@ inline std::unique_ptr<Connection> make_ssl_connection()
 
 } // namespace dmitigr::pgfe::test
 
-#endif // DMITIGR_CEFEIKA_TESTS_PGFE_UNIT_HPP
+#endif // DMITIGR_CEFEIKA_TEST_PGFE_UNIT_HPP

@@ -2,7 +2,7 @@
 # Copyright (C) Dmitry Igrishin
 # For conditions of distribution and use, see file LICENSE.txt
 
-set(dmitigr_misc_tests progpar math mp mulf_valid ttpl url uuid)
+set(dmitigr_misc_tests progpar math mp mulf_valid str ttpl url uuid)
 dmitigr_propagate_tests_settings(misc)
 
 add_custom_target(dmitigr_misc_copy_test_resources ALL

@@ -90,9 +90,9 @@ enum class Communication_mode {
 /**
  * @ingroup main
  *
- * @brief A communication status.
+ * @brief A connection status.
  */
-enum class Communication_status {
+enum class Connection_status {
   /// Normally disconnected.
   disconnected = 0,
 
@@ -231,7 +231,7 @@ inline auto to_problem_severity(const std::string_view str) noexcept
  * @brief A response status.
  */
 enum class Response_status {
-  /// No response available.
+  /// No response available. (No more requests.)
   empty = 0,
 
   /// Response is available.

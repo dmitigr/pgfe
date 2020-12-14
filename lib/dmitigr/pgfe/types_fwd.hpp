@@ -20,7 +20,7 @@ namespace dmitigr::pgfe {
 // -----------------------------------------------------------------------------
 
 enum class Communication_mode;
-enum class Communication_status;
+enum class Connection_status;
 enum class Data_format;
 enum class External_library;
 enum class Password_encryption;

@@ -30,6 +30,7 @@ set(dmitigr_misc_headers
   rng.hpp
   str.hpp
   testo.hpp
+  time.hpp
   ttpl.hpp
   url.hpp
   uuid.hpp

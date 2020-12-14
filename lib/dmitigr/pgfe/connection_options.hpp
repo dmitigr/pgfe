@@ -544,6 +544,8 @@ public:
 
   /// @}
 private:
+  friend bool operator==(const Connection_options& lhs, const Connection_options& rhs) noexcept;
+
   Communication_mode communication_mode_;
   std::optional<std::chrono::milliseconds> connect_timeout_;
   std::optional<std::chrono::milliseconds> wait_response_timeout_;
@@ -577,6 +579,45 @@ private:
 inline void swap(Connection_options& lhs, Connection_options& rhs) noexcept
 {
   lhs.swap(rhs);
+}
+
+/// @returns `true` if
+inline bool operator==(const Connection_options& lhs, const Connection_options& rhs) noexcept
+{
+  return
+    lhs.communication_mode_ == rhs.communication_mode_ &&
+    // booleans
+    lhs.tcp_keepalives_enabled_ == rhs.tcp_keepalives_enabled_ &&
+    lhs.is_ssl_enabled_ == rhs.is_ssl_enabled_ &&
+    lhs.ssl_compression_enabled_ == rhs.ssl_compression_enabled_ &&
+    lhs.ssl_server_hostname_verification_enabled_ == rhs.ssl_server_hostname_verification_enabled_ &&
+    // numerics
+    lhs.connect_timeout_ == rhs.connect_timeout_ &&
+    lhs.wait_response_timeout_ == rhs.wait_response_timeout_ &&
+    lhs.tcp_keepalives_idle_ == rhs.tcp_keepalives_idle_ &&
+    lhs.tcp_keepalives_interval_ == rhs.tcp_keepalives_interval_ &&
+    lhs.tcp_keepalives_count_ == rhs.tcp_keepalives_count_ &&
+    lhs.port_ == rhs.port_ &&
+    // strings
+#ifndef _WIN32
+    lhs.uds_directory_ == rhs.uds_directory_ &&
+    lhs.uds_require_server_process_username_ == rhs.uds_require_server_process_username_ &&
+#endif
+    lhs.net_address_ == rhs.net_address_ &&
+    lhs.net_hostname_ == rhs.net_hostname_ &&
+    lhs.username_ == rhs.username_ &&
+    lhs.database_ == rhs.database_ &&
+    lhs.password_ == rhs.password_ &&
+    lhs.kerberos_service_name_ == rhs.kerberos_service_name_ &&
+    lhs.ssl_certificate_file_ == rhs.ssl_certificate_file_ &&
+    lhs.ssl_private_key_file_ == rhs.ssl_private_key_file_ &&
+    lhs.ssl_certificate_authority_file_ == rhs.ssl_certificate_authority_file_ &&
+    lhs.ssl_certificate_revocation_list_file_ == rhs.ssl_certificate_revocation_list_file_;
+}
+
+inline bool operator!=(const Connection_options& lhs, const Connection_options& rhs) noexcept
+{
+  return !(lhs == rhs);
 }
 
 } // namespace dmitigr::pgfe

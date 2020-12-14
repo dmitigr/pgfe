@@ -49,7 +49,7 @@ inline dmitigr::progpar::Program_parameters prog_params;
 {
   assert(proc::prog_params.is_valid());
 
-  std::cerr << "usage: " << proc::prog_params.executable_path();
+  std::cerr << "usage: " << proc::prog_params.path();
   if (!info.empty())
     std::cerr << " " << info;
   std::cerr << std::endl;
@@ -166,15 +166,15 @@ inline void start(const bool detach,
   // Preparing.
 
   if (working_directory.empty())
-    working_directory = proc::prog_params.executable_path().parent_path();
+    working_directory = proc::prog_params.path().parent_path();
 
   if (detach) {
     if (pid_file.empty()) {
-      pid_file = working_directory / proc::prog_params.executable_path().filename();
+      pid_file = working_directory / proc::prog_params.path().filename();
       pid_file += ".pid";
     }
     if (log_file.empty()) {
-      log_file = working_directory / proc::prog_params.executable_path().filename();
+      log_file = working_directory / proc::prog_params.path().filename();
       log_file += ".log";
     }
   }

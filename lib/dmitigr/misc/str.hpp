@@ -368,11 +368,36 @@ inline std::string sparsed_string(const std::string_view input, const std::strin
  * @par Effects
  * `(str.back() == c)`.
  */
-inline void terminate_string(std::string& str, const char c)
+inline void terminate(std::string& str, const char c)
 {
   if (str.empty() || str.back() != c)
     str += c;
 }
+
+// Trims `str` by dropping whitespaces at both sides of it.
+inline void trim(std::string& str, const std::locale& loc = {})
+{
+  if (str.empty())
+    return;
+
+  const auto is_not_space = [&loc](const auto c) { return !std::isspace(c, loc); };
+  const auto b = begin(str);
+  const auto e = end(str);
+  const auto tb = find_if(b, e, is_not_space);
+  if (tb == e) {
+    str.clear(); // the string consists of spaces, so just clear it out
+    return;
+  }
+
+  const auto rb = rbegin(str);
+  const auto re = rend(str);
+  const auto te = find_if(rb, re, is_not_space).base();
+  move(tb, te, b);
+  str.resize(te - tb);
+}
+
+// -----------------------------------------------------------------------------
+// lowercase
 
 /**
  * @brief Replaces all of uppercase characters in `str` by the corresponding
@@ -395,6 +420,15 @@ inline std::string to_lowercase(std::string str, const std::locale& loc = {})
   return str;
 }
 
+/// @returns `true` if all of characters of `str` are in uppercase.
+inline bool is_lowercased(const std::string_view str, const std::locale& loc = {}) noexcept
+{
+  return std::all_of(cbegin(str), cend(str), [&loc](const char c) { return std::islower(c, loc); });
+}
+
+// -----------------------------------------------------------------------------
+// uppercase
+
 /**
  * @brief Replaces all of lowercase characters in `str` by the corresponding
  * uppercase characters.
@@ -414,12 +448,6 @@ inline std::string to_uppercase(std::string str, const std::locale& loc = {})
 {
   uppercase(str, loc);
   return str;
-}
-
-/// @returns `true` if all of characters of `str` are in uppercase.
-inline bool is_lowercased(const std::string_view str, const std::locale& loc = {}) noexcept
-{
-  return std::all_of(cbegin(str), cend(str), [&loc](const char c) { return std::islower(c, loc); });
 }
 
 /// @returns `true` if all of character of `str` are in lowercase.

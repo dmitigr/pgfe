@@ -13,7 +13,7 @@ int main(int argc, char* argv[])
   using namespace dmitigr::testo;
   try {
     const progpar::Program_parameters po{argc, argv};
-    const auto epath = po.executable_path();
+    const auto epath = po.path();
     ASSERT(!epath.empty());
     std::cout << "Executable path: " << epath << std::endl;
 

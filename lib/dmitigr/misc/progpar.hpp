@@ -69,7 +69,7 @@ public:
     /// @returns `true` if the instance is valid (references an option).
     bool is_valid() const noexcept
     {
-      return !name_.empty();
+      return name_ && !name_->empty();
     }
 
     /// @returns `is_valid()`.
@@ -87,13 +87,15 @@ public:
     /// @returns The name of this option if `is_valid()`.
     const std::string& name() const noexcept
     {
-      return name_;
+      assert(is_valid());
+      return *name_;
     }
 
     /// @returns The value of this option if `is_valid()`.
     const std::optional<std::string>& value() const noexcept
     {
-      return value_;
+      assert(is_valid());
+      return *value_;
     }
 
     /**
@@ -104,7 +106,7 @@ public:
     bool is_valid_throw_if_value() const
     {
       if (is_valid() && value())
-        throw std::runtime_error{std::string{"option --"}.append(name_)
+        throw std::runtime_error{std::string{"option --"}.append(name())
           .append(" doesn't need an argument")};
       return is_valid();
     }
@@ -113,16 +115,25 @@ public:
     friend Program_parameters;
 
     const Program_parameters& program_parameters_;
-    const std::string& name_;
-    const std::optional<std::string>& value_;
+    const std::string* name_{};
+    const std::optional<std::string>* value_{};
+
+    /// The constructor. (Constructs invalid instance.)
+    explicit Optref(const Program_parameters& pp) noexcept
+      : program_parameters_{pp}
+    {
+      assert(!is_valid());
+    }
 
     /// The constructor.
     explicit Optref(const Program_parameters& pp,
-      const std::string& name = {}, const std::optional<std::string>& value = {}) noexcept
+      const std::string& name, const std::optional<std::string>& value) noexcept
       : program_parameters_{pp}
-      , name_{name}
-      , value_{value}
-    {}
+      , name_{&name}
+      , value_{&value}
+    {
+      assert(is_valid());
+    }
   };
 
   /// The default constructor. (Constructs invalid instance.)
@@ -154,7 +165,7 @@ public:
           return std::nullopt;
       };
 
-    executable_path_.assign(argv[0]);
+    path_.assign(argv[0]);
 
     if (argc == 1)
       return;
@@ -184,28 +195,28 @@ public:
    * @brief The constructor.
    *
    * @par Requires
-   * `!executable_path.empty()`.
+   * `!path.empty()`.
    */
-  explicit Program_parameters(std::filesystem::path executable_path,
+  explicit Program_parameters(std::filesystem::path path,
     Option_map options = {}, Argument_vector arguments = {}) noexcept
-    : executable_path_{std::move(executable_path)}
+    : path_{std::move(path)}
     , options_{std::move(options)}
     , arguments_{std::move(arguments)}
   {
-    assert(!executable_path_.empty());
+    assert(!path_.empty());
     assert(is_valid());
   }
 
   /// @returns `false` if this instance is default-constructed.
   bool is_valid() const noexcept
   {
-    return !executable_path_.empty();
+    return !path_.empty();
   }
 
   /// @returns The executable path.
-  const std::filesystem::path& executable_path() const noexcept
+  const std::filesystem::path& path() const noexcept
   {
-    return executable_path_;
+    return path_;
   }
 
   /// @returns The map of options.
@@ -239,8 +250,21 @@ public:
       std::forward<Types>(names)...);
   }
 
+  /// @returns `arguments()[argument_index]`.
+  const std::string& operator[](const std::size_t argument_index) const noexcept
+  {
+    assert(argument_index < arguments_.size());
+    return arguments_[argument_index];
+  }
+
+  /// @returns `option(option_name)`.
+  Optref operator[](const std::string& option_name) const noexcept
+  {
+    return option(option_name);
+  }
+
 private:
-  std::filesystem::path executable_path_;
+  std::filesystem::path path_;
   Option_map options_;
   Argument_vector arguments_;
 

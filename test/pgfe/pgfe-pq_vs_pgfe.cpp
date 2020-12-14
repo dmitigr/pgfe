@@ -11,6 +11,25 @@
 
 const char* const query = "select generate_series(1,100000)";
 
+struct Result final {
+  int length{};
+  int format{};
+  char* value{};
+  int is_null{};
+  std::unique_ptr<PGresult> res_;
+};
+
+auto result(PGresult* res)
+{
+  Result r;
+  r.length = PQgetlength(res, 0, 0);
+  r.format = PQfformat(res, 0);
+  r.value = PQgetvalue(res, 0, 0);
+  r.is_null = PQgetisnull(res, 0, 0);
+  r.res_.reset(res);
+  return r;
+}
+
 void test_pq()
 {
   auto* const conn = PQconnectdb("hostaddr=127.0.0.1 user=pgfe_test"
@@ -40,11 +59,7 @@ void test_pq()
       PQclear(res);
       break;
     case PGRES_SINGLE_TUPLE: {
-      PQgetlength(res, 0, 0);
-      PQfformat(res, 0);
-      PQgetvalue(res, 0, 0);
-      PQgetisnull(res, 0, 0);
-      PQclear(res);
+      auto r = result(res);
       break;
     } default:
       PQclear(res);
@@ -63,11 +78,7 @@ void test_pgfe()
     pgfe::Communication_mode::net}.net_address("127.0.0.1").username("pgfe_test")
       .password("pgfe_test").database("pgfe_test").connect_timeout(std::chrono::seconds{7})};
   conn.connect();
-  conn.perform(query);
-  while (conn.wait_response()) {
-    if (auto r = conn.row())
-      r.data();
-  }
+  conn.execute([](auto&& r) { auto d = r.data(); }, query);
 }
 
 int main()
@@ -76,7 +87,6 @@ int main()
   std::cout << "Pq: ";
   const auto elapsed_pq = testo::time(test_pq);
   std::cout << elapsed_pq.count() << std::endl;
-
   std::cout << "Pgfe: ";
   const auto elapsed_pgfe = testo::time(test_pgfe);
   std::cout << elapsed_pgfe.count() << std::endl;

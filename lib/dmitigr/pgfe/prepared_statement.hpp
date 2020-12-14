@@ -476,7 +476,12 @@ public:
    * statement.
    *
    * @par Responses
-   * Similar to Connection::perform_nio().
+   *   - if the query provokes an error: Error;
+   *   - if the query produces rows: the set of Row;
+   *   - if the query does not provokes an error: Completion.
+   *
+   * @par Effects
+   * `has_uncompleted_request()`.
    *
    * @par Requires
    * `connection()->is_ready_for_nio_request()`.
@@ -492,7 +497,7 @@ public:
    * @param callback Same as for Connection::process_responses().
    *
    * @par Responses
-   * Similar to Connection::perform_nio().
+   * Similar to Connection::execute_nio().
    *
    * @par Requires
    * `connection()->is_ready_for_request()`.
@@ -504,9 +509,9 @@ public:
    *
    * @see Connection::execute(), Connection::process_responses().
    */
-  template<typename F>
+  template<typename F, typename ... Types>
   std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
-  execute(F&& callback);
+  execute(F&& callback, Types&& ... parameters);
 
   /// @overload
   Completion execute()
@@ -673,7 +678,10 @@ private:
   template<std::size_t ... I, typename ... Types>
   Prepared_statement& bind_many__(std::index_sequence<I...>, Types&& ... args)
   {
-    return (bind__(I, std::forward<Types>(args)), ...);
+    if constexpr (!sizeof...(args))
+      return *this;
+    else
+      return (bind__(I, std::forward<Types>(args)), ...);
   }
 
   Prepared_statement& bind__(const std::size_t, Named_argument&& na)
@@ -723,6 +731,11 @@ private:
     assert(is_described());
     assert(is_invariant_ok());
   }
+
+  // ---------------------------------------------------------------------------
+
+  void execute_nio(const Sql_string& statement);
+  void execute_nio__(const Sql_string* const statement);
 };
 
 } // namespace dmitigr::pgfe

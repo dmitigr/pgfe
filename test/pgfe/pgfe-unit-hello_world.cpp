@@ -16,21 +16,26 @@ int main() try {
   // Connecting.
   conn.connect();
 
-  // Using Pgfe's conversion function.
-  using pgfe::to;
+  // Using Pgfe's helpers.
+  using pgfe::a;  // for named arguments
+  using pgfe::to; // for data conversions
 
-  // Executing query with positional parameters.
+  // Executing statement with positional parameters.
   conn.execute([](auto&& r)
   {
     std::printf("Number %i\n", to<int>(r.data()));
   }, "select generate_series($1::int, $2::int)", 1, 3);
 
-  // Prepare and execute the statement with named parameters.
-  conn.prepare("select :begin b, :end e")
-    ->bind("begin", 0).bind("end", 1).execute([](auto&& r)
+  // Execute statement with named parameters.
+  conn.execute([](auto&& r)
   {
     std::printf("Range [%i, %i]\n", to<int>(r["b"]), to<int>(r["e"]));
-  });
+  },"select :begin b, :end e", a{"end", 1}, a{"begin", 0});
+
+  // Prepare and execute the statement.
+  auto* const ps = conn.prepare("select $1::int i");
+  for (int i = 0; i < 3; ++i)
+    ps->execute([](auto&& r){ std::printf("%i\n", to<int>(r["i"])); }, i);
 
   // Invoking the function.
   conn.invoke([](auto&& r)
@@ -39,7 +44,7 @@ int main() try {
   }, "cos", .5f);
 
   // Provoking the syntax error.
-  conn.perform("provoke syntax error");
+  conn.execute("provoke syntax error");
  } catch (const pgfe::c42_Syntax_error& e) {
   std::printf("Error %s is handled as expected.\n", e.error().sqlstate());
  } catch (const std::exception& e) {

@@ -82,11 +82,21 @@ DMITIGR_PGFE_INLINE bool Prepared_statement::is_invariant_ok() const noexcept
   return params_ok && preparsed_ok && session_ok && parameterizable_ok;
 }
 
+DMITIGR_PGFE_INLINE void Prepared_statement::execute_nio(const Sql_string& statement)
+{
+  execute_nio__(&statement);
+}
+
 DMITIGR_PGFE_INLINE void Prepared_statement::execute_nio()
+{
+  execute_nio__(nullptr);
+}
+
+DMITIGR_PGFE_INLINE void Prepared_statement::execute_nio__(const Sql_string* const statement)
 {
   assert(connection()->is_ready_for_nio_request());
 
-  // All values are NULLs. (Can throw.)
+  // All the values are NULLs initially. (Can throw.)
   const int param_count = static_cast<int>(parameter_count());
   std::vector<const char*> values(static_cast<unsigned>(param_count), nullptr);
   std::vector<int> lengths(static_cast<unsigned>(param_count), 0);
@@ -104,8 +114,14 @@ DMITIGR_PGFE_INLINE void Prepared_statement::execute_nio()
     }
     const int result_format = detail::pq::to_int(result_format_);
 
-    const int send_ok = ::PQsendQueryPrepared(connection_->conn(), name_.c_str(),
-      param_count, values.data(), lengths.data(), formats.data(), result_format);
+    const int send_ok = statement
+      ?
+      ::PQsendQueryParams(connection_->conn(), statement->to_query_string().c_str(),
+        param_count, nullptr, values.data(), lengths.data(), formats.data(), result_format)
+      :
+      ::PQsendQueryPrepared(connection_->conn(), name_.c_str(),
+        param_count, values.data(), lengths.data(), formats.data(), result_format);
+
     if (!send_ok)
       throw std::runtime_error(connection_->error_message());
 
