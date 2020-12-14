@@ -38,21 +38,26 @@ int main() try {
   // Connecting.
   conn.connect();
 
-  // Using Pgfe's conversion function.
-  using pgfe::to;
+  // Using Pgfe's helpers.
+  using pgfe::a;  // for named arguments
+  using pgfe::to; // for data conversions
 
-  // Executing query with positional parameters.
+  // Executing statement with positional parameters.
   conn.execute([](auto&& r)
   {
     std::printf("Number %i\n", to<int>(r.data()));
   }, "select generate_series($1::int, $2::int)", 1, 3);
 
-  // Prepare and execute the statement with named parameters.
-  conn.prepare("select :begin b, :end e")
-    ->bind("begin", 0).bind("end", 1).execute([](auto&& r)
+  // Execute statement with named parameters.
+  conn.execute([](auto&& r)
   {
     std::printf("Range [%i, %i]\n", to<int>(r["b"]), to<int>(r["e"]));
-  });
+  },"select :begin b, :end e", a{"end", 1}, a{"begin", 0});
+
+  // Prepare and execute the statement.
+  auto* const ps = conn.prepare("select $1::int i");
+  for (int i = 0; i < 3; ++i)
+    ps->execute([](auto&& r){ std::printf("%i\n", to<int>(r["i"])); }, i);
 
   // Invoking the function.
   conn.invoke([](auto&& r)
@@ -61,7 +66,7 @@ int main() try {
   }, "cos", .5f);
 
   // Provoking the syntax error.
-  conn.perform("provoke syntax error");
+  conn.execute("provoke syntax error");
  } catch (const pgfe::c42_Syntax_error& e) {
   std::printf("Error %s is handled as expected.\n", e.error().sqlstate());
  } catch (const std::exception& e) {
@@ -135,49 +140,31 @@ auto make_connection(const Connection_options& opts = {})
 
 ### Executing SQL commands
 
-SQL commands can be executed and processed either synchronously or in non-blocking
-IO maner, i.e. without need of waiting a server response(-s), and thus, without
-thread blocking. In the latter case the methods of the class `Connection` with the
-suffix `_nio` shall be used. There are two kinds of query protocols which can be
-used to execute SQL commands: "simple query" and "extended query".
+Since [v20alpha2] only extended query protocol is used under the hood to execute SQL
+commands. SQL commands can be executed and processed either synchronously or in
+non-blocking IO maner, i.e. without need of waiting a server response(-s), and thus,
+without thread blocking. In the latter case the methods of the class `Connection` with
+the suffix `_nio` shall be used.
 
 By using "simple query" protocol it's easy to perform single commands:
 
 ```cpp
-// Example 3. Using simple protocol to perform single commands.
+// Example 3. Executing single commands.
 void foo(Connection& conn)
 {
-  conn.perform("begin");
-  conn.perform("create temp table num(val integer not null)");
-  conn.perform([](auto&& row)
+  conn.execute("begin");
+  conn.execute("create temp table num(val integer not null)");
+  conn.execute([](auto&& row)
   {
     using dmitigr::pgfe::to;    // see "Data conversions" section for details
     auto val = to<int>(row[0]); // converts the value of num.val to int
     std::cout << val << "\n";   // prints the just inserted integers
   }, "insert into num select generate_series(1,3) returning val");
-  conn.perform("rollback");
+  conn.execute("rollback");
 }
 ```
 
-By using "simple query" protocol it's possible to perform multiple commands
-separated by semicolons:
-
-```cpp
-// Example 4. Using simple protocol to perform multiple commands.
-void foo(Connection& conn)
-{
-  conn.perform([](auto&& row)
-  {
-    // Prints the just inserted integers without type conversion:
-    std::printf("%s\n", row[0].bytes());
-  }, R"(begin;
-        create temp table num(val integer not null);
-        insert into num select generate_series(1,3) returning val;
-        rollback)");
-}
-```
-
-Extended query protocol is based on prepared statements. In Pgfe prepared
+Extended query protocol used by Pgfe is based on prepared statements. In Pgfe prepared
 statements can be parameterized with either positional or named parameters. The
 class `Sql_string` provides functionality for constructing SQL statements,
 providing support for named parameters, as well as functionality for direct
@@ -202,8 +189,22 @@ void foo(Connection& conn)
 }
 ```
 
-To use named parameters the statement (either named or unnamed) must be prepared
-explicitly:
+It's also easy to use named parameters:
+
+```cpp
+// Example 5. Using named parameters in statements.
+void foo(Connection& conn)
+{
+  // Please note, the sequence of the specified named parameters doesn't matter,
+  // and that "end" parameter is specified before "begin" parameter.
+  conn.execute([](auto&& row)
+  {
+    std::printf("Range [%i, %i]\n", to<int>(row["b"]), to<int>(row["e"]));
+  },"select :begin b, :end e", a{"end", 1}, a{"begin", 0});
+}
+```
+
+Of course, the statement (named or unnamed) can be prepared explicitly:
 
 ```cpp
 // Example 6. Preparing the unnamed statement parameterized by named parameters.
@@ -605,6 +606,7 @@ Copyright (C) [Dmitry Igrishin][dmitigr_mail]
 [dmitigr_pgfe_doc_diagram]: http://dmitigr.ru/en/projects/cefeika/pgfe/doc/dmitigr_pgfe_overview.violet.html
 
 [v20alpha1]: https://github.com/dmitigr/pgfe/commit/62ceba3e4e1285178d223fdadaf6ca87c6d514d9
+[v20alpha2]: https://github.com/dmitigr/pgfe/commit/c69d3625175d30515319efc738dca8e7d5e9af2a
 
 [PostgreSQL]: https://www.postgresql.org/
 [dollar-quoting]: https://www.postgresql.org/docs/current/static/sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING
