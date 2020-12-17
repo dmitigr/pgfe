@@ -241,6 +241,24 @@ enum class Response_status {
   unready = 200
 };
 
+// =============================================================================
+
+/**
+ * @ingroup main
+ *
+ * @brief A row processing.
+ */
+enum class Row_processing {
+  /// Row processing must be continued.
+  continu = 0,
+
+  /// Row processing must be suspended.
+  suspend = 100,
+
+  /// Row processing must be completed.
+  complete = 200
+};
+
 } // namespace dmitigr::pgfe
 
 #endif // DMITIGR_PGFE_BASICS_HPP

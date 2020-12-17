@@ -17,6 +17,7 @@ try {
   using pgfe::Connection_options;
   using pgfe::Connection_status;
   using pgfe::Transaction_status;
+  using pgfe::Row_processing;
 
   // Initial state test
   {
@@ -322,6 +323,89 @@ try {
         ASSERT(comp);
         ASSERT(comp.operation_name() == "SELECT");
       }
+
+      // Execute with throw (default, on exception complete)
+      {
+        bool is_thrown{};
+        int i{};
+        try {
+          conn->execute([&i](auto&&)
+          {
+            ++i;
+            throw 1;
+          }, "SELECT generate_series(1,3) AS num");
+        } catch (const int value) {
+          is_thrown = true;
+          ASSERT(value == 1);
+        }
+        ASSERT(is_thrown);
+        ASSERT(i == 1);
+        ASSERT(conn->is_ready_for_request());
+      }
+
+      // Execute with throw (on exception continue)
+      {
+        int i{};
+        bool is_thrown{};
+        try {
+          conn->execute<Row_processing::continu, Row_processing::continu>([&i](auto&&)
+          {
+            ++i;
+            throw 2;
+          }, "SELECT generate_series(1,3) AS num");
+        } catch (...) {
+          is_thrown = true;
+        }
+        ASSERT(!is_thrown);
+        ASSERT(i == 3);
+        ASSERT(conn->is_ready_for_request());
+      }
+
+      // Execute with throw (on exception suspend)
+      {
+        int i{};
+        bool is_thrown{};
+        try {
+          conn->execute<Row_processing::continu, Row_processing::suspend>([&i](auto&&)
+          {
+            ++i;
+            throw 3;
+          }, "SELECT generate_series(1,3) AS num");
+        } catch (...) {
+          is_thrown = true;
+        }
+        ASSERT(is_thrown);
+        ASSERT(i == 1);
+        ASSERT(!conn->is_ready_for_request());
+        conn->process_responses(pgfe::ignore_row);
+        ASSERT(conn->is_ready_for_request());
+      }
+
+      // Execute with return complete
+      {
+        int i{};
+        conn->execute([&i](auto&&)
+        {
+          ++i;
+          return Row_processing::complete;
+        }, "SELECT generate_series(1,3) AS num");
+        ASSERT(i == 1);
+        ASSERT(conn->is_ready_for_request());
+      }
+
+      // Execute with return continue
+      {
+        int i{};
+        conn->execute([&i](auto&&)
+        {
+          ++i;
+          return Row_processing::continu;
+        }, "SELECT generate_series(1,3) AS num");
+        ASSERT(i == 3);
+        ASSERT(conn->is_ready_for_request());
+      }
+
+      // TODO: Execute with exception and server exception upon completion
 
       // invoke 1
       {

@@ -33,6 +33,9 @@
 
 namespace dmitigr::pgfe {
 
+/// Convenience function to use as row handler.
+inline void ignore_row(Row&&) noexcept {}
+
 /**
  * @ingroup main
  *
@@ -502,6 +505,9 @@ public:
    *
    * @returns The released instance if available.
    *
+   * @tparam on_return_void What to do when callback returns nothing.
+   * @tparam on_exception What to do when callback throws an exception.
+   *
    * @param callback A function to be called for each retrieved row. The callback:
    *   -# can be defined with a parameter of type `Row&&`. An exception will be
    *   thrown on error in this case.
@@ -511,18 +517,60 @@ public:
    *   return an invalid instance of type Completion after the callback returns.
    *   In case of success, an invalid instance of type Error will be passed as the
    *   second argument of the callback.
-   *   -# can return a value convertible to `bool` to indicate should the execution
-   *   to be continued after the callback returns or not;
-   *   -# can return `void` to indicate that execution must be proceed until a
-   *   completion or an error.
+   *   -# can return a value of type Row_processing to indicate further behavior.
    *
-   * @see execute(), invoke(), call().
+   * @see execute(), invoke(), call(), Row_processing.
    */
-  template<typename F>
+  template<Row_processing on_return_void = Row_processing::continu,
+    Row_processing on_exception = Row_processing::complete, typename F>
   std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
   process_responses(F&& callback)
   {
     using Traits = detail::Response_callback_traits<F>;
+
+    const auto with_complete_on_exception = [this](auto&& callback)
+    {
+      try {
+        callback();
+      } catch (...) {
+        if constexpr (on_exception == Row_processing::complete) {
+          Completion comp;
+          Error err;
+          std::runtime_error process_responses_error{""};
+          try {
+            // std::function is used as the workaround for GCC 7.5
+            std::function<void(Row&&, Error&&)> f = [&err](auto&&, auto&& e)
+            {
+              if (e)
+                err = std::move(e);
+            };
+            comp = process_responses(std::move(f));
+            assert((comp && !err) || (!comp && err));
+          } catch (const std::bad_alloc&) {
+            goto bad_alloc;
+          } catch (const std::exception& e) {
+            try {
+              process_responses_error = std::runtime_error{e.what()};
+            } catch (...) {
+              goto bad_alloc;
+            }
+          } catch (...) {}
+
+          if (comp)
+            throw;
+          else if (!err)
+            std::throw_with_nested(process_responses_error);
+          else if (std::shared_ptr<Error> e{new (std::nothrow) Error{std::move(err)}})
+            std::throw_with_nested(Server_exception{std::move(e)});
+
+        bad_alloc:
+          std::throw_with_nested(std::bad_alloc{});
+        } else if constexpr (on_exception == Row_processing::suspend)
+          throw;
+      }
+    };
+
+    Row_processing rowpro{on_return_void};
     while (true) {
       if constexpr (Traits::has_error_parameter) {
         wait_response();
@@ -530,24 +578,33 @@ public:
           callback(Row{}, std::move(e));
           return Completion{};
         } else if (auto r = row()) {
-          if constexpr (!Traits::is_result_void) {
-            if (!callback(std::move(r), Error{}))
-              return Completion{};
-          } else
-            callback(std::move(r), Error{});
+          with_complete_on_exception([this, &callback, &rowpro, &r]
+          {
+            if constexpr (!Traits::is_result_void)
+              rowpro = callback(std::move(r), Error{});
+            else
+              callback(std::move(r), Error{});
+          });
         } else
           return completion();
       } else {
         wait_response_throw();
         if (auto r = row()) {
-          if constexpr (!Traits::is_result_void) {
-            if (!callback(std::move(r)))
-              return Completion{};
-          } else
-            callback(std::move(r));
+          with_complete_on_exception([this, &callback, &rowpro, &r]
+          {
+            if constexpr (!Traits::is_result_void)
+              rowpro = callback(std::move(r));
+            else
+              callback(std::move(r));
+          });
         } else
           return completion();
       }
+
+      if (rowpro == Row_processing::complete)
+        return process_responses(ignore_row);
+      else if (rowpro == Row_processing::suspend)
+        return Completion{};
     }
   }
 
@@ -816,19 +873,21 @@ public:
    *
    * @see process_responses().
    */
-  template<typename F, typename ... Types>
+  template<Row_processing on_return_void = Row_processing::continu,
+    Row_processing on_exception = Row_processing::complete, typename F, typename ... Types>
   std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
   execute(F&& callback, const Sql_string& statement, Types&& ... parameters)
   {
     execute_nio(statement, std::forward<Types>(parameters)...);
-    return process_responses(std::forward<F>(callback));
+    return process_responses<on_return_void, on_exception>(std::forward<F>(callback));
   }
 
   /// @overload
-  template<typename ... Types>
+  template<Row_processing on_return_void = Row_processing::continu,
+    Row_processing on_exception = Row_processing::complete, typename ... Types>
   Completion execute(const Sql_string& statement, Types&& ... parameters)
   {
-    return execute([](auto&&){}, statement, std::forward<Types>(parameters)...);
+    return execute<on_return_void, on_exception>([](auto&&){}, statement, std::forward<Types>(parameters)...);
   }
 
   /**
@@ -887,20 +946,22 @@ public:
    *
    * @see invoke_unexpanded(), call(), execute(), process_responses().
    */
-  template<typename F, typename ... Types>
+  template<Row_processing on_return_void = Row_processing::continu,
+    Row_processing on_exception = Row_processing::complete, typename F, typename ... Types>
   std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
   invoke(F&& callback, std::string_view function, Types&& ... arguments)
   {
     static_assert(is_routine_arguments_ok__<Types...>(), "named arguments cannot precede positional arguments");
     const auto stmt = routine_query__(function, "SELECT * FROM", std::forward<Types>(arguments)...);
-    return execute(std::forward<F>(callback), stmt, std::forward<Types>(arguments)...);
+    return execute<on_return_void, on_exception>(std::forward<F>(callback), stmt, std::forward<Types>(arguments)...);
   }
 
   /// @overload
-  template<typename ... Types>
+  template<Row_processing on_return_void = Row_processing::continu,
+    Row_processing on_exception = Row_processing::complete, typename ... Types>
   Completion invoke(std::string_view function, Types&& ... arguments)
   {
-    return invoke([](auto&&){}, function, std::forward<Types>(arguments)...);
+    return invoke<on_return_void, on_exception>([](auto&&){}, function, std::forward<Types>(arguments)...);
   }
 
   /**
@@ -915,20 +976,22 @@ public:
    *
    * @see invoke(), call(), execute().
    */
-  template<typename F, typename ... Types>
+  template<Row_processing on_return_void = Row_processing::continu,
+    Row_processing on_exception = Row_processing::complete, typename F, typename ... Types>
   std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
   invoke_unexpanded(F&& callback, std::string_view function, Types&& ... arguments)
   {
     static_assert(is_routine_arguments_ok__<Types...>(), "named arguments cannot precede positional arguments");
     const auto stmt = routine_query__(function, "SELECT", std::forward<Types>(arguments)...);
-    return execute(std::forward<F>(callback), stmt, std::forward<Types>(arguments)...);
+    return execute<on_return_void, on_exception>(std::forward<F>(callback), stmt, std::forward<Types>(arguments)...);
   }
 
   /// @overload
-  template<typename ... Types>
+  template<Row_processing on_return_void = Row_processing::continu,
+    Row_processing on_exception = Row_processing::complete, typename ... Types>
   Completion invoke_unexpanded(std::string_view function, Types&& ... arguments)
   {
-    return invoke_unexpanded([](auto&&){}, function, std::forward<Types>(arguments)...);
+    return invoke_unexpanded<on_return_void, on_exception>([](auto&&){}, function, std::forward<Types>(arguments)...);
   }
 
   /**
@@ -943,20 +1006,22 @@ public:
    *
    * @see invoke(), call(), execute().
    */
-  template<typename F, typename ... Types>
+  template<Row_processing on_return_void = Row_processing::continu,
+    Row_processing on_exception = Row_processing::complete, typename F, typename ... Types>
   std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
   call(F&& callback, std::string_view procedure, Types&& ... arguments)
   {
     static_assert(is_routine_arguments_ok__<Types...>(), "named arguments cannot precede positional arguments");
     const auto stmt = routine_query__(procedure, "CALL", std::forward<Types>(arguments)...);
-    return execute(std::forward<F>(callback), stmt, std::forward<Types>(arguments)...);
+    return execute<on_return_void, on_exception>(std::forward<F>(callback), stmt, std::forward<Types>(arguments)...);
   }
 
   /// @overload
-  template<typename ... Types>
+  template<Row_processing on_return_void = Row_processing::continu,
+    Row_processing on_exception = Row_processing::complete, typename ... Types>
   Completion call(std::string_view procedure, Types&& ... arguments)
   {
-    return call([](auto&&){}, procedure, std::forward<Types>(arguments)...);
+    return call<on_return_void, on_exception>([](auto&&){}, procedure, std::forward<Types>(arguments)...);
   }
 
   /**
@@ -1354,7 +1419,8 @@ private:
   }
 };
 
-template<typename F, typename ... Types>
+template<Row_processing on_return_void = Row_processing::continu,
+  Row_processing on_exception = Row_processing::complete, typename F, typename ... Types>
 std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
 Prepared_statement::execute(F&& callback, Types&& ... parameters)
 {
@@ -1362,7 +1428,7 @@ Prepared_statement::execute(F&& callback, Types&& ... parameters)
   assert(connection_->is_ready_for_request());
   bind_many(std::forward<Types>(parameters)...).execute_nio();
   assert(is_invariant_ok());
-  return connection_->process_responses(std::forward<F>(callback));
+  return connection_->process_responses<on_return_void, on_exception>(std::forward<F>(callback));
 }
 
 /// Connection is swappable.
