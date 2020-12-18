@@ -505,8 +505,7 @@ public:
    *
    * @returns The released instance if available.
    *
-   * @tparam on_return_void What to do when callback returns nothing.
-   * @tparam on_exception What to do when callback throws an exception.
+   * @tparam on_exception What to do when the callback throws an exception.
    *
    * @param callback A function to be called for each retrieved row. The callback:
    *   -# can be defined with a parameter of type `Row&&`. An exception will be
@@ -521,8 +520,7 @@ public:
    *
    * @see execute(), invoke(), call(), Row_processing.
    */
-  template<Row_processing on_return_void = Row_processing::continu,
-    Row_processing on_exception = Row_processing::complete, typename F>
+  template<Row_processing on_exception = Row_processing::complete, typename F>
   std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
   process_responses(F&& callback)
   {
@@ -570,7 +568,7 @@ public:
       }
     };
 
-    Row_processing rowpro{on_return_void};
+    Row_processing rowpro{Row_processing::continu};
     while (true) {
       if constexpr (Traits::has_error_parameter) {
         wait_response();
@@ -873,21 +871,19 @@ public:
    *
    * @see process_responses().
    */
-  template<Row_processing on_return_void = Row_processing::continu,
-    Row_processing on_exception = Row_processing::complete, typename F, typename ... Types>
+  template<Row_processing on_exception = Row_processing::complete, typename F, typename ... Types>
   std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
   execute(F&& callback, const Sql_string& statement, Types&& ... parameters)
   {
     execute_nio(statement, std::forward<Types>(parameters)...);
-    return process_responses<on_return_void, on_exception>(std::forward<F>(callback));
+    return process_responses<on_exception>(std::forward<F>(callback));
   }
 
   /// @overload
-  template<Row_processing on_return_void = Row_processing::continu,
-    Row_processing on_exception = Row_processing::complete, typename ... Types>
+  template<Row_processing on_exception = Row_processing::complete, typename ... Types>
   Completion execute(const Sql_string& statement, Types&& ... parameters)
   {
-    return execute<on_return_void, on_exception>([](auto&&){}, statement, std::forward<Types>(parameters)...);
+    return execute<on_exception>([](auto&&){}, statement, std::forward<Types>(parameters)...);
   }
 
   /**
@@ -946,22 +942,20 @@ public:
    *
    * @see invoke_unexpanded(), call(), execute(), process_responses().
    */
-  template<Row_processing on_return_void = Row_processing::continu,
-    Row_processing on_exception = Row_processing::complete, typename F, typename ... Types>
+  template<Row_processing on_exception = Row_processing::complete, typename F, typename ... Types>
   std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
   invoke(F&& callback, std::string_view function, Types&& ... arguments)
   {
     static_assert(is_routine_arguments_ok__<Types...>(), "named arguments cannot precede positional arguments");
     const auto stmt = routine_query__(function, "SELECT * FROM", std::forward<Types>(arguments)...);
-    return execute<on_return_void, on_exception>(std::forward<F>(callback), stmt, std::forward<Types>(arguments)...);
+    return execute<on_exception>(std::forward<F>(callback), stmt, std::forward<Types>(arguments)...);
   }
 
   /// @overload
-  template<Row_processing on_return_void = Row_processing::continu,
-    Row_processing on_exception = Row_processing::complete, typename ... Types>
+  template<Row_processing on_exception = Row_processing::complete, typename ... Types>
   Completion invoke(std::string_view function, Types&& ... arguments)
   {
-    return invoke<on_return_void, on_exception>([](auto&&){}, function, std::forward<Types>(arguments)...);
+    return invoke<on_exception>([](auto&&){}, function, std::forward<Types>(arguments)...);
   }
 
   /**
@@ -976,22 +970,20 @@ public:
    *
    * @see invoke(), call(), execute().
    */
-  template<Row_processing on_return_void = Row_processing::continu,
-    Row_processing on_exception = Row_processing::complete, typename F, typename ... Types>
+  template<Row_processing on_exception = Row_processing::complete, typename F, typename ... Types>
   std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
   invoke_unexpanded(F&& callback, std::string_view function, Types&& ... arguments)
   {
     static_assert(is_routine_arguments_ok__<Types...>(), "named arguments cannot precede positional arguments");
     const auto stmt = routine_query__(function, "SELECT", std::forward<Types>(arguments)...);
-    return execute<on_return_void, on_exception>(std::forward<F>(callback), stmt, std::forward<Types>(arguments)...);
+    return execute<on_exception>(std::forward<F>(callback), stmt, std::forward<Types>(arguments)...);
   }
 
   /// @overload
-  template<Row_processing on_return_void = Row_processing::continu,
-    Row_processing on_exception = Row_processing::complete, typename ... Types>
+  template<Row_processing on_exception = Row_processing::complete, typename ... Types>
   Completion invoke_unexpanded(std::string_view function, Types&& ... arguments)
   {
-    return invoke_unexpanded<on_return_void, on_exception>([](auto&&){}, function, std::forward<Types>(arguments)...);
+    return invoke_unexpanded<on_exception>([](auto&&){}, function, std::forward<Types>(arguments)...);
   }
 
   /**
@@ -1006,22 +998,20 @@ public:
    *
    * @see invoke(), call(), execute().
    */
-  template<Row_processing on_return_void = Row_processing::continu,
-    Row_processing on_exception = Row_processing::complete, typename F, typename ... Types>
+  template<Row_processing on_exception = Row_processing::complete, typename F, typename ... Types>
   std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
   call(F&& callback, std::string_view procedure, Types&& ... arguments)
   {
     static_assert(is_routine_arguments_ok__<Types...>(), "named arguments cannot precede positional arguments");
     const auto stmt = routine_query__(procedure, "CALL", std::forward<Types>(arguments)...);
-    return execute<on_return_void, on_exception>(std::forward<F>(callback), stmt, std::forward<Types>(arguments)...);
+    return execute<on_exception>(std::forward<F>(callback), stmt, std::forward<Types>(arguments)...);
   }
 
   /// @overload
-  template<Row_processing on_return_void = Row_processing::continu,
-    Row_processing on_exception = Row_processing::complete, typename ... Types>
+  template<Row_processing on_exception = Row_processing::complete, typename ... Types>
   Completion call(std::string_view procedure, Types&& ... arguments)
   {
-    return call<on_return_void, on_exception>([](auto&&){}, procedure, std::forward<Types>(arguments)...);
+    return call<on_exception>([](auto&&){}, procedure, std::forward<Types>(arguments)...);
   }
 
   /**
@@ -1419,8 +1409,7 @@ private:
   }
 };
 
-template<Row_processing on_return_void = Row_processing::continu,
-  Row_processing on_exception = Row_processing::complete, typename F, typename ... Types>
+template<Row_processing on_exception = Row_processing::complete, typename F, typename ... Types>
 std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
 Prepared_statement::execute(F&& callback, Types&& ... parameters)
 {
@@ -1428,7 +1417,7 @@ Prepared_statement::execute(F&& callback, Types&& ... parameters)
   assert(connection_->is_ready_for_request());
   bind_many(std::forward<Types>(parameters)...).execute_nio();
   assert(is_invariant_ok());
-  return connection_->process_responses<on_return_void, on_exception>(std::forward<F>(callback));
+  return connection_->process_responses<on_exception>(std::forward<F>(callback));
 }
 
 /// Connection is swappable.

@@ -509,8 +509,7 @@ public:
    *
    * @see Connection::execute(), Connection::process_responses().
    */
-  template<Row_processing on_return_void = Row_processing::continu,
-    Row_processing on_exception = Row_processing::complete, typename F, typename ... Types>
+  template<Row_processing on_exception = Row_processing::complete, typename F, typename ... Types>
   std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
   execute(F&& callback, Types&& ... parameters);
 

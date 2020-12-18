@@ -348,7 +348,7 @@ try {
         int i{};
         bool is_thrown{};
         try {
-          conn->execute<Row_processing::continu, Row_processing::continu>([&i](auto&&)
+          conn->execute<Row_processing::continu>([&i](auto&&)
           {
             ++i;
             throw 2;
@@ -366,7 +366,7 @@ try {
         int i{};
         bool is_thrown{};
         try {
-          conn->execute<Row_processing::continu, Row_processing::suspend>([&i](auto&&)
+          conn->execute<Row_processing::suspend>([&i](auto&&)
           {
             ++i;
             throw 3;
