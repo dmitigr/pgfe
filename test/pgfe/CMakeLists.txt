@@ -3,25 +3,26 @@
 # For conditions of distribution and use, see file LICENSE.txt
 
 set(dmitigr_pgfe_tests
-  # benchmark_array_client
-  # benchmark_array_server
-  # benchmark_sql_string_replace
+  benchmark_array_client
+  benchmark_array_server
+  benchmark_sql_string_replace
   composite
   connection
-  # connection_deferrable
-  # connection-err_in_mid
+  connection_deferrable
+  connection-err_in_mid
   connection_options
-  # connection_pool
-  # connection-rows
-  # connection_ssl
+  connection_pool
+  connection-rows
+  connection_ssl
   conversions
-  # conversions_online data
+  conversions_online
+  data
   hello_world
   pq_vs_pgfe
-  # ps
-  # row_info
+  ps
+  row
   sql_string
-  # sql_vector
+  sql_vector
   )
 
 set(dmitigr_pgfe_tests_target_link_libraries dmitigr::os)

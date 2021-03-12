@@ -7,8 +7,7 @@
 
 #include <dmitigr/misc/testo.hpp>
 #include <dmitigr/os/env.hpp>
-#include <dmitigr/pgfe/connection.hpp>
-#include <dmitigr/pgfe/connection_options.hpp>
+#include <dmitigr/pgfe.hpp>
 
 #include <chrono>
 #include <cstdlib>

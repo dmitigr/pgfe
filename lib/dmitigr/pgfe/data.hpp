@@ -10,6 +10,7 @@
 #include "dmitigr/pgfe/types_fwd.hpp"
 
 #include <cstddef>
+#include <cstring>
 #include <memory>
 #include <string>
 #include <string_view>
@@ -142,6 +143,80 @@ protected:
   /// @returns `true` if the invariant of this instance is correct.
   virtual bool is_invariant_ok() const;
 };
+
+/**
+ * @returns
+ *   - negative value if the first differing byte in `lhs` is less than the
+ *   corresponding byte in `rhs`;
+ *   - zero if all bytes of `lhs` and `rhs` are equal;
+ *   - positive value if the first differing byte in `lhs` is greater than the
+ *   corresponding byte in `rhs`.
+ */
+inline int cmp(const Data& lhs, const Data& rhs) noexcept
+{
+  const auto lsz = lhs.size(), rsz = rhs.size();
+  return lsz == rsz ? std::memcmp(lhs.bytes(), rhs.bytes(), lsz) : lsz < rsz ? -1 : 1;
+}
+
+/**
+ * @returns `cmp(lhs, rhs) < 0`.
+ *
+ * @see cmp(const Data&, const Data&).
+ */
+inline bool operator<(const Data& lhs, const Data& rhs) noexcept
+{
+  return cmp(lhs, rhs) < 0;
+}
+
+/**
+ * @returns `cmp(lhs, rhs) <= 0`.
+ *
+ * @see cmp(const Data&, const Data&).
+ */
+inline bool operator<=(const Data& lhs, const Data& rhs) noexcept
+{
+  return cmp(lhs, rhs) <= 0;
+}
+
+/**
+ * @returns `cmp(lhs, rhs) == 0`.
+ *
+ * @see cmp(const Data&, const Data&).
+ */
+inline bool operator==(const Data& lhs, const Data& rhs) noexcept
+{
+  return !cmp(lhs, rhs);
+}
+
+/**
+ * @returns `cmp(lhs, rhs) != 0`.
+ *
+ * @see cmp(const Data&, const Data&).
+ */
+inline bool operator!=(const Data& lhs, const Data& rhs) noexcept
+{
+  return !(lhs == rhs);
+}
+
+/**
+ * @returns `cmp(lhs, rhs) > 0`.
+ *
+ * @see cmp(const Data&, const Data&).
+ */
+inline bool operator>(const Data& lhs, const Data& rhs) noexcept
+{
+  return cmp(lhs, rhs) > 0;
+}
+
+/**
+ * @returns `cmp(lhs, rhs) >= 0`.
+ *
+ * @see cmp(const Data&, const Data&).
+ */
+inline bool operator>=(const Data& lhs, const Data& rhs) noexcept
+{
+  return cmp(lhs, rhs) >= 0;
+}
 
 // =============================================================================
 

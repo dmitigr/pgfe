@@ -24,7 +24,7 @@
 #define DMITIGR_MISC_FLATCFG_HPP
 
 #include "dmitigr/misc/filesystem.hpp"
-#include "dmitigr/misc/read.hpp"
+#include "dmitigr/misc/reader.hpp"
 #include "dmitigr/misc/str.hpp"
 
 #include <cassert>
@@ -135,7 +135,7 @@ private:
           return line[pos] != '#';
       return false;
     };
-    const auto lines = read::file_to_strings_if(path, is_nor_empty_nor_commented);
+    const auto lines = reader::file_to_strings_if(path, is_nor_empty_nor_commented);
     for (std::size_t i = 0; i < lines.size(); ++i) {
       try {
         result.insert(parsed_config_entry(lines[i]));

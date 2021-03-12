@@ -59,6 +59,12 @@ public:
   /// @returns The parameter index if presents, or `parameter_count()` othersize.
   virtual std::size_t parameter_index(const std::string& name) const noexcept = 0;
 
+  /// @returns `true` if the given parameter presents.
+  bool has_parameter(const std::string& name) const noexcept
+  {
+    return parameter_index(name) < parameter_count();
+  }
+
 private:
   friend Prepared_statement;
   friend Sql_string;

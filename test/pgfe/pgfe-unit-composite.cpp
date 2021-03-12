@@ -47,6 +47,71 @@ int main(int, char* argv[])
     ASSERT(composite.size() == 1);
     ASSERT(composite.index_of("bar") == composite.size());
     ASSERT(composite.index_of("baz") != composite.size());
+
+    // -------------------------------------------------------------------------
+    // Operators
+    // -------------------------------------------------------------------------
+
+    // <, <=
+    {
+#define ASSERTMENTS                             \
+      ASSERT(lhs < rhs);                        \
+      ASSERT(lhs <= rhs);                       \
+      ASSERT(!(lhs == rhs));                    \
+      ASSERT(lhs != rhs);                       \
+      ASSERT(!(lhs > rhs));                     \
+      ASSERT(!(lhs >= rhs))
+
+      pgfe::Composite lhs;
+      lhs.append("name", "dima");
+      pgfe::Composite rhs;
+      rhs.append("name", "olga");
+      ASSERTMENTS;
+      rhs["name"] = pgfe::Data::make("olgaolga");
+      ASSERTMENTS;
+#undef ASSERTMENTS
+    }
+
+    // ==, <=, >=
+    {
+#define ASSERTMENTS                             \
+      ASSERT(!(lhs < rhs));                     \
+      ASSERT(lhs <= rhs);                       \
+      ASSERT(lhs == rhs);                       \
+      ASSERT(!(lhs != rhs));                    \
+      ASSERT(!(lhs > rhs));                     \
+      ASSERT(lhs >= rhs)
+
+      pgfe::Composite lhs;
+      lhs.append("name", "dima");
+      pgfe::Composite rhs;
+      rhs.append("name", "dima");
+      ASSERTMENTS;
+      lhs["name"] = pgfe::Data::make("");
+      rhs["name"] = pgfe::Data::make("");
+      ASSERTMENTS;
+#undef ASSERTMENTS
+    }
+
+    // >, >=
+    {
+#define ASSERTMENTS                             \
+      ASSERT(!(lhs < rhs));                     \
+      ASSERT(!(lhs <= rhs));                    \
+      ASSERT(!(lhs == rhs));                    \
+      ASSERT(lhs != rhs);                       \
+      ASSERT(lhs > rhs);                        \
+      ASSERT(lhs >= rhs)
+
+      pgfe::Composite lhs;
+      lhs.append("name", "olga");
+      pgfe::Composite rhs;
+      rhs.append("name", "dima");
+      ASSERTMENTS;
+      lhs["name"] = pgfe::Data::make("olgaolga");
+      ASSERTMENTS;
+#undef ASSERTMENTS
+    }
   } catch (const std::exception& e) {
     report_failure(argv[0], e);
     return 1;

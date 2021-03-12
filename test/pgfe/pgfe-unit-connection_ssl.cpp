@@ -4,28 +4,26 @@
 
 #include "pgfe-unit.hpp"
 
-#include <dmitigr/pgfe/completion.hpp>
+namespace pgfe = dmitigr::pgfe;
+namespace testo = dmitigr::testo;
 
 int main(int, char* argv[])
-{
-  namespace pgfe = dmitigr::pgfe;
-  using namespace dmitigr::testo;
-
-  try {
-    auto conn = pgfe::test::make_ssl_connection();
-    conn->connect();
-    ASSERT(conn->is_ssl_secured());
-    conn->perform("begin");
-    auto comp = conn->wait_completion();
-    ASSERT(comp && comp.operation_name() == "BEGIN");
-    conn->perform("commit");
-    comp = conn->wait_completion();
-    ASSERT(comp && comp.operation_name() == "COMMIT");
-  } catch (const std::exception& e) {
-    report_failure(argv[0], e);
-    return 1;
-  } catch (...) {
-    report_failure(argv[0]);
+try {
+  auto conn = pgfe::test::make_ssl_connection();
+  conn->connect();
+  ASSERT(conn->is_ssl_secured());
+  conn->execute([](auto&& row)
+  {
+    ASSERT(row[0]);
+    ASSERT(pgfe::to<int>(row[0]) == 1);
+  }, "select 1::int");
+} catch (const std::exception& e) {
+  // Only report a failure if a server supports SSL.
+  if (std::string_view{e.what()}.find("not support SSL") == std::string_view::npos) {
+    testo::report_failure(argv[0], e);
     return 1;
   }
+} catch (...) {
+  testo::report_failure(argv[0]);
+  return 1;
 }

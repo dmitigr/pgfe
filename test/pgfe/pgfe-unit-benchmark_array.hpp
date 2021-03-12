@@ -31,21 +31,14 @@ inline std::tuple<std::ofstream, std::unique_ptr<dmitigr::pgfe::Connection>> pre
 
   auto conn = pgfe::test::make_connection();
   conn->connect();
-
-  conn->perform("create temp table benchmark_test_array"
+  conn->execute("create temp table benchmark_test_array"
                 "(id serial not null primary key, dat varchar[] not null)");
-  auto comp = conn->wait_completion();
-  ASSERT(comp);
-
   conn->execute("insert into benchmark_test_array(dat)"
                 " select array["
                 " 'Column 1, Row ' || r, 'Column 2, Row ' || r,"
                 " 'Column 3, Row ' || r, 'Column 4, Row ' || r,"
                 " 'Column 5, Row ' || r]::text[]"
                 " from (select generate_series(1, $1)::text as r) as foo", row_count);
-  comp = conn->wait_completion();
-  ASSERT(comp);
-
   return std::make_tuple(std::move(output_file), std::move(conn));
 }
 

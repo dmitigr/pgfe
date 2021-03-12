@@ -4,36 +4,28 @@
 
 #include "pgfe-unit-benchmark_array.hpp"
 
-#include <dmitigr/pgfe/conversions.hpp>
-#include <dmitigr/pgfe/row.hpp>
-
 #include <optional>
 #include <vector>
 
-int main(int argc, char* argv[])
-{
-  namespace pgfe = dmitigr::pgfe;
-  using namespace dmitigr::testo;
+namespace pgfe = dmitigr::pgfe;
+namespace testo = dmitigr::testo;
 
-  try {
-    auto [output_file, conn] = pgfe::test::arraybench::prepare(argc, argv);
-    conn->perform("select dat from benchmark_test_array");
-    const auto r = conn->wait_row();
-    ASSERT(r);
-    {
-      using Array = std::vector<std::optional<std::string>>;
-      const auto arr = pgfe::to<Array>(r.data());
-      for (const auto& elem : arr) {
-        if (elem)
-          output_file << *elem;
-      }
-      output_file << "\n";
+int main(int argc, char* argv[])
+try {
+  auto [output_file, conn] = pgfe::test::arraybench::prepare(argc, argv);
+  conn->execute([&output_file](auto&& row)
+  {
+    using Array = std::vector<std::optional<std::string>>;
+    for (const auto& elem : pgfe::to<Array>(row[0])) {
+      if (elem)
+        output_file << *elem;
     }
-  } catch (const std::exception& e) {
-    report_failure(argv[0], e);
-    return 1;
-  } catch (...) {
-    report_failure(argv[0]);
-    return 1;
-  }
+    output_file << "\n";
+  }, "select dat from benchmark_test_array");
+} catch (const std::exception& e) {
+  testo::report_failure(argv[0], e);
+  return 1;
+} catch (...) {
+  testo::report_failure(argv[0]);
+  return 1;
 }

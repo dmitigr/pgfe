@@ -20,8 +20,8 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
-#ifndef DMITIGR_MISC_READ_HPP
-#define DMITIGR_MISC_READ_HPP
+#ifndef DMITIGR_MISC_READER_HPP
+#define DMITIGR_MISC_READER_HPP
 
 #include "dmitigr/misc/filesystem.hpp"
 
@@ -32,7 +32,7 @@
 #include <string>
 #include <vector>
 
-namespace dmitigr::read {
+namespace dmitigr::reader {
 
 /// A read error code.
 enum class Errc {
@@ -41,30 +41,30 @@ enum class Errc {
   invalid_input = 2
 };
 
-} // namespace dmitigr::read
+} // namespace dmitigr::reader
 
 namespace std {
 
 // Integration with the `std::system_error` framework
-template<> struct is_error_condition_enum<dmitigr::read::Errc> : true_type {};
+template<> struct is_error_condition_enum<dmitigr::reader::Errc> : true_type {};
 
 } // namespace std
 
-namespace dmitigr::read {
+namespace dmitigr::reader {
 
 /// A type to support category of `dmitigr::str` runtime errors.
 class Error_category final : public std::error_category {
 public:
-  /// @returns The string literal "dmitigr_read_error".
+  /// @returns The string literal "dmitigr_reader_error".
   const char* name() const noexcept override
   {
-    return "dmitigr_read_error";
+    return "dmitigr_reader_error";
   }
 
   /// @returns The error message.
   std::string message(const int ev) const override
   {
-    return "dmitigr_read_error " + std::to_string(ev);
+    return "dmitigr_reader_error " + std::to_string(ev);
   }
 };
 
@@ -72,7 +72,7 @@ public:
  * @returns A reference to an object of a type Error_category.
  *
  * @remarks The object's name() function returns a pointer to
- * the string "dmitigr_read_error".
+ * the string "dmitigr_reader_error".
  */
 inline const Error_category& error_category() noexcept
 {
@@ -271,6 +271,6 @@ inline std::string file_to_string(const std::filesystem::path& path,
     throw std::runtime_error{"unable to open the file \"" + path.generic_string() + "\""};
 }
 
-} // namespace dmitigr::read
+} // namespace dmitigr::reader
 
-#endif  // DMITIGR_MISC_READ_HPP
+#endif  // DMITIGR_MISC_READER_HPP

@@ -26,7 +26,7 @@ set(dmitigr_misc_headers
   mp.hpp
   mulf.hpp
   progpar.hpp
-  read.hpp
+  reader.hpp
   rng.hpp
   str.hpp
   testo.hpp

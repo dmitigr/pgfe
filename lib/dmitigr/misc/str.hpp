@@ -34,6 +34,7 @@
 #include <system_error>
 #include <type_traits>
 #include <utility>
+#include <vector>
 
 namespace dmitigr::str {
 
@@ -394,6 +395,32 @@ inline void trim(std::string& str, const std::locale& loc = {})
   const auto te = find_if(rb, re, is_not_space).base();
   move(tb, te, b);
   str.resize(te - tb);
+}
+
+/**
+ * @brief Splits the `input` string into the parts separated by the
+ * specified `separators`.
+ *
+ * @returns The vector of splitted parts.
+ */
+template<class S = std::string>
+inline std::vector<S> split(const std::string_view input,
+  const std::string_view separators)
+{
+  std::vector<S> result;
+  result.reserve(4);
+  std::string_view::size_type pos{std::string_view::npos};
+  std::string_view::size_type offset{};
+  while (offset < input.size()) {
+    pos = input.find_first_of(separators, offset);
+    assert(offset <= pos);
+    const auto part_size = std::min<std::string_view::size_type>(pos, input.size()) - offset;
+    result.push_back(S{input.substr(offset, part_size)});
+    offset += part_size + 1;
+  }
+  if (pos != std::string_view::npos) // input ends with a separator
+    result.emplace_back();
+  return result;
 }
 
 // -----------------------------------------------------------------------------

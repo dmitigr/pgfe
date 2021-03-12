@@ -10,6 +10,8 @@
 #include "dmitigr/pgfe/row_info.hpp"
 
 #include <cassert>
+#include <iterator>
+#include <type_traits>
 
 namespace dmitigr::pgfe {
 
@@ -116,6 +118,139 @@ public:
   {
     return data(name);
   }
+
+  /// @name Iterators
+  /// @{
+
+  /// Basic iterator.
+  template<bool Constant>
+  class Basic_iterator final {
+    using V = std::pair<std::string_view, Data_view>;
+  public:
+    using iterator_category = std::bidirectional_iterator_tag;
+    using value_type = std::conditional_t<Constant, const V, V>;
+    using difference_type = std::ptrdiff_t;
+    using reference = value_type&;
+    using pointer = value_type*;
+
+    /// Constructs an invalid iterator.
+    Basic_iterator() noexcept = default;
+
+    /// Dereferences the iterator.
+    reference operator*() noexcept
+    {
+      assert(row_);
+      const auto& name{row_->name_of(index_)};
+      return value_ = value_type{{name.data(), name.size()}, row_->data(index_)};
+    }
+
+    /// Provides indirect access.
+    pointer operator->() noexcept
+    {
+      return &(**this);
+    }
+
+    /// Prefix increment.
+    Basic_iterator& operator++() noexcept
+    {
+      ++index_;
+      return *this;
+    }
+
+    /// Postfix increment.
+    Basic_iterator operator++(int) noexcept
+    {
+      auto tmp{*this};
+      ++index_;
+      return tmp;
+    }
+
+    /// Prefix decrement.
+    Basic_iterator& operator--() noexcept
+    {
+      --index_;
+      return *this;
+    }
+
+    /// Postfix decrement.
+    Basic_iterator operator--(int) noexcept
+    {
+      auto tmp{*this};
+      --index_;
+      return tmp;
+    }
+
+    /// @returns `true` if `*this == rhs`.
+    bool operator==(const Basic_iterator& rhs) const noexcept
+    {
+      return (row_ == rhs.row_) && (index_ == rhs.index_);
+    }
+
+    /// @returns `true` if `*this != rhs`.
+    bool operator!=(const Basic_iterator& rhs) const noexcept
+    {
+      return !(*this == rhs);
+    }
+
+  private:
+    friend Row;
+
+    const Row* row_{};
+    std::size_t index_{};
+    value_type value_;
+
+    Basic_iterator(const Row* const row, const std::size_t index) noexcept
+      : row_{row}
+      , index_{index}
+    {
+      assert(row_);
+      assert(index_ <= row_->size());
+    }
+  };
+
+  /// Iterator.
+  using Iterator = Basic_iterator<false>;
+
+  /// Constant iterator.
+  using Const_iterator = Basic_iterator<true>;
+
+  /// @returns Iterator that points to a zero column.
+  auto begin() noexcept
+  {
+    return Iterator{this, 0};
+  }
+
+  /// @returns Constant iterator that points to a zero column.
+  auto begin() const noexcept
+  {
+    return Const_iterator{this, 0};
+  }
+
+  /// @returns Constant iterator that points to a zero column.
+  auto cbegin() const noexcept
+  {
+    return Const_iterator{this, 0};
+  }
+
+  /// @returns Iterator that points to an one-past-the-last column.
+  auto end() noexcept
+  {
+    return Iterator{this, size()};
+  }
+
+  /// @returns Iterator that points to an one-past-the-last column.
+  auto end() const noexcept
+  {
+    return Const_iterator{this, size()};
+  }
+
+  /// @returns Constant iterator that points to an one-past-the-last column.
+  auto cend() const noexcept
+  {
+    return Const_iterator{this, size()};
+  }
+
+  /// @}
 
 private:
   Row_info info_; // has pq_result_

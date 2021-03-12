@@ -4,17 +4,17 @@
 
 #include "pgfe-unit.hpp"
 
-#include <dmitigr/pgfe/connection_pool.hpp>
+#include <dmitigr/pgfe.hpp>
 
 namespace pgfe = dmitigr::pgfe;
-namespace test = pgfe::test;
+namespace testo = dmitigr::testo;
 
-std::unique_ptr<pgfe::Connection_pool> pool;
+inline std::unique_ptr<pgfe::Connection_pool> pool;
 
-int main()
-{
+int main(const int, const char* const argv[])
+try {
   constexpr std::size_t pool_size = 3;
-  pgfe::Connection_pool pool{pool_size, test::connection_options()};
+  pgfe::Connection_pool pool{pool_size, pgfe::test::connection_options()};
   ASSERT(pool.size() == pool_size);
   ASSERT(!pool.is_connected());
   pool.connect();
@@ -27,28 +27,24 @@ int main()
     auto conn1 = pool.connection();
     ASSERT(conn1);
     conn1p = &*conn1;
-    conn1->perform("select 1");
+    conn1->execute([](auto&& row)
     {
-      const auto r = conn1->wait_row();
-      ASSERT(r);
-      const auto d = r.data();
+      const auto d = row.data();
       ASSERT(d);
       const auto n = pgfe::to<int>(d);
       ASSERT(n == 1);
-    };
+    }, "select 1");
 
     auto conn2 = pool.connection();
     ASSERT(conn2);
     conn2p = &*conn2;
-    conn2->perform("select 2");
+    conn2->execute([](auto&& row)
     {
-      const auto r = conn2->wait_row();
-      ASSERT(r);
-      const auto d = r.data();
+      const auto d = row.data();
       ASSERT(d);
       const auto n = pgfe::to<int>(d);
       ASSERT(n == 2);
-    };
+    }, "select 2");
 
     auto conn3 = pool.connection();
     ASSERT(conn3);
@@ -62,7 +58,16 @@ int main()
     ASSERT(conn2->is_connected());
     ASSERT(conn3->is_connected());
   }
+  ASSERT(conn1p);
+  ASSERT(conn2p);
+  ASSERT(conn3p);
   ASSERT(!conn1p->is_connected());
   ASSERT(!conn2p->is_connected());
   ASSERT(!conn3p->is_connected());
+} catch (const std::exception& e) {
+  testo::report_failure(argv[0], e);
+  return 1;
+} catch (...) {
+  testo::report_failure(argv[0]);
+  return 1;
 }

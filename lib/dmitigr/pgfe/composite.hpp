@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <cassert>
+#include <iterator>
 #include <memory>
 #include <string>
 #include <type_traits>
@@ -42,7 +43,7 @@ public:
   Composite(const Composite& rhs)
     : datas_{rhs.datas_.size()}
   {
-    std::transform(cbegin(rhs.datas_), cend(rhs.datas_), begin(datas_),
+    std::transform(rhs.datas_.cbegin(), rhs.datas_.cend(), datas_.begin(),
       [](const auto& pair) { return std::make_pair(pair.first, pair.second->to_data()); });
 
     assert(is_invariant_ok());
@@ -93,8 +94,8 @@ public:
   std::size_t index_of(const std::string& name, const std::size_t offset = 0) const noexcept override
   {
     const auto sz = size();
-    const auto b = cbegin(datas_);
-    const auto e = cend(datas_);
+    const auto b = datas_.cbegin();
+    const auto e = datas_.cend();
     using Diff = decltype(b)::difference_type;
     const auto i = std::find_if(std::min(b + static_cast<Diff>(offset), b + static_cast<Diff>(sz)), e,
       [&name](const auto& pair) { return pair.first == name; });
@@ -141,6 +142,30 @@ public:
     return const_cast<std::unique_ptr<Data>&>(static_cast<const Composite*>(this)->data(name, offset));
   }
 
+  /// @returns `data(index)`.
+  const auto& operator[](const std::size_t index) const noexcept
+  {
+    return data(index);
+  }
+
+  /// @overload
+  auto& operator[](const std::size_t index) noexcept
+  {
+    return const_cast<std::unique_ptr<Data>&>(static_cast<const Composite*>(this)->operator[](index));
+  }
+
+  /// @returns `data(name)`.
+  const auto& operator[](const std::string& name) const noexcept
+  {
+    return data(name);
+  }
+
+  /// @overload
+  auto& operator[](const std::string& name) noexcept
+  {
+    return const_cast<std::unique_ptr<Data>&>(static_cast<const Composite*>(this)->operator[](name));
+  }
+
   /**
    * @brief Sets the data of the specified index with the value of type T,
    * implicitly converted to the Data by using to_data().
@@ -183,9 +208,9 @@ public:
   /// Appends `rhs` to the end of the instance.
   void append(Composite&& rhs)
   {
-    datas_.insert(cend(datas_),
-      std::make_move_iterator(begin(rhs.datas_)),
-      std::make_move_iterator(end(rhs.datas_)));
+    datas_.insert(datas_.cend(),
+      std::make_move_iterator(rhs.datas_.begin()),
+      std::make_move_iterator(rhs.datas_.end()));
     assert(is_invariant_ok());
   }
 
@@ -206,7 +231,7 @@ public:
   void insert(const std::size_t index, const std::string& name, std::unique_ptr<Data>&& data = {})
   {
     assert(index < size());
-    const auto b = begin(datas_);
+    const auto b = datas_.begin();
     using Diff = decltype(b)::difference_type;
     datas_.insert(b + static_cast<Diff>(index), std::make_pair(name, std::move(data)));
     assert(is_invariant_ok());
@@ -253,7 +278,7 @@ public:
   void remove(const std::size_t index) noexcept
   {
     assert(index < size());
-    const auto b = cbegin(datas_);
+    const auto b = datas_.cbegin();
     using Diff = decltype(b)::difference_type;
     datas_.erase(b + static_cast<Diff>(index));
     assert(is_invariant_ok());
@@ -271,11 +296,47 @@ public:
   void remove(const std::string& name, const std::size_t offset = 0) noexcept
   {
     if (const auto index = index_of(name, offset); index != size()) {
-      const auto b = cbegin(datas_);
+      const auto b = datas_.cbegin();
       using Diff = decltype(b)::difference_type;
       datas_.erase(b + static_cast<Diff>(index));
     }
     assert(is_invariant_ok());
+  }
+
+  /// @returns The iterator that points to the first field.
+  auto begin() noexcept
+  {
+    return datas_.begin();
+  }
+
+  /// @returns The constant iterator that points to the first.
+  auto begin() const noexcept
+  {
+    return datas_.begin();
+  }
+
+  /// @returns The constant iterator that points to the first field.
+  auto cbegin() const noexcept
+  {
+    return datas_.cbegin();
+  }
+
+  /// @returns The iterator that points to the one-past-the-last field.
+  auto end() noexcept
+  {
+    return datas_.end();
+  }
+
+  /// @returns The constant iterator that points to the one-past-the-last field.
+  auto end() const noexcept
+  {
+    return datas_.end();
+  }
+
+  /// @returns The constant iterator that points to the one-past-the-last field.
+  auto cend() const noexcept
+  {
+    return datas_.cend();
   }
 
 private:
@@ -286,6 +347,88 @@ private:
 inline void swap(Composite& lhs, Composite& rhs) noexcept
 {
   lhs.swap(rhs);
+}
+
+/**
+ * @returns
+ *   - negative value if the first differing field in `lhs` is less than the
+ *   corresponding field in `rhs`;
+ *   - zero if all fields of `lhs` and `rhs` are equal;
+ *   - positive value if the first differing field in `lhs` is greater than the
+ *   corresponding field in `rhs`.
+ */
+inline int cmp(const Composite& lhs, const Composite& rhs) noexcept
+{
+  if (const auto lsz = lhs.size(), rsz = rhs.size(); lsz == rsz) {
+    for (auto i = 0*lsz; i < lsz; ++i) {
+      if (lhs.name_of(i) < rhs.name_of(i) || *lhs[i] < *rhs[i])
+        return -1;
+      else if (lhs.name_of(i) > rhs.name_of(i) || *lhs[i] > *rhs[i])
+        return 1;
+    }
+    return 0;
+  } else
+    return lsz < rsz ? -1 : 1;
+}
+
+/**
+ * @returns `cmp(lhs, rhs) < 0`.
+ *
+ * @see cmp(const Composite&, const Composite&).
+ */
+inline bool operator<(const Composite& lhs, const Composite& rhs) noexcept
+{
+  return cmp(lhs, rhs) < 0;
+}
+
+/**
+ * @returns `cmp(lhs, rhs) <= 0`.
+ *
+ * @see cmp(const Composite&, const Composite&).
+ */
+inline bool operator<=(const Composite& lhs, const Composite& rhs) noexcept
+{
+  return cmp(lhs, rhs) <= 0;
+}
+
+/**
+ * @returns `cmp(lhs, rhs) == 0`.
+ *
+ * @see cmp(const Composite&, const Composite&).
+ */
+inline bool operator==(const Composite& lhs, const Composite& rhs) noexcept
+{
+  return !cmp(lhs, rhs);
+}
+
+/**
+ * @returns `cmp(lhs, rhs) != 0`.
+ *
+ * @see cmp(const Composite&, const Composite&).
+ */
+inline bool operator!=(const Composite& lhs, const Composite& rhs) noexcept
+{
+  return !(lhs == rhs);
+}
+
+/**
+ * @returns `cmp(lhs, rhs) > 0`.
+ *
+ * @see cmp(const Composite&, const Composite&).
+ */
+inline bool operator>(const Composite& lhs, const Composite& rhs) noexcept
+{
+  return cmp(lhs, rhs) > 0;
+}
+
+/**
+ * @returns `cmp(lhs, rhs) >= 0`.
+ *
+ * @see cmp(const Composite&, const Composite&).
+ */
+inline bool operator>=(const Composite& lhs, const Composite& rhs) noexcept
+{
+  return cmp(lhs, rhs) >= 0;
 }
 
 } // namespace dmitigr::pgfe
