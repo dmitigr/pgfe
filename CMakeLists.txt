@@ -202,14 +202,16 @@ foreach(lib ${dmitigr_cefeika_libraries})
     set(dmitigr_${lib}_header_only ${DMITIGR_CEFEIKA_HEADER_ONLY})
   endif()
 
-  # Root headers
-  configure_file(lib/dmitigr/lib.hpp.in
-    ${CMAKE_CURRENT_SOURCE_DIR}/lib/dmitigr/${lib}.hpp @ONLY
-    NEWLINE_STYLE UNIX)
-  list(APPEND dmitigr_${lib}_root_headers "../${lib}.hpp")
+  if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/lib/dmitigr/${lib}/${lib}.hpp)
+    # Root headers
+    configure_file(lib/dmitigr/lib.hpp.in
+      ${CMAKE_CURRENT_SOURCE_DIR}/lib/dmitigr/${lib}.hpp @ONLY
+      NEWLINE_STYLE UNIX)
+    list(APPEND dmitigr_${lib}_root_headers "../${lib}.hpp")
 
-  # Headers
-  list(APPEND dmitigr_${lib}_headers ${lib}.hpp)
+    # Headers
+    list(APPEND dmitigr_${lib}_headers ${lib}.hpp)
+  endif()
 
   if(NOT ${dmitigr_${lib}_header_only})
     # Preprocessed headers
