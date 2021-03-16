@@ -17,62 +17,62 @@ namespace dmitigr::pgfe {
 Problem::Problem(detail::pq::Result&& result) noexcept
   : pq_result_{std::move(result)}
 {
-  const int code = sqlstate_string_to_int(pq_result_.er_code());
-  code_ = {code, server_error_category()};
+  const int condition{sqlstate_string_to_int(pq_result_.er_code())};
+  condition_ = {condition, server_error_category()};
   assert(is_invariant_ok());
 }
 
 Problem_severity DMITIGR_PGFE_INLINE Problem::severity() const noexcept
 {
-  const char* const s = pq_result_.er_severity_non_localized();
+  const char* const s{pq_result_.er_severity_non_localized()};
   return s ? to_problem_severity(std::string_view{s}) : Problem_severity{-1};
 }
 
-DMITIGR_PGFE_INLINE std::error_code Problem::min_code() noexcept
+DMITIGR_PGFE_INLINE std::error_condition Problem::min_condition() noexcept
 {
   return {0, server_error_category()};
 }
 
-DMITIGR_PGFE_INLINE std::error_code Problem::max_code() noexcept
+DMITIGR_PGFE_INLINE std::error_condition Problem::max_condition() noexcept
 {
   return {60466175, server_error_category()};
 }
 
-DMITIGR_PGFE_INLINE std::error_code Problem::min_error_code() noexcept
+DMITIGR_PGFE_INLINE std::error_condition Problem::min_error_condition() noexcept
 {
   return {139968, server_error_category()};
 }
 
-DMITIGR_PGFE_INLINE int Problem::sqlstate_string_to_int(const char* const code) noexcept
+DMITIGR_PGFE_INLINE int Problem::sqlstate_string_to_int(const char* const sqlstate) noexcept
 {
-  if (!(code && code[5] == '\0')) {
+  if (!(sqlstate && sqlstate[5] == '\0')) {
     assert(false);
     return -1;
   }
 
   const std::locale loc;
-  const std::string_view cod{code};
-  if (!(cod.size() == 5 &&
-      std::isalnum(cod[0], loc) &&
-      std::isalnum(cod[1], loc) &&
-      std::isalnum(cod[2], loc) &&
-      std::isalnum(cod[3], loc) &&
-      std::isalnum(cod[4], loc))) {
+  const std::string_view state{sqlstate};
+  if (!(state.size() == 5 &&
+      std::isalnum(state[0], loc) &&
+      std::isalnum(state[1], loc) &&
+      std::isalnum(state[2], loc) &&
+      std::isalnum(state[3], loc) &&
+      std::isalnum(state[4], loc))) {
     assert(false);
     return -1;
   }
 
   errno = 0;
-  const long int result = std::strtol(cod.data(), nullptr, 36);
+  const long int result = std::strtol(state.data(), nullptr, 36);
   assert(errno == 0);
-  assert(min_code().value() <= result && result <= max_code().value());
+  assert(min_condition().value() <= result && result <= max_condition().value());
   return static_cast<int>(result);
 }
 
-DMITIGR_PGFE_INLINE std::string Problem::sqlstate_int_to_string(const int code)
+DMITIGR_PGFE_INLINE std::string Problem::sqlstate_int_to_string(const int sqlstate)
 {
-  assert(min_code().value() <= code && code <= max_code().value());
-  return str::to_string(code, 36);
+  assert(min_condition().value() <= sqlstate && sqlstate <= max_condition().value());
+  return str::to_string(sqlstate, 36);
 }
 
 } // namespace dmitigr::pgfe

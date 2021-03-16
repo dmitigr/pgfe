@@ -9,7 +9,7 @@ namespace dmitigr::pgfe {
 
 DMITIGR_PGFE_INLINE std::string Client_error_category::message(const int ev) const
 {
-  std::string result(name());
+  std::string result{name()};
   result += ' ';
   result += std::to_string(ev);
   if (const char* const literal = to_literal(static_cast<Client_errc>(ev))) {
@@ -21,7 +21,7 @@ DMITIGR_PGFE_INLINE std::string Client_error_category::message(const int ev) con
 
 DMITIGR_PGFE_INLINE std::string Server_error_category::message(const int ev) const
 {
-  std::string result(name());
+  std::string result{name()};
   result += ' ';
   result += std::to_string(ev);
   result += ' ';

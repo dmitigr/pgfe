@@ -672,14 +672,11 @@ DMITIGR_PGFE_INLINE void Connection::throw_if_error()
   if (auto err = error()) {
     auto ei = std::make_shared<Error>(std::move(err));
 
-    // Attempting to throw a custom exception.
+    // Attempt to throw a custom exception.
     if (const auto& eh = error_handler(); eh && eh(ei))
       return;
 
-    // Attempting to throw a predefined exception.
-    throw_server_exception(ei);
-
-    // Fallback - throwing an exception with unrecognized error code.
+    // Throw an exception with an error code.
     throw Server_exception{std::move(ei)};
   }
 }

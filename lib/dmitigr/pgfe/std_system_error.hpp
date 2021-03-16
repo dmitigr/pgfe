@@ -91,26 +91,6 @@ inline const Server_error_category& server_error_category() noexcept
 /**
  * @ingroup errors
  *
- * @returns `std::error_code(int(errc), client_error_category())`
- */
-inline std::error_code make_error_code(Client_errc errc) noexcept
-{
-  return std::error_code{static_cast<int>(errc), client_error_category()};
-}
-
-/**
- * @ingroup errors
- *
- * @returns `std::error_code(int(errc), server_error_category())`
- */
-inline std::error_code make_error_code(Server_errc errc) noexcept
-{
-  return std::error_code{static_cast<int>(errc), server_error_category()};
-}
-
-/**
- * @ingroup errors
- *
  * @returns `std::error_condition(int(errc), client_error_category())`
  */
 inline std::error_condition make_error_condition(Client_errc errc) noexcept
@@ -137,14 +117,14 @@ namespace std {
  *
  * @brief The full specialization for integration with `<system_error>`.
  */
-template<> struct is_error_code_enum<dmitigr::pgfe::Client_errc> final : true_type {};
+template<> struct is_error_condition_enum<dmitigr::pgfe::Client_errc> final : true_type {};
 
 /**
  * @ingroup errors
  *
  * @brief The full specialization for integration with `<system_error>`.
  */
-template<> struct is_error_code_enum<dmitigr::pgfe::Server_errc> final : true_type {};
+template<> struct is_error_condition_enum<dmitigr::pgfe::Server_errc> final : true_type {};
 
 } // namespace std
 

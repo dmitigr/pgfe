@@ -37,7 +37,7 @@ try {
     conn->execute("commit");
   } catch (const pgfe::Server_exception& e) {
     // ok, expected.
-    ASSERT(e.code() == pgfe::Server_errc::cp0_raise_exception);
+    ASSERT(e.error().condition() == pgfe::Server_errc::cp0_raise_exception);
   }
 } catch (const std::exception& e) {
   testo::report_failure(argv[0], e);

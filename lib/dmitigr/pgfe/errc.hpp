@@ -38,7 +38,7 @@ enum class Client_errc {
  * @returns The literal representation of the `errc`, or `nullptr`
  * if `errc` does not corresponds to any value defined by Client_errc.
  */
-DMITIGR_PGFE_API const char* to_literal(Client_errc errc);
+DMITIGR_PGFE_API const char* to_literal(Client_errc errc) noexcept;
 
 /**
  * @ingroup errors
@@ -997,7 +997,7 @@ enum class Server_errc {
  * @returns The literal representation of the `errc`, or `nullptr`
  * if `errc` does not corresponds to any value defined by Server_errc.
  */
-DMITIGR_PGFE_API const char* to_literal(Server_errc errc);
+DMITIGR_PGFE_API const char* to_literal(Server_errc errc) noexcept;
 
 } // namespace dmitigr::pgfe
 

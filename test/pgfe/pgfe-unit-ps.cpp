@@ -29,7 +29,7 @@ try {
     try {
       ps1->execute();
     } catch (const pgfe::Server_exception& e) {
-      ASSERT(e.code() == pgfe::Server_errc::c08_protocol_violation);
+      ASSERT(e.error().condition() == pgfe::Server_errc::c08_protocol_violation);
     }
 
     ps1->describe();

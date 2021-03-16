@@ -226,7 +226,7 @@ int main(int, char* argv[])
       try {
         const auto converted = pgfe::to<Arr>(data.get());
       } catch (const pgfe::Client_exception& e) {
-        test_ok = (e.code() == pgfe::Client_errc::insufficient_array_dimensionality);
+        test_ok = (e.condition() == pgfe::Client_errc::insufficient_array_dimensionality);
       }
       ASSERT(test_ok);
     }
@@ -242,7 +242,7 @@ int main(int, char* argv[])
       try {
         const auto converted = pgfe::to<Arr2>(data.get());
       } catch (const pgfe::Client_exception& e) {
-        test_ok = (e.code() == pgfe::Client_errc::excessive_array_dimensionality);
+        test_ok = (e.condition() == pgfe::Client_errc::excessive_array_dimensionality);
       }
       ASSERT(test_ok);
     }
@@ -337,36 +337,36 @@ int main(int, char* argv[])
       {
         auto malformed_literals  = {"{1", "{1,", "{1,}", "1}", ",1}", "{,1}"};
         for (const auto* malformed_literal : malformed_literals) {
-          std::error_code code;
+          std::error_condition cond;
           try {
             const auto native = pgfe::to<Arr>(pgfe::Data::make(malformed_literal));
           } catch (const pgfe::Client_exception& e) {
-            code = e.code();
-            if (code != pgfe::Client_errc::malformed_array_literal) {
+            cond = e.condition();
+            if (cond != pgfe::Client_errc::malformed_array_literal) {
               std::cerr << "Expected pgfe::Client_errc::malformed_array_literal, but got "
-                        << code.value() << "." << std::endl;
+                        << cond.value() << "." << std::endl;
               throw;
             }
           }
-          ASSERT(code == pgfe::Client_errc::malformed_array_literal);
+          ASSERT(cond == pgfe::Client_errc::malformed_array_literal);
         }
       }
 
       {
         auto malformed_literals2 = {"{{1}", "{{1", "{{1,}", "{{1,}}", "{{1},}", "{{,1}}", "{,{1}}"};
         for (const auto* malformed_literal : malformed_literals2) {
-          std::error_code code;
+          std::error_condition cond;
           try {
             const auto native = pgfe::to<Arr2>(pgfe::Data::make(malformed_literal));
           } catch (const pgfe::Client_exception& e) {
-            code = e.code();
-            if (code != pgfe::Client_errc::malformed_array_literal) {
+            cond = e.condition();
+            if (cond != pgfe::Client_errc::malformed_array_literal) {
               std::cerr << "Expected pgfe::Client_errc::malformed_array_literal, but got "
-                        << code.value() << "." << std::endl;
+                        << cond.value() << "." << std::endl;
               throw;
             }
           }
-          ASSERT(code == pgfe::Client_errc::malformed_array_literal);
+          ASSERT(cond == pgfe::Client_errc::malformed_array_literal);
         }
       }
     }

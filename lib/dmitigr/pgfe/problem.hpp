@@ -29,13 +29,13 @@ public:
   /// Move-assignable.
   Problem& operator=(Problem&&) = default;
 
-  /// @returns The object with the corresponding SQLSTATE code.
-  const std::error_code& code() const noexcept
+  /// @returns The error condition that corresponds to SQLSTATE sqlstate().
+  const std::error_condition& condition() const noexcept
   {
-    return code_;
+    return condition_;
   }
 
-  /// @returns The SQLSTATE code of the problem.
+  /// @returns The SQLSTATE of the problem.
   const char* sqlstate() const noexcept
   {
     return pq_result_.er_code();
@@ -48,7 +48,7 @@ public:
   Problem_severity DMITIGR_PGFE_API severity() const noexcept;
 
   /**
-   * @returns The brief human-readable description.
+   * @returns The brief human-readable description of the problem.
    *
    * @remarks Typically, one line.
    */
@@ -189,37 +189,37 @@ public:
     return pq_result_.er_source_function();
   }
 
-  /// @returns Error code that corresponds to SQLSTATE 00000.
-  static DMITIGR_PGFE_API std::error_code min_code() noexcept;
+  /// @returns The error condition that corresponds to SQLSTATE `00000`.
+  static DMITIGR_PGFE_API std::error_condition min_condition() noexcept;
 
-  /// @returns Error code that corresponds to SQLSTATE ZZZZZ.
-  static DMITIGR_PGFE_API std::error_code max_code() noexcept;
+  /// @returns The error condition that corresponds to SQLSTATE `ZZZZZ`.
+  static DMITIGR_PGFE_API std::error_condition max_condition() noexcept;
 
-  /// @returns Error code that corresponds to SQLSTATE 03000.
-  static DMITIGR_PGFE_API std::error_code min_error_code() noexcept;
-
-  /**
-   * @returns The integer representation of the SQLSTATE code, or `-1` on error.
-   *
-   * @par Requires
-   * `code` must consist of five alphanumeric characters terminated by zero.
-   */
-  static DMITIGR_PGFE_API int sqlstate_string_to_int(const char* code) noexcept;
+  /// @returns Teh error condition that corresponds to SQLSTATE `03000`.
+  static DMITIGR_PGFE_API std::error_condition min_error_condition() noexcept;
 
   /**
-   * @returns The textual representation of the SQLSTATE code, or empty string on error.
+   * @returns The integer representation of the SQLSTATE, or `-1` on error.
    *
    * @par Requires
-   * The `code` must be in range [0, 60466175].
+   * `sqlstate` must consist of five alphanumeric characters terminated by zero.
    */
-  static DMITIGR_PGFE_API std::string sqlstate_int_to_string(int code);
+  static DMITIGR_PGFE_API int sqlstate_string_to_int(const char* sqlstate) noexcept;
+
+  /**
+   * @returns The textual representation of the SQLSTATE, or empty string on error.
+   *
+   * @par Requires
+   * The `sqlstate` must be in range `[0, 60466175]`.
+   */
+  static DMITIGR_PGFE_API std::string sqlstate_int_to_string(int sqlstate);
 
 private:
   friend Error;
   friend Notice;
 
   detail::pq::Result pq_result_;
-  std::error_code code_;
+  std::error_condition condition_;
 
   Problem() = default;
 
@@ -227,8 +227,8 @@ private:
 
   virtual bool is_invariant_ok() const noexcept
   {
-    const int cv = code().value();
-    return pq_result_ && (min_code().value() <= cv && cv <= max_code().value());
+    const int cv = condition().value();
+    return pq_result_ && (min_condition().value() <= cv && cv <= max_condition().value());
   }
 };
 

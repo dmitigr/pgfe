@@ -6,7 +6,7 @@
 
 namespace dmitigr::pgfe {
 
-DMITIGR_PGFE_INLINE const char* to_literal(const Client_errc errc)
+DMITIGR_PGFE_INLINE const char* to_literal(const Client_errc errc) noexcept
 {
   switch (errc) {
   case Client_errc::success:
@@ -25,7 +25,7 @@ DMITIGR_PGFE_INLINE const char* to_literal(const Client_errc errc)
   return nullptr;
 }
 
-DMITIGR_PGFE_INLINE const char* to_literal(const Server_errc errc)
+DMITIGR_PGFE_INLINE const char* to_literal(const Server_errc errc) noexcept
 {
   switch (errc) {
   case Server_errc::c00_successful_completion:

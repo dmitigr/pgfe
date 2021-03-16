@@ -153,7 +153,7 @@ try {
       // Checking error
       const auto e = conn->error();
       ASSERT(e);
-      ASSERT(e.code() == pgfe::Server_errc::c42_syntax_error);
+      ASSERT(e.condition() == pgfe::Server_errc::c42_syntax_error);
       ASSERT(!conn->error());
       ASSERT(conn->transaction_status() == Transaction_status::failed);
 
@@ -286,7 +286,7 @@ try {
           try {
             conn->describe("unprepared");
           } catch (const pgfe::Server_exception& e) {
-            ASSERT(e.code() == pgfe::Server_errc::c26_invalid_sql_statement_name);
+            ASSERT(e.error().condition() == pgfe::Server_errc::c26_invalid_sql_statement_name);
             ASSERT(!conn->has_response());
             ASSERT(!conn->has_uncompleted_request());
             ASSERT(conn->is_ready_for_nio_request());
@@ -302,7 +302,7 @@ try {
           try {
             conn->unprepare("unprepared");
           } catch (const pgfe::Server_exception& e) {
-            ASSERT(e.code() == pgfe::Server_errc::c26_invalid_sql_statement_name);
+            ASSERT(e.error().condition() == pgfe::Server_errc::c26_invalid_sql_statement_name);
             ASSERT(!conn->has_response());
             ASSERT(!conn->has_uncompleted_request());
             ASSERT(conn->is_ready_for_nio_request());

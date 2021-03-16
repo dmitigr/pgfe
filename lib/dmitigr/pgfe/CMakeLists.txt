@@ -301,7 +301,6 @@ set(dmitigr_pgfe_implementations
   connection_pool.cpp
   data.cpp
   errc.cpp
-  exceptions.cpp
   large_object.cpp
   misc.cpp
   prepared_statement.cpp

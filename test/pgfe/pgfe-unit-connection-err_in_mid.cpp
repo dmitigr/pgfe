@@ -38,7 +38,7 @@ try {
     }, "select provoke_err_in_mid(n) from generate_series(1,10) n");
   } catch (const pgfe::Server_exception& e) {
     // ok, expected.
-    ASSERT(e.code() == pgfe::Server_errc::cp0_raise_exception);
+    ASSERT(e.error().condition() == pgfe::Server_errc::cp0_raise_exception);
     ASSERT(rows_processed);
   }
   ASSERT(conn->is_ready_for_nio_request());
