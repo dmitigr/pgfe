@@ -67,7 +67,8 @@ int main() try {
 
   // Provoking the syntax error.
   conn.execute("provoke syntax error");
- } catch (const pgfe::c42_Syntax_error& e) {
+ } catch (const pgfe::Server_exception& e) {
+  assert(e.error().condition() == pgfe::Server_errc::c42_syntax_error);
   std::printf("Error %s is handled as expected.\n", e.error().sqlstate());
  } catch (const std::exception& e) {
   std::printf("Oops: %s\n", e.what());
@@ -82,9 +83,9 @@ int main() try {
   - work with database connections (in both blocking and non-blocking IO manner);
   - execute prepared statements (named parameters are supported);
   - conveniently call functions and procedures;
-  - conveniently handle errors by either via exceptions or error codes;
+  - conveniently handle errors by either via exceptions or error conditions;
   - conveniently work with [large objects][lob];
-  - exception class and enum entry for each predefined [SQLSTATE][errcodes] code;
+  - enum entry for each predefined [SQLSTATE][errcodes];
   - easily convert the data from the client side representation to the server
     side representation and vice versa (conversions of multidimensional
     [PostgreSQL] arrays to/from any combinations of STL containers are supported
@@ -103,7 +104,7 @@ Logically, Pgfe library consists of the following parts:
 
   - main (client/server communication);
   - data types conversions;
-  - errors (exceptions and error codes);
+  - errors (exceptions and error conditions);
   - utilities.
 
 The API is defined in the namespace `dmitigr::pgfe`. In this tutorial all the
@@ -352,11 +353,11 @@ of type `Error`, which contains all the error details.
 Server responses are represented by the classes inherited from `Response`:
 
   - errors are represented by the class `Error`. Each server error is identifiable
-    by a [SQLSTATE][errcodes] code. In Pgfe *each* such a code is represented by
-    the member of the enumeration `Server_errc`, integrated to the framework for
+    by a [SQLSTATE][errcodes] condition. In Pgfe *each* such a condition is represented
+    by the member of the enumeration `Server_errc`, integrated to the framework for
     reporting errors provided by the standard library in [`<system_error>`][system_error].
-    Therefore, working with [SQLSTATE][errcodes] codes is as simple and safe as
-    with [`std::error_code`][std_error_code] and enumerated types, for example:
+    Therefore, working with [SQLSTATEs][errcodes] is as simple and safe as
+    with [`std::error_condition`][std_error_condition] and enumerated types, for example:
 
 ```cpp
 // Example 10. Catching the syntax error.
@@ -365,7 +366,7 @@ void foo(Connection& conn)
   try {
     conn.perform("provoke syntax error");
   } catch (const Server_exception& e) {
-    assert(e.error().code() == Server_errc::c42_syntax_error);
+    assert(e.error().condition() == Server_errc::c42_syntax_error);
   }
 }
 ```
@@ -623,7 +624,7 @@ Copyright (C) [Dmitry Igrishin][dmitigr_mail]
 
 [system_error]: https://en.cppreference.com/w/cpp/header/system_error
 [std_deque]: https://en.cppreference.com/w/cpp/container/deque
-[std_error_code]: https://en.cppreference.com/w/cpp/error/error_code
+[std_error_condition]: https://en.cppreference.com/w/cpp/error/error_condition
 [std_istream]: https://en.cppreference.com/w/cpp/io/basic_istream
 [std_list]: https://en.cppreference.com/w/cpp/container/list
 [std_logic_error]: https://en.cppreference.com/w/cpp/error/logic_error
