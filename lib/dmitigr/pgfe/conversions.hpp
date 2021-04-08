@@ -45,6 +45,7 @@ struct Generic_string_conversions final {
   static std::string to_string(const Type& value, Types&& ...)
   {
     std::ostringstream stream;
+    stream.precision(std::numeric_limits<Type>::max_digits10);
     stream << value;
     if (stream.fail())
       throw std::runtime_error("invalid native representation");
@@ -88,9 +89,12 @@ struct Numeric_string_conversions_base {
   using Type = T;
 
   template<typename ... Types>
-  static std::string to_string(Type value, Types&& ...)
+  static std::string to_string(Type value, Types&& ... args)
   {
-    return std::to_string(value);
+    if constexpr (std::is_floating_point_v<Type>)
+      return Generic_string_conversions<Type>::to_string(value, std::forward<Types>(args)...);
+    else
+      return std::to_string(value);
   }
 
 protected:

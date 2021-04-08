@@ -86,9 +86,12 @@ try {
     {
       const auto double1 = to<double>(row[0]);
       const auto double2 = to<double>(row[1]);
-      ASSERT(12 <= double1 && double1 <= 13);
-      ASSERT(67 <= double2 && double2 <= 68);
-    }, "SELECT 12.345::double precision, $1::double precision", double(67.89));
+      const auto double3 = to<double>(row[2]);
+      ASSERT(double1 == 12.345);
+      ASSERT(double2 == 67.89);
+      ASSERT(double3 == 3.16202013338398e-322);
+    }, "SELECT 12.345::double precision, $1::double precision, $2::double precision",
+      67.89, 3.16202013338398e-322);
   }
 
   // text

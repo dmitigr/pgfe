@@ -286,7 +286,7 @@ int main(int, char* argv[])
         const auto data = pgfe::Data::make(valid_literal);
         const auto native_arr = pgfe::to<Arr>(data.get());
         ASSERT((native_arr == Arr{1,{}}));
-        ASSERT(is_throw_works<std::runtime_error>([&] { const auto native_vec = pgfe::to<Vec>(data.get()); }));
+        ASSERT(is_throw_works<std::exception>([&] { const auto native_vec = pgfe::to<Vec>(data.get()); }));
       }
 
       {
