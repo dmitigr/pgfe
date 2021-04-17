@@ -84,14 +84,14 @@ public:
   }
 
   /// @see Compositional::name_of().
-  const std::string& name_of(const std::size_t index) const noexcept override
+  std::string_view name_of(const std::size_t index) const noexcept override
   {
     assert(index < size());
     return datas_[index].first;
   }
 
   /// @see Compositional::index_of().
-  std::size_t index_of(const std::string& name, const std::size_t offset = 0) const noexcept override
+  std::size_t index_of(const std::string_view name, const std::size_t offset = 0) const noexcept override
   {
     const auto sz = size();
     const auto b = datas_.cbegin();
@@ -131,13 +131,13 @@ public:
    * @par Requires
    * `has_field(name, offset)`.
    */
-  const std::unique_ptr<Data>& data(const std::string& name, const std::size_t offset = 0) const
+  const std::unique_ptr<Data>& data(const std::string_view name, const std::size_t offset = 0) const
   {
     return data(index_of(name, offset));
   }
 
   /// @overload
-  std::unique_ptr<Data>& data(const std::string& name, const std::size_t offset = 0) noexcept
+  std::unique_ptr<Data>& data(const std::string_view name, const std::size_t offset = 0) noexcept
   {
     return const_cast<std::unique_ptr<Data>&>(static_cast<const Composite*>(this)->data(name, offset));
   }
@@ -155,13 +155,13 @@ public:
   }
 
   /// @returns `data(name)`.
-  const auto& operator[](const std::string& name) const noexcept
+  const auto& operator[](const std::string_view name) const noexcept
   {
     return data(name);
   }
 
   /// @overload
-  auto& operator[](const std::string& name) noexcept
+  auto& operator[](const std::string_view name) noexcept
   {
     return const_cast<std::unique_ptr<Data>&>(static_cast<const Composite*>(this)->operator[](name));
   }
@@ -178,7 +178,7 @@ public:
 
   /// @overload
   template<typename T>
-  std::enable_if_t<!std::is_same_v<Data*, T>> set_data(const std::string& name, T&& value)
+  std::enable_if_t<!std::is_same_v<Data*, T>> set_data(const std::string_view name, T&& value)
   {
     set_data(index_of(name), std::forward<T>(value));
   }
@@ -192,17 +192,17 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  void append(const std::string& name, std::unique_ptr<Data>&& data) noexcept
+  void append(std::string name, std::unique_ptr<Data>&& data) noexcept
   {
-    datas_.emplace_back(name, std::move(data));
+    datas_.emplace_back(std::move(name), std::move(data));
     assert(is_invariant_ok());
   }
 
   /// @overload
   template<typename T>
-  void append(const std::string& name, T&& value)
+  void append(std::string name, T&& value)
   {
-    append(name, to_data(std::forward<T>(value)));
+    append(std::move(name), to_data(std::forward<T>(value)));
   }
 
   /// Appends `rhs` to the end of the instance.
@@ -228,20 +228,21 @@ public:
    * @par Requires
    * `(index < size())`.
    */
-  void insert(const std::size_t index, const std::string& name, std::unique_ptr<Data>&& data = {})
+  void insert(const std::size_t index, std::string name, std::unique_ptr<Data>&& data = {})
   {
     assert(index < size());
     const auto b = datas_.begin();
     using Diff = decltype(b)::difference_type;
-    datas_.insert(b + static_cast<Diff>(index), std::make_pair(name, std::move(data)));
+    datas_.insert(b + static_cast<Diff>(index),
+      std::make_pair(std::move(name), std::move(data)));
     assert(is_invariant_ok());
   }
 
   /// @overload
   template<typename T>
-  void insert(std::size_t index, const std::string& name, T&& value)
+  void insert(const std::size_t index, std::string name, T&& value)
   {
-    insert(index, name, to_data(std::forward<T>(value)));
+    insert(index, std::move(name), to_data(std::forward<T>(value)));
   }
 
   /**
@@ -254,16 +255,16 @@ public:
    * @par Requires
    * `has_field(name, 0)`.
    */
-  void insert(const std::string& name, const std::string& new_field_name, std::unique_ptr<Data>&& data)
+  void insert(const std::string_view name, std::string new_field_name, std::unique_ptr<Data>&& data)
   {
-    insert(index_of(name), new_field_name, std::move(data));
+    insert(index_of(name), std::move(new_field_name), std::move(data));
   }
 
   /// @overload
   template<typename T>
-  void insert(const std::string& name, const std::string& new_field_name, T&& value)
+  void insert(const std::string_view name, std::string new_field_name, T&& value)
   {
-    insert(name, new_field_name, to_data(std::forward<T>(value)));
+    insert(name, std::move(new_field_name), to_data(std::forward<T>(value)));
   }
 
   /**
@@ -293,7 +294,7 @@ public:
    * @par Effects
    * `!has_field(name, offset)`.
    */
-  void remove(const std::string& name, const std::size_t offset = 0) noexcept
+  void remove(const std::string_view name, const std::size_t offset = 0) noexcept
   {
     if (const auto index = index_of(name, offset); index != size()) {
       const auto b = datas_.cbegin();

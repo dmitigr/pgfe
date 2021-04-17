@@ -1145,7 +1145,7 @@ public:
    *
    * @see Prepared_statement.
    */
-  DMITIGR_PGFE_API std::string to_quoted_literal(const std::string& literal) const;
+  DMITIGR_PGFE_API std::string to_quoted_literal(const std::string_view literal) const;
 
   /**
    * @brief Quotes the given string to be used as an identifier in a SQL query.
@@ -1163,7 +1163,7 @@ public:
    *
    * @see Prepared_statement.
    */
-  DMITIGR_PGFE_API std::string to_quoted_identifier(const std::string& identifier) const;
+  DMITIGR_PGFE_API std::string to_quoted_identifier(const std::string_view identifier) const;
 
   /**
    * @brief Encodes the binary data into the textual representation to be used

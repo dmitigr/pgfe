@@ -54,13 +54,13 @@ public:
    * @par Requires
    * `index` in range `[positional_parameter_count(), parameter_count())`.
    */
-  virtual const std::string& parameter_name(std::size_t index) const noexcept = 0;
+  virtual std::string_view parameter_name(std::size_t index) const noexcept = 0;
 
   /// @returns The parameter index if presents, or `parameter_count()` othersize.
-  virtual std::size_t parameter_index(const std::string& name) const noexcept = 0;
+  virtual std::size_t parameter_index(std::string_view name) const noexcept = 0;
 
   /// @returns `true` if the given parameter presents.
-  bool has_parameter(const std::string& name) const noexcept
+  bool has_parameter(const std::string_view name) const noexcept
   {
     return parameter_index(name) < parameter_count();
   }

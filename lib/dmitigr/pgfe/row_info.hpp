@@ -75,10 +75,10 @@ public:
   }
 
   /// @see Compositional::name_of().
-  DMITIGR_PGFE_API const std::string& name_of(const std::size_t index) const noexcept override;
+  DMITIGR_PGFE_API std::string_view name_of(const std::size_t index) const noexcept override;
 
   /// @see Compositional::index_of().
-  DMITIGR_PGFE_API std::size_t index_of(const std::string& name, std::size_t offset = 0) const noexcept override;
+  DMITIGR_PGFE_API std::size_t index_of(const std::string_view name, std::size_t offset = 0) const noexcept override;
 
   /**
    * @returns The OID of the table if a field at `index` can be identified as a
@@ -102,7 +102,7 @@ public:
    *
    * @see has_field().
    */
-  std::uint_fast32_t table_oid(const std::string& name, std::size_t offset = 0) const noexcept
+  std::uint_fast32_t table_oid(const std::string_view name, std::size_t offset = 0) const noexcept
   {
     return table_oid(index_of(name, offset));
   }
@@ -131,7 +131,7 @@ public:
    *
    * @see has_field().
    */
-  std::int_fast32_t table_column_number(const std::string& name, std::size_t offset = 0) const noexcept
+  std::int_fast32_t table_column_number(const std::string_view name, std::size_t offset = 0) const noexcept
   {
     return table_column_number(index_of(name, offset));
   }
@@ -157,7 +157,7 @@ public:
    *
    * @see has_field().
    */
-  std::uint_fast32_t type_oid(const std::string& name, std::size_t offset = 0) const noexcept
+  std::uint_fast32_t type_oid(const std::string_view name, std::size_t offset = 0) const noexcept
   {
     return type_oid(index_of(name, offset));
   }
@@ -184,7 +184,7 @@ public:
    * @par Requires
    * `has_field(name, offset)`.
    */
-  std::int_fast32_t type_size(const std::string& name, std::size_t offset = 0) const noexcept
+  std::int_fast32_t type_size(const std::string_view name, std::size_t offset = 0) const noexcept
   {
     return type_size(index_of(name, offset));
   }
@@ -210,7 +210,7 @@ public:
    * @par Requires
    * `has_field(name, offset)`.
    */
-  std::int_fast32_t type_modifier(const std::string& name, std::size_t offset = 0) const noexcept
+  std::int_fast32_t type_modifier(const std::string_view name, std::size_t offset = 0) const noexcept
   {
     return type_modifier(index_of(name, offset));
   }
@@ -234,7 +234,7 @@ public:
    * @par Requires
    * `has_field(name, offset)`.
    */
-  Data_format data_format(const std::string& name, std::size_t offset = 0) const noexcept
+  Data_format data_format(const std::string_view name, std::size_t offset = 0) const noexcept
   {
     return data_format(index_of(name, offset));
   }

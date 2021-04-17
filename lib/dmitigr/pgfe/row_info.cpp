@@ -37,13 +37,13 @@ std::shared_ptr<std::vector<std::string>> Row_info::make_shared_field_names(cons
   return std::make_shared<decltype(result)>(std::move(result));
 }
 
-DMITIGR_PGFE_INLINE const std::string& Row_info::name_of(const std::size_t index) const noexcept
+DMITIGR_PGFE_INLINE std::string_view Row_info::name_of(const std::size_t index) const noexcept
 {
   assert(index < size());
   return (*shared_field_names_)[index];
 }
 
-DMITIGR_PGFE_INLINE std::size_t Row_info::index_of(const std::string& name, const std::size_t offset) const noexcept
+DMITIGR_PGFE_INLINE std::size_t Row_info::index_of(const std::string_view name, const std::size_t offset) const noexcept
 {
   const auto sz = shared_field_names_->size();
   const auto b = shared_field_names_->cbegin();

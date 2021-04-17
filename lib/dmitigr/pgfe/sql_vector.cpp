@@ -30,9 +30,10 @@ DMITIGR_PGFE_INLINE std::size_t Sql_vector::non_empty_count() const noexcept
   return result;
 }
 
-DMITIGR_PGFE_INLINE std::size_t Sql_vector::index_of(const std::string& extra_name,
-  const std::string& extra_value, const std::size_t offset,
-  const std::size_t extra_offset) const noexcept
+DMITIGR_PGFE_INLINE std::size_t Sql_vector::index_of(
+  const std::string_view extra_name,
+  const std::string_view extra_value,
+  const std::size_t offset, const std::size_t extra_offset) const noexcept
 {
   const auto sz = size();
   const auto b = cbegin(storage_);

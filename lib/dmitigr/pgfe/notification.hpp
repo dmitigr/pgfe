@@ -32,7 +32,6 @@ public:
   explicit Notification(::PGnotify* const pgnotify)
     : pgnotify_{pgnotify}
     , payload_{}
-    , channel_name_{pgnotify_->relname}
   {
     if (pgnotify_->extra)
       payload_ = Data_view{pgnotify_->extra,
@@ -72,9 +71,9 @@ public:
    * @returns The name of the notification channel (which might be
    * any identifier) of the PostgreSQL server that produced this notification.
    */
-  const std::string& channel_name() const noexcept
+  std::string_view channel_name() const noexcept
   {
-    return channel_name_;
+    return pgnotify_->relname;
   }
 
   /// @returns The payload data.
@@ -88,7 +87,6 @@ private:
 
   std::unique_ptr< ::PGnotify> pgnotify_;
   Data_view payload_;
-  std::string channel_name_;
 
   Notification() = default;
 
@@ -96,7 +94,7 @@ private:
   {
     const bool server_pid_ok = server_pid() >= 0;
     const bool pgnotify_ok = pgnotify_ && (!payload_ || (payload_ && pgnotify_->extra == payload_.bytes()));
-    const bool channel_ok = !channel_name_.empty();
+    const bool channel_ok = !channel_name().empty();
     return server_pid_ok && pgnotify_ok && channel_ok;
   }
 };

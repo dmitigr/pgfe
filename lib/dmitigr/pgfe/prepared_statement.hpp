@@ -221,21 +221,21 @@ public:
   }
 
   /// @see Parameterizable::parameter_name().
-  const std::string& parameter_name(const std::size_t index) const noexcept override
+  std::string_view parameter_name(const std::size_t index) const noexcept override
   {
     assert((positional_parameter_count() <= index) && (index < parameter_count()));
     return parameters_[index].name;
   }
 
   /// @see Parameterizable::parameter_index().
-  DMITIGR_PGFE_API std::size_t parameter_index(const std::string& name) const noexcept override;
+  DMITIGR_PGFE_API std::size_t parameter_index(std::string_view name) const noexcept override;
 
   /**
    * @returns The name of this prepared statement.
    *
    * @remarks The empty name denotes the unnamed prepared statement.
    */
-  const std::string& name() const noexcept
+  std::string_view name() const noexcept
   {
     return name_;
   }
@@ -273,7 +273,7 @@ public:
    * @par Requries
    * `(parameter_index(name) < parameter_count())`.
    */
-  const Data* bound(const std::string& name) const noexcept
+  const Data* bound(const std::string_view name) const noexcept
   {
     const auto idx = parameter_index(name);
     assert(idx < parameter_count());
@@ -311,7 +311,7 @@ public:
    *
    * @see bound().
    */
-  Prepared_statement& bind(const std::string& name, std::unique_ptr<Data>&& value) noexcept
+  Prepared_statement& bind(const std::string_view name, std::unique_ptr<Data>&& value) noexcept
   {
     const auto idx = parameter_index(name);
     assert(idx < parameter_count());
@@ -332,9 +332,9 @@ public:
   /**
    * @overload
    *
-   * @brief Similar to bind_no_copy(const std::string&, const Data*).
+   * @brief Similar to bind_no_copy(const std::string_view, const Data*).
    */
-  Prepared_statement& bind(const std::string& name, std::nullptr_t) noexcept
+  Prepared_statement& bind(const std::string_view name, std::nullptr_t) noexcept
   {
     return bind_no_copy(name, nullptr);
   }
@@ -364,7 +364,7 @@ public:
    */
   template<typename T>
   std::enable_if_t<!std::is_same_v<Data*, std::decay_t<T>>, Prepared_statement&>
-  bind(const std::string& name, T&& value) noexcept
+  bind(const std::string_view name, T&& value) noexcept
   {
     const auto idx = parameter_index(name);
     assert(idx < parameter_count());
@@ -402,7 +402,7 @@ public:
    *
    * @see bound().
    */
-  Prepared_statement& bind_no_copy(const std::string& name, const Data* const data) noexcept
+  Prepared_statement& bind_no_copy(const std::string_view name, const Data* const data) noexcept
   {
     const auto idx = parameter_index(name);
     assert(idx < parameter_count());
@@ -411,7 +411,7 @@ public:
   }
 
   /// @overload
-  Prepared_statement& bind_no_copy(const std::string& name, const Data& data) noexcept
+  Prepared_statement& bind_no_copy(const std::string_view name, const Data& data) noexcept
   {
     return bind_no_copy(name, &data);
   }
@@ -568,7 +568,7 @@ public:
    *
    * @see bound().
    */
-  std::uint_fast32_t parameter_type_oid(const std::string& name) const noexcept
+  std::uint_fast32_t parameter_type_oid(const std::string_view name) const noexcept
   {
     const auto idx = parameter_index(name);
     assert(idx < parameter_count());

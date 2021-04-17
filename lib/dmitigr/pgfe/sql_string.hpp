@@ -126,14 +126,14 @@ public:
   }
 
   /// @see Parameterizable::parameter_name().
-  const std::string& parameter_name(const std::size_t index) const noexcept override
+  std::string_view parameter_name(const std::size_t index) const noexcept override
   {
     assert(positional_parameter_count() <= index && index < parameter_count());
     return (named_parameters_[index - positional_parameter_count()])->str;
   }
 
   /// @see Parameterizable::parameter_index().
-  std::size_t parameter_index(const std::string& name) const noexcept override
+  std::size_t parameter_index(const std::string_view name) const noexcept override
   {
     return named_parameter_index(name);
   }
@@ -211,7 +211,7 @@ public:
    *
    * @see has_parameter().
    */
-  DMITIGR_PGFE_API void replace_parameter(const std::string& name, const Sql_string& replacement);
+  DMITIGR_PGFE_API void replace_parameter(std::string_view name, const Sql_string& replacement);
 
   /// @returns The result of conversion of this instance to the instance of type `std::string`.
   DMITIGR_PGFE_API std::string to_string() const;
@@ -410,9 +410,9 @@ private:
 
   std::size_t unique_fragment_index(
     const std::vector<Fragment_list::const_iterator>& unique_fragments,
-    const std::string& str) const noexcept;
+    const std::string_view str) const noexcept;
 
-  std::size_t named_parameter_index(const std::string& name) const noexcept
+  std::size_t named_parameter_index(const std::string_view name) const noexcept
   {
     return positional_parameter_count() + unique_fragment_index(named_parameters_, name);
   }

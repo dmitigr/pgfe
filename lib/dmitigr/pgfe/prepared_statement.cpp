@@ -19,7 +19,7 @@ DMITIGR_PGFE_INLINE std::size_t Prepared_statement::positional_parameter_count()
   return static_cast<std::size_t>(i - b);
 }
 
-DMITIGR_PGFE_INLINE std::size_t Prepared_statement::parameter_index(const std::string& name) const noexcept
+DMITIGR_PGFE_INLINE std::size_t Prepared_statement::parameter_index(const std::string_view name) const noexcept
 {
   const auto b = cbegin(parameters_);
   const auto e = cend(parameters_);

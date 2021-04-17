@@ -491,7 +491,7 @@ DMITIGR_PGFE_INLINE Large_object Connection::open_large_object(Oid oid, Large_ob
   return Large_object{this, ::lo_open(conn(), oid, static_cast<int>(mode))};
 }
 
-DMITIGR_PGFE_INLINE std::string Connection::to_quoted_literal(const std::string& literal) const
+DMITIGR_PGFE_INLINE std::string Connection::to_quoted_literal(const std::string_view literal) const
 {
   assert(is_connected());
 
@@ -504,7 +504,7 @@ DMITIGR_PGFE_INLINE std::string Connection::to_quoted_literal(const std::string&
     throw std::runtime_error{error_message()};
 }
 
-DMITIGR_PGFE_INLINE std::string Connection::to_quoted_identifier(const std::string& identifier) const
+DMITIGR_PGFE_INLINE std::string Connection::to_quoted_identifier(const std::string_view identifier) const
 {
   assert(is_connected());
 

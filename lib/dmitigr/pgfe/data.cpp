@@ -164,7 +164,7 @@ namespace dmitigr::pgfe {
 
 namespace {
 
-inline std::unique_ptr<pgfe::Data> to_bytea_data__(const char* const text)
+inline std::unique_ptr<pgfe::Data> to_bytea__(const char* const text)
 {
   assert(text);
   const auto* const bytes = reinterpret_cast<const unsigned char*>(text);
@@ -181,12 +181,13 @@ inline std::unique_ptr<pgfe::Data> to_bytea_data__(const char* const text)
 DMITIGR_PGFE_INLINE std::unique_ptr<Data> Data::to_bytea() const
 {
   assert(format() == Data_format::text);
-  return to_bytea_data__(bytes());
+  return to_bytea__(bytes());
 }
 
-DMITIGR_PGFE_INLINE std::unique_ptr<Data> Data::to_bytea(const std::string& text_data)
+DMITIGR_PGFE_INLINE std::unique_ptr<Data> Data::to_bytea(const char* const text_data)
 {
-  return to_bytea_data__(text_data.c_str());
+  assert(text_data);
+  return to_bytea__(text_data);
 }
 
 DMITIGR_PGFE_INLINE bool Data::is_invariant_ok() const

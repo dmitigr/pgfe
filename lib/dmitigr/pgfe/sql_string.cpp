@@ -100,7 +100,7 @@ DMITIGR_PGFE_INLINE void Sql_string::append(const Sql_string& appendix)
   assert(is_invariant_ok());
 }
 
-DMITIGR_PGFE_INLINE void Sql_string::replace_parameter(const std::string& name, const Sql_string& replacement)
+DMITIGR_PGFE_INLINE void Sql_string::replace_parameter(const std::string_view name, const Sql_string& replacement)
 {
   assert(parameter_index(name) < parameter_count());
   assert(this != &replacement);
@@ -242,7 +242,7 @@ private:
    * @param input An input string with comments.
    * @param comment_type A type of comments in the `input`.
    */
-  static std::vector<std::pair<Key, Value>> extract(const std::string& input,
+  static std::vector<std::pair<Key, Value>> extract(const std::string_view input,
     const Comment_type comment_type, const std::locale& loc)
   {
     enum { top, dollar, dollar_quote_leading_tag, dollar_quote, dollar_quote_dollar } state = top;
@@ -306,7 +306,7 @@ private:
     }
 
     if (state != top)
-      throw std::runtime_error{"invalid comment block:\n" + input};
+      throw std::runtime_error{"invalid comment block:\n" + std::string{input}};
 
     return result;
   }
@@ -316,7 +316,7 @@ private:
    *
    * @returns The number of characters to remove after each '\n'.
    */
-  static std::size_t indent_size(const std::string& content,
+  static std::size_t indent_size(const std::string_view content,
     const Comment_type comment_type, const std::locale& loc)
   {
     const auto set_if_less = [](auto& variable, const auto count)
@@ -464,7 +464,7 @@ private:
     const auto e = cend(fragments);
     auto result = std::make_pair(e, e);
 
-    const auto is_nearby_string = [](const std::string& str, const std::locale& strloc)
+    const auto is_nearby_string = [](const std::string_view str, const std::locale& strloc)
     {
       std::string::size_type count{};
       for (const auto c : str) {
@@ -668,7 +668,7 @@ auto Sql_string::unique_fragments(const Fragment::Type type) const
 
 std::size_t Sql_string::unique_fragment_index(
   const std::vector<Fragment_list::const_iterator>& unique_fragments,
-  const std::string& str) const noexcept
+  const std::string_view str) const noexcept
 {
   const auto b = cbegin(unique_fragments);
   const auto e = cend(unique_fragments);

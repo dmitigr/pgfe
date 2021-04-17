@@ -91,7 +91,8 @@ public:
    *
    * @see Sql_string::extra().
    */
-  std::size_t index_of(const std::string& extra_name, const std::string& extra_value,
+  std::size_t index_of(const std::string_view extra_name,
+    const std::string_view extra_value,
     std::size_t offset = 0, std::size_t extra_offset = 0) const noexcept;
 
   /**
@@ -123,7 +124,8 @@ public:
    *
    * @see index_of(), Sql_string::extra().
    */
-  Sql_string* find(const std::string& extra_name, const std::string& extra_value,
+  Sql_string* find(const std::string_view extra_name,
+    const std::string_view extra_value,
     const std::size_t offset = 0, const std::size_t extra_offset = 0)
   {
     return const_cast<Sql_string*>(static_cast<const Sql_vector*>(this)->
@@ -131,7 +133,8 @@ public:
   }
 
   /// @overload
-  const Sql_string* find(const std::string& extra_name, const std::string& extra_value,
+  const Sql_string* find(const std::string_view extra_name,
+    const std::string_view extra_value,
     const std::size_t offset = 0, const std::size_t extra_offset = 0) const
   {
     const auto index = index_of(extra_name, extra_value, offset, extra_offset);

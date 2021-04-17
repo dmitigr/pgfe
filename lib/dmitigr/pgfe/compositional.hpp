@@ -34,14 +34,14 @@ public:
    * @par Requires
    * `(index < size())`.
    */
-  virtual const std::string& name_of(std::size_t index) const noexcept = 0;
+  virtual std::string_view name_of(std::size_t index) const noexcept = 0;
 
   /**
    * @returns The field index if presents, or `size()` othersize.
    *
    * @param offset For cases when several fields are named equally.
    */
-  virtual std::size_t index_of(const std::string& name, std::size_t offset = 0) const noexcept = 0;
+  virtual std::size_t index_of(std::string_view name, std::size_t offset = 0) const noexcept = 0;
 
 private:
   friend Composite;

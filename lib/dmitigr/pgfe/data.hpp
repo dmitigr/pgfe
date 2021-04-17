@@ -106,12 +106,14 @@ public:
    */
   DMITIGR_PGFE_API std::unique_ptr<Data> to_bytea() const;
 
-  /**
-   * @ingroup main
-   *
-   * @brief Similar to to_bytea(const Data*).
-   */
-  static DMITIGR_PGFE_API std::unique_ptr<Data> to_bytea(const std::string& text_data);
+  /// Similar to to_bytea().
+  static DMITIGR_PGFE_API std::unique_ptr<Data> to_bytea(const char* text_data);
+
+  /// @overload
+  static DMITIGR_PGFE_API std::unique_ptr<Data> to_bytea(const std::string& text_data)
+  {
+    return to_bytea(text_data.c_str());
+  }
 
   /// @}
 
