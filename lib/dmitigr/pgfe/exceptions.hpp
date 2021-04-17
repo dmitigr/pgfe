@@ -14,6 +14,10 @@
 
 namespace dmitigr::pgfe {
 
+// -----------------------------------------------------------------------------
+// Client_exception
+// -----------------------------------------------------------------------------
+
 /**
  * @ingroup errors
  *
@@ -43,71 +47,6 @@ public:
 private:
   std::error_condition condition_;
   std::runtime_error what_holder_;
-};
-
-/**
- * @ingroup errors
- *
- * @brief Denotes an insufficient array dimensionality.
- */
-class Insufficient_array_dimensionality final : public Client_exception {
-public:
-  /// The constructor.
-  explicit Insufficient_array_dimensionality(const std::string& what = {})
-    : Client_exception{Client_errc::insufficient_array_dimensionality, what}
-  {}
-};
-
-/**
- * @ingroup errors
- *
- * @brief Denotes an excessive array dimensionality.
- */
-class Excessive_array_dimensionality final : public Client_exception {
-public:
-  /// The constructor.
-  explicit Excessive_array_dimensionality(const std::string& what = {})
-    : Client_exception{Client_errc::excessive_array_dimensionality, what}
-  {}
-};
-
-/**
- * @ingroup errors
- *
- * @brief Denotes a malformed array literal.
- */
-class Malformed_array_literal final : public Client_exception {
-public:
-  /// The constructor.
-  explicit Malformed_array_literal(const std::string& what = {})
-    : Client_exception{Client_errc::malformed_array_literal, what}
-  {}
-};
-
-/**
- * @ingroup errors
- *
- * @brief Denotes an usage of container with improper type of elements.
- */
-class Improper_value_type_of_container final : public Client_exception {
-public:
-  /// The constructor.
-  explicit Improper_value_type_of_container(const std::string& what = {})
-    : Client_exception{Client_errc::improper_value_type_of_container, what}
-  {}
-};
-
-/**
- * @ingroup errors
- *
- * @brief Denotes a timed out operation.
- */
-class Timed_out final : public Client_exception {
-public:
-  /// The constructor.
-  explicit Timed_out(const std::string& what = {})
-    : Client_exception{Client_errc::timed_out, what}
-  {}
 };
 
 // -----------------------------------------------------------------------------

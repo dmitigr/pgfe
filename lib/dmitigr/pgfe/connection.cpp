@@ -126,7 +126,7 @@ DMITIGR_PGFE_INLINE void Connection::connect(std::optional<std::chrono::millisec
     timeout = options().connect_timeout();
 
   const auto is_timeout = [&timeout]{ return timeout <= milliseconds::zero(); };
-  static const auto throw_timeout = []{ throw Timed_out{"connection timeout"}; };
+  static const auto throw_timeout = []{ throw Client_exception{Client_errc::timed_out, "connection timeout"}; };
 
   // Stage 1: beginning.
   auto timepoint1 = system_clock::now();
@@ -389,7 +389,7 @@ DMITIGR_PGFE_INLINE bool Connection::wait_response(std::optional<std::chrono::mi
       if (wait_socket_readiness(Socket_readiness::read_ready, timeout) == Socket_readiness::read_ready)
         *timeout -= duration_cast<milliseconds>(system_clock::now() - moment_of_wait);
       else // timeout expired
-        throw Timed_out{"wait response timeout expired"};
+        throw Client_exception{Client_errc::timed_out, "wait response timeout expired"};
 
       read_input();
     } else
