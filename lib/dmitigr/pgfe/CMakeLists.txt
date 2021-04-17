@@ -285,7 +285,6 @@ set(dmitigr_pgfe_headers
   problem.hpp
   response.hpp
   row.hpp
-  row_conversions.hpp
   row_info.hpp
   signal.hpp
   sql_string.hpp
