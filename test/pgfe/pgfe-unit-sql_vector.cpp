@@ -12,6 +12,8 @@ namespace testo = dmitigr::testo;
 
 int main(int, char* argv[])
 try {
+  using pgfe::to;
+
   // -------------------------------------------------------------------------
   // General test
   // -------------------------------------------------------------------------
@@ -66,18 +68,18 @@ try {
   {
     conn->execute([](auto&& row)
     {
-      ASSERT(pgfe::to<int>(row[0]) == 2 + 1);
+      ASSERT(to<int>(row[0]) == 2 + 1);
     }, *plus_one, 2);
   }
 
   // digit
   {
     ASSERT(digit->has_parameter("cond"));
-    ASSERT(pgfe::to<std::string>(digit->extra().data("cond").get()) == "n > 0\n  AND n < 2");
-    digit->replace_parameter("cond", digit->extra().data("cond")->bytes());
+    ASSERT(to<std::string>(digit->extra().data("cond").get()) == "n > 0\n  AND n < 2");
+    digit->replace_parameter("cond", to<std::string_view>(*digit->extra().data("cond")));
     conn->execute([](auto&& row)
     {
-      ASSERT(pgfe::to<int>(row[0]) == 1);
+      ASSERT(to<int>(row[0]) == 1);
     }, *digit);
   }
 

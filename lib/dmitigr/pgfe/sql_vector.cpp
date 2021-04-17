@@ -2,6 +2,7 @@
 // Copyright (C) Dmitry Igrishin
 // For conditions of distribution and use, see files LICENSE.txt or pgfe.hpp
 
+#include "dmitigr/pgfe/conversions.hpp"
 #include "dmitigr/pgfe/sql_vector.hpp"
 
 #include <algorithm>
@@ -44,7 +45,8 @@ DMITIGR_PGFE_INLINE std::size_t Sql_vector::index_of(
     {
       if (const auto& extra = sql_string.extra(); extra_offset < extra.size()) {
         const auto index = extra.index_of(extra_name, extra_offset);
-        return (index < extra.size()) && (extra.data(index)->bytes() == extra_value);
+        return (index < extra.size()) &&
+          (to<std::string_view>(*extra.data(index)) == extra_value);
       } else
         return false;
     });

@@ -34,10 +34,10 @@ try {
           ASSERT(row[i]);
           ASSERT(row[i].format() == fmt);
         }
-        ASSERT('D' == row[0].bytes()[0]);
-        ASSERT('i' == row[1].bytes()[0]);
-        ASSERT('m' == row[2].bytes()[0]);
-        ASSERT('a' == row[3].bytes()[0]);
+        ASSERT('D' == to<std::string_view>(row[0])[0]);
+        ASSERT('i' == to<std::string_view>(row[1])[0]);
+        ASSERT('m' == to<std::string_view>(row[2])[0]);
+        ASSERT('a' == to<std::string_view>(row[3])[0]);
       }, "SELECT 'Dima', 'i', $1::character, $2::character", 'm', "a");
     }
 

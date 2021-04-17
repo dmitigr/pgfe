@@ -107,7 +107,7 @@ DMITIGR_PGFE_INLINE void Prepared_statement::execute_nio__(const Sql_string* con
     // Prepare the input for libpq.
     for (unsigned i = 0; i < static_cast<unsigned>(param_count); ++i) {
       if (const Data* const d = bound(i)) {
-        values[i] = d->bytes();
+        values[i] = static_cast<const char*>(d->bytes());
         lengths[i] = static_cast<int>(d->size());
         formats[i] = detail::pq::to_int(d->format());
       }

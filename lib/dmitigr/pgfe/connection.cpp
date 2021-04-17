@@ -699,7 +699,7 @@ Connection::to_hex_storage(const pgfe::Data* const binary_data) const
     throw std::invalid_argument{"no data or data is not binary"};
 
   const auto from_length = binary_data->size();
-  const auto* from = reinterpret_cast<const unsigned char*>(binary_data->bytes());
+  const auto* from = static_cast<const unsigned char*>(binary_data->bytes());
   std::size_t result_length{0};
   using Uptr = std::unique_ptr<void, void(*)(void*)>;
   if (auto storage = Uptr{::PQescapeByteaConn(conn(), from, from_length, &result_length), &::PQfreemem})

@@ -100,7 +100,7 @@ public:
    * Bytea data type to a plain binary data.
    *
    * @par Requires
-   * `(format() == Data_format::text)`.
+   * `(format() == Data_format::text && bytes()[size()] == 0)`.
    *
    * @relates Data
    */
@@ -132,12 +132,11 @@ public:
   virtual bool is_empty() const noexcept = 0;
 
   /**
-   * @returns The pointer to a unmodifiable character array.
+   * @returns The pointer to a unmodifiable memory area.
    *
-   * @remarks The result is not guaranteed to be zero-terminated.
    * @remarks Any bits stored in the array shall not be altered!
    */
-  virtual const char* bytes() const noexcept = 0;
+  virtual const void* bytes() const noexcept = 0;
 
   /// @}
 
@@ -280,7 +279,7 @@ public:
   }
 
   /// @see Data::bytes().
-  const char* bytes() const noexcept override
+  const void* bytes() const noexcept override
   {
     return bytes_;
   }

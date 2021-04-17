@@ -9,6 +9,8 @@ namespace testo = dmitigr::testo;
 
 int main(int, char* argv[])
 try {
+  using pgfe::to;
+
   const auto conn = pgfe::test::make_connection();
   conn->connect();
   ASSERT(conn->is_connected());
@@ -73,8 +75,8 @@ try {
   ASSERT(ps2->bound("supremum") == nullptr);
   ps2->bind("infinum", 1);
   ps2->bind("supremum", 3);
-  ASSERT(ps2->bound(0) && std::stoi(ps2->bound(0)->bytes()) == 1);
-  ASSERT(ps2->bound(1) && std::stoi(ps2->bound(1)->bytes()) == 3);
+  ASSERT(ps2->bound(0) && to<int>(ps2->bound(0)) == 1);
+  ASSERT(ps2->bound(1) && to<int>(ps2->bound(1)) == 3);
   const auto data0 = pgfe::Data::make("1");
   const auto data1 = pgfe::Data::make("3");
   ps2->bind_no_copy("infinum", data0.get());
@@ -86,8 +88,8 @@ try {
   ASSERT(ps2->bound(0) == nullptr);
   ASSERT(ps2->bound(1) == nullptr);
   ps2->bind_many(1, 3);
-  ASSERT(ps2->bound(0) && std::stoi(ps2->bound(0)->bytes()) == 1);
-  ASSERT(ps2->bound(1) && std::stoi(ps2->bound(1)->bytes()) == 3);
+  ASSERT(ps2->bound(0) && to<int>(ps2->bound(0)) == 1);
+  ASSERT(ps2->bound(1) && to<int>(ps2->bound(1)) == 3);
   //
   ASSERT(ps2->result_format() == conn->result_format());
   ASSERT(ps2->connection() == conn.get());

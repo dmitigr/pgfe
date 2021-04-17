@@ -13,13 +13,15 @@ namespace testo = dmitigr::testo;
 
 int main(int, char* argv[])
 try {
+  using pgfe::to;
+
   // Data::make(std::string_view)
   {
     const std::size_t sz = std::strlen("Dmitry Igrishin");
     const auto d = pgfe::Data::make("Dmitry Igrishin");
     ASSERT(d->format() == pgfe::Data_format::text);
     ASSERT(d->size() == sz);
-    ASSERT(std::strcmp(d->bytes(), "Dmitry Igrishin") == 0);
+    ASSERT(to<std::string_view>(*d) == "Dmitry Igrishin");
   }
 
   // Data::make(std::string_VIEW, Data_format)
@@ -29,7 +31,7 @@ try {
     const auto d = pgfe::Data::make(name, pgfe::Data_format::text);
     ASSERT(d->format() == pgfe::Data_format::text);
     ASSERT(d->size() == sz);
-    ASSERT(d->bytes() == name);
+    ASSERT(to<std::string_view>(*d) == name);
   }
 
   // Data::make(std::unique_ptr<void, void (*)(void*)>&&, std::size_t, Data_format)
@@ -42,7 +44,7 @@ try {
     const auto d = pgfe::Data::make(std::move(storage), sz, pgfe::Data_format::binary);
     ASSERT(d->format() == pgfe::Data_format::binary);
     ASSERT(d->size() == sz);
-    ASSERT(std::strncmp(d->bytes(), "Dmit", sz - 1) == 0);
+    ASSERT(std::strncmp(static_cast<const char*>(d->bytes()), "Dmit", sz - 1) == 0);
   }
 
   // Data::make(std::string&&, Data_format)
@@ -52,7 +54,7 @@ try {
     const auto d = pgfe::Data::make(std::string{name}, pgfe::Data_format::text);
     ASSERT(d->format() == pgfe::Data_format::text);
     ASSERT(d->size() == sz);
-    ASSERT(std::strcmp(d->bytes(), name) == 0);
+    ASSERT(to<std::string_view>(*d) == name);
   }
 
   // ---------------------------------------------------------------------------

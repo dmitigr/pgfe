@@ -1202,7 +1202,7 @@ public:
   std::string to_hex_string(const Data* binary_data) const
   {
     const auto [storage, size] = to_hex_storage(binary_data);
-    return std::string{reinterpret_cast<const char*>(storage.get()), size};
+    return std::string{static_cast<const char*>(storage.get()), size};
   }
 
   ///@}

@@ -18,6 +18,7 @@ try {
   using pgfe::Connection_status;
   using pgfe::Transaction_status;
   using pgfe::Row_processing;
+  using pgfe::to;
 
   // Initial state test
   {
@@ -188,7 +189,7 @@ try {
         conn->set_notification_handler([&handled](pgfe::Notification&& notification)
                                        {
                                          if (!handled)
-                                           handled = std::string_view{notification.payload().bytes()} == "yahoo";
+                                           handled = to<std::string_view>(notification.payload()) == "yahoo";
                                        });
         conn->execute("LISTEN pgfe_test");
         conn->execute("NOTIFY pgfe_test, 'yahoo'");
@@ -317,7 +318,7 @@ try {
       {
         auto comp = conn->execute([i = 1](auto&& row) mutable
         {
-          ASSERT(std::stoi(row["num"].bytes()) == i);
+          ASSERT(to<int>(row["num"]) == i);
           ++i;
         }, "SELECT generate_series(1,3) AS num");
         ASSERT(comp);
@@ -441,7 +442,7 @@ try {
           conn->invoke([&called, &expected_result](auto&& r)
           {
             ASSERT(r.index_of("person_info") == 0);
-            ASSERT(r["person_info"].bytes() == expected_result);
+            ASSERT(to<std::string_view>(r["person_info"]) == expected_result);
             called = true;
           }, "person_info", id, name, age);
           ASSERT(called);
@@ -453,7 +454,7 @@ try {
           conn->invoke([&called, &expected_result](auto&& r)
           {
             ASSERT(r.index_of("person_info") == 0);
-            ASSERT(r["person_info"].bytes() == expected_result);
+            ASSERT(to<std::string_view>(r["person_info"]) == expected_result);
             called = true;
           }, "person_info", a{"age", age}, a{"name", name}, a{"id", id});
           ASSERT(called);
@@ -465,7 +466,7 @@ try {
           conn->invoke([&called, &expected_result](auto&& r)
           {
             ASSERT(r.index_of("person_info") == 0);
-            ASSERT(r["person_info"].bytes() == expected_result);
+            ASSERT(to<std::string_view>(r["person_info"]) == expected_result);
             called = true;
           }, "person_info", id, a{"age", age}, a{"name", name});
           ASSERT(called);
@@ -506,7 +507,7 @@ try {
         ASSERT(data->size() == data2->size());
         ASSERT(!std::memcmp(data->bytes(), data2->bytes(), data->size()));
 
-        ASSERT(std::string_view{hex_data->bytes()} == conn->to_hex_string(data.get()));
+        ASSERT(to<std::string_view>(*hex_data) == conn->to_hex_string(data.get()));
       }
     }
 } catch (const std::exception& e) {

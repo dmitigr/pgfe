@@ -63,7 +63,9 @@ struct Generic_data_conversions final {
   static Type to_type(const Data* const data, Types&& ... args)
   {
     assert(data);
-    return StringConversions::to_type(std::string(data->bytes(), data->size()), std::forward<Types>(args)...);
+    return StringConversions::to_type(
+      std::string{static_cast<const char*>(data->bytes()), data->size()},
+        std::forward<Types>(args)...);
   }
 
   template<typename ... Types>
@@ -301,7 +303,7 @@ struct Char_data_conversions final {
   static Type to_type(const Data* const data, Types&& ...)
   {
     assert(data && (data->size() == 1));
-    return data->bytes()[0];
+    return static_cast<const char*>(data->bytes())[0];
   }
 
   template<typename ... Types>
@@ -372,11 +374,12 @@ struct Bool_data_conversions final {
   static Type to_type(const Data* const data, Types&& ...)
   {
     assert(data);
+    const auto* const bytes = static_cast<const char*>(data->bytes());
     if (data->format() == Data_format::binary) {
       assert(data->size() == 1);
-      return data->bytes()[0];
+      return bytes[0];
     } else
-      return Bool_string_conversions::to_type__(data->bytes(), data->size());
+      return Bool_string_conversions::to_type__(bytes, data->size());
   }
 
   template<typename ... Types>
@@ -404,7 +407,7 @@ struct String_view_data_conversions final {
   static Type to_type(const Data* const data, Types&& ...)
   {
     assert(data);
-    return Type{data->bytes(), data->size()};
+    return Type{static_cast<const char*>(data->bytes()), data->size()};
   }
 
   template<typename ... Types>

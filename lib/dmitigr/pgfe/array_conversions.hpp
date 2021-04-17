@@ -181,7 +181,7 @@ struct Array_data_conversions_opts<Container<Optional<T>, Allocator<Optional<T>>
   static Type to_type(const Data* const data, Types&& ... args)
   {
     assert(data && data->format() == Data_format::text);
-    return to_container<Type>(data->bytes(), ',', std::forward<Types>(args)...);
+    return to_container<Type>(static_cast<const char*>(data->bytes()), ',', std::forward<Types>(args)...);
   }
 
   template<typename ... Types>

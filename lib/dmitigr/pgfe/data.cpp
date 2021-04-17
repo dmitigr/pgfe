@@ -46,9 +46,9 @@ public:
     return storage_.empty();
   }
 
-  const char* bytes() const noexcept override
+  const void* bytes() const noexcept override
   {
-    return reinterpret_cast<const char*>(storage_.data());
+    return storage_.data();
   }
 
 protected:
@@ -95,9 +95,9 @@ public:
     return (size() == 0);
   }
 
-  const char* bytes() const noexcept override
+  const void* bytes() const noexcept override
   {
-    return static_cast<const char*>(storage_.get());
+    return storage_.get();
   }
 
 private:
@@ -143,7 +143,7 @@ public:
     return true;
   }
 
-  const char* bytes() const noexcept override
+  const void* bytes() const noexcept override
   {
     return "";
   }
@@ -164,10 +164,10 @@ namespace dmitigr::pgfe {
 
 namespace {
 
-inline std::unique_ptr<pgfe::Data> to_bytea__(const char* const text)
+inline std::unique_ptr<pgfe::Data> to_bytea__(const void* const text)
 {
   assert(text);
-  const auto* const bytes = reinterpret_cast<const unsigned char*>(text);
+  const auto* const bytes = static_cast<const unsigned char*>(text);
   std::size_t storage_size{};
   using Uptr = std::unique_ptr<void, void(*)(void*)>;
   if (auto storage = Uptr{::PQunescapeBytea(bytes, &storage_size), &::PQfreemem})
@@ -180,7 +180,7 @@ inline std::unique_ptr<pgfe::Data> to_bytea__(const char* const text)
 
 DMITIGR_PGFE_INLINE std::unique_ptr<Data> Data::to_bytea() const
 {
-  assert(format() == Data_format::text);
+  assert(format() == Data_format::text && static_cast<const char*>(bytes())[size()] == 0);
   return to_bytea__(bytes());
 }
 
@@ -193,7 +193,7 @@ DMITIGR_PGFE_INLINE std::unique_ptr<Data> Data::to_bytea(const char* const text_
 DMITIGR_PGFE_INLINE bool Data::is_invariant_ok() const
 {
   const bool size_ok = ((size() == 0) == is_empty());
-  const bool empty_ok = !is_empty() || ((size() == 0) && !std::strcmp(bytes(), ""));
+  const bool empty_ok = !is_empty() || ((size() == 0) && bytes());
   return size_ok && empty_ok;
 }
 
