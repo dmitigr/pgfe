@@ -446,6 +446,18 @@ struct Numeric_conversions : public Basic_conversions<T, detail::Numeric_string_
 /**
  * @ingroup conversions
  *
+ * @brief Full specialization of Conversions for `Row`.
+ */
+template<> struct Conversions<Row> {
+  static Row&& to_type(Row&& row) noexcept
+  {
+    return std::move(row);
+  }
+};
+
+/**
+ * @ingroup conversions
+ *
  * @brief The generic conversions.
  */
 template<typename T>

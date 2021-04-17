@@ -15,7 +15,6 @@
 #include "dmitigr/pgfe/notification.hpp"
 #include "dmitigr/pgfe/pq.hpp"
 #include "dmitigr/pgfe/prepared_statement.hpp"
-#include "dmitigr/pgfe/row_conversions.hpp"
 #include "dmitigr/pgfe/sql_string.hpp"
 #include "dmitigr/pgfe/types_fwd.hpp"
 
