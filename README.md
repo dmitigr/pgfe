@@ -1,10 +1,8 @@
-# C++ client API to PostgreSQL {#mainpage}
+# [PostgreSQL] C++ driver
 
-Dmitigr Pgfe (PostGres FrontEnd, hereinafter referred to as Pgfe) - is a C++
-client API to [PostgreSQL] servers. The development is focused on easines and
-robustness of use. At the same time, everything possible is being done to ensure
-that the performance is at its best. Pgfe is a part of the [Dmitigr Cefeika][dmitigr_cefeika]
-project, but also available as a standalone library [here][dmitigr_pgfe].
+`dmitigr::pgfe` (PostGres FrontEnd, hereinafter referred to as Pgfe) - is a
+[PostgreSQL] C++ driver. The development is focused on easines and robustness of
+use with performance in mind.
 
 ## Upcoming release 2.0
 
@@ -15,11 +13,6 @@ I recommend to switch to the new API despite the fact that it's still a subject
 to change while work on release 2.0 is in progress. (Although I don't think the
 changes will be significant.) Efforts will be made to make the API of Pgfe 2.0
 as stable as possible.
-
-## Documentation
-
-The [Doxygen]-generated documentation is located [here][dmitigr_pgfe_doc]. There
-is [overview class diagram][dmitigr_pgfe_doc_diagram].
 
 ## Hello, World
 
@@ -96,7 +89,7 @@ int main() try {
 
 ## Usage
 
-Please, see [Cefeika Usage][dmitigr_cefeika_usage] section for hints how to link Pgfe.
+Please, see [usage section][dmitigr_cpplipa_usage] for hints how to link Pgfe.
 
 ## Quick tutorial
 
@@ -545,15 +538,12 @@ int main()
 
 ## Exceptions
 
-Pgfe may throw:
+Pgfe itself may throw:
 
-  - an instance of the type [`std::logic_error`][std_logic_error] when using
-    `assert()` is not good enough (for example, when checking the assertion must
-    be done regardless of value of `NDEBUG` upon build);
-  - an instance of the types [`std::runtime_error`][std_runtime_error] or
-    `Client_exception` when some kind of runtime error occured on the client side;
-  - an instance of the type `Server_exception` when some error occured on the
-    server side and IO blocking API is in use.
+  - an instance of the type `Client_exception` when error originated on the
+  client side;
+  - an instance of the type `Server_exception` when error originated on the
+  server side upon using of IO blocking API.
 
 ## Thread safety
 
@@ -595,16 +585,8 @@ variables which can be passed to [CMake] for customization of the Pgfe library.
 |DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_AUTHORITY_FILE|*an absolute path*|*null (libpq's default)*|*null (libpq's default)*|
 |DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_REVOCATION_LIST_FILE|*an absolute path*|*null (libpq's default)*|*null (libpq's default)*|
 
-## Copyright
-
-Copyright (C) [Dmitry Igrishin][dmitigr_mail]
-
-[dmitigr_mail]: mailto:dmitigr@gmail.com
-[dmitigr_cefeika]: https://github.com/dmitigr/cefeika.git
-[dmitigr_cefeika_usage]: https://github.com/dmitigr/cefeika.git#usage
+[dmitigr_cpplipa_usage]: https://github.com/dmitigr/cpplipa.git#usage
 [dmitigr_pgfe]: https://github.com/dmitigr/pgfe.git
-[dmitigr_pgfe_doc]: http://dmitigr.ru/en/projects/cefeika/pgfe/doc/
-[dmitigr_pgfe_doc_diagram]: http://dmitigr.ru/en/projects/cefeika/pgfe/doc/dmitigr_pgfe_overview.violet.html
 
 [v20alpha1]: https://github.com/dmitigr/pgfe/commit/62ceba3e4e1285178d223fdadaf6ca87c6d514d9
 [v20alpha2]: https://github.com/dmitigr/pgfe/commit/c69d3625175d30515319efc738dca8e7d5e9af2a
