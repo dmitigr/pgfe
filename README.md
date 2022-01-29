@@ -89,7 +89,75 @@ int main() try {
 
 ## Usage
 
-Please, see [usage section][dmitigr_cpplipa_usage] for hints how to link Pgfe.
+### Quick usage as header-only library
+
+Create `hello.cpp`:
+
+```C++
+#define DMITIGR_PGFE_HEADER_ONLY
+#include "pgfe.hpp"
+
+int main()
+{
+  dmitigr::pgfe::Connection conn;
+}
+```
+
+Compile `hello.cpp`:
+
+```
+g++ -std=c++17 -I/usr/local/pgsql/include -L/usr/local/pgsql/lib -lpq -ohello hellp.cpp
+```
+
+### Quick usage with CMake
+
+Create build directory, configure, build and install (note, if libpq is in a
+non-standard location, then the path to it can be specified by using
+`-DLIBPQ_PREFIX` as shown below):
+
+```
+cd pgfe
+mkdir build && cd build
+cmake -DLIBPQ_PREFIX=/usr/local/pgsql .. # -DLIBPQ_PREFIX is optional
+cmake --build .
+sudo cmake --install .
+```
+
+Create `hello/hello.cpp`:
+
+```C++
+#include "pgfe.hpp"
+
+int main()
+{
+  dmitigr::pgfe::Connection conn;
+}
+```
+
+Create `hello/CMakeLists.txt`:
+
+```cmake
+cmake_minimum_required(VERSION 3.16)
+project(foo)
+find_package(dmitigr_cpplipa REQUIRED COMPONENTS pgfe)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+add_executable(hello hello.cpp)
+target_link_libraries(hello dmitigr_pgfe)
+```
+
+Compile `hello/hello.cpp`:
+
+```
+mkdir hello/build && cd hello/build
+cmake ..
+cmake --build .
+```
+
+### Advanced usage
+
+For more details please, see [usage section][dmitigr_cpplipa_usage] for hints
+how to link Pgfe.
 
 ## Quick tutorial
 
