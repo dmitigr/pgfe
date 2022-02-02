@@ -273,7 +273,7 @@ Of course, the statement (named or unnamed) can be prepared explicitly:
 void foo(Connection& conn)
 {
   conn.prepare("select generate_series(:inf::int, :sup::int) num")
-    ->bind("inf", 1)
+    .bind("inf", 1)
     .bind("sup", 3)
     .execute([](auto&& row)
     {
@@ -455,7 +455,7 @@ void foo(Connection& conn)
 void foo(Connection& conn)
 {
   // Prepare the named statement
-  auto* int_gen = conn.prepare("select generate_series($1::int, $2::int)", "int_gen");
+  auto& int_gen = conn.prepare("select generate_series($1::int, $2::int)", "int_gen");
 
   // Defining the row processor
   auto process = [](auto&& row)
@@ -466,9 +466,9 @@ void foo(Connection& conn)
   };
 
   // Execute for the first time
-  int_gen->bind(1).bind(2).execute(process);
+  int_gen.bind(1).bind(2).execute(process);
   // Execute for the second time
-  int_gen->bind(10).bind(20).execute(process);
+  int_gen.bind(10).bind(20).execute(process);
 }
 ```
 
