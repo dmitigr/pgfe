@@ -20,4 +20,35 @@
 # Dmitry Igrishin
 # dmitigr@gmail.com
 
-set(dmitigr_cpplipa_libraries "base;fs;os;str;util;net;pgfe")
+set(dmitigr_pgfe_tests
+  benchmark_array_client
+  benchmark_array_server
+  benchmark_sql_string_replace
+  composite
+  connection
+  connection_deferrable
+  connection-err_in_mid
+  connection_options
+  connection_pool
+  connection-rows
+  connection_ssl
+  conversions
+  conversions_online
+  data
+  hello_world
+  pq_vs_pgfe
+  ps
+  row
+  sql_string
+  sql_vector
+  )
+
+set(dmitigr_pgfe_tests_target_link_libraries dmitigr_base dmitigr_os dmitigr_str
+  dmitigr_util)
+
+add_custom_target(dmitigr_pgfe_copy_test_resources ALL
+  COMMAND cmake -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/pgfe-unit-sql_vector.sql"
+  "${dmitigr_cpplipa_resource_destination_dir}"
+  )
+
+dmitigr_cpplipa_propagate_tests_settings(pgfe)

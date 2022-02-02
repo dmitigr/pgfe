@@ -20,4 +20,6 @@
 # Dmitry Igrishin
 # dmitigr@gmail.com
 
-set(dmitigr_cpplipa_libraries "base;fs;os;str;util;net;pgfe")
+set(dmitigr_str_tests test)
+set(dmitigr_str_tests_target_link_libraries dmitigr_base)
+dmitigr_cpplipa_propagate_tests_settings(str)

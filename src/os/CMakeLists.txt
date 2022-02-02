@@ -20,4 +20,34 @@
 # Dmitry Igrishin
 # dmitigr@gmail.com
 
-set(dmitigr_cpplipa_libraries "base;fs;os;str;util;net;pgfe")
+# ------------------------------------------------------------------------------
+# Info
+# ------------------------------------------------------------------------------
+
+dmitigr_cpplipa_set_library_info(os 0 1 "OS basics")
+
+# ------------------------------------------------------------------------------
+# Sources
+# ------------------------------------------------------------------------------
+
+set(dmitigr_os_headers
+  env.hpp
+  error.hpp
+  exceptions.hpp
+  last_error.hpp
+  pid.hpp
+  types_fwd.hpp
+  )
+
+set(dmitigr_os_implementations
+  )
+
+if (WIN32)
+  list(APPEND dmitigr_os_headers windows.hpp)
+endif()
+
+# ------------------------------------------------------------------------------
+# Variables propagation
+# ------------------------------------------------------------------------------
+
+dmitigr_cpplipa_propagate_library_settings(os)

@@ -28,11 +28,11 @@ set(dmitigr_cpplipa_libraries_all
   # Level 0
   base
   # Level 1
-  concur dt fs hsh math que rsg str ttpl util
+  concur dt fs hsh math os que rajson rnd str ttpl util
   # Level 2
-  mulf progpar rajson sqlixx wscl url
+  mulf net progpar sqlixx wscl url
   # Level 3
-  jrpc os
+  jrpc srv
   # Level 4
   fcgi http pgfe ws
   # Level 5
@@ -52,25 +52,27 @@ set(dmitigr_cpplipa_dt_deps base)
 set(dmitigr_cpplipa_fs_deps)
 set(dmitigr_cpplipa_hsh_deps)
 set(dmitigr_cpplipa_math_deps base)
+set(dmitigr_cpplipa_os_deps base)
 set(dmitigr_cpplipa_que_deps)
-set(dmitigr_cpplipa_rsg_deps base)
+set(dmitigr_cpplipa_rajson_deps base 3rdparty_rapidjson)
+set(dmitigr_cpplipa_rnd_deps base)
 set(dmitigr_cpplipa_str_deps base)
 set(dmitigr_cpplipa_ttpl_deps base)
 set(dmitigr_cpplipa_util_deps)
 # Level 2
 set(dmitigr_cpplipa_mulf_deps base str)
+set(dmitigr_cpplipa_net_deps base fs os util)
 set(dmitigr_cpplipa_progpar_deps base fs)
-set(dmitigr_cpplipa_rajson_deps base 3rdparty_rapidjson)
 set(dmitigr_cpplipa_sqlixx_deps base fs)
 set(dmitigr_cpplipa_wscl_deps base 3rdparty_uwsc)
 set(dmitigr_cpplipa_url_deps base str)
 # Level 3
 set(dmitigr_cpplipa_jrpc_deps base math rajson str)
-set(dmitigr_cpplipa_os_deps base fs util)
+set(dmitigr_cpplipa_srv_deps base fs os progpar)
 # Level 4
-set(dmitigr_cpplipa_fcgi_deps base fs math os)
-set(dmitigr_cpplipa_http_deps base dt os str)
-set(dmitigr_cpplipa_pgfe_deps base fs os str util)
-set(dmitigr_cpplipa_ws_deps base fs os 3rdparty_uwebsockets)
+set(dmitigr_cpplipa_fcgi_deps base fs math net)
+set(dmitigr_cpplipa_http_deps base dt net str)
+set(dmitigr_cpplipa_pgfe_deps base fs net str util)
+set(dmitigr_cpplipa_ws_deps base fs net 3rdparty_uwebsockets)
 # Level 5
 set(dmitigr_cpplipa_web_deps base fcgi fs http jrpc mulf str ttpl)

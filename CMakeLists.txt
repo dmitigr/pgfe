@@ -81,9 +81,9 @@ endif()
 
 if (NOT DMITIGR_CPPLIPA_HEADER_ONLY)
   if(BUILD_SHARED_LIBS)
-    message("Shared libraries will be built (${CMAKE_BUILD_TYPE})")
+    message("Shared libraries are requested (${CMAKE_BUILD_TYPE})")
   else()
-    message("Static libraries will be built (${CMAKE_BUILD_TYPE})")
+    message("Static libraries are requested (${CMAKE_BUILD_TYPE})")
   endif()
 elseif(BUILD_SHARED_LIBS)
   message(FATAL_ERROR "DMITIGR_CPPLIPA_HEADER_ONLY and BUILD_SHARED_LIBS are mutually exclusive")
@@ -92,15 +92,15 @@ else()
 endif()
 
 if(DMITIGR_CPPLIPA_DOXYGEN)
-  message("Doxygen configurations will be generated")
+  message("Doxygen configurations are requested")
 endif()
 
 if(DMITIGR_CPPLIPA_TESTS)
-  message("Tests will be built (${CMAKE_BUILD_TYPE})")
+  message("Tests are requested (${CMAKE_BUILD_TYPE})")
 endif()
 
 # The libraries sources root directory.
-set(lib_root ".")
+set(lib_root "src")
 
 # ------------------------------------------------------------------------------
 # Installation options
@@ -271,11 +271,12 @@ endif()
 # Libraries
 # ------------------------------------------------------------------------------
 
-# @param file_list A file list name, e.g. "dmitigr_algo_root_headers".
-function(dmitigr_install_lib_files file_list)
+# @param file_list A file list name, e.g. "dmitigr_base_root_headers".
+function(dmitigr_install_lib_includes file_list)
   foreach(file ${${file_list}})
+    string(REGEX REPLACE "^${lib_root}/" "" file "${file}")
     get_filename_component(dir ${file} DIRECTORY)
-    install(FILES ${file}
+    install(FILES ${lib_root}/${file}
       DESTINATION ${DMITIGR_CPPLIPA_INCLUDE_INSTALL_DIR}/dmitigr/${dir})
   endforeach()
 endfunction()
@@ -301,8 +302,8 @@ foreach(lib ${dmitigr_cpplipa_libraries})
       ${CMAKE_CURRENT_SOURCE_DIR}/doxygen/${lib}/Doxyfile @ONLY
       NEWLINE_STYLE UNIX)
 
-    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${lib}/doxyfile.specific)
-      file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${lib}/doxyfile.specific
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/${lib_root}/${lib}/doxyfile.specific)
+      file(COPY ${CMAKE_CURRENT_SOURCE_DIR}/${lib_root}/${lib}/doxyfile.specific
         DESTINATION ${CMAKE_CURRENT_SOURCE_DIR}/doxygen/${lib})
     else()
       file(TOUCH ${CMAKE_CURRENT_SOURCE_DIR}/doxygen/${lib}/doxyfile.specific)
@@ -471,11 +472,11 @@ foreach(lib ${dmitigr_cpplipa_libraries})
   # ------------------------------------
 
   if(DMITIGR_CPPLIPA_INSTALL_INCLUDES)
-    dmitigr_install_lib_files(${dmlib}_root_headers)
-    dmitigr_install_lib_files(${dmlib}_preprocessed_headers)
-    dmitigr_install_lib_files(${dmlib}_headers)
+    dmitigr_install_lib_includes(${dmlib}_root_headers)
+    dmitigr_install_lib_includes(${dmlib}_preprocessed_headers)
+    dmitigr_install_lib_includes(${dmlib}_headers)
     if(${${dmlib}_header_only})
-      dmitigr_install_lib_files(${dmlib}_implementations)
+      dmitigr_install_lib_includes(${dmlib}_implementations)
     endif()
   endif()
 
@@ -535,14 +536,14 @@ if(DMITIGR_CPPLIPA_TESTS)
   function(dmitigr_configure_test lib test)
     set(dmlib dmitigr_${lib})
     set(full_name "${lib}-${test}")
-    if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${lib}/test/${full_name}.cpp")
+    if(NOT EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${lib_root}/${lib}/test/${full_name}.cpp")
       set(is_unit_test TRUE)
       set(full_name "${lib}-unit-${test}")
     else()
       set(is_unit_test FALSE)
     endif()
     set(exe "dmitigr_${full_name}")
-    set(src "${CMAKE_CURRENT_SOURCE_DIR}/${lib}/test/${full_name}.cpp")
+    set(src "${CMAKE_CURRENT_SOURCE_DIR}/${lib_root}/${lib}/test/${full_name}.cpp")
     add_executable(${exe} ${src})
     target_link_libraries(${exe} PRIVATE ${dmlib}
       ${${dmlib}_tests_target_link_libraries}
@@ -556,9 +557,9 @@ if(DMITIGR_CPPLIPA_TESTS)
   # Get the actual list of libraries with tests and configure these tests
   foreach(lib ${dmitigr_cpplipa_libraries})
     set(dmlib dmitigr_${lib})
-    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${lib}/test")
+    if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/${lib_root}/${lib}/test")
       list(APPEND libraries_with_tests ${lib})
-      add_subdirectory(${lib}/test)
+      add_subdirectory(${lib_root}/${lib}/test)
       foreach(test ${${dmlib}_tests})
         dmitigr_configure_test(${lib} ${test})
       endforeach()

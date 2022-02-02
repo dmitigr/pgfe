@@ -20,4 +20,8 @@
 # Dmitry Igrishin
 # dmitigr@gmail.com
 
-set(dmitigr_cpplipa_libraries "base;fs;os;str;util;net;pgfe")
+if(UNIX AND NOT CMAKE_SYSTEM_NAME MATCHES MSYS|MinGW|Cygwin)
+  set(dmitigr_net_tests net)
+  set(dmitigr_net_tests_target_link_libraries dmitigr_base)
+  dmitigr_cpplipa_propagate_tests_settings(net)
+endif()
