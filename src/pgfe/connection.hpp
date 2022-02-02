@@ -1116,7 +1116,7 @@ public:
   Oid import_large_object(const std::filesystem::path& filename, Oid oid = invalid_oid) noexcept
   {
     assert(is_ready_for_request());
-    return ::lo_import_with_oid(conn(), filename.c_str(), oid);
+    return ::lo_import_with_oid(conn(), filename.string().c_str(), oid);
   }
 
   /**
@@ -1134,7 +1134,7 @@ public:
   bool export_large_object(Oid oid, const std::filesystem::path& filename) noexcept
   {
     assert(is_ready_for_request());
-    return ::lo_export(conn(), oid, filename.c_str()) == 1; // lo_export returns -1 on failure
+    return ::lo_export(conn(), oid, filename.string().c_str()) == 1; // lo_export returns -1 on failure
   }
 
   /// @}
