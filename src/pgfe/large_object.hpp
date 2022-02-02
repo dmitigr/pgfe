@@ -229,7 +229,7 @@ inline void swap(Large_object& lhs, Large_object& rhs) noexcept
 } // namespace pgfe
 } // namespace dmitigr
 
-#ifdef DMITIGR_PGFE_HEADER_ONLY
+#ifndef DMITIGR_PGFE_NOT_HEADER_ONLY
 #include "large_object.cpp"
 #endif
 

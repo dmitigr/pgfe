@@ -1446,7 +1446,7 @@ inline void swap(Connection& lhs, Connection& rhs) noexcept
 
 } // namespace dmitigr::pgfe
 
-#ifdef DMITIGR_PGFE_HEADER_ONLY
+#ifndef DMITIGR_PGFE_NOT_HEADER_ONLY
 #include "connection.cpp"
 #include "prepared_statement.cpp"
 #endif

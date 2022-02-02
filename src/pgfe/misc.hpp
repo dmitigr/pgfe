@@ -47,7 +47,7 @@ DMITIGR_PGFE_API std::string unquote_identifier(std::string_view identifier);
 
 } // namespace dmitigr::pgfe
 
-#ifdef DMITIGR_PGFE_HEADER_ONLY
+#ifndef DMITIGR_PGFE_NOT_HEADER_ONLY
 #include "misc.cpp"
 #endif
 

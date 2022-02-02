@@ -91,11 +91,13 @@ int main() try {
 
 ### Quick usage as header-only library
 
+Copy the contents of the `src` directory to a project directory which is under
+an include path of a compiler, for example, `src/3rdparty/dmitigr`.
+
 Create `hello.cpp`:
 
 ```C++
-#define DMITIGR_PGFE_HEADER_ONLY
-#include "pgfe.hpp"
+#include "dmitigr/pgfe.hpp"
 
 int main()
 {
@@ -106,7 +108,7 @@ int main()
 Compile `hello.cpp`:
 
 ```
-g++ -std=c++17 -I/usr/local/pgsql/include -L/usr/local/pgsql/lib -lpq -ohello hellp.cpp
+g++ -std=c++17 -I/usr/local/pgsql/include -L/usr/local/pgsql/lib -lpq -ohello hello.cpp
 ```
 
 ### Quick usage with CMake

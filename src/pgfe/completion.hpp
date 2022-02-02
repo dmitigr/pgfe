@@ -134,7 +134,7 @@ inline void swap(Completion& lhs, Completion& rhs) noexcept
 
 } // namespace dmitigr::pgfe
 
-#ifdef DMITIGR_PGFE_HEADER_ONLY
+#ifndef DMITIGR_PGFE_NOT_HEADER_ONLY
 #include "completion.cpp"
 #endif
 

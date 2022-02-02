@@ -42,7 +42,7 @@
 #endif
 
 #ifndef DMITIGR_@dmitigr_lib_NAME@_INLINE
-  #if defined(DMITIGR_@dmitigr_lib_NAME@_HEADER_ONLY) && !defined(DMITIGR_@dmitigr_lib_NAME@_BUILDING)
+  #if !defined(DMITIGR_@dmitigr_lib_NAME@_NOT_HEADER_ONLY) && !defined(DMITIGR_@dmitigr_lib_NAME@_BUILDING)
     #define DMITIGR_@dmitigr_lib_NAME@_INLINE inline
   #else
     #define DMITIGR_@dmitigr_lib_NAME@_INLINE

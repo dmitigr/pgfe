@@ -42,7 +42,7 @@
 #endif
 
 #ifndef DMITIGR_PGFE_INLINE
-  #if defined(DMITIGR_PGFE_HEADER_ONLY) && !defined(DMITIGR_PGFE_BUILDING)
+  #if !defined(DMITIGR_PGFE_NOT_HEADER_ONLY) && !defined(DMITIGR_PGFE_BUILDING)
     #define DMITIGR_PGFE_INLINE inline
   #else
     #define DMITIGR_PGFE_INLINE

@@ -20,8 +20,8 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
-#ifndef DMITIGR_PGFE_HEADER_ONLY
-#define DMITIGR_PGFE_HEADER_ONLY
+#ifdef DMITIGR_PGFE_NOT_HEADER_ONLY
+#undef DMITIGR_PGFE_NOT_HEADER_ONLY
 #endif
 #include "../../base/assert.hpp"
 #include "../../util/diag.hpp"

@@ -407,6 +407,7 @@ foreach(lib ${dmitigr_cpplipa_libraries})
 
   if(NOT ${${dmlib}_header_only})
     set(output_name "${dmlib}")
+    target_compile_definitions(${dmlib} PUBLIC ${DMLIB}_NOT_HEADER_ONLY)
     if(BUILD_SHARED_LIBS)
       target_compile_definitions(${dmlib}
         PRIVATE ${DMLIB}_DLL_BUILDING
@@ -424,8 +425,6 @@ foreach(lib ${dmitigr_cpplipa_libraries})
       DEBUG_POSTFIX "d")
 
     dmitigr_cpplipa_target_compile_options(${dmlib})
-  else() # header-only
-    target_compile_definitions(${dmlib} INTERFACE ${DMLIB}_HEADER_ONLY)
   endif()
 
   if(NOT ${${dmlib}_header_only})

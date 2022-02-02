@@ -245,7 +245,7 @@ inline void swap(Sql_vector& lhs, Sql_vector& rhs) noexcept
 
 } // namespace dmitigr::pgfe
 
-#ifdef DMITIGR_PGFE_HEADER_ONLY
+#ifndef DMITIGR_PGFE_NOT_HEADER_ONLY
 #include "sql_vector.cpp"
 #endif
 

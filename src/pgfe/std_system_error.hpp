@@ -146,7 +146,7 @@ template<> struct is_error_condition_enum<dmitigr::pgfe::Server_errc> final : tr
 
 } // namespace std
 
-#ifdef DMITIGR_PGFE_HEADER_ONLY
+#ifndef DMITIGR_PGFE_NOT_HEADER_ONLY
 #include "std_system_error.cpp"
 #endif
 

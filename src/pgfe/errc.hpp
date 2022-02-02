@@ -1022,7 +1022,7 @@ DMITIGR_PGFE_API const char* to_literal(Server_errc errc) noexcept;
 
 } // namespace dmitigr::pgfe
 
-#ifdef DMITIGR_PGFE_HEADER_ONLY
+#ifndef DMITIGR_PGFE_NOT_HEADER_ONLY
 #include "errc.cpp"
 #endif
 

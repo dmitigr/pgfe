@@ -643,7 +643,7 @@ inline bool operator!=(const Connection_options& lhs, const Connection_options& 
 
 } // namespace dmitigr::pgfe
 
-#ifdef DMITIGR_PGFE_HEADER_ONLY
+#ifndef DMITIGR_PGFE_NOT_HEADER_ONLY
 #include "connection_options.cpp"
 #endif
 

@@ -319,7 +319,7 @@ inline void swap(Data_view& lhs, Data_view& rhs) noexcept
 
 } // namespace dmitigr::pgfe
 
-#ifdef DMITIGR_PGFE_HEADER_ONLY
+#ifndef DMITIGR_PGFE_NOT_HEADER_ONLY
 #include "data.cpp"
 #endif
 
