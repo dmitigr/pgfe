@@ -41,6 +41,7 @@
 #include <Winsock2.h> // includes Ws2def.h
 #include <In6addr.h>  // must follows after Winsock2.h
 #include <Ws2tcpip.h> // inet_pton(), inet_ntop()
+#include <afunix.h>   // AF_UNIX, sockaddr_un
 #else
 #include <arpa/inet.h>
 #include <sys/un.h>
@@ -238,9 +239,15 @@ public:
   {
     ::sockaddr_un addr{};
     addr.sun_family = AF_UNIX;
-    if (path.native().size() <= sizeof(::sockaddr_un::sun_path) - 1)
-      std::strncpy(addr.sun_path, path.native().c_str(), sizeof(::sockaddr_un::sun_path));
-    else
+    if (path.native().size() <= sizeof(::sockaddr_un::sun_path) - 1) {
+      const auto pathstr = path.string();
+#ifdef _WIN32
+      ::strncpy_s(addr.sun_path, sizeof(::sockaddr_un::sun_path),
+        pathstr.c_str(), pathstr.size());
+#else
+      std::strncpy(addr.sun_path, pathstr.c_str(), sizeof(::sockaddr_un::sun_path));
+#endif
+    } else
       throw Exception{"UDS path too long"};
     binary_ = addr;
   }

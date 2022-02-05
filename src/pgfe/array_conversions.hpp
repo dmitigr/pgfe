@@ -27,7 +27,7 @@
 #include "conversions_api.hpp"
 #include "data.hpp"
 #include "exceptions.hpp"
-#include "../str.hpp"
+#include "../str/c_str.hpp"
 
 #include <algorithm>
 #include <cassert>

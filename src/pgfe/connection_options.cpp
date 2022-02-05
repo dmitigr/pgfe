@@ -20,7 +20,7 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
-#include "../net.hpp"
+#include "../net/net.hpp"
 #include "connection_options.hpp"
 #ifdef _WIN32
 #include "defaults_windows.hpp"
@@ -145,7 +145,8 @@ DMITIGR_PGFE_INLINE void Connection_options::swap(Connection_options& rhs) noexc
   swap(ssl_server_hostname_verification_enabled_, rhs.ssl_server_hostname_verification_enabled_);
 }
 
-DMITIGR_PGFE_INLINE Connection_options& Connection_options::communication_mode(const Communication_mode value) noexcept
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::set_communication_mode(const Communication_mode value) noexcept
 {
 #ifdef _WIN32
   assert(value == Communication_mode::net);
@@ -156,7 +157,7 @@ DMITIGR_PGFE_INLINE Connection_options& Connection_options::communication_mode(c
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::connect_timeout(std::optional<std::chrono::milliseconds> value)
+Connection_options::set_connect_timeout(std::optional<std::chrono::milliseconds> value)
 {
   if (value)
     validate(is_non_negative(value->count()), "connect timeout");
@@ -166,7 +167,8 @@ Connection_options::connect_timeout(std::optional<std::chrono::milliseconds> val
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::wait_response_timeout(std::optional<std::chrono::milliseconds> value)
+Connection_options::set_wait_response_timeout(
+  std::optional<std::chrono::milliseconds> value)
 {
   if (value)
     validate(is_non_negative(value->count()), "get response timeout");
@@ -176,7 +178,7 @@ Connection_options::wait_response_timeout(std::optional<std::chrono::millisecond
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::port(const std::int_fast32_t value)
+Connection_options::set_port(const std::int_fast32_t value)
 {
   validate(is_valid_port(value), "server port");
   port_ = value;
@@ -186,7 +188,7 @@ Connection_options::port(const std::int_fast32_t value)
 
 #ifndef _WIN32
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::uds_directory(std::filesystem::path value)
+Connection_options::set_uds_directory(std::filesystem::path value)
 {
   assert(communication_mode() == Communication_mode::uds);
   validate(is_absolute_directory_name(value), "UDS directory");
@@ -196,7 +198,8 @@ Connection_options::uds_directory(std::filesystem::path value)
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::uds_require_server_process_username(std::optional<std::string> value)
+Connection_options::set_uds_require_server_process_username(
+  std::optional<std::string> value)
 {
   assert(communication_mode() == Communication_mode::uds);
   if (value)
@@ -208,7 +211,7 @@ Connection_options::uds_require_server_process_username(std::optional<std::strin
 #endif
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::tcp_keepalives_enabled(const bool value)
+Connection_options::set_tcp_keepalives_enabled(const bool value)
 {
   assert(communication_mode() == Communication_mode::net);
   tcp_keepalives_enabled_ = value;
@@ -217,7 +220,8 @@ Connection_options::tcp_keepalives_enabled(const bool value)
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::tcp_keepalives_idle(const std::optional<std::chrono::seconds> value)
+Connection_options::set_tcp_keepalives_idle(
+  const std::optional<std::chrono::seconds> value)
 {
   assert(communication_mode() == Communication_mode::net);
   if (value)
@@ -228,7 +232,8 @@ Connection_options::tcp_keepalives_idle(const std::optional<std::chrono::seconds
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::tcp_keepalives_interval(const std::optional<std::chrono::seconds> value)
+Connection_options::set_tcp_keepalives_interval(
+  const std::optional<std::chrono::seconds> value)
 {
   assert(communication_mode() == Communication_mode::net);
   if (value)
@@ -239,7 +244,7 @@ Connection_options::tcp_keepalives_interval(const std::optional<std::chrono::sec
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::tcp_keepalives_count(const std::optional<int> value)
+Connection_options::set_tcp_keepalives_count(const std::optional<int> value)
 {
   assert(communication_mode() == Communication_mode::net);
   if (value)
@@ -250,7 +255,7 @@ Connection_options::tcp_keepalives_count(const std::optional<int> value)
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::net_address(std::optional<std::string> value)
+Connection_options::set_net_address(std::optional<std::string> value)
 {
   assert(communication_mode() == Communication_mode::net);
   assert(value || net_hostname());
@@ -262,7 +267,7 @@ Connection_options::net_address(std::optional<std::string> value)
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::net_hostname(std::optional<std::string> value)
+Connection_options::set_net_hostname(std::optional<std::string> value)
 {
   assert(communication_mode() == Communication_mode::net);
   assert(value || net_address());
@@ -274,7 +279,7 @@ Connection_options::net_hostname(std::optional<std::string> value)
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::username(std::string value)
+Connection_options::set_username(std::string value)
 {
   validate(is_non_empty(value), "username");
   username_ = std::move(value);
@@ -283,7 +288,7 @@ Connection_options::username(std::string value)
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::database(std::string value)
+Connection_options::set_database(std::string value)
 {
   validate(is_non_empty(value), "database");
   database_ = std::move(value);
@@ -292,7 +297,7 @@ Connection_options::database(std::string value)
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::password(std::optional<std::string> value)
+Connection_options::set_password(std::optional<std::string> value)
 {
   if (value)
     validate(is_non_empty(*value), "password");
@@ -302,7 +307,7 @@ Connection_options::password(std::optional<std::string> value)
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::kerberos_service_name(std::optional<std::string> value)
+Connection_options::set_kerberos_service_name(std::optional<std::string> value)
 {
   if (value)
     validate(is_non_empty(*value), "Kerberos service name");
@@ -312,7 +317,7 @@ Connection_options::kerberos_service_name(std::optional<std::string> value)
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::ssl_enabled(const bool value)
+Connection_options::set_ssl_enabled(const bool value)
 {
   is_ssl_enabled_ = value;
   assert(is_invariant_ok());
@@ -320,7 +325,7 @@ Connection_options::ssl_enabled(const bool value)
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::ssl_compression_enabled(const bool value)
+Connection_options::set_ssl_compression_enabled(const bool value)
 {
   assert(is_ssl_enabled());
   ssl_compression_enabled_ = value;
@@ -329,7 +334,7 @@ Connection_options::ssl_compression_enabled(const bool value)
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::ssl_certificate_file(std::optional<std::filesystem::path> value)
+Connection_options::set_ssl_certificate_file(std::optional<std::filesystem::path> value)
 {
   assert(is_ssl_enabled());
   if (value)
@@ -340,7 +345,7 @@ Connection_options::ssl_certificate_file(std::optional<std::filesystem::path> va
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::ssl_private_key_file(std::optional<std::filesystem::path> value)
+Connection_options::set_ssl_private_key_file(std::optional<std::filesystem::path> value)
 {
   assert(is_ssl_enabled());
   if (value)
@@ -351,7 +356,8 @@ Connection_options::ssl_private_key_file(std::optional<std::filesystem::path> va
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::ssl_certificate_authority_file(std::optional<std::filesystem::path> value)
+Connection_options::set_ssl_certificate_authority_file(
+  std::optional<std::filesystem::path> value)
 {
   assert(is_ssl_enabled());
   if (value)
@@ -362,7 +368,8 @@ Connection_options::ssl_certificate_authority_file(std::optional<std::filesystem
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::ssl_certificate_revocation_list_file(std::optional<std::filesystem::path> value)
+Connection_options::set_ssl_certificate_revocation_list_file(
+  std::optional<std::filesystem::path> value)
 {
   assert(is_ssl_enabled());
   if (value)
@@ -373,7 +380,7 @@ Connection_options::ssl_certificate_revocation_list_file(std::optional<std::file
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::ssl_server_hostname_verification_enabled(const bool value)
+Connection_options::set_ssl_server_hostname_verification_enabled(const bool value)
 {
   assert(is_ssl_enabled());
   assert(ssl_certificate_authority_file());

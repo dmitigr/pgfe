@@ -1427,7 +1427,7 @@ private:
   }
 };
 
-template<Row_processing on_exception = Row_processing::complete, typename F, typename ... Types>
+template<Row_processing on_exception, typename F, typename ... Types>
 std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
 Prepared_statement::execute(F&& callback, Types&& ... parameters)
 {

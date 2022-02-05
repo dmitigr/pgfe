@@ -28,6 +28,7 @@
 #include "pq.hpp"
 
 #include <cstdint>
+#include <vector>
 
 namespace dmitigr::pgfe {
 

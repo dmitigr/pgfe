@@ -20,46 +20,16 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
-#ifndef DMITIGR_OS_LAST_ERROR_HPP
-#define DMITIGR_OS_LAST_ERROR_HPP
+#include "../../src/util/diag.hpp"
 
-#include "../base/assert.hpp"
+#include <iostream>
+#include <thread>
 
-#ifdef _WIN32
-#include "windows.hpp"
-#else
-#include <cerrno>
-#endif
-
-#include <cstdio>
-
-namespace dmitigr::os {
-/**
- * @returns The last system error code.
- *
- * @par Thread safety
- * Thread-safe.
- */
-inline int last_error() noexcept
+int main()
 {
-#ifdef _WIN32
-  // Note: the last-error code is maintained on a per-thread basis.
-  return static_cast<int>(::GetLastError());
-#else
-  /*
-   * Note: errno is thread-local on Linux.
-   * See also http://www.unix.org/whitepapers/reentrant.html
-   */
-  return errno;
-#endif
+  const auto t = dmitigr::util::with_measure([]
+  {
+    std::this_thread::sleep_for(std::chrono::milliseconds{10});
+  });
+  std::cout << t.count() << std::endl;
 }
-
-/// Prints the last system error to the standard error.
-inline void print_last_error(const char* const context) noexcept
-{
-  DMITIGR_ASSERT(context);
-  std::fprintf(stderr, "%s: error %d\n", context, last_error());
-}
-} // namespace dmitigr::os
-
-#endif  // DMITIGR_OS_LAST_ERROR_HPP

@@ -24,6 +24,7 @@
 #define DMITIGR_NET_DESCRIPTOR_HPP
 
 #include "../base/assert.hpp"
+#include "../os/exceptions.hpp"
 #include "socket.hpp"
 
 #include <algorithm>
@@ -116,7 +117,12 @@ public:
 
     len = std::min(len, max_read_size());
     constexpr int flags{};
-    const auto result = ::recv(socket_, buf, static_cast<std::size_t>(len), flags);
+#ifdef _WIN32
+    const auto buf_len = static_cast<int>(len);
+#else
+    const auto buf_len = static_cast<std::size_t>(len);
+#endif
+    const auto result = ::recv(socket_, buf, buf_len, flags);
     if (net::is_socket_error(result))
       throw DMITIGR_NET_EXCEPTION{"cannot read from socket"};
 
@@ -134,7 +140,12 @@ public:
 #else
     constexpr int flags{MSG_NOSIGNAL};
 #endif
-    const auto result = ::send(socket_, buf, static_cast<std::size_t>(len), flags);
+#ifdef _WIN32
+    const auto buf_len = static_cast<int>(len);
+#else
+    const auto buf_len = static_cast<std::size_t>(len);
+#endif
+    const auto result = ::send(socket_, buf, buf_len, flags);
     if (net::is_socket_error(result))
       throw DMITIGR_NET_EXCEPTION{"cannot write to socket"};
 
@@ -184,9 +195,15 @@ private:
 
       std::array<char, 1024> trashcan;
       constexpr int flags{};
-      if (const auto r = ::recv(socket_, trashcan.data(), trashcan.size(), flags); net::is_socket_error(r))
+#ifdef _WIN32
+      const auto trashcan_size = static_cast<int>(trashcan.size());
+#else
+      const auto trashcan_size = static_cast<std::size_t>(trashcan.size());
+#endif
+      const auto result = ::recv(socket_, trashcan.data(), trashcan_size, flags);
+      if (net::is_socket_error(result))
         throw DMITIGR_NET_EXCEPTION{errmsg};
-      else if (r == 0)
+      else if (result == 0)
         break; // the end (ok)
     }
   }
@@ -201,10 +218,10 @@ public:
   {
     if (pipe_ != INVALID_HANDLE_VALUE) {
       if (!::FlushFileBuffers(pipe_))
-        Sys_exception::report("FlushFileBuffers");
+        std::fprintf(stderr, "%s\n", "FlushFileBuffers() failed");
 
       if (!::DisconnectNamedPipe(pipe_))
-        Sys_exception::report("DisconnectNamedPipe");
+        std::fprintf(stderr, "%s\n", "DisconnectNamedPipe() failed");
     }
   }
 
@@ -214,30 +231,28 @@ public:
     DMITIGR_ASSERT(pipe_ != INVALID_HANDLE_VALUE);
   }
 
-  std::streamsize read(char* const buf, const std::streamsize len) override
+  std::streamsize read(char* const buf, std::streamsize len) override
   {
     if (!buf)
-      throw Exception{Generic_errc::logic,
-        "cannot read from named pipe to null buffer"};
+      throw Exception{"cannot read from named pipe to null buffer"};
 
     len = std::min(len, max_read_size());
     DWORD result{};
     if (!::ReadFile(pipe_, buf, static_cast<DWORD>(len), &result, nullptr))
-      throw Sys_exception{"cannot read from named pipe"};
+      throw os::Sys_exception{"cannot read from named pipe"};
 
     return static_cast<std::streamsize>(result);
   }
 
-  std::streamsize write(const char* const buf, const std::streamsize len) override
+  std::streamsize write(const char* const buf, std::streamsize len) override
   {
     if (!buf)
-      throw Exception{Generic_errc::logic,
-        "cannot write to named pipe from null buffer"};
+      throw Exception{"cannot write to named pipe from null buffer"};
 
     len = std::min(len, max_write_size());
     DWORD result{};
     if (!::WriteFile(pipe_, buf, static_cast<DWORD>(len), &result, nullptr))
-      throw Sys_exception{"cannot write to named pipe"};
+      throw os::Sys_exception{"cannot write to named pipe"};
 
     return static_cast<std::streamsize>(result);
   }
@@ -246,13 +261,13 @@ public:
   {
     if (pipe_ != INVALID_HANDLE_VALUE) {
       if (!::FlushFileBuffers(pipe_))
-        throw Sys_exception{"cannot flush file buffers"};
+        throw os::Sys_exception{"cannot flush file buffers"};
 
       if (!::DisconnectNamedPipe(pipe_))
-        throw Sys_exception{"cannot disconnect named pipe"};
+        throw os::Sys_exception{"cannot disconnect named pipe"};
 
       if (!pipe_.close())
-        throw Sys_exception{"cannot close named pipe"};
+        throw os::Sys_exception{"cannot close named pipe"};
     }
   }
 

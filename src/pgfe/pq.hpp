@@ -24,7 +24,7 @@
 #define DMITIGR_PGFE_PQ_HPP
 
 #include "basics.hpp"
-#include "../str.hpp"
+#include "../str/c_str.hpp"
 
 #include <libpq-fe.h>
 

@@ -127,8 +127,10 @@ inline void set_timeout(const Socket_native socket,
 #ifdef _WIN32
   const auto rcv_to = rcv_timeout.count();
   const auto snd_to = snd_timeout.count();
-  const auto rrcv = setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO, rcv_to, sizeof(DWORD));
-  const auto rsnd = setsockopt(socket, SOL_SOCKET, SO_SNDTIMEO, snd_to, sizeof(DWORD));
+  const auto rrcv = setsockopt(socket, SOL_SOCKET, SO_RCVTIMEO,
+    reinterpret_cast<const char*>(rcv_to), sizeof(DWORD));
+  const auto rsnd = setsockopt(socket, SOL_SOCKET, SO_SNDTIMEO,
+    reinterpret_cast<const char*>(snd_to), sizeof(DWORD));
 #else
   using chrono::system_clock;
   constexpr chrono::time_point<system_clock> z;

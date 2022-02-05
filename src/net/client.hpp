@@ -82,8 +82,7 @@ inline std::unique_ptr<Descriptor> make_tcp_connection(const Client_options& opt
   switch (remote.communication_mode()) {
 #ifdef _WIN32
   case Communication_mode::wnp:
-    throw Exception{Errc::feature_not_implemented,
-      "TCP connections over named pipes are not implemented"};
+    throw Exception{"TCP connections over named pipes are not implemented"};
 #else
   case Communication_mode::uds:
     return std::make_unique<Sockdesc>(make_tcp_connection({remote.uds_path().value()}));

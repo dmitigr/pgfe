@@ -20,46 +20,34 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
-#ifndef DMITIGR_OS_LAST_ERROR_HPP
-#define DMITIGR_OS_LAST_ERROR_HPP
+#ifndef DMITIGR_NET_LAST_ERROR_HPP
+#define DMITIGR_NET_LAST_ERROR_HPP
 
 #include "../base/assert.hpp"
 
 #ifdef _WIN32
-#include "windows.hpp"
+#include <Winsock2.h>
 #else
-#include <cerrno>
+#include "../os/last_error.hpp"
 #endif
 
-#include <cstdio>
-
-namespace dmitigr::os {
-/**
- * @returns The last system error code.
- *
- * @par Thread safety
- * Thread-safe.
- */
+namespace dmitigr::net {
+/// @returns The last network subsystem's error code.
 inline int last_error() noexcept
 {
 #ifdef _WIN32
-  // Note: the last-error code is maintained on a per-thread basis.
-  return static_cast<int>(::GetLastError());
+  return ::WSAGetLastError();
 #else
-  /*
-   * Note: errno is thread-local on Linux.
-   * See also http://www.unix.org/whitepapers/reentrant.html
-   */
-  return errno;
+  return os::last_error();
 #endif
 }
 
-/// Prints the last system error to the standard error.
+/// Prints the last network subsystem's error to the standard error.
 inline void print_last_error(const char* const context) noexcept
 {
   DMITIGR_ASSERT(context);
-  std::fprintf(stderr, "%s: error %d\n", context, last_error());
+  std::fprintf(stderr, "%s(): error %d\n", context, last_error());
 }
-} // namespace dmitigr::os
+} // namespace dmitigr::net
 
-#endif  // DMITIGR_OS_LAST_ERROR_HPP
+#endif  // DMITIGR_NET_LAST_ERROR_HPP

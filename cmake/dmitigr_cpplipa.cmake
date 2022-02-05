@@ -27,7 +27,6 @@ include(${CMAKE_CURRENT_LIST_DIR}/dmitigr_cpplipa_libraries_all.cmake)
 # ------------------------------------------------------------------------------
 
 set(dmitigr_cpplipa_source_types
-  root_headers
   preprocessed_headers
   headers
   build_only_sources

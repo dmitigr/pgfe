@@ -70,7 +70,8 @@ public:
    * @remarks The Communication_mode::uds communication mode is unavailable on
    * Microsoft Windows.
    */
-  DMITIGR_PGFE_API Connection_options& communication_mode(const Communication_mode value) noexcept;
+  DMITIGR_PGFE_API Connection_options&
+  set_communication_mode(const Communication_mode value) noexcept;
 
   /// @returns The current value of the option.
   Communication_mode communication_mode() const noexcept
@@ -85,7 +86,8 @@ public:
    *
    * @see Connection::connect().
    */
-  DMITIGR_PGFE_API Connection_options& connect_timeout(std::optional<std::chrono::milliseconds> value);
+  DMITIGR_PGFE_API Connection_options&
+  set_connect_timeout(std::optional<std::chrono::milliseconds> value);
 
   /**
    * @returns The current value of the connect timeout.
@@ -104,7 +106,8 @@ public:
    *
    * @see Connection::wait_response().
    */
-  DMITIGR_PGFE_API Connection_options& wait_response_timeout(std::optional<std::chrono::milliseconds> value);
+  DMITIGR_PGFE_API Connection_options&
+  set_wait_response_timeout(std::optional<std::chrono::milliseconds> value);
 
   /**
    * @returns The current value of the get response timeout.
@@ -129,7 +132,7 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  DMITIGR_PGFE_API Connection_options& port(const std::int_fast32_t value);
+  DMITIGR_PGFE_API Connection_options& set_port(const std::int_fast32_t value);
 
   /// @returns The current value of the option.
   std::int_fast32_t port() const noexcept
@@ -157,7 +160,7 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  DMITIGR_PGFE_API Connection_options& uds_directory(std::filesystem::path value);
+  DMITIGR_PGFE_API Connection_options& set_uds_directory(std::filesystem::path value);
 
   /// @returns The current value of the option.
   const std::filesystem::path& uds_directory() const noexcept
@@ -178,7 +181,8 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  DMITIGR_PGFE_API Connection_options& uds_require_server_process_username(std::optional<std::string> value);
+  DMITIGR_PGFE_API Connection_options&
+  set_uds_require_server_process_username(std::optional<std::string> value);
 
   /// @returns The current value of the option.
   const std::optional<std::string>& uds_require_server_process_username() const noexcept
@@ -198,7 +202,7 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  Connection_options& tcp_keepalives_enabled(bool value);
+  Connection_options& set_tcp_keepalives_enabled(bool value);
 
   /// @returns The current value of the option.
   bool is_tcp_keepalives_enabled() const noexcept
@@ -222,7 +226,8 @@ public:
    * @remarks This option is system dependent and has no effect on systems where
    * the `TCP_KEEPIDLE` socket option (or its equivalent) is unavailable.
    */
-  DMITIGR_PGFE_API Connection_options& tcp_keepalives_idle(std::optional<std::chrono::seconds> value);
+  DMITIGR_PGFE_API Connection_options&
+  set_tcp_keepalives_idle(std::optional<std::chrono::seconds> value);
 
   /// @returns The current value of the option.
   std::optional<std::chrono::seconds> tcp_keepalives_idle() const noexcept
@@ -246,7 +251,8 @@ public:
    * @remarks This option is system dependent and has no effect on systems where
    * the `TCP_KEEPINTVL` socket option (or its equivalent) is unavailable.
    */
-  DMITIGR_PGFE_API Connection_options& tcp_keepalives_interval(std::optional<std::chrono::seconds> value);
+  DMITIGR_PGFE_API Connection_options&
+  set_tcp_keepalives_interval(std::optional<std::chrono::seconds> value);
 
   /// @returns The current value of the option.
   std::optional<std::chrono::seconds> tcp_keepalives_interval() const noexcept
@@ -270,7 +276,8 @@ public:
    * @remarks This option is system dependent and has no effect on systems where
    * the `TCP_KEEPCNT` socket option (or its equivalent) is unavailable.
    */
-  DMITIGR_PGFE_API Connection_options& tcp_keepalives_count(std::optional<int> value);
+  DMITIGR_PGFE_API Connection_options&
+  set_tcp_keepalives_count(std::optional<int> value);
 
   /// @returns The current value of the option.
   std::optional<int> tcp_keepalives_count() const noexcept
@@ -299,7 +306,8 @@ public:
    *
    * @see net_hostname().
    */
-  DMITIGR_PGFE_API Connection_options& net_address(std::optional<std::string> value);
+  DMITIGR_PGFE_API Connection_options&
+  set_net_address(std::optional<std::string> value);
 
   /**
    * @returns The current value of the option.
@@ -331,7 +339,8 @@ public:
    *
    * @see net_address().
    */
-  DMITIGR_PGFE_API Connection_options& net_hostname(std::optional<std::string> value);
+  DMITIGR_PGFE_API Connection_options&
+  set_net_hostname(std::optional<std::string> value);
 
   /**
    * @returns The current value of the option.
@@ -356,7 +365,7 @@ public:
    * @par Exception safety guarantee
    * strong.
    */
-  DMITIGR_PGFE_API Connection_options& username(std::string value);
+  DMITIGR_PGFE_API Connection_options& set_username(std::string value);
 
   /// @returns The current value of the option.
   const std::string& username() const noexcept
@@ -372,7 +381,7 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  DMITIGR_PGFE_API Connection_options& database(std::string value);
+  DMITIGR_PGFE_API Connection_options& set_database(std::string value);
 
   /// @returns The current value of the option.
   const std::string& database() const noexcept
@@ -392,7 +401,7 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  DMITIGR_PGFE_API Connection_options& password(std::optional<std::string> value);
+  DMITIGR_PGFE_API Connection_options& set_password(std::optional<std::string> value);
 
   /// @returns The current value of the option.
   const std::optional<std::string>& password() const noexcept
@@ -412,7 +421,8 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  DMITIGR_PGFE_API Connection_options& kerberos_service_name(std::optional<std::string> value);
+  DMITIGR_PGFE_API Connection_options&
+  set_kerberos_service_name(std::optional<std::string> value);
 
   /// @returns The current value of the option.
   const std::optional<std::string>& kerberos_service_name() const noexcept
@@ -433,7 +443,7 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  DMITIGR_PGFE_API Connection_options& ssl_enabled(bool value);
+  DMITIGR_PGFE_API Connection_options& set_ssl_enabled(bool value);
 
   /// @returns The current value of the option.
   bool is_ssl_enabled() const noexcept
@@ -453,7 +463,7 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  DMITIGR_PGFE_API Connection_options& ssl_compression_enabled(bool value);
+  DMITIGR_PGFE_API Connection_options& set_ssl_compression_enabled(bool value);
 
   /// @returns The current value of the option.
   bool is_ssl_compression_enabled() const noexcept
@@ -472,7 +482,8 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  DMITIGR_PGFE_API Connection_options& ssl_certificate_file(std::optional<std::filesystem::path> value);
+  DMITIGR_PGFE_API Connection_options&
+  set_ssl_certificate_file(std::optional<std::filesystem::path> value);
 
   /// @returns The current value of the option.
   const std::optional<std::filesystem::path>& ssl_certificate_file() const noexcept
@@ -491,7 +502,8 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  DMITIGR_PGFE_API Connection_options& ssl_private_key_file(std::optional<std::filesystem::path> value);
+  DMITIGR_PGFE_API Connection_options&
+  set_ssl_private_key_file(std::optional<std::filesystem::path> value);
 
   /// @returns The current value of the option.
   const std::optional<std::filesystem::path>& ssl_private_key_file() const noexcept
@@ -515,10 +527,12 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  DMITIGR_PGFE_API Connection_options& ssl_certificate_authority_file(std::optional<std::filesystem::path> value);
+  DMITIGR_PGFE_API Connection_options&
+  set_ssl_certificate_authority_file(std::optional<std::filesystem::path> value);
 
   /// @returns The current value of the option.
-  const std::optional<std::filesystem::path>& ssl_certificate_authority_file() const noexcept
+  const std::optional<std::filesystem::path>&
+  ssl_certificate_authority_file() const noexcept
   {
     return ssl_certificate_authority_file_;
   }
@@ -535,10 +549,12 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  DMITIGR_PGFE_API Connection_options& ssl_certificate_revocation_list_file(std::optional<std::filesystem::path> value);
+  DMITIGR_PGFE_API Connection_options&
+  set_ssl_certificate_revocation_list_file(std::optional<std::filesystem::path> value);
 
   /// @returns The current value of the option.
-  const std::optional<std::filesystem::path>& ssl_certificate_revocation_list_file() const noexcept
+  const std::optional<std::filesystem::path>&
+  ssl_certificate_revocation_list_file() const noexcept
   {
     return ssl_certificate_revocation_list_file_;
   }
@@ -555,7 +571,8 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  DMITIGR_PGFE_API Connection_options& ssl_server_hostname_verification_enabled(bool value);
+  DMITIGR_PGFE_API Connection_options&
+  set_ssl_server_hostname_verification_enabled(bool value);
 
   /// @returns The current value of the option.
   bool is_ssl_server_hostname_verification_enabled() const noexcept

@@ -49,7 +49,7 @@ BEGIN
     BLOCK "040904E4"
     BEGIN
       VALUE "CompanyName",      "Dmitry Igrishin\0"
-      VALUE "FileDescription",  "Powerful client API for PostgreSQL\0"
+      VALUE "FileDescription",  "Client API for PostgreSQL\0"
       VALUE "FileVersion",      "1.0\0"
       VALUE "InternalName",     "dmitigr_pgfe\0"
       VALUE "LegalCopyright",   "Copyright (C) Dmitry Igrishin\0"

@@ -13,6 +13,7 @@ BROWSE
 
 cmake-build-*
 
+_private
 doxygen
 Doxyfile
-_private
+tool/cpplipa_*deps.sh

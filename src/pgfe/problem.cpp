@@ -20,6 +20,7 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
+#include "../str/numeric.hpp"
 #include "basics.hpp"
 #include "problem.hpp"
 #include "std_system_error.hpp"

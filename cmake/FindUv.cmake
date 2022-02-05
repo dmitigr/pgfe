@@ -22,10 +22,7 @@
 
 set(dmitigr_librarian_lib Uv)
 set(${dmitigr_librarian_lib}_include_names uv.h)
-set(${dmitigr_librarian_lib}_release_library_names uv uv_a)
-set(${dmitigr_librarian_lib}_library_paths ${LIBUV_LIB_PREFIX})
-set(${dmitigr_librarian_lib}_include_paths ${LIBUV_INCLUDE_PREFIX})
-
+set(${dmitigr_librarian_lib}_library_names uv_a libuv_a uv libuv)
 include(dmitigr_librarian)
 
 if(NOT Uv_FOUND)

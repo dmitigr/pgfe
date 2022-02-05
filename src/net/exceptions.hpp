@@ -24,8 +24,10 @@
 #define DMITIGR_NET_EXCEPTIONS_HPP
 
 #include "../os/exceptions.hpp"
-#include "../os/last_error.hpp"
 #include "errctg.hpp"
+#ifdef _WIN32
+#include "last_error.hpp"
+#endif
 
 #include <string>
 #include <system_error>

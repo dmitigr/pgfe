@@ -366,8 +366,7 @@ public:
     , pipe_path_{"\\\\.\\pipe\\"}
   {
     if (!(options_.endpoint().communication_mode() == Communication_mode::wnp))
-      throw Exception{Generic_errc::logic,
-        "inappropriate communication mode for named pipe listener"};
+      throw Exception{"inappropriate communication mode for named pipe listener"};
 
     pipe_path_.append(options_.endpoint().wnp_server_name().value());
     DMITIGR_ASSERT(is_invariant_ok());
@@ -393,11 +392,10 @@ public:
     using std::chrono::milliseconds;
 
     if (!is_listening())
-      throw Exception{Generic_errc::logic,
-        "cannot wait for data on named pipe if listener is not listening"};
+      throw Exception{"cannot wait for data on named pipe if listener"
+        " is not listening"};
     else if (!(timeout >= milliseconds{-1}))
-      throw Exception{Generic_errc::logic,
-        "invalid timeout for wait operation on named pipe"};
+      throw Exception{"invalid timeout for wait operation on named pipe"};
 
     if (pipe_ != INVALID_HANDLE_VALUE)
       return true;
@@ -405,7 +403,7 @@ public:
     OVERLAPPED ol{0, 0, 0, 0, nullptr};
     ol.hEvent = ::CreateEventA(nullptr, true, false, nullptr);
     if (!ol.hEvent)
-      throw Sys_exception{"cannot create event object"};
+      throw os::Sys_exception{"cannot create event object"};
 
     os::windows::Handle_guard pipe = make_named_pipe();
 
@@ -424,23 +422,24 @@ public:
           if (::GetOverlappedResult(pipe, &ol, &number_of_bytes_transferred, false))
             goto have_waited;
           else
-            throw Sys_exception{"cannot retrieve the results "
-              "of an overlapped operation on named pipe"};
+            throw os::Sys_exception{"cannot retrieve the results of an"
+              " overlapped operation on named pipe"};
         } else {
           if (!::CancelIo(pipe))
-            throw Sys_exception{"cannot cancel pending I/O operations on named pipe"};
+            throw os::Sys_exception{"cannot cancel pending I/O operations"
+              " on named pipe"};
 
           if (r == WAIT_TIMEOUT)
             return false;
           else
-            throw Sys_exception{"cannot wait until the named pipe is in the "
-              "signaled state or the time-out interval elapses"};
+            throw os::Sys_exception{"cannot wait until the named pipe is in"
+              " the signaled state or the time-out interval elapses"};
         }
       }
 
       default:
-        throw Sys_exception{"cannot enable a named pipe server process to wait"
-          " for a client process to connect to an instance of a named pipe"};
+        throw os::Sys_exception{"cannot enable a named pipe server process to"
+          " wait for a client process to connect to an instance of a named pipe"};
       }
     }
 
@@ -460,7 +459,7 @@ public:
   {
     if (is_listening()) {
       if (!pipe_.close())
-        throw Sys_exception{"cannot close a named pipe"};
+        throw os::Sys_exception{"cannot close a named pipe"};
       is_listening_ = false;
     }
   }
@@ -492,7 +491,7 @@ private:
     if (result != INVALID_HANDLE_VALUE)
       return result;
     else
-      throw Sys_exception{"cannot create a named pipe"};
+      throw os::Sys_exception{"cannot create a named pipe"};
   }
 };
 

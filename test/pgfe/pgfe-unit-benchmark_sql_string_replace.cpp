@@ -20,46 +20,25 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
-#ifndef DMITIGR_OS_LAST_ERROR_HPP
-#define DMITIGR_OS_LAST_ERROR_HPP
+#include "../../src/pgfe/sql_string.hpp"
 
-#include "../base/assert.hpp"
-
-#ifdef _WIN32
-#include "windows.hpp"
-#else
-#include <cerrno>
-#endif
-
-#include <cstdio>
-
-namespace dmitigr::os {
-/**
- * @returns The last system error code.
- *
- * @par Thread safety
- * Thread-safe.
- */
-inline int last_error() noexcept
-{
-#ifdef _WIN32
-  // Note: the last-error code is maintained on a per-thread basis.
-  return static_cast<int>(::GetLastError());
-#else
-  /*
-   * Note: errno is thread-local on Linux.
-   * See also http://www.unix.org/whitepapers/reentrant.html
-   */
-  return errno;
-#endif
+int main(const int argc, char* const argv[])
+try {
+  namespace pgfe = dmitigr::pgfe;
+  pgfe::Sql_string s;
+  const unsigned long iteration_count{(argc >= 2) ? std::stoul(argv[1]) : 1};
+  for (unsigned long i{}; i < iteration_count; ++i) {
+    s = "SELECT :list_ FROM :t1_ t1 JOIN :t2_ t2 ON (t1.t2 = t2.id) WHERE :where_";
+    s.replace_parameter("list_", "t1.id id, t1.age age, t2.dat dat");
+    s.replace_parameter("t1_", "table1");
+    s.replace_parameter("t2_", "table2");
+    s.replace_parameter("where_", "t1.nm = :nm AND t2.age = :age");
+  }
+  const auto modified_string = s.to_string();
+} catch (const std::exception& e) {
+  std::cerr << e.what() << std::endl;
+  return 1;
+} catch (...) {
+  std::cerr << "unknown error" << std::endl;
+  return 2;
 }
-
-/// Prints the last system error to the standard error.
-inline void print_last_error(const char* const context) noexcept
-{
-  DMITIGR_ASSERT(context);
-  std::fprintf(stderr, "%s: error %d\n", context, last_error());
-}
-} // namespace dmitigr::os
-
-#endif  // DMITIGR_OS_LAST_ERROR_HPP

@@ -30,7 +30,7 @@ set(dmitigr_cpplipa_libraries_all
   # Level 1
   concur dt fs hsh math os que rajson rnd str ttpl util
   # Level 2
-  mulf net progpar sqlixx wscl url
+  mulf net progpar sqlixx url
   # Level 3
   jrpc srv
   # Level 4
@@ -64,7 +64,6 @@ set(dmitigr_cpplipa_mulf_deps base str)
 set(dmitigr_cpplipa_net_deps base fs os util)
 set(dmitigr_cpplipa_progpar_deps base fs)
 set(dmitigr_cpplipa_sqlixx_deps base fs)
-set(dmitigr_cpplipa_wscl_deps base 3rdparty_uwsc)
 set(dmitigr_cpplipa_url_deps base str)
 # Level 3
 set(dmitigr_cpplipa_jrpc_deps base math rajson str)
