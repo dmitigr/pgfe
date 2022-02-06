@@ -357,12 +357,6 @@ else()
 endif()
 
 # ------------------------------------------------------------------------------
-# Variables propagation
-# ------------------------------------------------------------------------------
-
-dmitigr_cpplipa_propagate_library_settings(pgfe)
-
-# ------------------------------------------------------------------------------
 # Tests
 # ------------------------------------------------------------------------------
 
@@ -401,6 +395,4 @@ if(DMITIGR_CPPLIPA_TESTS)
     )
   add_dependencies(dmitigr_pgfe_copy_test_resources
     dmitigr_cpplipa_create_resource_destination_dir)
-
-  dmitigr_cpplipa_propagate_tests_settings(pgfe)
 endif()

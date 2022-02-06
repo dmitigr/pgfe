@@ -24,30 +24,19 @@
 # Info
 # ------------------------------------------------------------------------------
 
-dmitigr_cpplipa_set_library_info(os 0 1 "OS basics")
+dmitigr_cpplipa_set_library_info(fs 0 0 "Standard filesystem extensions")
 
 # ------------------------------------------------------------------------------
 # Sources
 # ------------------------------------------------------------------------------
 
-set(dmitigr_os_headers
-  env.hpp
-  error.hpp
-  exceptions.hpp
-  last_error.hpp
-  pid.hpp
-  types_fwd.hpp
+set(dmitigr_fs_headers
+  filesystem.hpp
+  misc.hpp
   )
 
-set(dmitigr_os_implementations
-  )
-
-if (WIN32)
-  list(APPEND dmitigr_os_headers windows.hpp)
-endif()
-
 # ------------------------------------------------------------------------------
-# Variables propagation
+# Dependencies
 # ------------------------------------------------------------------------------
 
-dmitigr_cpplipa_propagate_library_settings(os)
+dmitigr_append_cppfs(dmitigr_fs_target_link_libraries_interface)

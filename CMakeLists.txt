@@ -203,12 +203,12 @@ message("This library package contains: ${dmitigr_cpplipa_libraries}")
 # ------------------------------------------------------------------------------
 
 if ("rajson" IN_LIST dmitigr_cpplipa_libraries)
-  add_subdirectory(cmake/3rdparty/rapidjson)
+  include(dmitigr_3rdparty_rapidjson)
 endif()
 
 if ("ws" IN_LIST dmitigr_cpplipa_libraries)
-  add_subdirectory(cmake/3rdparty/usockets)
-  add_subdirectory(cmake/3rdparty/uwebsockets)
+  include(dmitigr_3rdparty_usockets)
+  include(dmitigr_3rdparty_uwebsockets)
 endif()
 
 # ------------------------------------------------------------------------------
@@ -273,7 +273,7 @@ foreach(lib ${dmitigr_cpplipa_libraries})
   set(dmlib dmitigr_${lib})
   set(DMLIB DMITIGR_${LIB})
 
-  add_subdirectory(cmake/${lib})
+  include(${dmlib})
 
   dmitigr_cpplipa_set_library_info_lib_variables(${lib})
 

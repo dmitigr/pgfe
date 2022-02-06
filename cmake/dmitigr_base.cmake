@@ -24,25 +24,15 @@
 # Info
 # ------------------------------------------------------------------------------
 
-dmitigr_cpplipa_set_library_info(fs 0 0 "Standard filesystem extensions")
+dmitigr_cpplipa_set_library_info(base 0 0 "Base stuff")
 
 # ------------------------------------------------------------------------------
 # Sources
 # ------------------------------------------------------------------------------
 
-set(dmitigr_fs_headers
-  filesystem.hpp
-  misc.hpp
+set(dmitigr_base_headers
+  assert.hpp
+  errc.hpp
+  errctg.hpp
+  exceptions.hpp
   )
-
-# ------------------------------------------------------------------------------
-# Dependencies
-# ------------------------------------------------------------------------------
-
-dmitigr_append_cppfs(dmitigr_fs_target_link_libraries_interface)
-
-# ------------------------------------------------------------------------------
-# Variables propagation
-# ------------------------------------------------------------------------------
-
-dmitigr_cpplipa_propagate_library_settings(fs)

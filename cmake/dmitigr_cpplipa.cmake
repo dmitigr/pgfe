@@ -20,6 +20,16 @@
 # Dmitry Igrishin
 # dmitigr@gmail.com
 
+# The following variables are taken into account for any library:
+# dmitigr_${lib}_target_link_libraries_${suff}
+# dmitigr_${lib}_target_compile_definitions_${suff}
+# dmitigr_${lib}_target_include_directories_${suff}
+# where ${suff} - public|private|interface
+#
+# The following variables are taken into account for any test:
+# dmitigr_${lib}_test_${test}_target_link_libraries
+# dmitigr_${lib}_test_${test}_target_compile_definitions
+
 include(${CMAKE_CURRENT_LIST_DIR}/dmitigr_cpplipa_libraries_all.cmake)
 
 # ------------------------------------------------------------------------------
@@ -131,49 +141,6 @@ macro(dmitigr_cpplipa_set_library_info lib version_major version_minor descripti
   set(dmitigr_${lib}_description "${description}")
   set(dmitigr_${lib}_internal_name "dmitigr_${lib}")
   set(dmitigr_${lib}_product_name "Dmitigr ${dmitigr_${lib}_Name}")
-endmacro()
-
-# ------------------------------------------------------------------------------
-
-macro(dmitigr_cpplipa_propagate_library_settings lib)
-  set(dmitigr_${lib}_name ${dmitigr_${lib}_name} PARENT_SCOPE)
-  set(dmitigr_${lib}_NAME ${dmitigr_${lib}_NAME} PARENT_SCOPE)
-  set(dmitigr_${lib}_Name ${dmitigr_${lib}_Name} PARENT_SCOPE)
-
-  set(dmitigr_${lib}_version_major ${dmitigr_${lib}_version_major} PARENT_SCOPE)
-  set(dmitigr_${lib}_version_minor ${dmitigr_${lib}_version_minor} PARENT_SCOPE)
-  set(dmitigr_${lib}_version_major_hi ${dmitigr_${lib}_version_major_hi} PARENT_SCOPE)
-  set(dmitigr_${lib}_version_major_lo ${dmitigr_${lib}_version_major_lo} PARENT_SCOPE)
-  set(dmitigr_${lib}_version_minor_hi ${dmitigr_${lib}_version_minor_hi} PARENT_SCOPE)
-  set(dmitigr_${lib}_version_minor_lo ${dmitigr_${lib}_version_minor_lo} PARENT_SCOPE)
-  set(dmitigr_${lib}_description ${dmitigr_${lib}_description} PARENT_SCOPE)
-
-  set(dmitigr_${lib}_internal_name ${dmitigr_${lib}_internal_name} PARENT_SCOPE)
-  set(dmitigr_${lib}_product_name ${dmitigr_${lib}_product_name} PARENT_SCOPE)
-
-  foreach(st ${dmitigr_cpplipa_source_types})
-    set(dmitigr_${lib}_${st} ${dmitigr_${lib}_${st}} PARENT_SCOPE)
-  endforeach()
-
-  foreach(suff public private interface)
-    set(dmitigr_${lib}_target_link_libraries_${suff} ${dmitigr_${lib}_target_link_libraries_${suff}} PARENT_SCOPE)
-    set(dmitigr_${lib}_target_compile_definitions_${suff} ${dmitigr_${lib}_target_compile_definitions_${suff}} PARENT_SCOPE)
-    set(dmitigr_${lib}_target_include_directories_${suff} ${dmitigr_${lib}_target_include_directories_${suff}} PARENT_SCOPE)
-  endforeach()
-endmacro()
-
-# ------------------------------------------------------------------------------
-
-macro(dmitigr_cpplipa_propagate_tests_settings lib)
-  foreach(test ${dmitigr_${lib}_tests})
-    set(dmitigr_${lib}_test_${test}_target_link_libraries
-      ${dmitigr_${lib}_test_${test}_target_link_libraries} PARENT_SCOPE)
-    set(dmitigr_${lib}_test_${test}_target_compile_definitions
-      ${dmitigr_${lib}_test_${test}_target_compile_definitions} PARENT_SCOPE)
-  endforeach()
-  set(dmitigr_${lib}_tests ${dmitigr_${lib}_tests} PARENT_SCOPE)
-  set(dmitigr_${lib}_tests_target_link_libraries ${dmitigr_${lib}_tests_target_link_libraries} PARENT_SCOPE)
-  set(dmitigr_${lib}_tests_target_compile_definitions ${dmitigr_${lib}_tests_target_compile_definitions} PARENT_SCOPE)
 endmacro()
 
 # ------------------------------------------------------------------------------

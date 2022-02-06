@@ -24,54 +24,24 @@
 # Info
 # ------------------------------------------------------------------------------
 
-dmitigr_cpplipa_set_library_info(net 0 1 "Networking")
+dmitigr_cpplipa_set_library_info(os 0 1 "OS basics")
 
 # ------------------------------------------------------------------------------
 # Sources
 # ------------------------------------------------------------------------------
 
-set(dmitigr_net_headers
-  address.hpp
-  client.hpp
-  conversions.hpp
-  descriptor.hpp
-  endpoint.hpp
+set(dmitigr_os_headers
+  env.hpp
+  error.hpp
+  exceptions.hpp
   last_error.hpp
-  listener.hpp
-  socket.hpp
+  pid.hpp
   types_fwd.hpp
-  util.hpp
   )
 
-set(dmitigr_net_implementations
+set(dmitigr_os_implementations
   )
-
-# ------------------------------------------------------------------------------
-# Dependencies
-# ------------------------------------------------------------------------------
 
 if (WIN32)
-  if (CMAKE_SYSTEM_NAME MATCHES MSYS|MinGW|Cygwin AND CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
-    list(APPEND dmitigr_net_target_link_libraries_interface libws2_32.a)
-  else()
-    list(APPEND dmitigr_net_target_link_libraries_interface Ws2_32.lib)
-  endif()
-endif()
-
-# ------------------------------------------------------------------------------
-# Variables propagation
-# ------------------------------------------------------------------------------
-
-dmitigr_cpplipa_propagate_library_settings(net)
-
-# ------------------------------------------------------------------------------
-# Tests
-# ------------------------------------------------------------------------------
-
-if(DMITIGR_CPPLIPA_TESTS)
-  if(UNIX AND NOT CMAKE_SYSTEM_NAME MATCHES MSYS|MinGW|Cygwin)
-    set(dmitigr_net_tests net)
-    set(dmitigr_net_tests_target_link_libraries dmitigr_base)
-    dmitigr_cpplipa_propagate_tests_settings(net)
-  endif()
+  list(APPEND dmitigr_os_headers windows.hpp)
 endif()

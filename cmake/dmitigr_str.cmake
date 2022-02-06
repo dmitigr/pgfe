@@ -45,17 +45,10 @@ set(dmitigr_str_headers
   )
 
 # ------------------------------------------------------------------------------
-# Variables propagation
-# ------------------------------------------------------------------------------
-
-dmitigr_cpplipa_propagate_library_settings(str)
-
-# ------------------------------------------------------------------------------
 # Tests
 # ------------------------------------------------------------------------------
 
 if(DMITIGR_CPPLIPA_TESTS)
   set(dmitigr_str_tests test)
   set(dmitigr_str_tests_target_link_libraries dmitigr_base)
-  dmitigr_cpplipa_propagate_tests_settings(str)
 endif()

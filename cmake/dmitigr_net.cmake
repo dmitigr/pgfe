@@ -24,21 +24,47 @@
 # Info
 # ------------------------------------------------------------------------------
 
-dmitigr_cpplipa_set_library_info(base 0 0 "Base stuff")
+dmitigr_cpplipa_set_library_info(net 0 1 "Networking")
 
 # ------------------------------------------------------------------------------
 # Sources
 # ------------------------------------------------------------------------------
 
-set(dmitigr_base_headers
-  assert.hpp
-  errc.hpp
-  errctg.hpp
-  exceptions.hpp
+set(dmitigr_net_headers
+  address.hpp
+  client.hpp
+  conversions.hpp
+  descriptor.hpp
+  endpoint.hpp
+  last_error.hpp
+  listener.hpp
+  socket.hpp
+  types_fwd.hpp
+  util.hpp
+  )
+
+set(dmitigr_net_implementations
   )
 
 # ------------------------------------------------------------------------------
-# Variables propagation
+# Dependencies
 # ------------------------------------------------------------------------------
 
-dmitigr_cpplipa_propagate_library_settings(base)
+if (WIN32)
+  if (CMAKE_SYSTEM_NAME MATCHES MSYS|MinGW|Cygwin AND CMAKE_CXX_COMPILER_ID MATCHES GNU|Clang)
+    list(APPEND dmitigr_net_target_link_libraries_interface libws2_32.a)
+  else()
+    list(APPEND dmitigr_net_target_link_libraries_interface Ws2_32.lib)
+  endif()
+endif()
+
+# ------------------------------------------------------------------------------
+# Tests
+# ------------------------------------------------------------------------------
+
+if(DMITIGR_CPPLIPA_TESTS)
+  if(UNIX AND NOT CMAKE_SYSTEM_NAME MATCHES MSYS|MinGW|Cygwin)
+    set(dmitigr_net_tests net)
+    set(dmitigr_net_tests_target_link_libraries dmitigr_base)
+  endif()
+endif()

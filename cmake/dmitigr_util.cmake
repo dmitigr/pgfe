@@ -38,16 +38,9 @@ set(dmitigr_util_headers
   )
 
 # ------------------------------------------------------------------------------
-# Variables propagation
-# ------------------------------------------------------------------------------
-
-dmitigr_cpplipa_propagate_library_settings(util)
-
-# ------------------------------------------------------------------------------
 # Tests
 # ------------------------------------------------------------------------------
 
 if(DMITIGR_CPPLIPA_TESTS)
   set(dmitigr_util_tests diag)
-  dmitigr_cpplipa_propagate_tests_settings(util)
 endif()
