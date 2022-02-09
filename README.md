@@ -18,6 +18,7 @@ as stable as possible.
 
 ```cpp
 #include <dmitigr/pgfe/pgfe.hpp>
+
 #include <cstdio>
 
 namespace pgfe = dmitigr::pgfe;
@@ -52,7 +53,7 @@ int main() try {
   // Prepare and execute the statement.
   auto& ps = conn.prepare("select $1::int i");
   for (int i{}; i < 3; ++i)
-    ps->execute([](auto&& r){ std::printf("%i\n", to<int>(r["i"])); }, i);
+    ps.execute([](auto&& r){std::printf("%i\n", to<int>(r["i"]));}, i);
 
   // Invoking the function.
   conn.invoke([](auto&& r)
