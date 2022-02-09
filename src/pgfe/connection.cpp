@@ -245,14 +245,12 @@ DMITIGR_PGFE_INLINE Response_status Connection::handle_input(const bool wait_res
 {
   assert(is_connected());
 
-  const auto handle_single_tuple = [this]
+  const auto check_state = [this]
   {
     assert(response_status_ == Response_status::ready);
     assert(response_.status() == PGRES_SINGLE_TUPLE);
     assert(!requests_.empty());
     assert(requests_.front() == Request_id::execute);
-    if (!shared_field_names_)
-      shared_field_names_ = Row_info::make_shared_field_names(response_);
   };
 
   const auto dismiss_request = [this]() noexcept
@@ -282,7 +280,7 @@ DMITIGR_PGFE_INLINE Response_status Connection::handle_input(const bool wait_res
       response_.reset(::PQgetResult(conn()));
       if (response_.status() == PGRES_SINGLE_TUPLE) {
         response_status_ = Response_status::ready;
-        handle_single_tuple();
+        check_state();
         goto handle_notifications;
       } else if (is_completion_status(response_.status()))
         goto complete_response;
@@ -320,7 +318,7 @@ DMITIGR_PGFE_INLINE Response_status Connection::handle_input(const bool wait_res
         response_.reset(::PQgetResult(conn()));
         if (response_.status() == PGRES_SINGLE_TUPLE) {
           response_status_ = Response_status::ready;
-          handle_single_tuple();
+          check_state();
           goto handle_notifications;
         } else if (is_completion_status(response_.status())) {
           response_status_ = Response_status::unready;
@@ -340,9 +338,7 @@ DMITIGR_PGFE_INLINE Response_status Connection::handle_input(const bool wait_res
     assert(rstatus != PGRES_SINGLE_TUPLE);
     if (rstatus == PGRES_TUPLES_OK) {
       assert(last_processed_request_id_ == Request_id::execute);
-      shared_field_names_.reset();
     } else if (rstatus == PGRES_FATAL_ERROR) {
-      shared_field_names_.reset();
       request_prepared_statement_ = {};
       request_prepared_statement_name_.reset();
     } else if (rstatus == PGRES_COMMAND_OK) {
@@ -547,7 +543,6 @@ DMITIGR_PGFE_INLINE bool Connection::is_invariant_ok() const noexcept
     (*polling_status_ == Status::establishment_reading) ||
     (*polling_status_ == Status::establishment_writing);
   const bool requests_ok = !is_connected() || is_ready_for_nio_request() || !requests_.empty();
-  const bool shared_field_names_ok = (!response_ || response_.status() != PGRES_SINGLE_TUPLE) || shared_field_names_;
   const bool session_start_time_ok = (status() == Status::connected) == static_cast<bool>(session_start_time_);
   const bool session_data_empty =
     !session_start_time_ &&
@@ -555,7 +550,6 @@ DMITIGR_PGFE_INLINE bool Connection::is_invariant_ok() const noexcept
     (response_status_ == Response_status::empty) &&
     named_prepared_statements_.empty() &&
     !unnamed_prepared_statement_ &&
-    !shared_field_names_ &&
     requests_.empty() &&
     !request_prepared_statement_ &&
     !request_prepared_statement_name_;
@@ -568,7 +562,6 @@ DMITIGR_PGFE_INLINE bool Connection::is_invariant_ok() const noexcept
   // std::clog << conn_ok << " "
   //           << polling_status_ok << " "
   //           << requests_ok << " "
-  //           << shared_field_names_ok << " "
   //           << session_start_time_ok << " "
   //           << session_data_ok << " "
   //           << trans_ok << " "
@@ -581,7 +574,6 @@ DMITIGR_PGFE_INLINE bool Connection::is_invariant_ok() const noexcept
     conn_ok &&
     polling_status_ok &&
     requests_ok &&
-    shared_field_names_ok &&
     session_start_time_ok &&
     session_data_ok &&
     trans_ok &&
@@ -597,7 +589,6 @@ DMITIGR_PGFE_INLINE void Connection::reset_session() noexcept
   response_.reset();
   response_status_ = {};
   last_prepared_statement_ = {};
-  shared_field_names_.reset();
 
   named_prepared_statements_.clear();
   unnamed_prepared_statement_ = {};
@@ -653,15 +644,16 @@ Connection::prepare_nio__(const char* const query, const char* const name, const
   assert(is_invariant_ok());
 }
 
-DMITIGR_PGFE_INLINE Prepared_statement* Connection::ps(const std::string& name) const noexcept
+DMITIGR_PGFE_INLINE Prepared_statement*
+Connection::ps(const std::string_view name) const noexcept
 {
   if (!name.empty()) {
     const auto b = begin(named_prepared_statements_);
     const auto e = end(named_prepared_statements_);
-    auto p = std::find_if(b, e,
+    const auto p = find_if(b, e,
       [&name](const auto& ps)
       {
-        return (ps.name() == name);
+        return ps.name() == name;
       });
     return (p != e) ? &*p : nullptr;
   } else
@@ -677,12 +669,15 @@ DMITIGR_PGFE_INLINE Prepared_statement* Connection::register_ps(Prepared_stateme
     return &(unnamed_prepared_statement_ = std::move(ps));
 }
 
-DMITIGR_PGFE_INLINE void Connection::unregister_ps(const std::string& name) noexcept
+DMITIGR_PGFE_INLINE void Connection::unregister_ps(const std::string_view name) noexcept
 {
   if (name.empty())
     unnamed_prepared_statement_ = {};
   else
-    named_prepared_statements_.remove_if([&name](const auto& ps){ return ps.name() == name; });
+    named_prepared_statements_.remove_if([&name](const auto& ps)
+    {
+      return ps.name() == name;
+    });
 }
 
 DMITIGR_PGFE_INLINE void Connection::throw_if_error()
@@ -709,15 +704,15 @@ DMITIGR_PGFE_INLINE std::string Connection::error_message() const
 }
 
 DMITIGR_PGFE_INLINE std::pair<std::unique_ptr<void, void(*)(void*)>, std::size_t>
-Connection::to_hex_storage(const pgfe::Data* const binary_data) const
+Connection::to_hex_storage(const pgfe::Data& binary_data) const
 {
   assert(is_connected());
 
-  if (!(binary_data && binary_data->format() == pgfe::Data_format::binary))
-    throw std::invalid_argument{"no data or data is not binary"};
+  if (!binary_data || binary_data.format() != pgfe::Data_format::binary)
+    throw Client_exception{"cannot convert not a binary data to hex"};
 
-  const auto from_length = binary_data->size();
-  const auto* from = static_cast<const unsigned char*>(binary_data->bytes());
+  const auto from_length = binary_data.size();
+  const auto* from = static_cast<const unsigned char*>(binary_data.bytes());
   std::size_t result_length{0};
   using Uptr = std::unique_ptr<void, void(*)(void*)>;
   if (auto storage = Uptr{::PQescapeByteaConn(conn(), from, from_length, &result_length), &::PQfreemem})

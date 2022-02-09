@@ -61,16 +61,16 @@ try {
     "pgfe-unit-sql_vector.sql");
   bunch = pgfe::Sql_vector{input};
   DMITIGR_ASSERT(bunch.size() == 2);
-  DMITIGR_ASSERT(bunch[0].extra().size() == 1);
-  DMITIGR_ASSERT(bunch[1].extra().size() == 2);
+  DMITIGR_ASSERT(bunch[0].extra().field_count() == 1);
+  DMITIGR_ASSERT(bunch[1].extra().field_count() == 2);
   //
   DMITIGR_ASSERT(bunch.find("id", "plus_one"));
   DMITIGR_ASSERT(bunch.index_of("id", "plus_one") == 0);
   DMITIGR_ASSERT(bunch.find("id", "digit"));
   DMITIGR_ASSERT(bunch.index_of("id", "digit") == 1);
-  DMITIGR_ASSERT(bunch[0].extra().index_of("id") == 0);
-  DMITIGR_ASSERT(bunch[1].extra().index_of("id") == 0);
-  DMITIGR_ASSERT(bunch[1].extra().index_of("cond") == 1);
+  DMITIGR_ASSERT(bunch[0].extra().field_index("id") == 0);
+  DMITIGR_ASSERT(bunch[1].extra().field_index("id") == 0);
+  DMITIGR_ASSERT(bunch[1].extra().field_index("cond") == 1);
 
   auto* const digit = bunch.find("id", "digit");
   DMITIGR_ASSERT(digit);
@@ -91,8 +91,8 @@ try {
   // digit
   {
     DMITIGR_ASSERT(digit->has_parameter("cond"));
-    DMITIGR_ASSERT(to<std::string>(*digit->extra().data("cond")) == "n > 0\n  AND n < 2");
-    digit->replace_parameter("cond", to<std::string_view>(*digit->extra().data("cond")));
+    DMITIGR_ASSERT(to<std::string>(digit->extra().data("cond")) == "n > 0\n  AND n < 2");
+    digit->replace_parameter("cond", to<std::string_view>(digit->extra().data("cond")));
     conn->execute([](auto&& row)
     {
       DMITIGR_ASSERT(to<int>(row[0]) == 1);

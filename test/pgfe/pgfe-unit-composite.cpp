@@ -21,54 +21,54 @@
 // dmitigr@gmail.com
 
 #include "../../src/base/assert.hpp"
-#include "../../src/pgfe/composite.hpp"
 #include "../../src/pgfe/data.hpp"
+#include "../../src/pgfe/tuple.hpp"
 
 int main()
 {
   try {
     namespace pgfe = dmitigr::pgfe;
-    pgfe::Composite composite;
-    DMITIGR_ASSERT(composite.size() == 0);
-    DMITIGR_ASSERT(composite.is_empty());
-    // Modifying the composite.
-    DMITIGR_ASSERT(composite.size() == 0);
-    composite.append("foo", nullptr);
-    DMITIGR_ASSERT(composite.size() == 1);
-    DMITIGR_ASSERT(!composite.is_empty());
-    DMITIGR_ASSERT(composite.name_of(0) == "foo");
-    DMITIGR_ASSERT(composite.index_of("foo") == 0);
-    DMITIGR_ASSERT(!composite.data(0));
-    DMITIGR_ASSERT(!composite.data("foo"));
-    composite.set("foo", "foo data");
-    DMITIGR_ASSERT(composite.data(0));
-    DMITIGR_ASSERT(composite.data("foo"));
-    DMITIGR_ASSERT(pgfe::to<std::string_view>(*composite.data(0)) == "foo data");
-    DMITIGR_ASSERT(pgfe::to<std::string_view>(*composite.data("foo")) == "foo data");
+    pgfe::Tuple tuple;
+    DMITIGR_ASSERT(tuple.field_count() == 0);
+    DMITIGR_ASSERT(tuple.is_empty());
+    // Modifying the tuple.
+    DMITIGR_ASSERT(tuple.field_count() == 0);
+    tuple.append("foo", nullptr);
+    DMITIGR_ASSERT(tuple.field_count() == 1);
+    DMITIGR_ASSERT(!tuple.is_empty());
+    DMITIGR_ASSERT(tuple.field_name(0) == "foo");
+    DMITIGR_ASSERT(tuple.field_index("foo") == 0);
+    DMITIGR_ASSERT(!tuple.data(0));
+    DMITIGR_ASSERT(!tuple.data("foo"));
+    tuple.set("foo", "foo data");
+    DMITIGR_ASSERT(tuple.data(0));
+    DMITIGR_ASSERT(tuple.data("foo"));
+    DMITIGR_ASSERT(pgfe::to<std::string_view>(tuple[0]) == "foo data");
+    DMITIGR_ASSERT(pgfe::to<std::string_view>(tuple["foo"]) == "foo data");
     //
-    DMITIGR_ASSERT(composite.size() == 1);
-    composite.append("bar", "bar data");
-    DMITIGR_ASSERT(composite.size() == 2);
-    DMITIGR_ASSERT(!composite.is_empty());
-    DMITIGR_ASSERT(composite.name_of(1) == "bar");
-    DMITIGR_ASSERT(composite.index_of("bar") == 1);
-    DMITIGR_ASSERT(composite.data(1));
-    DMITIGR_ASSERT(composite.data("bar"));
-    DMITIGR_ASSERT(pgfe::to<std::string_view>(*composite.data(1)) == "bar data");
-    DMITIGR_ASSERT(pgfe::to<std::string_view>(*composite.data("bar")) == "bar data");
+    DMITIGR_ASSERT(tuple.field_count() == 1);
+    tuple.append("bar", "bar data");
+    DMITIGR_ASSERT(tuple.field_count() == 2);
+    DMITIGR_ASSERT(!tuple.is_empty());
+    DMITIGR_ASSERT(tuple.field_name(1) == "bar");
+    DMITIGR_ASSERT(tuple.field_index("bar") == 1);
+    DMITIGR_ASSERT(tuple.data(1));
+    DMITIGR_ASSERT(tuple.data("bar"));
+    DMITIGR_ASSERT(pgfe::to<std::string_view>(tuple.data(1)) == "bar data");
+    DMITIGR_ASSERT(pgfe::to<std::string_view>(tuple.data("bar")) == "bar data");
     //
-    composite.insert("bar", "baz", 1983);
-    DMITIGR_ASSERT(composite.size() == 3);
-    DMITIGR_ASSERT(composite.data(2));
-    DMITIGR_ASSERT(composite.data("baz"));
-    DMITIGR_ASSERT(pgfe::to<int>(*composite.data("baz")) == 1983);
-    composite.remove("foo");
-    DMITIGR_ASSERT(composite.size() == 2);
-    DMITIGR_ASSERT(composite.index_of("foo") == composite.size());
-    composite.remove("bar");
-    DMITIGR_ASSERT(composite.size() == 1);
-    DMITIGR_ASSERT(composite.index_of("bar") == composite.size());
-    DMITIGR_ASSERT(composite.index_of("baz") != composite.size());
+    tuple.insert("bar", "baz", 1983);
+    DMITIGR_ASSERT(tuple.field_count() == 3);
+    DMITIGR_ASSERT(tuple.data(2));
+    DMITIGR_ASSERT(tuple.data("baz"));
+    DMITIGR_ASSERT(pgfe::to<int>(tuple.data("baz")) == 1983);
+    tuple.remove("foo");
+    DMITIGR_ASSERT(tuple.field_count() == 2);
+    DMITIGR_ASSERT(tuple.field_index("foo") == tuple.field_count());
+    tuple.remove("bar");
+    DMITIGR_ASSERT(tuple.field_count() == 1);
+    DMITIGR_ASSERT(tuple.field_index("bar") == tuple.field_count());
+    DMITIGR_ASSERT(tuple.field_index("baz") != tuple.field_count());
 
     // -------------------------------------------------------------------------
     // Operators
@@ -84,9 +84,9 @@ int main()
       DMITIGR_ASSERT(!(lhs > rhs));             \
       DMITIGR_ASSERT(!(lhs >= rhs))
 
-      pgfe::Composite lhs;
+      pgfe::Tuple lhs;
       lhs.append("name", "dima");
-      pgfe::Composite rhs;
+      pgfe::Tuple rhs;
       rhs.append("name", "olga");
       ASSERTMENTS;
       rhs.set("name", pgfe::Data::make("olgaolga"));
@@ -104,9 +104,9 @@ int main()
       DMITIGR_ASSERT(!(lhs > rhs));             \
       DMITIGR_ASSERT(lhs >= rhs)
 
-      pgfe::Composite lhs;
+      pgfe::Tuple lhs;
       lhs.append("name", "dima");
-      pgfe::Composite rhs;
+      pgfe::Tuple rhs;
       rhs.append("name", "dima");
       ASSERTMENTS;
       lhs.set("name", "");
@@ -125,9 +125,9 @@ int main()
       DMITIGR_ASSERT(lhs > rhs);                \
       DMITIGR_ASSERT(lhs >= rhs)
 
-      pgfe::Composite lhs;
+      pgfe::Tuple lhs;
       lhs.append("name", "olga");
-      pgfe::Composite rhs;
+      pgfe::Tuple rhs;
       rhs.append("name", "dima");
       ASSERTMENTS;
       lhs.set("name", "olgaolga");

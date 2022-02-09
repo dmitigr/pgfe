@@ -90,21 +90,21 @@ try {
   DMITIGR_ASSERT(!ps2.bound("supremum"));
   ps2.bind("infinum", 1);
   ps2.bind("supremum", 3);
-  DMITIGR_ASSERT(ps2.bound(0) && to<int>(*ps2.bound(0)) == 1);
-  DMITIGR_ASSERT(ps2.bound(1) && to<int>(*ps2.bound(1)) == 3);
+  DMITIGR_ASSERT(ps2.bound(0) && to<int>(ps2.bound(0)) == 1);
+  DMITIGR_ASSERT(ps2.bound(1) && to<int>(ps2.bound(1)) == 3);
   const auto data0 = pgfe::Data::make("1");
   const auto data1 = pgfe::Data::make("3");
-  ps2.bind("infinum", data0.get());
-  ps2.bind("supremum", data1.get());
-  DMITIGR_ASSERT(*ps2.bound(0) == *data0);
-  DMITIGR_ASSERT(*ps2.bound(1) == *data1);
+  ps2.bind("infinum", *data0);
+  ps2.bind("supremum", *data1);
+  DMITIGR_ASSERT(ps2.bound(0) == *data0);
+  DMITIGR_ASSERT(ps2.bound(1) == *data1);
   ps2.bind("infinum", nullptr);
   ps2.bind("supremum", nullptr);
   DMITIGR_ASSERT(!ps2.bound(0));
   DMITIGR_ASSERT(!ps2.bound(1));
   ps2.bind_many(1, 3);
-  DMITIGR_ASSERT(ps2.bound(0) && to<int>(*ps2.bound(0)) == 1);
-  DMITIGR_ASSERT(ps2.bound(1) && to<int>(*ps2.bound(1)) == 3);
+  DMITIGR_ASSERT(ps2.bound(0) && to<int>(ps2.bound(0)) == 1);
+  DMITIGR_ASSERT(ps2.bound(1) && to<int>(ps2.bound(1)) == 3);
   //
   DMITIGR_ASSERT(ps2.result_format() == conn->result_format());
   DMITIGR_ASSERT(ps2.connection() == conn.get());
@@ -119,18 +119,18 @@ try {
   DMITIGR_ASSERT(ps2.parameter_type_oid(1) == integer_oid);
   const auto ri = ps2.row_info();
   DMITIGR_ASSERT(ri);
-  DMITIGR_ASSERT(ri->size() == 3);
+  DMITIGR_ASSERT(ri->field_count() == 3);
   DMITIGR_ASSERT(!ri->is_empty());
-  DMITIGR_ASSERT(ri->name_of(0) == "const");
-  DMITIGR_ASSERT(ri->name_of(1) == "var");
-  DMITIGR_ASSERT(ri->name_of(2) == "const");
-  DMITIGR_ASSERT(ri->index_of("const")      == 0);
-  DMITIGR_ASSERT(ri->index_of("var")        == 1);
-  DMITIGR_ASSERT(ri->index_of("const", 1)   == 2);
-  DMITIGR_ASSERT(ri->index_of("const") < ri->size());
-  DMITIGR_ASSERT(ri->index_of("var") < ri->size());
+  DMITIGR_ASSERT(ri->field_name(0) == "const");
+  DMITIGR_ASSERT(ri->field_name(1) == "var");
+  DMITIGR_ASSERT(ri->field_name(2) == "const");
+  DMITIGR_ASSERT(ri->field_index("const")      == 0);
+  DMITIGR_ASSERT(ri->field_index("var")        == 1);
+  DMITIGR_ASSERT(ri->field_index("const", 1)   == 2);
+  DMITIGR_ASSERT(ri->field_index("const") < ri->field_count());
+  DMITIGR_ASSERT(ri->field_index("var") < ri->field_count());
   for (std::size_t i = 0; i < 3; ++i) {
-    const auto fname = ri->name_of(i);
+    const auto fname = ri->field_name(i);
     DMITIGR_ASSERT(ri->table_oid(i)        == 0);
     DMITIGR_ASSERT(ri->table_oid(fname, i) == 0);
     DMITIGR_ASSERT(ri->table_column_number(i)        == 0);
@@ -164,21 +164,21 @@ try {
     auto data = pgfe::to_data(1);
     DMITIGR_ASSERT(data);
 
-    a na2{"without-ownership", data.get()};
+    a na2{"without-ownership", *data};
     DMITIGR_ASSERT(na2.name() == "without-ownership");
-    DMITIGR_ASSERT(na2.data() == data.get());
+    DMITIGR_ASSERT(na2.data() == *data);
 
     const auto* const data_ptr = data.get();
     DMITIGR_ASSERT(data_ptr);
     a na3{"with-ownership", std::move(data)};
     DMITIGR_ASSERT(na3.name() == "with-ownership");
     DMITIGR_ASSERT(!data);
-    DMITIGR_ASSERT(na3.data() == data_ptr);
+    DMITIGR_ASSERT(na3.data() == *data_ptr);
 
     a na4{"ala-php", 14};
     DMITIGR_ASSERT(na4.name() == "ala-php");
     DMITIGR_ASSERT(na4.data());
-    DMITIGR_ASSERT(pgfe::to<int>(*na4.data()) == 14);
+    DMITIGR_ASSERT(pgfe::to<int>(na4.data()) == 14);
   }
 } catch (const std::exception& e) {
   std::cerr << e.what() << std::endl;

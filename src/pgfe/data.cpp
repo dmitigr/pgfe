@@ -253,15 +253,22 @@ Data::make_no_copy(const std::string_view bytes, const Data_format format)
 // Data_view
 // -----------------------------------------------------------------------------
 
+DMITIGR_PGFE_INLINE Data_view::Data_view(const char* const bytes) noexcept
+{
+  if (bytes) {
+    format_ = Format::text;
+    data_ = bytes;
+  }
+  assert(is_invariant_ok());
+}
+
 DMITIGR_PGFE_INLINE Data_view::Data_view(const char* const bytes,
   const std::size_t size, const Format format) noexcept
-  : format_(format)
-  , size_(size)
-  , bytes_(bytes)
 {
-  assert(bytes);
-  if (!size_ && format_ == Format::text)
-    size_ = std::strlen(bytes);
+  if (bytes) {
+    format_ = format;
+    data_ = {bytes, size};
+  }
   assert(is_invariant_ok());
 }
 
@@ -271,12 +278,9 @@ DMITIGR_PGFE_INLINE Data_view::Data_view(const Data& data) noexcept
 
 DMITIGR_PGFE_INLINE Data_view::Data_view(Data_view&& rhs) noexcept
   : format_{rhs.format_}
-  , size_{rhs.size_}
-  , bytes_{rhs.bytes_}
+  , data_{std::move(rhs.data_)}
 {
   rhs.format_ = Format{-1};
-  rhs.size_ = 0;
-  rhs.bytes_ = "";
 }
 
 DMITIGR_PGFE_INLINE Data_view& Data_view::operator=(Data_view&& rhs) noexcept
@@ -292,15 +296,14 @@ DMITIGR_PGFE_INLINE void Data_view::swap(Data_view& rhs) noexcept
 {
   using std::swap;
   swap(format_, rhs.format_);
-  swap(size_, rhs.size_);
-  swap(bytes_, rhs.bytes_);
+  swap(data_, rhs.data_);
 }
 
 std::unique_ptr<Data> Data_view::to_data() const
 {
-  const std::size_t sz = static_cast<std::size_t>(size_);
+  const auto sz = static_cast<std::size_t>(data_.size());
   std::unique_ptr<char[]> storage{new char[sz]};
-  std::memcpy(storage.get(), bytes_, sz);
+  std::memcpy(storage.get(), data_.data(), sz);
   return std::make_unique<detail::array_memory_Data>(std::move(storage), sz, format_);
 }
 

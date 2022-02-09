@@ -45,15 +45,15 @@ int main()
       DMITIGR_ASSERT(str.is_query_empty());
 
       str.extra().append("description", pgfe::Data::make("This is an unknown query"));
-      DMITIGR_ASSERT(str.extra().size() == 1);
-      DMITIGR_ASSERT(str.extra().index_of("description") != str.extra().size());
+      DMITIGR_ASSERT(str.extra().field_count() == 1);
+      DMITIGR_ASSERT(str.extra().field_index("description") != str.extra().field_count());
       DMITIGR_ASSERT(str.extra().data("description"));
 
       str.append("SELECT 1");
-      DMITIGR_ASSERT(str.extra().size() == 2);
-      DMITIGR_ASSERT(str.extra().index_of("id") != str.extra().size());
+      DMITIGR_ASSERT(str.extra().field_count() == 2);
+      DMITIGR_ASSERT(str.extra().field_index("id") != str.extra().field_count());
       DMITIGR_ASSERT(str.extra().data("id"));
-      DMITIGR_ASSERT(pgfe::to<std::string>(*str.extra().data("id")) == "unknown-query");
+      DMITIGR_ASSERT(pgfe::to<std::string>(str.extra().data("id")) == "unknown-query");
     }
 
     {

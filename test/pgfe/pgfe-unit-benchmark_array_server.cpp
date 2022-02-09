@@ -29,9 +29,9 @@ try {
   auto [output_file, conn] = pgfe::test::arraybench::prepare(argc, argv);
   conn->execute([&output_file](auto&& row)
   {
-    const auto sz = row.info().size();
-    DMITIGR_ASSERT(sz == 5);
-    for (std::size_t i = 0; i < sz; ++i)
+    const auto fc = row.field_count();
+    DMITIGR_ASSERT(fc == 5);
+    for (std::size_t i{}; i < fc; ++i)
       output_file << pgfe::to<std::string>(row[0]);
     output_file << "\n";
   }, "select dat[1], dat[2], dat[3], dat[4], dat[5] from benchmark_test_array");

@@ -425,7 +425,7 @@ try {
         bool called{};
         conn->invoke([&called](auto&& r)
         {
-          DMITIGR_ASSERT(r.index_of("version") == 0);
+          DMITIGR_ASSERT(r.field_index("version") == 0);
           std::cout << "This test runs on " << r["version"].bytes() << std::endl;
           called = true;
         } ,"version");
@@ -453,7 +453,7 @@ try {
           bool called{};
           conn->invoke([&called, &expected_result](auto&& r)
           {
-            DMITIGR_ASSERT(r.index_of("person_info") == 0);
+            DMITIGR_ASSERT(r.field_index("person_info") == 0);
             DMITIGR_ASSERT(to<std::string_view>(r["person_info"]) == expected_result);
             called = true;
           }, "person_info", id, name, age);
@@ -465,7 +465,7 @@ try {
           bool called{};
           conn->invoke([&called, &expected_result](auto&& r)
           {
-            DMITIGR_ASSERT(r.index_of("person_info") == 0);
+            DMITIGR_ASSERT(r.field_index("person_info") == 0);
             DMITIGR_ASSERT(to<std::string_view>(r["person_info"]) == expected_result);
             called = true;
           }, "person_info", a{"age", age}, a{"name", name}, a{"id", id});
@@ -477,7 +477,7 @@ try {
           bool called{};
           conn->invoke([&called, &expected_result](auto&& r)
           {
-            DMITIGR_ASSERT(r.index_of("person_info") == 0);
+            DMITIGR_ASSERT(r.field_index("person_info") == 0);
             DMITIGR_ASSERT(to<std::string_view>(r["person_info"]) == expected_result);
             called = true;
           }, "person_info", id, a{"age", age}, a{"name", name});
@@ -514,12 +514,11 @@ try {
       {
         const auto data = pgfe::Data::make(std::string{0, 1, 2, 3, 4, 5, 6, 7, 8, 9},
           pgfe::Data_format::binary);
-        const auto hex_data = conn->to_hex_data(data.get());
+        const auto hex_data = conn->to_hex_data(*data);
         const auto data2 = hex_data->to_bytea();
         DMITIGR_ASSERT(data->size() == data2->size());
         DMITIGR_ASSERT(!std::memcmp(data->bytes(), data2->bytes(), data->size()));
-
-        DMITIGR_ASSERT(to<std::string_view>(*hex_data) == conn->to_hex_string(data.get()));
+        DMITIGR_ASSERT(to<std::string_view>(*hex_data) == conn->to_hex_string(*data));
       }
     }
 } catch (const std::exception& e) {

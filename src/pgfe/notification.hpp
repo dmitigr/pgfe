@@ -24,6 +24,7 @@
 #define DMITIGR_PGFE_NOTIFICATION_HPP
 
 #include "data.hpp"
+#include "exceptions.hpp"
 #include "pq.hpp"
 #include "signal.hpp"
 
@@ -48,13 +49,9 @@ class Notification final : public Signal {
 public:
   /// The constructor.
   explicit Notification(::PGnotify* const pgnotify)
-    : pgnotify_{pgnotify}
-    , payload_{}
+    : pgnotify_{detail::not_false(pgnotify)}
+    , payload_{pgnotify_->extra}
   {
-    if (pgnotify_->extra)
-      payload_ = Data_view{pgnotify_->extra,
-        std::strlen(pgnotify_->extra), Data_format::text};
-
     assert(is_invariant_ok());
   }
 
@@ -110,9 +107,10 @@ private:
 
   bool is_invariant_ok() const noexcept
   {
-    const bool server_pid_ok = server_pid() >= 0;
-    const bool pgnotify_ok = pgnotify_ && (!payload_ || (payload_ && pgnotify_->extra == payload_.bytes()));
-    const bool channel_ok = !channel_name().empty();
+    const bool server_pid_ok{server_pid() >= 0};
+    const bool pgnotify_ok{pgnotify_ &&
+      (!payload_ || (payload_ && pgnotify_->extra == payload_.bytes()))};
+    const bool channel_ok{!channel_name().empty()};
     return server_pid_ok && pgnotify_ok && channel_ok;
   }
 };

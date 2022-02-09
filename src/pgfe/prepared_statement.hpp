@@ -52,16 +52,14 @@ namespace dmitigr::pgfe {
 class Named_argument final {
 public:
   /**
-   * @brief Constructs the named argument bound to `data`.
+   * @brief Constructs the named argument bound to SQL NULL.
    *
    * @par Effects
-   * `(is_data_owner() == false)`.
-   *
-   * @remarks No deep copy of `data` performed.
+   * `!is_data_owner()`.
    */
-  Named_argument(std::string name, const Data* const data) noexcept
+  explicit Named_argument(std::string name) noexcept
     : name_{std::move(name)}
-    , data_{data, Data_deletion_required{false}}
+    , data_{nullptr, Data_deletion_required{false}}
   {
     assert(is_invariant_ok());
   }
@@ -70,7 +68,22 @@ public:
    * @brief Constructs the named argument bound to `data`.
    *
    * @par Effects
-   * `(is_data_owner() == true)`.
+   * `!is_data_owner()`.
+   *
+   * @remarks No deep copy of `data` performed.
+   */
+  Named_argument(std::string name, const Data& data) noexcept
+    : name_{std::move(name)}
+    , data_{&data, Data_deletion_required{false}}
+  {
+    assert(is_invariant_ok());
+  }
+
+  /**
+   * @brief Constructs the named argument bound to `data`.
+   *
+   * @par Effects
+   * `is_data_owner()`.
    */
   Named_argument(std::string name, std::unique_ptr<Data>&& data) noexcept
     : name_{std::move(name)}
@@ -81,8 +94,8 @@ public:
 
   /// @overload
   template<typename T>
-  Named_argument(std::enable_if_t<!std::is_same_v<Data*, std::decay_t<T>>,
-                   std::string> name, T&& value) noexcept
+  Named_argument(std::enable_if_t<!std::is_convertible_v<std::decay_t<T>, const Data&>,
+    std::string> name, T&& value) noexcept
     : Named_argument{std::move(name), to_data(std::forward<T>(value))}
   {
     assert(is_invariant_ok());
@@ -95,9 +108,9 @@ public:
   }
 
   /// @returns The bound data.
-  const Data* data() const noexcept
+  Data_view data() const noexcept
   {
-    return data_.get();
+    return data_ ? Data_view{*data_} : Data_view{};
   }
 
   /// @returns `true` if the bound data is owned by this instance.
@@ -238,7 +251,7 @@ public:
    *
    * @remarks The empty name denotes the unnamed prepared statement.
    */
-  std::string_view name() const noexcept
+  const std::string& name() const noexcept
   {
     return name_;
   }
@@ -264,10 +277,11 @@ public:
    * @par Requires
    * `(index < parameter_count())`.
    */
-  const Data* bound(const std::size_t index) const noexcept
+  Data_view bound(const std::size_t index) const noexcept
   {
     assert(index < parameter_count());
-    return parameters_[index].data.get();
+    const auto& result = parameters_[index].data;
+    return result ? Data_view{*result} : Data_view{};
   }
 
   /**
@@ -276,7 +290,7 @@ public:
    * @par Requries
    * `(parameter_index(name) < parameter_count())`.
    */
-  const Data* bound(const std::string_view name) const noexcept
+  Data_view bound(const std::string_view name) const noexcept
   {
     const auto idx = parameter_index(name);
     assert(idx < parameter_count());
@@ -284,58 +298,35 @@ public:
   }
 
   /**
-   * @brief Binds the parameter of the specified index with the value of type Data.
-   *
-   * @par Requires
-   * - `index` requirements:
-   *   `((index < maximum_parameter_count() && ! is_preparsed() && ! is_described()) || index < parameter_count())`.
-   * - `data` requirements:
-   *   `(!data || data->size() <= maximum_data_size())`.
-   *
-   * @par Effects
-   * `(parameter_count() == index + 1)` - if `(! is_preparsed() && ! is_described() && parameter_count() >= index)`.
-   *
-   * @par Exception safety guarantee
-   * Basic.
-   *
-   * @see bound().
-   */
-  Prepared_statement& bind(const std::size_t index, std::unique_ptr<Data>&& value) noexcept
-  {
-    return bind(index, Data_ptr{value.release(), Data_deletion_required{true}});
-  }
-
-  /**
-   * @overload
-   *
-   * @par Requries
-   * `(parameter_index(name) < parameter_count())`.
-   *
-   * @see bound().
-   */
-  Prepared_statement& bind(const std::string_view name, std::unique_ptr<Data>&& value) noexcept
-  {
-    const auto idx = parameter_index(name);
-    assert(idx < parameter_count());
-    return bind(idx, Data_ptr{value.release(), Data_deletion_required{true}});
-  }
-
-  /**
-   * @overload
+   * @brief Binds the parameter of the specified index with the specified value.
    *
    * @details Similar to bind(std::size_t, std::unique_ptr<Data>&&) but binds
-   * the parameter of the specified index with the value of type `T`, implicitly
-   * converted to the Data by using to_data().
+   * the parameter of the specified index with the value of type `T`.
    *
-   * @tparam T A type of `value`. If T is Data* then no deep copy of
-   * `value` is performed.
+   * @tparam T A `value` type which can be one of the following:
+   *   -# `std::unique_ptr<Data>` to bind the specified `value`. (The `value`
+   *   will be owned by this instance.)
+   *   -# a type for which the specialization Conversions<T> is defined to bind
+   *   the specified `value` of type `T`. (The conversion result of type Data will
+   *   be owned by this instance;)
+   *   -# a type convertible to `const Data&` to bind the specified `value`. (The
+   *   `value` will not be owned by this instance;)
+   *   -# `std::nullptr_t` to bind the SQL NULL.
    * @param value A value to bind.
+   *
+   * @par Requires
+   * If `!is_preparsed() && !is_described()` then `index < maximum_parameter_count()`,
+   * otherwise `index < parameter_count()`.
+   *
+   * @par Effects
+   * If `!is_preparsed() && !is_described() && parameter_count() >= index` then
+   * `(parameter_count() == index + 1)`.
    *
    * @par Exception safety guarantee
    * Strong.
    *
    * @par Requires
-   * `T` must be convertible to `Data`.
+   * `T` must be convertible to `Data` via Conversions<T>.
    *
    * @see bound().
    */
@@ -343,9 +334,16 @@ public:
   Prepared_statement& bind(std::size_t index, T&& value)
   {
     using U = std::decay_t<T>;
-    if constexpr (std::is_same_v<U, Data*> || std::is_same_v<U, std::nullptr_t>)
-      return bind(index, Data_ptr{value, Data_deletion_required{false}});
-    else
+    constexpr auto is_nullptr = std::is_same_v<U, std::nullptr_t>;
+    static_assert(is_nullptr || !std::is_convertible_v<U, const Data*>,
+      "binding of Data* is forbidden");
+    if constexpr (std::is_same_v<U, std::unique_ptr<Data>>) {
+      return bind(index, Data_ptr{value.release(), Data_deletion_required{true}});
+    } else if constexpr (std::is_convertible_v<U, const Data&>) {
+      return bind(index, Data_ptr{&value, Data_deletion_required{false}});
+    } else if constexpr (is_nullptr) {
+      return bind(index, Data_ptr{nullptr, Data_deletion_required{false}});
+    } else
       return bind(index, to_data(std::forward<T>(value)));
   }
 
@@ -642,7 +640,7 @@ private:
   Prepared_statement& bind__(const std::size_t, const Named_argument& na)
   {
     if (na.is_data_owner())
-      return bind(na.name(), na.data()->to_data());
+      return bind(na.name(), na.data().to_data());
     else
       return bind(na.name(), na.data());
   }

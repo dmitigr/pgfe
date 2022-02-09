@@ -55,7 +55,7 @@ int main() try {
 
   // Prepare and execute the statement.
   auto& ps = conn.prepare("select $1::int i");
-  for (int i = 0; i < 3; ++i)
+  for (int i{}; i < 3; ++i)
     ps.execute([](auto&& r){ std::printf("%i\n", to<int>(r["i"])); }, i);
 
   // Invoking the function.

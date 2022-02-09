@@ -80,6 +80,7 @@ class Row_info;
 class Signal;
 class Sql_string;
 class Sql_vector;
+class Tuple;
 
 class Client_exception;
 class Server_exception;

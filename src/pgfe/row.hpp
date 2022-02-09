@@ -23,7 +23,7 @@
 #ifndef DMITIGR_PGFE_ROW_HPP
 #define DMITIGR_PGFE_ROW_HPP
 
-#include "compositional.hpp"
+#include "composite.hpp"
 #include "data.hpp"
 #include "row_info.hpp"
 
@@ -38,7 +38,7 @@ namespace dmitigr::pgfe {
  *
  * @brief A row produced by a PostgreSQL server.
  */
-class Row final : public Response, public Compositional {
+class Row final : public Response, public Composite {
 public:
   /// Default-constructible. (Constructs invalid instance.)
   Row() = default;
@@ -60,10 +60,10 @@ public:
   /// @name Compositional overridings
   /// @{
 
-  /// @see Compositional::size().
-  std::size_t size() const noexcept override
+  /// @see Compositional::field_count().
+  std::size_t field_count() const noexcept override
   {
-    return info_.size();
+    return info_.field_count();
   }
 
   /// @see Compositional::is_empty().
@@ -72,16 +72,16 @@ public:
     return info_.is_empty();
   }
 
-  /// @see Compositional::name_of().
-  std::string_view name_of(const std::size_t index) const noexcept override
+  /// @see Compositional::field_name().
+  std::string_view field_name(const std::size_t index) const noexcept override
   {
-    return info_.name_of(index);
+    return info_.field_name(index);
   }
 
   /// @see Compositional::index_of().
-  std::size_t index_of(const std::string_view name, const std::size_t offset = 0) const noexcept override
+  std::size_t field_index(const std::string_view name, const std::size_t offset = 0) const noexcept override
   {
-    return info_.index_of(name, offset);
+    return info_.field_index(name, offset);
   }
 
   /// @}
@@ -98,11 +98,11 @@ public:
    * @param index See Compositional.
    *
    * @par Requires
-   * `(index < size())`.
+   * `(index < field_count())`.
    */
-  Data_view data(const std::size_t index = 0) const noexcept
+  Data_view data(const std::size_t index = 0) const noexcept override
   {
-    assert(index < size());
+    assert(index < field_count());
     constexpr int row{};
     const auto fld = static_cast<int>(index);
     const auto& r = info_.pq_result_;
@@ -119,23 +119,12 @@ public:
    * @param offset See Compositional.
    *
    * @par Requires
-   * `index_of(name, offset) < size()`.
+   * `field_index(name, offset) < field_count()`.
    */
-  Data_view data(const std::string_view name, std::size_t offset = 0) const noexcept
+  Data_view data(const std::string_view name,
+    std::size_t offset = 0) const noexcept override
   {
-    return data(index_of(name, offset));
-  }
-
-  /// @returns `data(index)`.
-  Data_view operator[](const std::size_t index) const noexcept
-  {
-    return data(index);
-  }
-
-  /// @overload
-  Data_view operator[](const std::string_view name) const noexcept
-  {
-    return data(name);
+    return data(field_index(name, offset));
   }
 
   /// @name Iterators
@@ -159,7 +148,7 @@ public:
     reference operator*() noexcept
     {
       assert(row_);
-      const auto& name{row_->name_of(index_)};
+      const auto& name{row_->field_name(index_)};
       return value_ = value_type{{name.data(), name.size()}, row_->data(index_)};
     }
 
@@ -223,7 +212,7 @@ public:
       , index_{index}
     {
       assert(row_);
-      assert(index_ <= row_->size());
+      assert(index_ <= row_->field_count());
     }
   };
 
@@ -254,19 +243,19 @@ public:
   /// @returns Iterator that points to an one-past-the-last column.
   auto end() noexcept
   {
-    return Iterator{this, size()};
+    return Iterator{this, field_count()};
   }
 
   /// @returns Iterator that points to an one-past-the-last column.
   auto end() const noexcept
   {
-    return Const_iterator{this, size()};
+    return Const_iterator{this, field_count()};
   }
 
   /// @returns Constant iterator that points to an one-past-the-last column.
   auto cend() const noexcept
   {
-    return Const_iterator{this, size()};
+    return Const_iterator{this, field_count()};
   }
 
   /// @}
@@ -277,7 +266,7 @@ private:
   bool is_invariant_ok() const override
   {
     const bool info_ok = (info_.pq_result_.status() == PGRES_SINGLE_TUPLE);
-    return info_ok && Compositional::is_invariant_ok();
+    return info_ok && Composite::is_invariant_ok();
   }
 };
 

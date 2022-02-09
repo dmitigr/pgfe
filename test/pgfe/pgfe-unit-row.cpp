@@ -35,10 +35,10 @@ try {
 
   conn->execute([](auto&& row)
   {
-    DMITIGR_ASSERT(row.info().name_of(0) == "thenumberone");
-    DMITIGR_ASSERT(row.info().name_of(1) == "theNumberOne");
-    DMITIGR_ASSERT(row.info().index_of("thenumberone") == 0);
-    DMITIGR_ASSERT(row.info().index_of("theNumberOne") == 1);
+    DMITIGR_ASSERT(row.info().field_name(0) == "thenumberone");
+    DMITIGR_ASSERT(row.info().field_name(1) == "theNumberOne");
+    DMITIGR_ASSERT(row.info().field_index("thenumberone") == 0);
+    DMITIGR_ASSERT(row.info().field_index("theNumberOne") == 1);
   }, R"(select 1::integer theNumberOne, 1::integer "theNumberOne")");
 
   // ---------------------------------------------------------------------------

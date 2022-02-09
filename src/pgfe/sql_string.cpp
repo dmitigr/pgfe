@@ -577,12 +577,12 @@ private:
   }
 };
 
-const Composite& Sql_string::extra() const
+const Tuple& Sql_string::extra() const
 {
   if (!extra_)
     extra_.emplace(Extra::extract(fragments_, loc_));
   else if (is_extra_data_should_be_extracted_from_comments_)
-    extra_->append(Composite{Extra::extract(fragments_, loc_)});
+    extra_->append(Tuple{Extra::extract(fragments_, loc_)});
   is_extra_data_should_be_extracted_from_comments_ = false;
   assert(is_invariant_ok());
   return *extra_;

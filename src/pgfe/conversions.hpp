@@ -436,7 +436,7 @@ struct String_view_data_conversions final {
   }
 
   template<typename ... Types>
-  static std::unique_ptr<Data> to_data(Type value, Types&& ...)
+  static std::unique_ptr<Data> to_data(const Type value, Types&& ...)
   {
     return Data::make_no_copy({value.data(), value.size()}, Data_format::text);
   }

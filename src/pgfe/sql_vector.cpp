@@ -61,10 +61,10 @@ DMITIGR_PGFE_INLINE std::size_t Sql_vector::index_of(
   const auto i = find_if(std::min(b + static_cast<Diff>(offset), b + static_cast<Diff>(sz)), e,
     [&extra_name, &extra_value, extra_offset](const auto& sql_string)
     {
-      if (const auto& extra = sql_string.extra(); extra_offset < extra.size()) {
-        const auto index = extra.index_of(extra_name, extra_offset);
-        return (index < extra.size()) &&
-          (to<std::string_view>(*extra.data(index)) == extra_value);
+      if (const auto& extra = sql_string.extra(); extra_offset < extra.field_count()) {
+        const auto index = extra.field_index(extra_name, extra_offset);
+        return (index < extra.field_count()) &&
+          (to<std::string_view>(extra.data(index)) == extra_value);
       } else
         return false;
     });

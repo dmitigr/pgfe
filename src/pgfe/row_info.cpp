@@ -30,80 +30,72 @@ namespace dmitigr::pgfe {
 
 DMITIGR_PGFE_INLINE Row_info::Row_info(detail::pq::Result&& pq_result)
   : pq_result_(std::move(pq_result))
-  , shared_field_names_(make_shared_field_names(pq_result_)) // note pq_result_
+{}
+
+DMITIGR_PGFE_INLINE std::size_t Row_info::field_count() const noexcept
 {
-  assert(is_invariant_ok());
+  return static_cast<std::size_t>(pq_result_.field_count());
 }
 
-DMITIGR_PGFE_INLINE Row_info::Row_info(detail::pq::Result&& pq_result,
-  const std::shared_ptr<std::vector<std::string>>& shared_field_names)
-  : pq_result_(std::move(pq_result))
-  , shared_field_names_(shared_field_names)
+DMITIGR_PGFE_INLINE bool Row_info::is_empty() const noexcept
 {
-  assert(is_invariant_ok());
+  return !field_count();
 }
 
-std::shared_ptr<std::vector<std::string>> Row_info::make_shared_field_names(const detail::pq::Result& pq_result)
+DMITIGR_PGFE_INLINE std::string_view
+Row_info::field_name(const std::size_t index) const noexcept
 {
-  assert(pq_result);
-  const int fc = pq_result.field_count();
-  std::vector<std::string> result;
-  result.reserve(static_cast<unsigned>(fc));
-  for (int i = 0; i < fc; ++i)
-    result.emplace_back(pq_result.field_name(i));
-
-  return std::make_shared<decltype(result)>(std::move(result));
+  assert(index < field_count());
+  return pq_result_.field_name(static_cast<int>(index));
 }
 
-DMITIGR_PGFE_INLINE std::string_view Row_info::name_of(const std::size_t index) const noexcept
+DMITIGR_PGFE_INLINE std::size_t
+Row_info::field_index(const std::string_view name, const std::size_t offset) const noexcept
 {
-  assert(index < size());
-  return (*shared_field_names_)[index];
+  const std::size_t fc{field_count()};
+  assert(offset < fc);
+  for (std::size_t i{offset}; i < fc; ++i) {
+    const std::string_view nm{pq_result_.field_name(i)};
+    if (nm == name)
+      return i;
+  }
+  return fc;
 }
 
-DMITIGR_PGFE_INLINE std::size_t Row_info::index_of(const std::string_view name, const std::size_t offset) const noexcept
+DMITIGR_PGFE_INLINE std::uint_fast32_t
+Row_info::table_oid(const std::size_t index) const noexcept
 {
-  const auto sz = shared_field_names_->size();
-  const auto b = shared_field_names_->cbegin();
-  const auto e = shared_field_names_->cend();
-  using Diff = decltype(b)::difference_type;
-  const auto i = std::find(std::min(b + static_cast<Diff>(offset), b + static_cast<Diff>(sz)), e, name);
-  return static_cast<std::size_t>(i - b);
-}
-
-DMITIGR_PGFE_INLINE std::uint_fast32_t Row_info::table_oid(const std::size_t index) const noexcept
-{
-  assert(index < size());
+  assert(index < field_count());
   return pq_result_.field_table_oid(static_cast<int>(index));
 }
 
 DMITIGR_PGFE_INLINE std::int_fast32_t Row_info::table_column_number(const std::size_t index) const noexcept
 {
-  assert(index < size());
+  assert(index < field_count());
   return pq_result_.field_table_column(int(index));
 }
 
 DMITIGR_PGFE_INLINE std::uint_fast32_t Row_info::type_oid(const std::size_t index) const noexcept
 {
-  assert(index < size());
+  assert(index < field_count());
   return pq_result_.field_type_oid(int(index));
 }
 
 DMITIGR_PGFE_INLINE std::int_fast32_t Row_info::type_size(const std::size_t index) const noexcept
 {
-  assert(index < size());
+  assert(index < field_count());
   return pq_result_.field_type_size(int(index));
 }
 
 DMITIGR_PGFE_INLINE std::int_fast32_t Row_info::type_modifier(const std::size_t index) const noexcept
 {
-  assert(index < size());
+  assert(index < field_count());
   return pq_result_.field_type_modifier(int(index));
 }
 
 DMITIGR_PGFE_INLINE Data_format Row_info::data_format(const std::size_t index) const noexcept
 {
-  assert(index < size());
+  assert(index < field_count());
   return pq_result_.field_format(int(index));
 }
 

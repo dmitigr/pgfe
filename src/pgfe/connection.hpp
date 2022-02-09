@@ -115,7 +115,6 @@ public:
     swap(response_status_, rhs.response_status_);
     swap(last_processed_request_id_, rhs.last_processed_request_id_);
     swap(last_prepared_statement_, rhs.last_prepared_statement_);
-    swap(shared_field_names_, rhs.shared_field_names_);
     swap(named_prepared_statements_, rhs.named_prepared_statements_);
     unnamed_prepared_statement_.swap(rhs.unnamed_prepared_statement_);
     swap(requests_, rhs.requests_);
@@ -504,7 +503,8 @@ public:
    */
   Row row() noexcept
   {
-    return (response_.status() == PGRES_SINGLE_TUPLE) ? Row{std::move(response_), shared_field_names_} : Row{};
+    return (response_.status() == PGRES_SINGLE_TUPLE)
+      ? Row{std::move(response_)} : Row{};
   }
 
   /**
@@ -651,7 +651,7 @@ public:
    *
    * @see describe().
    */
-  Prepared_statement* prepared_statement(const std::string& name) const noexcept
+  Prepared_statement* prepared_statement(const std::string_view name) const noexcept
   {
     return ps(name);
   }
@@ -1204,20 +1204,20 @@ public:
    *
    * @see Prepared_statement.
    */
-  std::unique_ptr<Data> to_hex_data(const Data* binary_data) const
+  std::unique_ptr<Data> to_hex_data(const Data& binary_data) const
   {
     auto [storage, size] = to_hex_storage(binary_data);
     return Data::make(std::move(storage), size, Data_format::text);
   }
 
   /**
-   * @brief Similar to to_hex_data(const Data*).
+   * @brief Similar to to_hex_data(const Data&).
    *
    * @returns The encoded string in the hex format.
    *
    * @see to_hex_data().
    */
-  std::string to_hex_string(const Data* binary_data) const
+  std::string to_hex_string(const Data& binary_data) const
   {
     const auto [storage, size] = to_hex_storage(binary_data);
     return std::string{static_cast<const char*>(storage.get()), size};
@@ -1263,7 +1263,6 @@ private:
   Response_status response_status_{}; // status last assigned by handle_input()
   Request_id last_processed_request_id_{}; // type last assigned by handle_input()
   Prepared_statement* last_prepared_statement_{};
-  std::shared_ptr<std::vector<std::string>> shared_field_names_;
 
   mutable std::list<Prepared_statement> named_prepared_statements_;
   mutable Prepared_statement unnamed_prepared_statement_;
@@ -1317,7 +1316,7 @@ private:
    * @returns The pointer to a prepared statement, or `nullptr` if no statement
    * with the given `name` known by this instance.
    */
-  Prepared_statement* ps(const std::string& name) const noexcept;
+  Prepared_statement* ps(std::string_view name) const noexcept;
 
   /*
    * Registers the prepared statement.
@@ -1327,7 +1326,7 @@ private:
   Prepared_statement* register_ps(Prepared_statement&& ps) const noexcept;
 
   // Unregisters the prepared statement.
-  void unregister_ps(const std::string& name) noexcept;
+  void unregister_ps(std::string_view name) noexcept;
 
   // ---------------------------------------------------------------------------
   // Utilities helpers
@@ -1348,7 +1347,8 @@ private:
     return !std::strncmp(::PQerrorMessage(conn()), msg, sizeof(msg) - 1);
   }
 
-  std::pair<std::unique_ptr<void, void(*)(void*)>, std::size_t> to_hex_storage(const pgfe::Data* const binary_data) const;
+  std::pair<std::unique_ptr<void, void(*)(void*)>, std::size_t>
+  to_hex_storage(const pgfe::Data& binary_data) const;
 
   // ---------------------------------------------------------------------------
   // Large Object private API

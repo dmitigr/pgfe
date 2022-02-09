@@ -124,10 +124,10 @@ DMITIGR_PGFE_INLINE void Prepared_statement::execute_nio__(const Sql_string* con
   try {
     // Prepare the input for libpq.
     for (unsigned i{}; i < static_cast<unsigned>(param_count); ++i) {
-      if (const auto* const d = bound(i)) {
-        values[i] = static_cast<const char*>(d->bytes());
-        lengths[i] = static_cast<int>(d->size());
-        formats[i] = detail::pq::to_int(d->format());
+      if (const auto d = bound(i)) {
+        values[i] = static_cast<const char*>(d.bytes());
+        lengths[i] = static_cast<int>(d.size());
+        formats[i] = detail::pq::to_int(d.format());
       }
     }
     const int result_format = detail::pq::to_int(result_format_);

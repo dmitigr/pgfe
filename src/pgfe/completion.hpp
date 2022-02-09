@@ -83,7 +83,12 @@ public:
     return (affected_row_count_ > -2);
   }
 
-  /// The constructor.
+  /**
+   * The constructor.
+   *
+   * @par Requires
+   * `tag.data()`.
+   */
   explicit DMITIGR_PGFE_API Completion(const std::string_view tag);
 
   /**

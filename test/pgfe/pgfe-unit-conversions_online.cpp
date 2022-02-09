@@ -45,7 +45,7 @@ try {
     {
       conn->execute([fmt](auto&& row)
       {
-        for (std::size_t i = 0; i < row.size(); ++i) {
+        for (std::size_t i{}; i < row.field_count(); ++i) {
           DMITIGR_ASSERT(row[i]);
           DMITIGR_ASSERT(row[i].format() == fmt);
         }

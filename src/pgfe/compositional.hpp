@@ -41,45 +41,44 @@ public:
   virtual ~Compositional() = default;
 
   /// @returns The number of fields.
-  virtual std::size_t size() const noexcept = 0;
+  virtual std::size_t field_count() const noexcept = 0;
 
-  /// @returns `(size() > 0)`
+  /// @returns `(field_count() > 0)`
   virtual bool is_empty() const noexcept = 0;
 
   /**
    * @returns The name of the field.
    *
    * @par Requires
-   * `(index < size())`.
+   * `(index < field_count())`.
    */
-  virtual std::string_view name_of(std::size_t index) const noexcept = 0;
+  virtual std::string_view field_name(std::size_t index) const noexcept = 0;
 
   /**
-   * @returns The field index if presents, or `size()` othersize.
+   * @returns The field index if presents, or `field_count()` othersize.
    *
    * @param offset For cases when several fields are named equally.
    *
    * @par Requires
-   * `(offset < size())`.
+   * `(offset < field_count())`.
    */
-  virtual std::size_t index_of(std::string_view name,
+  virtual std::size_t field_index(std::string_view name,
     std::size_t offset = 0) const noexcept = 0;
 
 private:
   friend Composite;
-  friend Row;
   friend Row_info;
 
   Compositional() = default;
 
   virtual bool is_invariant_ok() const
   {
-    const bool fields_ok = is_empty() || size() > 0;
+    const bool fields_ok = is_empty() || field_count() > 0;
     const bool field_names_ok = [this]
     {
-      const std::size_t sz = size();
-      for (std::size_t i{}; i < sz; ++i)
-        if (index_of(name_of(i), i) != i)
+      const std::size_t fc{field_count()};
+      for (std::size_t i{}; i < fc; ++i)
+        if (field_index(field_name(i), i) != i)
           return false;
       return true;
     }();

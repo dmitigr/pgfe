@@ -26,7 +26,7 @@
 
 #include <new>
 
-const char* const query = "select generate_series(1,100000)";
+const char* const query = "select generate_series(1,1000000)";
 
 struct Result final {
   int length{};

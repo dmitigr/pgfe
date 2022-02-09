@@ -248,19 +248,37 @@ inline bool operator>=(const Data& lhs, const Data& rhs) noexcept
  */
 class Data_view final : public Data {
 public:
-  /// Default-constructible. (Constructs invalid instance.)
+  /**
+   * @brief Constructs invalid instance.
+   *
+   * @par Effects
+   * `!is_valid()`. `bytes()` returns empty string literal.
+   */
   Data_view() noexcept = default;
 
   /**
-   * @brief The constructor.
+   * @brief Constructs the data view of the text format.
    *
-   * @par Requires
-   * `bytes`.
+   * @par Effects
+   * `bytes()`. If `bytes` then `is_valid() && format() == Format::text`.
    */
-  DMITIGR_PGFE_API Data_view(const char* bytes, std::size_t size = 0,
+  explicit DMITIGR_PGFE_API Data_view(const char* bytes) noexcept;
+
+  /**
+   * @brief Constructs the data view of the specified `size` and `format`.
+   *
+   * @par Effects
+   * `bytes()`. If `bytes` then `is_valid() && (format() == format)`.
+   */
+  DMITIGR_PGFE_API Data_view(const char* bytes, std::size_t size,
     Format format = Format::text) noexcept;
 
-  /// The constructor.
+  /**
+   * @brief Constructs the data view of the specified `data`.
+   *
+   * @par Effects
+   * `*this == data`.
+   */
   DMITIGR_PGFE_API Data_view(const Data& data) noexcept;
 
   /// Copy-constructible.
@@ -290,25 +308,24 @@ public:
   /// @see Data::size().
   std::size_t size() const noexcept override
   {
-    return size_;
+    return data_.size();
   }
 
   /// @see Data::is_empty().
   bool is_empty() const noexcept override
   {
-    return (size() == 0);
+    return data_.empty();
   }
 
   /// @see Data::bytes().
   const void* bytes() const noexcept override
   {
-    return bytes_;
+    return data_.data();
   }
 
 private:
-  Format format_{-1}; // -1 denoted invalid instance
-  std::size_t size_{};
-  const char* bytes_{""};
+  Format format_{-1};
+  std::string_view data_{"", 0};
 };
 
 /// Data_view is swappable.

@@ -30,6 +30,7 @@ namespace dmitigr::pgfe {
 DMITIGR_PGFE_INLINE Completion::Completion(const std::string_view tag)
   : affected_row_count_{-1} // mark instance as valid
 {
+  assert(tag.data());
   constexpr char space{' '};
   auto space_before_word_pos = tag.find_last_of(space);
   if (space_before_word_pos != std::string_view::npos) {

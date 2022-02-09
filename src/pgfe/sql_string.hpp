@@ -24,9 +24,9 @@
 #define DMITIGR_PGFE_SQL_STRING_HPP
 
 #include "basics.hpp"
-#include "composite.hpp"
 #include "dll.hpp"
 #include "parameterizable.hpp"
+#include "tuple.hpp"
 #include "types_fwd.hpp"
 
 #include <algorithm>
@@ -325,13 +325,13 @@ public:
   /// @endcode
   ///
   /// The content of the `text3` association is "one\n two\n three".
-  Composite& extra() noexcept
+  Tuple& extra() noexcept
   {
-    return const_cast<Composite&>(static_cast<const Sql_string*>(this)->extra());
+    return const_cast<Tuple&>(static_cast<const Sql_string*>(this)->extra());
   }
 
   /// @overload
-  DMITIGR_PGFE_API const Composite& extra() const;
+  DMITIGR_PGFE_API const Tuple& extra() const;
 
 private:
   friend Sql_vector;
@@ -363,7 +363,7 @@ private:
   std::vector<bool> positional_parameters_; // cache
   std::vector<Fragment_list::const_iterator> named_parameters_; // cache
   mutable bool is_extra_data_should_be_extracted_from_comments_{true};
-  mutable std::optional<Composite> extra_; // cache
+  mutable std::optional<Tuple> extra_; // cache
 
   bool is_invariant_ok() const noexcept override
   {

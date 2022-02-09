@@ -28,7 +28,6 @@
 #include "pq.hpp"
 
 #include <cstdint>
-#include <vector>
 
 namespace dmitigr::pgfe {
 
@@ -45,10 +44,6 @@ public:
 
   /// The constructor.
   explicit DMITIGR_PGFE_API Row_info(detail::pq::Result&& pq_result);
-
-  /// @overload
-  DMITIGR_PGFE_API Row_info(detail::pq::Result&& pq_result,
-    const std::shared_ptr<std::vector<std::string>>& shared_field_names);
 
   /// Non copy-constructible.
   Row_info(const Row_info&) = delete;
@@ -72,7 +67,7 @@ public:
    */
   bool is_valid() const noexcept
   {
-    return static_cast<bool>(pq_result_ && shared_field_names_);
+    return static_cast<bool>(pq_result_);
   }
 
   /// @returns `true` if the instance is valid
@@ -81,23 +76,17 @@ public:
     return is_valid();
   }
 
-  /// @see Compositional::size().
-  std::size_t size() const noexcept override
-  {
-    return shared_field_names_->size();
-  }
+  /// @see Compositional::field_count().
+  DMITIGR_PGFE_API std::size_t field_count() const noexcept override;
 
   /// @see Compositional::is_empty().
-  bool is_empty() const noexcept override
-  {
-    return shared_field_names_->empty();
-  }
+  DMITIGR_PGFE_API bool is_empty() const noexcept override;
 
-  /// @see Compositional::name_of().
-  DMITIGR_PGFE_API std::string_view name_of(const std::size_t index) const noexcept override;
+  /// @see Compositional::field_name().
+  DMITIGR_PGFE_API std::string_view field_name(const std::size_t index) const noexcept override;
 
   /// @see Compositional::index_of().
-  DMITIGR_PGFE_API std::size_t index_of(const std::string_view name, std::size_t offset = 0) const noexcept override;
+  DMITIGR_PGFE_API std::size_t field_index(const std::string_view name, std::size_t offset = 0) const noexcept override;
 
   /**
    * @returns The OID of the table if a field at `index` can be identified as a
@@ -123,7 +112,7 @@ public:
    */
   std::uint_fast32_t table_oid(const std::string_view name, std::size_t offset = 0) const noexcept
   {
-    return table_oid(index_of(name, offset));
+    return table_oid(field_index(name, offset));
   }
 
   /**
@@ -152,7 +141,7 @@ public:
    */
   std::int_fast32_t table_column_number(const std::string_view name, std::size_t offset = 0) const noexcept
   {
-    return table_column_number(index_of(name, offset));
+    return table_column_number(field_index(name, offset));
   }
 
   /**
@@ -178,7 +167,7 @@ public:
    */
   std::uint_fast32_t type_oid(const std::string_view name, std::size_t offset = 0) const noexcept
   {
-    return type_oid(index_of(name, offset));
+    return type_oid(field_index(name, offset));
   }
 
   /**
@@ -205,7 +194,7 @@ public:
    */
   std::int_fast32_t type_size(const std::string_view name, std::size_t offset = 0) const noexcept
   {
-    return type_size(index_of(name, offset));
+    return type_size(field_index(name, offset));
   }
 
   /**
@@ -231,7 +220,7 @@ public:
    */
   std::int_fast32_t type_modifier(const std::string_view name, std::size_t offset = 0) const noexcept
   {
-    return type_modifier(index_of(name, offset));
+    return type_modifier(field_index(name, offset));
   }
 
   /**
@@ -255,7 +244,7 @@ public:
    */
   Data_format data_format(const std::string_view name, std::size_t offset = 0) const noexcept
   {
-    return data_format(index_of(name, offset));
+    return data_format(field_index(name, offset));
   }
 
 private:
@@ -264,28 +253,6 @@ private:
   friend Row;
 
   detail::pq::Result pq_result_;
-  std::shared_ptr<std::vector<std::string>> shared_field_names_;
-
-  bool is_invariant_ok() const override
-  {
-    const bool size_ok = shared_field_names_ &&
-      (shared_field_names_->size() == static_cast<std::size_t>(pq_result_.field_count()));
-
-    const bool field_names_ok = [this]
-    {
-      const std::size_t sz = size();
-      for (std::size_t i = 0; i < sz; ++i) {
-        if (pq_result_.field_name(static_cast<int>(i)) != (*shared_field_names_)[i])
-          return false;
-      }
-      return true;
-    }();
-
-    return size_ok && field_names_ok && Compositional::is_invariant_ok();
-  }
-
-  /// @returns The shared vector of field names to use across multiple rows.
-  static std::shared_ptr<std::vector<std::string>> make_shared_field_names(const detail::pq::Result& pq_result);
 };
 
 } // namespace dmitigr::pgfe
