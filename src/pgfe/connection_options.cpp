@@ -88,10 +88,8 @@ DMITIGR_PGFE_INLINE Connection_options::Connection_options(const Communication_m
   : communication_mode_{communication_mode}
   , connect_timeout_{detail::defaults::connect_timeout}
   , wait_response_timeout_{detail::defaults::wait_response_timeout}
-#ifndef _WIN32
   , uds_directory_{detail::defaults::uds_directory}
   , uds_require_server_process_username_{detail::defaults::uds_require_server_process_username}
-#endif
   , tcp_keepalives_enabled_{detail::defaults::tcp_keepalives_enabled}
   , tcp_keepalives_idle_{detail::defaults::tcp_keepalives_idle}
   , tcp_keepalives_interval_{detail::defaults::tcp_keepalives_interval}
@@ -121,10 +119,8 @@ DMITIGR_PGFE_INLINE void Connection_options::swap(Connection_options& rhs) noexc
   swap(communication_mode_, rhs.communication_mode_);
   swap(connect_timeout_, rhs.connect_timeout_);
   swap(wait_response_timeout_, rhs.wait_response_timeout_);
-#ifndef _WIN32
   swap(uds_directory_, rhs.uds_directory_);
   swap(uds_require_server_process_username_, rhs.uds_require_server_process_username_);
-#endif
   swap(tcp_keepalives_enabled_, rhs.tcp_keepalives_enabled_);
   swap(tcp_keepalives_idle_, rhs.tcp_keepalives_idle_);
   swap(tcp_keepalives_interval_, rhs.tcp_keepalives_interval_);
@@ -148,9 +144,6 @@ DMITIGR_PGFE_INLINE void Connection_options::swap(Connection_options& rhs) noexc
 DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_communication_mode(const Communication_mode value) noexcept
 {
-#ifdef _WIN32
-  assert(value == Communication_mode::net);
-#endif
   communication_mode_ = value;
   assert(is_invariant_ok());
   return *this;
@@ -186,7 +179,6 @@ Connection_options::set_port(const std::int_fast32_t value)
   return *this;
 }
 
-#ifndef _WIN32
 DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_uds_directory(std::filesystem::path value)
 {
@@ -208,7 +200,6 @@ Connection_options::set_uds_require_server_process_username(
   assert(is_invariant_ok());
   return *this;
 }
-#endif
 
 DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_tcp_keepalives_enabled(const bool value)
@@ -391,16 +382,10 @@ Connection_options::set_ssl_server_hostname_verification_enabled(const bool valu
 
 DMITIGR_PGFE_INLINE bool Connection_options::is_invariant_ok() const noexcept
 {
-#ifdef _WIN32
-  const bool communication_mode_ok = (communication_mode_ == Communication_mode::net);
-  constexpr bool uds_ok = true;
-#else
-  constexpr bool communication_mode_ok = true;
   const bool uds_ok = !(communication_mode_ == Communication_mode::uds) ||
     (is_absolute_directory_name(uds_directory_) &&
       is_valid_port(port_) &&
       (!uds_require_server_process_username_ || !uds_require_server_process_username_->empty()));
-#endif
   const bool tcp_ok = !(communication_mode_ == Communication_mode::net) ||
     ((!tcp_keepalives_idle_ || is_non_negative(tcp_keepalives_idle_->count())) &&
       (!tcp_keepalives_interval_ || is_non_negative(tcp_keepalives_interval_->count())) &&
@@ -421,7 +406,7 @@ DMITIGR_PGFE_INLINE bool Connection_options::is_invariant_ok() const noexcept
     (!ssl_certificate_revocation_list_file_ || !ssl_certificate_revocation_list_file_->empty()) &&
     (!ssl_server_hostname_verification_enabled_ || ssl_certificate_authority_file_);
 
-  return communication_mode_ok && uds_ok && tcp_ok && auth_ok && ssl_ok;
+  return uds_ok && tcp_ok && auth_ok && ssl_ok;
 }
 
 namespace detail::pq {
@@ -448,13 +433,11 @@ public:
       values_[keepalives_count] = std::to_string(o.tcp_keepalives_count().value_or(0));
       break;
     }
-#ifndef _WIN32
     case Communication_mode::uds:
       values_[host] = o.uds_directory().generic_string();
       values_[port] = std::to_string(o.port());
       values_[requirepeer] = o.uds_require_server_process_username().value_or("");
       break;
-#endif
     }
 
     values_[dbname] = o.database();

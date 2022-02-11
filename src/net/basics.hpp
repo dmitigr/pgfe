@@ -20,36 +20,23 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
-#ifndef DMITIGR_UTIL_DIAG_HPP
-#define DMITIGR_UTIL_DIAG_HPP
+#ifndef DMITIGR_NET_BASICS_HPP
+#define DMITIGR_NET_BASICS_HPP
 
-#include <chrono>
+namespace dmitigr::net {
 
-namespace dmitigr::util {
+/// A communication mode.
+enum class Communication_mode {
+  /// A Unix Domain Socket.
+  uds = 0,
+#ifdef _WIN32
+  /// A Windows Named Pipe.
+  wnp = 10,
+#endif
+  /// A network.
+  net = 100
+};
 
-/// @returns `true` if instance of type `E` is thrown upon calling of `f`.
-template<class E, typename F>
-bool with_catch(const F& f) noexcept
-{
-  try {
-    f();
-  } catch (const E&) {
-    return true;
-  } catch (...) {}
-  return false;
-}
+} // namespace dmitigr::net
 
-/// @returns The duration of call of `f`.
-template<typename D = std::chrono::milliseconds, typename F>
-auto with_measure(const F& f)
-{
-  namespace chrono = std::chrono;
-  const auto start = chrono::high_resolution_clock::now();
-  f();
-  const auto end = chrono::high_resolution_clock::now();
-  return chrono::duration_cast<D>(end - start);
-}
-
-} // namespace dmitigr::util
-
-#endif  // DMITIGR_UTIL_DIAG_HPP
+#endif  // DMITIGR_NET_BASICS_HPP

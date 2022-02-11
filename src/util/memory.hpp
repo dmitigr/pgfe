@@ -20,8 +20,8 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
-#ifndef DMITIGR_UTIL_MEM_HPP
-#define DMITIGR_UTIL_MEM_HPP
+#ifndef DMITIGR_UTIL_MEMORY_HPP
+#define DMITIGR_UTIL_MEMORY_HPP
 
 #include <memory>
 
@@ -63,4 +63,4 @@ private:
 
 } // namespace dmitigr::util
 
-#endif  // DMITIGR_UTIL_MEM_HPP
+#endif  // DMITIGR_UTIL_MEMORY_HPP

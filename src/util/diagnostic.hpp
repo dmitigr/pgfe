@@ -20,17 +20,36 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
-#ifndef DMITIGR_NET_NET_HPP
-#define DMITIGR_NET_NET_HPP
+#ifndef DMITIGR_UTIL_DIAGNOSTIC_HPP
+#define DMITIGR_UTIL_DIAGNOSTIC_HPP
 
-#include "address.hpp"
-#include "basics.hpp"
-#include "client.hpp"
-#include "conversions.hpp"
-#include "descriptor.hpp"
-#include "endpoint.hpp"
-#include "listener.hpp"
-#include "socket.hpp"
-#include "util.hpp"
+#include <chrono>
 
-#endif  // DMITIGR_NET_NET_HPP
+namespace dmitigr::util {
+
+/// @returns `true` if instance of type `E` is thrown upon calling of `f`.
+template<class E, typename F>
+bool with_catch(const F& f) noexcept
+{
+  try {
+    f();
+  } catch (const E&) {
+    return true;
+  } catch (...) {}
+  return false;
+}
+
+/// @returns The duration of call of `f`.
+template<typename D = std::chrono::milliseconds, typename F>
+auto with_measure(const F& f)
+{
+  namespace chrono = std::chrono;
+  const auto start = chrono::high_resolution_clock::now();
+  f();
+  const auto end = chrono::high_resolution_clock::now();
+  return chrono::duration_cast<D>(end - start);
+}
+
+} // namespace dmitigr::util
+
+#endif  // DMITIGR_UTIL_DIAGNOSTIC_HPP

@@ -47,9 +47,6 @@ public:
   /**
    * @brief Constructs the default connection options.
    *
-   * @par Requires
-   * On Microsoft Windows only - `(value == Communication_mode::net)`.
-   *
    * @par Effects
    * `(communication_mode() == value)`.
    */
@@ -66,9 +63,6 @@ public:
    *
    * @par Exception safety guarantee
    * Strong.
-   *
-   * @remarks The Communication_mode::uds communication mode is unavailable on
-   * Microsoft Windows.
    */
   DMITIGR_PGFE_API Connection_options&
   set_communication_mode(const Communication_mode value) noexcept;
@@ -144,9 +138,7 @@ public:
 
   // --------------------------------------------------------------------------
 
-#ifndef _WIN32
   /// @name Options specific to the Unix Domain Sockets (UDS) communication mode.
-  /// @remarks These options are not available on Microsoft Windows.
   /// @{
 
   /**
@@ -189,7 +181,6 @@ public:
   {
     return uds_require_server_process_username_;
   }
-#endif
 
   // ---------------------------------------------------------------------------
 
@@ -587,10 +578,8 @@ private:
   Communication_mode communication_mode_;
   std::optional<std::chrono::milliseconds> connect_timeout_;
   std::optional<std::chrono::milliseconds> wait_response_timeout_;
-#ifndef _WIN32
   std::filesystem::path uds_directory_;
   std::optional<std::string> uds_require_server_process_username_;
-#endif
   bool tcp_keepalives_enabled_;
   std::optional<std::chrono::seconds> tcp_keepalives_idle_;
   std::optional<std::chrono::seconds> tcp_keepalives_interval_;
@@ -637,10 +626,8 @@ inline bool operator==(const Connection_options& lhs, const Connection_options& 
     lhs.tcp_keepalives_count_ == rhs.tcp_keepalives_count_ &&
     lhs.port_ == rhs.port_ &&
     // strings
-#ifndef _WIN32
     lhs.uds_directory_ == rhs.uds_directory_ &&
     lhs.uds_require_server_process_username_ == rhs.uds_require_server_process_username_ &&
-#endif
     lhs.net_address_ == rhs.net_address_ &&
     lhs.net_hostname_ == rhs.net_hostname_ &&
     lhs.username_ == rhs.username_ &&

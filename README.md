@@ -630,33 +630,31 @@ Pgfe is depends on the [libpq] library.
 
 ## CMake options
 
-The table below (one may need to use horizontal scrolling for full view) contains
-variables which can be passed to [CMake] for customization of the Pgfe library.
+The table below contains the [CMake] variables for defining built-in defaults.
 
-|CMake variable|Possible values|Default on Unix|Default on Windows|
-|:-------------|:--------------|:--------------|:-----------------|
-|**Defaults**||||
-|DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE|uds \| net|uds|net|
-|DMITIGR_PGFE_CONNECTION_UDS_DIRECTORY|*an absolute path*|/tmp|*unavailable*|
-|DMITIGR_PGFE_CONNECTION_UDS_REQUIRE_SERVER_PROCESS_USERNAME|*a string*|*not set*|*unavailable*|
-|DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_ENABLED|On \| Off|Off|Off|
-|DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_IDLE|*non-negative number*|*null (system default)*|*null (system default)*|
-|DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_INTERVAL|*non-negative number*|*null (system default)*|*null (system default)*|
-|DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_COUNT|*non-negative number*|*null (system default)*|*null (system default)*|
-|DMITIGR_PGFE_CONNECTION_NET_ADDRESS|*IPv4 or IPv6 address*|127.0.0.1|127.0.0.1|
-|DMITIGR_PGFE_CONNECTION_NET_HOSTNAME|*a string*|localhost|localhost|
-|DMITIGR_PGFE_CONNECTION_PORT|*a number*|5432|5432|
-|DMITIGR_PGFE_CONNECTION_USERNAME|*a string*|postgres|postgres|
-|DMITIGR_PGFE_CONNECTION_DATABASE|*a string*|postgres|postgres|
-|DMITIGR_PGFE_CONNECTION_PASSWORD|*a string*|""|""|
-|DMITIGR_PGFE_CONNECTION_KERBEROS_SERVICE_NAME|*a string*|*null (not used)*|*null (not used)*|
-|DMITIGR_PGFE_CONNECTION_SSL_ENABLED|On \| Off|Off|Off|
-|DMITIGR_PGFE_CONNECTION_SSL_SERVER_HOSTNAME_VERIFICATION_ENABLED|On \| Off|Off|Off|
-|DMITIGR_PGFE_CONNECTION_SSL_COMPRESSION_ENABLED|On \| Off|Off|Off|
-|DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_FILE|*an absolute path*|*null (libpq's default)*|*null (libpq's default)*|
-|DMITIGR_PGFE_CONNECTION_SSL_PRIVATE_KEY_FILE|*an absolute path*|*null (libpq's default)*|*null (libpq's default)*|
-|DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_AUTHORITY_FILE|*an absolute path*|*null (libpq's default)*|*null (libpq's default)*|
-|DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_REVOCATION_LIST_FILE|*an absolute path*|*null (libpq's default)*|*null (libpq's default)*|
+|Name                                                            |Range   |Default    |
+|:---------------------------------------------------------------|:-------|:-----------|
+|DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE                      |uds\|net|uds       |
+|DMITIGR_PGFE_CONNECTION_UDS_DIRECTORY                           |PATH    |*sys-dependent*|
+|DMITIGR_PGFE_CONNECTION_UDS_REQUIRE_SERVER_PROCESS_USERNAME     |STRING  |*not set*|
+|DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_ENABLED                  |bool    |Off|
+|DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_IDLE                     |0+      |*sys-default*|
+|DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_INTERVAL                 |0+      |*sys-default*|
+|DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_COUNT                    |0+      |*sys-default*|
+|DMITIGR_PGFE_CONNECTION_NET_ADDRESS                             |string  |127.0.0.1|
+|DMITIGR_PGFE_CONNECTION_NET_HOSTNAME                            |string  |localhost|
+|DMITIGR_PGFE_CONNECTION_PORT                                    |1+      |5432|
+|DMITIGR_PGFE_CONNECTION_USERNAME                                |string  |postgres|
+|DMITIGR_PGFE_CONNECTION_DATABASE                                |string  |postgres|
+|DMITIGR_PGFE_CONNECTION_PASSWORD                                |string  |""|
+|DMITIGR_PGFE_CONNECTION_KERBEROS_SERVICE_NAME                   |string  ||
+|DMITIGR_PGFE_CONNECTION_SSL_ENABLED                             |bool    |Off|
+|DMITIGR_PGFE_CONNECTION_SSL_SERVER_HOSTNAME_VERIFICATION_ENABLED|bool    |Off|
+|DMITIGR_PGFE_CONNECTION_SSL_COMPRESSION_ENABLED                 |bool    |Off|
+|DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_FILE                    |PATH    |*libpq default*|
+|DMITIGR_PGFE_CONNECTION_SSL_PRIVATE_KEY_FILE                    |PATH    |*libpq default*|
+|DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_AUTHORITY_FILE          |PATH    |*libpq default*|
+|DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_REVOCATION_LIST_FILE    |PATH    |*libpq default*|
 
 [dmitigr_cpplipa_usage]: https://github.com/dmitigr/cpplipa.git#usage
 [dmitigr_pgfe]: https://github.com/dmitigr/pgfe.git

@@ -24,9 +24,9 @@
 #define DMITIGR_CPPLIPA_TEST_PGFE_UNIT_HPP
 
 #include "../../src/base/assert.hpp"
-#include "../../src/os/env.hpp"
+#include "../../src/os/environment.hpp"
 #include "../../src/pgfe/pgfe.hpp"
-#include "../../src/util/diag.hpp"
+#include "../../src/util/diagnostic.hpp"
 
 #include <chrono>
 #include <cstdlib>
@@ -52,15 +52,20 @@ inline auto make_connection()
   return std::make_unique<pgfe::Connection>(conn_opts);
 }
 
-#ifndef _WIN32
 inline auto make_uds_connection()
 {
   return std::make_unique<pgfe::Connection>(
     pgfe::Connection_options{pgfe::Communication_mode::uds}
+    .set_database("pgfe_test")
+    .set_username("pgfe_test")
+    .set_password("pgfe_test")
+#ifdef _WIN32
+    .set_uds_directory("C:/tmp")
+#else
     .set_uds_directory("/tmp")
+#endif
     .set_port(5432));
 }
-#endif
 
 inline auto make_ssl_connection()
 {

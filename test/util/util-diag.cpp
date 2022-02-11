@@ -20,7 +20,7 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
-#include "../../src/util/diag.hpp"
+#include "../../src/util/diagnostic.hpp"
 
 #include <iostream>
 #include <thread>

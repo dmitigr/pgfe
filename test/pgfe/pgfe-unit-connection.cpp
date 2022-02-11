@@ -85,7 +85,6 @@ try {
   {
     std::unique_ptr<pgfe::Connection> conn;
 
-#ifndef _WIN32
     // After connect UDS connection state test
     {
       conn = pgfe::test::make_uds_connection();
@@ -99,7 +98,6 @@ try {
       DMITIGR_ASSERT(conn->server_pid());
       DMITIGR_ASSERT(conn->session_start_time());
     }
-#endif
 
     // After connect TCP connection state
     {

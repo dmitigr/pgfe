@@ -29,7 +29,7 @@
 #include "response.hpp"
 #include "row_info.hpp"
 #include "types_fwd.hpp"
-#include "../util/mem.hpp"
+#include "../util/memory.hpp"
 
 #include <algorithm>
 #include <cassert>

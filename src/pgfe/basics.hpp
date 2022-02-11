@@ -96,10 +96,8 @@ DMITIGR_DEFINE_ENUM_BITMASK_OPERATORS(External_library)
  * @brief A client/server communication mode.
  */
 enum class Communication_mode {
-#ifndef _WIN32
   /// Unix-domain sockets (UDS) is used for communication.
   uds = 0,
-#endif
 
   /// Network is used for communication.
   net = 100

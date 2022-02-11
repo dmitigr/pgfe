@@ -20,8 +20,8 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
-#ifndef DMITIGR_OS_ENV_HPP
-#define DMITIGR_OS_ENV_HPP
+#ifndef DMITIGR_OS_ENVIRONMENT_HPP
+#define DMITIGR_OS_ENVIRONMENT_HPP
 
 #include "exceptions.hpp"
 
@@ -110,4 +110,4 @@ inline std::optional<std::string> environment_variable(const std::string& name)
 
 } // namespace dmitigr::os
 
-#endif  // DMITIGR_OS_ENV_HPP
+#endif  // DMITIGR_OS_ENVIRONMENT_HPP

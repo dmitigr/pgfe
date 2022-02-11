@@ -23,7 +23,7 @@
 #include "../../src/base/assert.hpp"
 #include "../../src/pgfe/exceptions.hpp"
 #include "../../src/pgfe/conversions.hpp"
-#include "../../src/util/diag.hpp"
+#include "../../src/util/diagnostic.hpp"
 
 #include <limits>
 #include <optional>

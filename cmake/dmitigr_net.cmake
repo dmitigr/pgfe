@@ -32,10 +32,13 @@ dmitigr_cpplipa_set_library_info(net 0 1 "Networking")
 
 set(dmitigr_net_headers
   address.hpp
+  basics.hpp
   client.hpp
   conversions.hpp
   descriptor.hpp
   endpoint.hpp
+  errctg.hpp
+  exceptions.hpp
   last_error.hpp
   listener.hpp
   socket.hpp

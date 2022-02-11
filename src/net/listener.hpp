@@ -61,7 +61,7 @@ public:
   {
     DMITIGR_ASSERT(is_invariant_ok());
   }
-#else
+#endif
   /**
    * @brief Constructs the options for listeners of Unix Domain Sockets (UDS).
    *
@@ -82,7 +82,7 @@ public:
       throw Exception{"invalid backlog for network listener options"};
     DMITIGR_ASSERT(is_invariant_ok());
   }
-#endif
+
   /**
    * @overload
    *
@@ -131,9 +131,9 @@ private:
   bool is_invariant_ok() const
   {
 #ifdef _WIN32
-    const bool backlog_ok = ((endpoint_.communication_mode() != Communication_mode::wnp && backlog_) || !backlog_);
+    const bool backlog_ok = (endpoint_.communication_mode() != Communication_mode::wnp && backlog_) || !backlog_;
 #else
-    const bool backlog_ok = bool(backlog_);
+    const bool backlog_ok = static_cast<bool>(backlog_);
 #endif
 
     return backlog_ok;
@@ -221,12 +221,7 @@ public:
     : options_{std::move(options)}
   {
     const auto cm = options_.endpoint().communication_mode();
-#ifdef _WIN32
-    DMITIGR_ASSERT(cm == Communication_mode::net);
-#else
     DMITIGR_ASSERT(cm == Communication_mode::uds || cm == Communication_mode::net);
-#endif
-
     net_initialize();
   }
 
@@ -262,9 +257,6 @@ public:
       bind_socket(socket_, {Ip_address{*eid.net_address()}, *eid.net_port()});
     };
 
-#ifdef _WIN32
-    tcp_create_bind();
-#else
     const auto uds_create_bind = [&]
     {
       socket_ = make_socket(AF_UNIX, SOCK_STREAM, IPPROTO_TCP);
@@ -275,7 +267,6 @@ public:
       tcp_create_bind();
     else
       uds_create_bind();
-#endif
 
     if (::listen(socket_, *options_.backlog()) != 0)
       throw DMITIGR_NET_EXCEPTION{"cannot start listening on socket"};
@@ -508,11 +499,8 @@ inline std::unique_ptr<Listener> Listener::make(Listener_options options)
   const auto cm = options.endpoint().communication_mode();
   if (cm == Communication_mode::wnp)
     return std::make_unique<pipe_Listener>(std::move(options));
-  else
-    return std::make_unique<socket_Listener>(std::move(options));
-#else
-  return std::make_unique<socket_Listener>(std::move(options));
 #endif
+  return std::make_unique<socket_Listener>(std::move(options));
 }
 
 } // namespace dmitigr::net

@@ -43,10 +43,8 @@ constexpr const Communication_mode communication_mode{Communication_mode::@DMITI
 constexpr const std::optional<std::chrono::milliseconds> connect_timeout{@DMITIGR_PGFE_CONNECTION_CONNECT_TIMEOUT@};
 constexpr const std::optional<std::chrono::milliseconds> wait_response_timeout{@DMITIGR_PGFE_CONNECTION_WAIT_RESPONSE_TIMEOUT@};
 
-#ifndef _WIN32
 const std::filesystem::path      uds_directory{"@DMITIGR_PGFE_CONNECTION_UDS_DIRECTORY@"};
 const std::optional<std::string> uds_require_server_process_username{@DMITIGR_PGFE_CONNECTION_UDS_REQUIRE_SERVER_PROCESS_USERNAME_CPP@};
-#endif
 
 constexpr const bool                                tcp_keepalives_enabled{@DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_ENABLED_CPP@};
 constexpr const std::optional<std::chrono::seconds> tcp_keepalives_idle{@DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_IDLE@};

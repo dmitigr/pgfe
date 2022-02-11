@@ -31,7 +31,7 @@ dmitigr_cpplipa_set_library_info(os 0 1 "OS basics")
 # ------------------------------------------------------------------------------
 
 set(dmitigr_os_headers
-  env.hpp
+  environment.hpp
   error.hpp
   exceptions.hpp
   last_error.hpp

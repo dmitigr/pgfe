@@ -25,7 +25,7 @@
 #endif
 #include "../../src/base/assert.hpp"
 #include "../../src/pgfe/connection_options.hpp"
-#include "../../src/util/diag.hpp"
+#include "../../src/util/diagnostic.hpp"
 
 #include <cstring>
 #include <iostream>
@@ -42,10 +42,8 @@ int main()
     pgfe::Connection_options co{Cm::net};
     DMITIGR_ASSERT(co.communication_mode() == Cm::net);
 
-#ifndef _WIN32
     co = pgfe::Connection_options{Cm::uds};
     DMITIGR_ASSERT(co.communication_mode() == Cm::uds);
-#endif
 
     co = {};
 
@@ -77,12 +75,15 @@ int main()
       DMITIGR_ASSERT(with_catch<std::runtime_error>([&]{ co.set_wait_response_timeout(invalid_value); }));
     }
 
-#ifndef _WIN32
     DMITIGR_ASSERT(co.uds_directory() == defaults::uds_directory);
     {
       co.set_communication_mode(Cm::uds);
       DMITIGR_ASSERT(co.communication_mode() == Cm::uds);
+#ifdef _WIN32
+      const auto valid_value = "C:\\valid\\directory\\name";
+#else
       const auto valid_value = "/valid/directory/name";
+#endif
       co.set_uds_directory(valid_value);
       DMITIGR_ASSERT(co.uds_directory() == valid_value);
 
@@ -103,8 +104,6 @@ int main()
       co.uds_directory();
       co.uds_require_server_process_username();
     }
-
-#endif
 
     DMITIGR_ASSERT(co.is_tcp_keepalives_enabled() == defaults::tcp_keepalives_enabled);
     {
@@ -176,7 +175,6 @@ int main()
       DMITIGR_ASSERT(with_catch<std::runtime_error>([&]() { co.set_port(invalid_value); }));
     }
 
-#ifndef _WIN32
     // Testing the protection against the improper usage.
     {
       using namespace std::chrono_literals;
@@ -189,7 +187,6 @@ int main()
       co.net_hostname();
       co.port();
     }
-#endif
 
     DMITIGR_ASSERT(co.username() == defaults::username);
     {

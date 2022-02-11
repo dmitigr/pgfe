@@ -43,10 +43,8 @@ constexpr const Communication_mode communication_mode{Communication_mode::uds};
 constexpr const std::optional<std::chrono::milliseconds> connect_timeout{10000};
 constexpr const std::optional<std::chrono::milliseconds> wait_response_timeout{};
 
-#ifndef _WIN32
 const std::filesystem::path      uds_directory{"/tmp"};
 const std::optional<std::string> uds_require_server_process_username{};
-#endif
 
 constexpr const bool                                tcp_keepalives_enabled{};
 constexpr const std::optional<std::chrono::seconds> tcp_keepalives_idle{};

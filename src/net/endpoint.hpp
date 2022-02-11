@@ -25,25 +25,13 @@
 
 #include "../base/assert.hpp"
 #include "../fs/filesystem.hpp"
+#include "basics.hpp"
 
 #include <optional>
 #include <string>
 #include <utility>
 
 namespace dmitigr::net {
-
-/// A communication mode.
-enum class Communication_mode {
-#ifndef _WIN32
-  /// A Unix Domain Socket.
-  uds = 0,
-#else
-  /// A Windows Named Pipe.
-  wnp = 10,
-#endif
-  /// A network.
-  net = 100
-};
 
 /**
  * @brief A communication endpoint identifier.
@@ -56,7 +44,7 @@ enum class Communication_mode {
 class Endpoint final {
 public:
 #ifdef _WIN32
-  /// The constructor.
+  /// Constructs WNP endpoint.
   explicit Endpoint(std::string pipe_name)
     : Endpoint{".", std::move(pipe_name)}
   {}
@@ -68,16 +56,15 @@ public:
   {
     DMITIGR_ASSERT(is_invariant_ok());
   }
-#else
-  /// @overload
+#endif
+  /// Constructs UDS endpoint.
   explicit Endpoint(std::filesystem::path path)
     : uds_path_{std::move(path)}
   {
     DMITIGR_ASSERT(is_invariant_ok());
   }
-#endif
 
-  /// @overload
+  /// Constructs network endpoint.
   Endpoint(std::string address, const int port)
     : net_address_{std::move(address)}
     , net_port_{port}
@@ -89,12 +76,13 @@ public:
   Communication_mode communication_mode() const
   {
 #ifdef _WIN32
-    return wnp_pipe_name() ? Communication_mode::wnp : Communication_mode::net;
-#else
-    return uds_path() ? Communication_mode::uds : Communication_mode::net;
+    if (wnp_pipe_name())
+      return Communication_mode::wnp;
 #endif
+    return uds_path() ? Communication_mode::uds : Communication_mode::net;
   }
 
+#ifdef _WIN32
   /**
    * @returns The pipe name of the WNP if the communication mode
    * is `Communication_mode::wnp`, or `std::nullopt` otherwise.
@@ -112,6 +100,7 @@ public:
   {
     return wnp_server_name_;
   }
+#endif
 
   /**
    * @returns The path to the UDS if the communication mode
@@ -141,8 +130,10 @@ public:
   }
 
 private:
+#ifdef _WIN32
   std::optional<std::string> wnp_pipe_name_;
   std::optional<std::string> wnp_server_name_;
+#endif
   std::optional<std::filesystem::path> uds_path_;
   std::optional<std::string> net_address_;
   std::optional<int> net_port_;
@@ -151,17 +142,22 @@ private:
   {
     using Cm = Communication_mode;
 #ifdef _WIN32
-    const bool ipc_ok = ((!wnp_pipe_name_ && !wnp_server_name_) ||
-      (wnp_pipe_name_ && wnp_server_name_ && !wnp_pipe_name_->empty() && !wnp_server_name_->empty()));
-    const bool is_ipc = (communication_mode() == Cm::wnp);
-#else
-    const bool ipc_ok = (!uds_path_ || !uds_path_->empty());
-    const bool is_ipc = (communication_mode() == Cm::uds);
+    const bool wnp_ok = (!wnp_pipe_name_ && !wnp_server_name_) ||
+      (wnp_pipe_name_ && wnp_server_name_ && !wnp_pipe_name_->empty() && !wnp_server_name_->empty());
+    const bool is_wnp = communication_mode() == Cm::wnp;
 #endif
-    const bool net_ok = ((!net_address_ && !net_port_) ||
-      (net_address_ && net_port_ && !net_address_->empty()));
-
-    const bool is_net = (communication_mode() == Cm::net);
+    const bool uds_ok = !uds_path_ || !uds_path_->empty();
+    const bool is_uds = communication_mode() == Cm::uds;
+    const bool net_ok = (!net_address_ && !net_port_) ||
+      (net_address_ && net_port_ && !net_address_->empty());
+    const bool is_net = communication_mode() == Cm::net;
+#ifdef _WIN32
+    const bool is_ipc = is_wnp || is_uds;
+    const bool ipc_ok = wnp_ok || uds_ok;
+#else
+    const bool is_ipc = is_uds;
+    const bool ipc_ok = uds_ok;
+#endif
     const bool communication_mode_ok = (!is_ipc && is_net) || (is_ipc && !is_net);
 
     return ipc_ok && net_ok && communication_mode_ok;

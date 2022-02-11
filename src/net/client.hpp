@@ -42,12 +42,12 @@ public:
   explicit Client_options(std::string pipe_name)
     : endpoint_{std::move(pipe_name)}
   {}
-#else
+#endif
   /// uds.
   Client_options(std::filesystem::path path)
     : endpoint_{std::move(path)}
   {}
-#endif
+
   /// net.
   Client_options(std::string address, int port)
     : endpoint_{std::move(address), port}
@@ -83,10 +83,9 @@ inline std::unique_ptr<Descriptor> make_tcp_connection(const Client_options& opt
 #ifdef _WIN32
   case Communication_mode::wnp:
     throw Exception{"TCP connections over named pipes are not implemented"};
-#else
+#endif
   case Communication_mode::uds:
     return std::make_unique<Sockdesc>(make_tcp_connection({remote.uds_path().value()}));
-#endif
   case Communication_mode::net:
     return std::make_unique<Sockdesc>(make_tcp_connection({Ip_address{remote.net_address().value()}, remote.net_port().value()}));
   }
