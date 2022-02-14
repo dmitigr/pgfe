@@ -60,6 +60,8 @@ public:
   /// @name General options
   /// @{
 
+  // ---------------------------------------------------------------------------
+
   /// Sets the communication mode.
   DMITIGR_PGFE_API Connection_options&
   set_communication_mode(std::optional<Communication_mode> value) noexcept;
@@ -75,6 +77,8 @@ public:
   {
     return communication_mode_;
   }
+
+  // ---------------------------------------------------------------------------
 
   /**
    * @brief Sets the timeout of the connect operation.
@@ -98,6 +102,8 @@ public:
   {
     return connect_timeout_;
   }
+
+  // ---------------------------------------------------------------------------
 
   /**
    * @brief Sets the timeout of waiting for response.
@@ -524,6 +530,31 @@ public:
   }
 
   /// @}
+
+  // ---------------------------------------------------------------------------
+
+  /// @name Miscellaneous options
+  /// @{
+
+  /**
+   * @brief Sets the name of the file used to store passwords.
+   *
+   * @par Requires
+   * `!value || !value->empty()`.
+   *
+   * @see <a href="https://www.postgresql.org/docs/current/libpq-pgpass.html">The Password File</a>.
+   */
+  DMITIGR_PGFE_API Connection_options&
+  set_password_file(std::optional<std::filesystem::path> value);
+
+  /// @returns The current value of the option.
+  const std::optional<std::filesystem::path>& password_file() const noexcept
+  {
+    return password_file_;
+  }
+
+  /// @}
+
 private:
   friend bool operator==(const Connection_options& lhs,
     const Connection_options& rhs) noexcept;
@@ -551,6 +582,7 @@ private:
   std::optional<std::filesystem::path> ssl_certificate_authority_file_;
   std::optional<std::filesystem::path> ssl_certificate_revocation_list_file_;
   std::optional<bool> ssl_server_hostname_verification_enabled_{};
+  std::optional<std::filesystem::path> password_file_;
 };
 
 /// Connection_options is swappable.

@@ -245,6 +245,12 @@ int main()
       DMITIGR_ASSERT(co.ssl_certificate_revocation_list_file() == value);
     }
 
+    {
+      const auto value = "some value";
+      co.set_password_file(value);
+      DMITIGR_ASSERT(co.password_file() == value);
+    }
+
     // Testing the protection against the improper usage.
     {
       co.set_ssl_enabled(false);

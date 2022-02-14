@@ -306,6 +306,15 @@ Connection_options::set_ssl_server_hostname_verification_enabled(const bool valu
   return *this;
 }
 
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::set_password_file(std::optional<std::filesystem::path> value)
+{
+  if (value)
+    validate(is_non_empty(*value), "password file");
+  password_file_ = std::move(value);
+  return *this;
+}
+
 namespace detail::pq {
 
 /// Connection options for libpq from Connection_options.
@@ -383,12 +392,15 @@ public:
     if (const auto& v = o.kerberos_service_name())
       values_[krbsrvname] = *v;
 
+    if (const auto& v = o.password_file())
+      values_[passfile] = v->generic_string();
+
+
     // -------------------------------------------------------------------------
     // Options that are unavailable from Pgfe API (at least for now)
     // -------------------------------------------------------------------------
 
     values_[gsslib] = "";
-    values_[passfile] = "";
     values_[connect_timeout] = "";
     values_[client_encoding] = "auto";
     values_[options] = "";
@@ -487,10 +499,11 @@ private:
     sslmode, sslcompression, sslcert, sslkey, sslrootcert, sslcrl,
     requirepeer,
     krbsrvname,
+    passfile,
 
     // Options that are unavailable from Pgfe API (at least for now):
-    gsslib, passfile, connect_timeout, client_encoding, options,
-    application_name, fallback_application_name, service, target_session_attrs,
+    gsslib, connect_timeout, client_encoding, options, application_name,
+    fallback_application_name, service, target_session_attrs,
 
     // The last member is special - it denotes keyword count.
     Keyword_count_
