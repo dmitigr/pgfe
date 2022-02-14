@@ -22,11 +22,6 @@
 
 #include "../net/net.hpp"
 #include "connection_options.hpp"
-#ifdef _WIN32
-#include "defaults_windows.hpp"
-#else
-#include "defaults_unix.hpp"
-#endif
 
 #include <algorithm>
 #include <stdexcept>
@@ -76,43 +71,6 @@ inline void validate(const bool condition, const std::string& option_name)
 
 } // namespace validators
 
-DMITIGR_PGFE_INLINE Connection_options::Connection_options()
-  : Connection_options{detail::defaults::communication_mode}
-{}
-
-/*
- * It's better to provide an initializers in the members declarations, but
- * due to the bug in Microsoft Visual Studio 15.7, all of them are here.
- */
-DMITIGR_PGFE_INLINE Connection_options::Connection_options(const Communication_mode communication_mode)
-  : communication_mode_{communication_mode}
-  , connect_timeout_{detail::defaults::connect_timeout}
-  , wait_response_timeout_{detail::defaults::wait_response_timeout}
-  , uds_directory_{detail::defaults::uds_directory}
-  , uds_require_server_process_username_{detail::defaults::uds_require_server_process_username}
-  , tcp_keepalives_enabled_{detail::defaults::tcp_keepalives_enabled}
-  , tcp_keepalives_idle_{detail::defaults::tcp_keepalives_idle}
-  , tcp_keepalives_interval_{detail::defaults::tcp_keepalives_interval}
-  , tcp_keepalives_count_{detail::defaults::tcp_keepalives_count}
-  , net_address_{detail::defaults::net_address}
-  , net_hostname_{detail::defaults::net_hostname}
-  , port_{detail::defaults::port}
-  , username_{detail::defaults::username}
-  , database_{detail::defaults::database}
-  , password_{detail::defaults::password}
-  , kerberos_service_name_{detail::defaults::kerberos_service_name}
-  , is_ssl_enabled_{detail::defaults::ssl_enabled}
-  , ssl_compression_enabled_{detail::defaults::ssl_compression_enabled}
-  , ssl_certificate_file_{detail::defaults::ssl_certificate_file}
-  , ssl_private_key_file_{detail::defaults::ssl_private_key_file}
-  , ssl_certificate_authority_file_{detail::defaults::ssl_certificate_authority_file}
-  , ssl_certificate_revocation_list_file_{detail::defaults::ssl_certificate_revocation_list_file}
-  , ssl_server_hostname_verification_enabled_{detail::defaults::ssl_server_hostname_verification_enabled}
-{
-  if (!is_invariant_ok())
-    throw std::logic_error{"invalid connection options defaults (dmitigr::pgfe must be recompiled)"};
-}
-
 DMITIGR_PGFE_INLINE void Connection_options::swap(Connection_options& rhs) noexcept
 {
   using std::swap;
@@ -137,55 +95,55 @@ DMITIGR_PGFE_INLINE void Connection_options::swap(Connection_options& rhs) noexc
   swap(ssl_certificate_file_, rhs.ssl_certificate_file_);
   swap(ssl_private_key_file_, rhs.ssl_private_key_file_);
   swap(ssl_certificate_authority_file_, rhs.ssl_certificate_authority_file_);
-  swap(ssl_certificate_revocation_list_file_, rhs.ssl_certificate_revocation_list_file_);
-  swap(ssl_server_hostname_verification_enabled_, rhs.ssl_server_hostname_verification_enabled_);
+  swap(ssl_certificate_revocation_list_file_,
+    rhs.ssl_certificate_revocation_list_file_);
+  swap(ssl_server_hostname_verification_enabled_,
+    rhs.ssl_server_hostname_verification_enabled_);
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::set_communication_mode(const Communication_mode value) noexcept
+Connection_options::set_communication_mode(
+  const std::optional<Communication_mode> value) noexcept
 {
   communication_mode_ = value;
-  assert(is_invariant_ok());
   return *this;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::set_connect_timeout(std::optional<std::chrono::milliseconds> value)
+Connection_options::set_connect_timeout(
+  const std::optional<std::chrono::milliseconds> value)
 {
   if (value)
     validate(is_non_negative(value->count()), "connect timeout");
-  connect_timeout_ = std::move(value);
-  assert(is_invariant_ok());
+  connect_timeout_ = value;
   return *this;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_wait_response_timeout(
-  std::optional<std::chrono::milliseconds> value)
+  const std::optional<std::chrono::milliseconds> value)
 {
   if (value)
-    validate(is_non_negative(value->count()), "get response timeout");
-  wait_response_timeout_ = std::move(value);
-  assert(is_invariant_ok());
+    validate(is_non_negative(value->count()), "response timeout");
+  wait_response_timeout_ = value;
   return *this;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::set_port(const std::int_fast32_t value)
+Connection_options::set_port(const std::optional<std::int_fast32_t> value)
 {
-  validate(is_valid_port(value), "server port");
+  if (value)
+    validate(is_valid_port(*value), "server port");
   port_ = value;
-  assert(is_invariant_ok());
   return *this;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::set_uds_directory(std::filesystem::path value)
+Connection_options::set_uds_directory(std::optional<std::filesystem::path> value)
 {
-  assert(communication_mode() == Communication_mode::uds);
-  validate(is_absolute_directory_name(value), "UDS directory");
+  if (value)
+    validate(is_absolute_directory_name(*value), "UDS directory");
   uds_directory_ = std::move(value);
-  assert(is_invariant_ok());
   return *this;
 }
 
@@ -193,20 +151,16 @@ DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_uds_require_server_process_username(
   std::optional<std::string> value)
 {
-  assert(communication_mode() == Communication_mode::uds);
   if (value)
     validate(is_non_empty(*value), "UDS require server process username");
   uds_require_server_process_username_ = std::move(value);
-  assert(is_invariant_ok());
   return *this;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::set_tcp_keepalives_enabled(const bool value)
+Connection_options::set_tcp_keepalives_enabled(const std::optional<bool> value)
 {
-  assert(communication_mode() == Communication_mode::net);
   tcp_keepalives_enabled_ = value;
-  assert(is_invariant_ok());
   return *this;
 }
 
@@ -214,11 +168,9 @@ DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_tcp_keepalives_idle(
   const std::optional<std::chrono::seconds> value)
 {
-  assert(communication_mode() == Communication_mode::net);
   if (value)
     validate(is_non_negative(value->count()), "TCP keepalives idle");
   tcp_keepalives_idle_ = value;
-  assert(is_invariant_ok());
   return *this;
 }
 
@@ -226,64 +178,54 @@ DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_tcp_keepalives_interval(
   const std::optional<std::chrono::seconds> value)
 {
-  assert(communication_mode() == Communication_mode::net);
   if (value)
     validate(is_non_negative(value->count()), "TCP keepalives interval");
   tcp_keepalives_interval_ = value;
-  assert(is_invariant_ok());
   return *this;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_tcp_keepalives_count(const std::optional<int> value)
 {
-  assert(communication_mode() == Communication_mode::net);
   if (value)
     validate(is_non_negative(*value), "TCP keepalives count");
   tcp_keepalives_count_ = value;
-  assert(is_invariant_ok());
   return *this;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_net_address(std::optional<std::string> value)
 {
-  assert(communication_mode() == Communication_mode::net);
-  assert(value || net_hostname());
   if (value)
     validate(is_ip_address(*value), "Network address");
   net_address_ = std::move(value);
-  assert(is_invariant_ok());
   return *this;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_net_hostname(std::optional<std::string> value)
 {
-  assert(communication_mode() == Communication_mode::net);
-  assert(value || net_address());
   if (value)
     validate(is_hostname(*value), "Network host name");
   net_hostname_ = std::move(value);
-  assert(is_invariant_ok());
   return *this;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::set_username(std::string value)
+Connection_options::set_username(std::optional<std::string> value)
 {
-  validate(is_non_empty(value), "username");
+  if (value)
+    validate(is_non_empty(*value), "username");
   username_ = std::move(value);
-  assert(is_invariant_ok());
   return *this;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::set_database(std::string value)
+Connection_options::set_database(std::optional<std::string> value)
 {
-  validate(is_non_empty(value), "database");
+  if (value)
+    validate(is_non_empty(*value), "database");
   database_ = std::move(value);
-  assert(is_invariant_ok());
   return *this;
 }
 
@@ -293,7 +235,6 @@ Connection_options::set_password(std::optional<std::string> value)
   if (value)
     validate(is_non_empty(*value), "password");
   password_ = std::move(value);
-  assert(is_invariant_ok());
   return *this;
 }
 
@@ -303,46 +244,38 @@ Connection_options::set_kerberos_service_name(std::optional<std::string> value)
   if (value)
     validate(is_non_empty(*value), "Kerberos service name");
   kerberos_service_name_ = std::move(value);
-  assert(is_invariant_ok());
   return *this;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::set_ssl_enabled(const bool value)
+Connection_options::set_ssl_enabled(const std::optional<bool> value)
 {
   is_ssl_enabled_ = value;
-  assert(is_invariant_ok());
   return *this;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::set_ssl_compression_enabled(const bool value)
+Connection_options::set_ssl_compression_enabled(const std::optional<bool> value)
 {
-  assert(is_ssl_enabled());
   ssl_compression_enabled_ = value;
-  assert(is_invariant_ok());
   return *this;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_ssl_certificate_file(std::optional<std::filesystem::path> value)
 {
-  assert(is_ssl_enabled());
   if (value)
     validate(is_non_empty(*value), "SSL certificate file");
   ssl_certificate_file_ = std::move(value);
-  assert(is_invariant_ok());
   return *this;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_ssl_private_key_file(std::optional<std::filesystem::path> value)
 {
-  assert(is_ssl_enabled());
   if (value)
     validate(is_non_empty(*value), "SSL private key file");
   ssl_private_key_file_ = std::move(value);
-  assert(is_invariant_ok());
   return *this;
 }
 
@@ -350,11 +283,9 @@ DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_ssl_certificate_authority_file(
   std::optional<std::filesystem::path> value)
 {
-  assert(is_ssl_enabled());
   if (value)
     validate(is_non_empty(*value), "SSL certificate authority file");
   ssl_certificate_authority_file_ = std::move(value);
-  assert(is_invariant_ok());
   return *this;
 }
 
@@ -362,58 +293,20 @@ DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_ssl_certificate_revocation_list_file(
   std::optional<std::filesystem::path> value)
 {
-  assert(is_ssl_enabled());
   if (value)
     validate(is_non_empty(*value), "SSL certificate revocation list file");
   ssl_certificate_revocation_list_file_ = std::move(value);
-  assert(is_invariant_ok());
   return *this;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_ssl_server_hostname_verification_enabled(const bool value)
 {
-  assert(is_ssl_enabled());
-  assert(ssl_certificate_authority_file());
   ssl_server_hostname_verification_enabled_ = value;
-  assert(is_invariant_ok());
   return *this;
 }
 
-DMITIGR_PGFE_INLINE bool Connection_options::is_invariant_ok() const noexcept
-{
-  const bool uds_ok = !(communication_mode_ == Communication_mode::uds) ||
-    (is_absolute_directory_name(uds_directory_) &&
-      is_valid_port(port_) &&
-      (!uds_require_server_process_username_ || !uds_require_server_process_username_->empty()));
-  const bool tcp_ok = !(communication_mode_ == Communication_mode::net) ||
-    ((!tcp_keepalives_idle_ || is_non_negative(tcp_keepalives_idle_->count())) &&
-      (!tcp_keepalives_interval_ || is_non_negative(tcp_keepalives_interval_->count())) &&
-      (!tcp_keepalives_count_ || is_non_negative(tcp_keepalives_count_)) &&
-      (net_address_ || net_hostname_) &&
-      (!net_address_ || is_ip_address(*net_address_)) &&
-      (!net_hostname_ || is_hostname(*net_hostname_)) &&
-      is_valid_port(port_));
-  const bool auth_ok =
-    !username_.empty() &&
-    !database_.empty() &&
-    (!password_ || !password_->empty()) &&
-    (!kerberos_service_name_ || !kerberos_service_name_->empty());
-  const bool ssl_ok =
-    (!ssl_certificate_file_ || !ssl_certificate_file_->empty()) &&
-    (!ssl_private_key_file_ || !ssl_private_key_file_->empty()) &&
-    (!ssl_certificate_authority_file_ || !ssl_certificate_authority_file_->empty()) &&
-    (!ssl_certificate_revocation_list_file_ || !ssl_certificate_revocation_list_file_->empty()) &&
-    (!ssl_server_hostname_verification_enabled_ || ssl_certificate_authority_file_);
-
-  return uds_ok && tcp_ok && auth_ok && ssl_ok;
-}
-
 namespace detail::pq {
-
-// -----------------------------------------------------------------------------
-// Connection_options
-// -----------------------------------------------------------------------------
 
 /// Connection options for libpq from Connection_options.
 class Connection_options final {
@@ -421,55 +314,80 @@ public:
   /// The constructor.
   explicit Connection_options(const pgfe::Connection_options& o)
   {
-    switch (o.communication_mode()) {
+    const auto cm = o.communication_mode();
+    if (!cm)
+      throw std::runtime_error{"incomplete connection options:"
+        " communication mode is not specified"};
+
+    switch (*cm) {
     case Communication_mode::net: {
-      constexpr auto z = std::chrono::seconds::zero();
-      values_[host] = o.net_hostname().value_or("");
-      values_[hostaddr] = o.net_address().value_or("");
-      values_[port] = std::to_string(o.port());
-      values_[keepalives] = std::to_string(o.is_tcp_keepalives_enabled());
-      values_[keepalives_idle] = std::to_string(o.tcp_keepalives_idle().value_or(z).count());
-      values_[keepalives_interval] = std::to_string(o.tcp_keepalives_interval().value_or(z).count());
-      values_[keepalives_count] = std::to_string(o.tcp_keepalives_count().value_or(0));
+      if (const auto& v = o.net_hostname())
+        values_[host] = *v;
+      if (const auto& v  = o.net_address())
+        values_[hostaddr] = *v;
+      if (const auto v = o.port())
+        values_[port] = std::to_string(*v);
+      if (const auto v = o.is_tcp_keepalives_enabled())
+        values_[keepalives] = std::to_string(*v);
+      if (const auto v = o.tcp_keepalives_idle())
+        values_[keepalives_idle] = std::to_string(v->count());
+      if (const auto v = o.tcp_keepalives_interval())
+        values_[keepalives_interval] = std::to_string(v->count());
+      if (const auto v = o.tcp_keepalives_count())
+        values_[keepalives_count] = std::to_string(*v);
       break;
     }
     case Communication_mode::uds:
-      values_[host] = o.uds_directory().generic_string();
-      values_[port] = std::to_string(o.port());
-      values_[requirepeer] = o.uds_require_server_process_username().value_or("");
+      if (const auto& v = o.uds_directory())
+        values_[host] = v->generic_string();
+      if (const auto v = o.port())
+        values_[port] = std::to_string(*v);
+      if (const auto& v = o.uds_require_server_process_username())
+        values_[requirepeer] = *v;
       break;
+    default:
+      assert(false);
+      std::terminate();
     }
 
-    values_[dbname] = o.database();
-    values_[user] = o.username();
-    values_[password] = o.password().value_or("");
+    if (const auto& v = o.database())
+      values_[dbname] = *v;
+    if (const auto& v = o.username())
+      values_[user] = *v;
+    if (const auto& v = o.password())
+      values_[password] = *v;
 
-    if (o.is_ssl_enabled()) {
-      if (o.is_ssl_server_hostname_verification_enabled()) {
-        values_[sslmode] = "verify-full";
-      } else {
+    values_[sslmode] = "disable";
+    if (const auto is_ssl = o.is_ssl_enabled(); is_ssl && *is_ssl) {
+      const auto is_full = o.is_ssl_server_hostname_verification_enabled();
+      if (!is_full || !*is_full) {
         if (o.ssl_certificate_authority_file())
           values_[sslmode] = "verify-ca";
         else
           values_[sslmode] = "require";
-      }
+      } else
+        values_[sslmode] = "verify-full";
 
-      values_[sslcompression] = std::to_string(o.is_ssl_compression_enabled());
-      values_[sslcert] = o.ssl_certificate_file().value_or(std::filesystem::path{}).generic_string();
-      values_[sslkey] = o.ssl_private_key_file().value_or(std::filesystem::path{}).generic_string();
-      values_[sslrootcert] = o.ssl_certificate_authority_file().value_or(std::filesystem::path{}).generic_string();
-      values_[sslcrl] = o.ssl_certificate_revocation_list_file().value_or(std::filesystem::path{}).generic_string();
-    } else {
-      values_[sslmode] = "disable";
+      if (const auto v = o.is_ssl_compression_enabled())
+        values_[sslcompression] = std::to_string(*v);
+      if (const auto& v = o.ssl_certificate_file())
+        values_[sslcert] = v->generic_string();
+      if (const auto& v = o.ssl_private_key_file())
+        values_[sslkey] = v->generic_string();
+      if (const auto& v = o.ssl_certificate_authority_file())
+        values_[sslrootcert] = v->generic_string();
+      if (const auto& v = o.ssl_certificate_revocation_list_file())
+        values_[sslcrl] = v->generic_string();
     }
 
-    values_[krbsrvname] = o.kerberos_service_name().value_or("");
-    values_[gsslib] = "";
+    if (const auto& v = o.kerberos_service_name())
+      values_[krbsrvname] = *v;
 
     // -------------------------------------------------------------------------
     // Options that are unavailable from Pgfe API (at least for now)
     // -------------------------------------------------------------------------
 
+    values_[gsslib] = "";
     values_[passfile] = "";
     values_[connect_timeout] = "";
     values_[client_encoding] = "auto";
@@ -579,7 +497,7 @@ private:
   };
 
   /// @returns The keyword literal for libpq.
-  static const char* to_literal(const Keyword keyword)
+  static const char* to_literal(const Keyword keyword) noexcept
   {
     switch (keyword) {
     case host: return "host";
@@ -633,6 +551,10 @@ private:
     assert(is_invariant_ok());
   }
 
+  /*
+   * If the `pg_values_` entry associated with a non-nullptr `pq_keywords_`
+   * entry is nullptr or an empty string, that entry is ignored by libpq.
+   */
   const char* pq_keywords_[Keyword_count_ + 1];
   const char* pq_values_[Keyword_count_ + 1];
   std::string values_[Keyword_count_];

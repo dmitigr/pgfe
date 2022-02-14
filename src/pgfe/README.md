@@ -25,7 +25,8 @@ namespace pgfe = dmitigr::pgfe;
 
 int main() try {
   // Making the connection.
-  pgfe::Connection conn{pgfe::Connection_options{pgfe::Communication_mode::net}
+  pgfe::Connection conn{pgfe::Connection_options{}
+    .set(pgfe::Communication_mode::net)
     .set_net_hostname("localhost")
     .set_database("pgfe_test")
     .set_username("pgfe_test")
@@ -630,32 +631,22 @@ Pgfe is depends on the [libpq] library.
 
 ## CMake options
 
-The table below contains the [CMake] variables for defining built-in defaults.
+Since Pgfe is a C++ library subpackage of [Cpplipa][dmitigr_cpp_lipa], almost
+all the [CMake options of Cpplipa][dmitigr_cpplipa_cmake_options] are applicable
+to Pgfe.
 
-|Name                                                            |Range   |Default    |
-|:---------------------------------------------------------------|:-------|:-----------|
-|DMITIGR_PGFE_CONNECTION_COMMUNICATION_MODE                      |uds\|net|uds       |
-|DMITIGR_PGFE_CONNECTION_UDS_DIRECTORY                           |PATH    |*sys-dependent*|
-|DMITIGR_PGFE_CONNECTION_UDS_REQUIRE_SERVER_PROCESS_USERNAME     |STRING  |*not set*|
-|DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_ENABLED                  |bool    |Off|
-|DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_IDLE                     |0+      |*sys-default*|
-|DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_INTERVAL                 |0+      |*sys-default*|
-|DMITIGR_PGFE_CONNECTION_TCP_KEEPALIVES_COUNT                    |0+      |*sys-default*|
-|DMITIGR_PGFE_CONNECTION_NET_ADDRESS                             |string  |127.0.0.1|
-|DMITIGR_PGFE_CONNECTION_NET_HOSTNAME                            |string  |localhost|
-|DMITIGR_PGFE_CONNECTION_PORT                                    |1+      |5432|
-|DMITIGR_PGFE_CONNECTION_USERNAME                                |string  |postgres|
-|DMITIGR_PGFE_CONNECTION_DATABASE                                |string  |postgres|
-|DMITIGR_PGFE_CONNECTION_PASSWORD                                |string  |""|
-|DMITIGR_PGFE_CONNECTION_KERBEROS_SERVICE_NAME                   |string  ||
-|DMITIGR_PGFE_CONNECTION_SSL_ENABLED                             |bool    |Off|
-|DMITIGR_PGFE_CONNECTION_SSL_SERVER_HOSTNAME_VERIFICATION_ENABLED|bool    |Off|
-|DMITIGR_PGFE_CONNECTION_SSL_COMPRESSION_ENABLED                 |bool    |Off|
-|DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_FILE                    |PATH    |*libpq default*|
-|DMITIGR_PGFE_CONNECTION_SSL_PRIVATE_KEY_FILE                    |PATH    |*libpq default*|
-|DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_AUTHORITY_FILE          |PATH    |*libpq default*|
-|DMITIGR_PGFE_CONNECTION_SSL_CERTIFICATE_REVOCATION_LIST_FILE    |PATH    |*libpq default*|
+Please, pay attention to the following:
 
+  - by default, `CMAKE_BUILD_TYPE` is set to `Debug`;
+  - by using `Pq_ROOT` it's possible to specify a prefix for both binary and
+  headers of the [libpq]. For example, if [PostgreSQL] installed relocatably
+  into `/usr/local/pgsql`, the value of `Pq_ROOT` should be set accordingly;
+  - when building with Microsoft Visual Studio the value of `CMAKE_BUILD_TYPE`
+  doesn't selects the build configuration within the generated build environment.
+  The [CMake] command line option `--config` should be used for that purpose.
+
+[dmitigr_cpplipa]: https://github.com/dmitigr/cpplipa
+[dmitigr_cpplipa_cmake_options]: https://github.com/dmitigr/cpplipa#cmake-options
 [dmitigr_cpplipa_usage]: https://github.com/dmitigr/cpplipa.git#usage
 [dmitigr_pgfe]: https://github.com/dmitigr/pgfe.git
 

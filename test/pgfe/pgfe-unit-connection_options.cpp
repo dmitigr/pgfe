@@ -34,20 +34,18 @@
 int main()
 {
   namespace pgfe = dmitigr::pgfe;
-  namespace defaults = pgfe::detail::defaults;
   using dmitigr::util::with_catch;
   using Cm = pgfe::Communication_mode;
 
   try {
-    pgfe::Connection_options co{Cm::net};
+    pgfe::Connection_options co;
+    co.set(Cm::net);
     DMITIGR_ASSERT(co.communication_mode() == Cm::net);
-
-    co = pgfe::Connection_options{Cm::uds};
+    co.set(Cm::uds);
     DMITIGR_ASSERT(co.communication_mode() == Cm::uds);
 
     co = {};
 
-    DMITIGR_ASSERT(co.communication_mode() == defaults::communication_mode);
     {
       const auto value = Cm::net;
       co.set_communication_mode(value);
@@ -55,7 +53,6 @@ int main()
     }
 
     using ms = std::chrono::milliseconds;
-    DMITIGR_ASSERT(co.connect_timeout() == defaults::connect_timeout);
     {
       ms valid_value{};
       co.set_connect_timeout(valid_value);
@@ -65,7 +62,6 @@ int main()
       DMITIGR_ASSERT(with_catch<std::runtime_error>([&]{ co.set_connect_timeout(invalid_value); }));
     }
 
-    DMITIGR_ASSERT(co.wait_response_timeout() == defaults::wait_response_timeout);
     {
       ms valid_value{};
       co.set_wait_response_timeout(valid_value);
@@ -75,7 +71,6 @@ int main()
       DMITIGR_ASSERT(with_catch<std::runtime_error>([&]{ co.set_wait_response_timeout(invalid_value); }));
     }
 
-    DMITIGR_ASSERT(co.uds_directory() == defaults::uds_directory);
     {
       co.set_communication_mode(Cm::uds);
       DMITIGR_ASSERT(co.communication_mode() == Cm::uds);
@@ -91,7 +86,6 @@ int main()
       DMITIGR_ASSERT(with_catch<std::runtime_error>([&]{ co.set_uds_directory(invalid_value); }));
     }
 
-    DMITIGR_ASSERT(co.uds_require_server_process_username() == defaults::uds_require_server_process_username);
     {
       const auto value = "some value";
       co.set_uds_require_server_process_username(value);
@@ -105,7 +99,6 @@ int main()
       co.uds_require_server_process_username();
     }
 
-    DMITIGR_ASSERT(co.is_tcp_keepalives_enabled() == defaults::tcp_keepalives_enabled);
     {
       const auto value = true;
       co.set_tcp_keepalives_enabled(value);
@@ -114,7 +107,6 @@ int main()
       DMITIGR_ASSERT(co.is_tcp_keepalives_enabled() == !value);
     }
 
-    DMITIGR_ASSERT(co.tcp_keepalives_idle() == defaults::tcp_keepalives_idle);
     {
       using namespace std::chrono_literals;
       const auto value = 10s;
@@ -122,7 +114,6 @@ int main()
       DMITIGR_ASSERT(co.tcp_keepalives_idle() == value);
     }
 
-    DMITIGR_ASSERT(co.tcp_keepalives_interval() == defaults::tcp_keepalives_interval);
     {
       using namespace std::chrono_literals;
       const auto value = 10s;
@@ -130,7 +121,6 @@ int main()
       DMITIGR_ASSERT(co.tcp_keepalives_idle() == value);
     }
 
-    DMITIGR_ASSERT(co.tcp_keepalives_count() == defaults::tcp_keepalives_count);
     {
       const auto valid_value = 100;
       co.set_tcp_keepalives_count(valid_value);
@@ -140,7 +130,6 @@ int main()
       DMITIGR_ASSERT(with_catch<std::runtime_error>([&]() { co.set_tcp_keepalives_count(invalid_value); }));
     }
 
-    DMITIGR_ASSERT(co.net_address() == defaults::net_address);
     {
       const auto valid_value_ipv4 = "127.0.0.1";
       co.set_net_address(valid_value_ipv4);
@@ -155,7 +144,6 @@ int main()
       DMITIGR_ASSERT(with_catch<std::runtime_error>([&]() { co.set_net_address(invalid_value_ipv6); }));
     }
 
-    DMITIGR_ASSERT(co.net_hostname() == defaults::net_hostname);
     {
       const auto valid_value = "localhost";
       co.set_net_hostname(valid_value);
@@ -165,7 +153,6 @@ int main()
       DMITIGR_ASSERT(with_catch<std::runtime_error>([&]() { co.set_net_hostname(invalid_value); }));
     }
 
-    DMITIGR_ASSERT(co.port() == defaults::port);
     {
       const auto valid_value = 5432;
       co.set_port(valid_value);
@@ -188,42 +175,35 @@ int main()
       co.port();
     }
 
-    DMITIGR_ASSERT(co.username() == defaults::username);
     {
       const auto value = "some user name";
       co.set_username(value);
       DMITIGR_ASSERT(co.username() == value);
     }
 
-    DMITIGR_ASSERT(co.database() == defaults::database);
     {
       const auto value = "some database";
       co.set_database(value);
       DMITIGR_ASSERT(co.database() == value);
     }
 
-    DMITIGR_ASSERT(co.password() == defaults::password);
     {
       const auto value = "some password";
       co.set_password(value);
       DMITIGR_ASSERT(co.password() == value);
     }
 
-    DMITIGR_ASSERT(co.kerberos_service_name() == defaults::kerberos_service_name);
     {
       const auto value = "some name";
       co.set_kerberos_service_name(value);
       DMITIGR_ASSERT(co.kerberos_service_name() == value);
     }
 
-    DMITIGR_ASSERT(co.is_ssl_enabled() == defaults::ssl_enabled);
     {
-      const auto value = !defaults::ssl_enabled;
-      co.set_ssl_enabled(value);
-      DMITIGR_ASSERT(co.is_ssl_enabled() == value);
+      co.set_ssl_enabled(true);
+      DMITIGR_ASSERT(co.is_ssl_enabled() == true);
     }
 
-    DMITIGR_ASSERT(co.ssl_certificate_authority_file() == defaults::ssl_certificate_authority_file);
     {
       const auto value = "some value";
       co.set_ssl_certificate_authority_file(value);
@@ -231,7 +211,6 @@ int main()
     }
 
     // Note: this options is depends on "ssl_certificate_authority_file".
-    DMITIGR_ASSERT(co.is_ssl_server_hostname_verification_enabled() == defaults::ssl_server_hostname_verification_enabled);
     {
       const auto value = true;
       co.set_ssl_server_hostname_verification_enabled(value);
@@ -240,7 +219,6 @@ int main()
       DMITIGR_ASSERT(co.is_ssl_server_hostname_verification_enabled() == !value);
     }
 
-    DMITIGR_ASSERT(co.is_ssl_compression_enabled() == defaults::ssl_compression_enabled);
     {
       const auto value = true;
       co.set_ssl_compression_enabled(value);
@@ -249,21 +227,18 @@ int main()
       DMITIGR_ASSERT(co.is_ssl_compression_enabled() == !value);
     }
 
-    DMITIGR_ASSERT(co.ssl_certificate_file() == defaults::ssl_certificate_file);
     {
       const auto value = "some value";
       co.set_ssl_certificate_file(value);
       DMITIGR_ASSERT(co.ssl_certificate_file() == value);
     }
 
-    DMITIGR_ASSERT(co.ssl_private_key_file() == defaults::ssl_private_key_file);
     {
       const auto value = "some value";
       co.set_ssl_private_key_file(value);
       DMITIGR_ASSERT(co.ssl_private_key_file() == value);
     }
 
-    DMITIGR_ASSERT(co.ssl_certificate_revocation_list_file() == defaults::ssl_certificate_revocation_list_file);
     {
       const auto value = "some value";
       co.set_ssl_certificate_revocation_list_file(value);

@@ -73,13 +73,11 @@ try {
     pgfe::Connection conn;
     try {
       conn.connect();
-      DMITIGR_ASSERT(conn.status() == Connection_status::connected);
-    } catch (const std::exception& e) {
-      DMITIGR_ASSERT(conn.status() == Connection_status::failure);
-    }
-    conn.disconnect();
+    } catch (const std::exception& e) {}
     DMITIGR_ASSERT(conn.status() == Connection_status::disconnected);
   }
+    // conn.disconnect();
+    // DMITIGR_ASSERT(conn.status() == Connection_status::disconnected);
 
   // Connect to the pgfe_test database test
   {

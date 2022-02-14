@@ -69,7 +69,10 @@ public:
   /**
    * @brief The constructor.
    *
-   * @param options The connection options.
+   * @param options The connection options. At least the communication mode
+   * option must be specified to call connect()!
+   *
+   * @see connect().
    */
   explicit Connection(Options options = {})
     : options_{std::move(options)}
@@ -227,7 +230,7 @@ public:
    * the value of `std::nullopt` means *eternity*.
    *
    * @par Requires
-   * `(!timeout || timeout->count() >= -1)`.
+   * `options().communication_mode() && (!timeout || timeout->count() >= -1)`.
    *
    * @par Effects
    * `(status() == Status::failure || status() == Status::connected)`.
