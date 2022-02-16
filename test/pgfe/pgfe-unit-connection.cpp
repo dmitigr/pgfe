@@ -79,6 +79,21 @@ try {
     // conn.disconnect();
     // DMITIGR_ASSERT(conn.status() == Connection_status::disconnected);
 
+  // Ping
+  {
+    auto opts = pgfe::test::connection_options();
+    {
+      const auto status = ping(opts);
+      DMITIGR_ASSERT(status == pgfe::Server_status::ready);
+    }
+
+    {
+      opts.set_port(2345);
+      const auto status = ping(opts);
+      DMITIGR_ASSERT(status == pgfe::Server_status::unavailable);
+    }
+  }
+
   // Connect to the pgfe_test database test
   {
     std::unique_ptr<pgfe::Connection> conn;

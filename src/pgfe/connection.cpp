@@ -27,7 +27,7 @@
 
 namespace dmitigr::pgfe {
 
-namespace {
+namespace detail {
 /// A wrapper around net::poll().
 inline Socket_readiness poll_sock(const int socket, const Socket_readiness mask,
   const std::optional<std::chrono::milliseconds> timeout)
@@ -37,7 +37,29 @@ inline Socket_readiness poll_sock(const int socket, const Socket_readiness mask,
   return static_cast<Socket_readiness>(net::poll(static_cast<Sock>(socket),
     static_cast<Sock_readiness>(mask), timeout ? *timeout : std::chrono::milliseconds{-1}));
 }
-} // namespace
+} // namespace detail
+
+DMITIGR_PGFE_INLINE Server_status ping(const Connection_options& options)
+{
+  const detail::pq::Connection_options opts{options};
+  constexpr int expand_dbname{};
+  const auto result = ::PQpingParams(opts.keywords(), opts.values(), expand_dbname);
+  switch (result) {
+  case PQPING_OK:
+    return Server_status::ready;
+  case PQPING_REJECT:
+    return Server_status::unready;
+  case PQPING_NO_RESPONSE:
+    return Server_status::unavailable;
+  case PQPING_NO_ATTEMPT:
+    throw Client_exception{"due to client-side problem no attempt was made to"
+      " contact the PostgreSQL server"};
+  default:
+    break;
+  }
+  assert(false);
+  std::terminate();
+}
 
 DMITIGR_PGFE_INLINE auto Connection::status() const noexcept -> Status
 {
@@ -108,7 +130,7 @@ DMITIGR_PGFE_INLINE void Connection::connect_nio()
     assert(status() == Status::disconnected);
 
     const detail::pq::Connection_options pq_options{options_};
-    constexpr int expand_dbname{0};
+    constexpr int expand_dbname{};
     conn_.reset(::PQconnectStartParams(pq_options.keywords(), pq_options.values(), expand_dbname));
     if (conn_) {
       const auto conn_status = ::PQstatus(conn());
@@ -213,7 +235,7 @@ DMITIGR_PGFE_INLINE Socket_readiness Connection::wait_socket_readiness(Socket_re
   while (true) {
     const auto timepoint1 = system_clock::now();
     try {
-      return poll_sock(socket(), mask, timeout);
+      return detail::poll_sock(socket(), mask, timeout);
     } catch (const std::system_error& e) {
       // Retry on EINTR.
       if (e.code() == std::errc::interrupted) {

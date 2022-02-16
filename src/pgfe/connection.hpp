@@ -56,6 +56,15 @@ constexpr void ignore_row(Row&&) noexcept {}
 /**
  * @ingroup main
  *
+ * @returns The status of a PostgreSQL server.
+ *
+ * @throws An instance of class Client_exception if there is some client problem.
+ */
+DMITIGR_PGFE_API Server_status ping(const Connection_options& options);
+
+/**
+ * @ingroup main
+ *
  * @brief A connection to a PostgreSQL server.
  */
 class Connection final {

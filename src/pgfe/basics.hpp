@@ -190,6 +190,22 @@ enum class Connection_status {
   connected = 400
 };
 
+/**
+ * @ingroup main
+ *
+ * @brief A server status.
+ */
+enum class Server_status {
+  /// The server could not be contacted.
+  unavailable = 0,
+
+  /// The server is disallowing connections.
+  unready = 100,
+
+  /// The server is accepting connections.
+  ready = 200
+};
+
 // =============================================================================
 
 /**
