@@ -75,6 +75,7 @@ DMITIGR_PGFE_INLINE void Connection_options::swap(Connection_options& rhs) noexc
 {
   using std::swap;
   swap(communication_mode_, rhs.communication_mode_);
+  swap(session_mode_, rhs.session_mode_);
   swap(connect_timeout_, rhs.connect_timeout_);
   swap(wait_response_timeout_, rhs.wait_response_timeout_);
   swap(uds_directory_, rhs.uds_directory_);
@@ -83,22 +84,30 @@ DMITIGR_PGFE_INLINE void Connection_options::swap(Connection_options& rhs) noexc
   swap(tcp_keepalives_idle_, rhs.tcp_keepalives_idle_);
   swap(tcp_keepalives_interval_, rhs.tcp_keepalives_interval_);
   swap(tcp_keepalives_count_, rhs.tcp_keepalives_count_);
+  swap(tcp_user_timeout_, rhs.tcp_user_timeout_);
   swap(net_address_, rhs.net_address_);
   swap(net_hostname_, rhs.net_hostname_);
   swap(port_, rhs.port_);
   swap(username_, rhs.username_);
   swap(database_, rhs.database_);
   swap(password_, rhs.password_);
+  swap(password_file_, rhs.password_file_);
   swap(kerberos_service_name_, rhs.kerberos_service_name_);
+  swap(channel_binding_, rhs.channel_binding_);
   swap(is_ssl_enabled_, rhs.is_ssl_enabled_);
+  swap(ssl_min_protocol_version_, rhs.ssl_min_protocol_version_);
+  swap(ssl_max_protocol_version_, rhs.ssl_max_protocol_version_);
   swap(ssl_compression_enabled_, rhs.ssl_compression_enabled_);
   swap(ssl_certificate_file_, rhs.ssl_certificate_file_);
   swap(ssl_private_key_file_, rhs.ssl_private_key_file_);
+  swap(ssl_private_key_file_password_, rhs.ssl_private_key_file_password_);
   swap(ssl_certificate_authority_file_, rhs.ssl_certificate_authority_file_);
   swap(ssl_certificate_revocation_list_file_,
     rhs.ssl_certificate_revocation_list_file_);
   swap(ssl_server_hostname_verification_enabled_,
     rhs.ssl_server_hostname_verification_enabled_);
+  swap(ssl_server_name_indication_enabled_,
+    rhs.ssl_server_name_indication_enabled_);
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
@@ -106,6 +115,14 @@ Connection_options::set_communication_mode(
   const std::optional<Communication_mode> value) noexcept
 {
   communication_mode_ = value;
+  return *this;
+}
+
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::set_session_mode(
+  const std::optional<Session_mode> value) noexcept
+{
+  session_mode_ = value;
   return *this;
 }
 
@@ -194,6 +211,16 @@ Connection_options::set_tcp_keepalives_count(const std::optional<int> value)
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::set_tcp_user_timeout(
+  const std::optional<std::chrono::milliseconds> value)
+{
+  if (value)
+    validate(is_non_negative(value->count()), "TCP user timeout");
+  tcp_user_timeout_ = value;
+  return *this;
+}
+
+DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_net_address(std::optional<std::string> value)
 {
   if (value)
@@ -239,6 +266,15 @@ Connection_options::set_password(std::optional<std::string> value)
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::set_password_file(std::optional<std::filesystem::path> value)
+{
+  if (value)
+    validate(is_non_empty(*value), "password file");
+  password_file_ = std::move(value);
+  return *this;
+}
+
+DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_kerberos_service_name(std::optional<std::string> value)
 {
   if (value)
@@ -248,9 +284,32 @@ Connection_options::set_kerberos_service_name(std::optional<std::string> value)
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::set_channel_binding(const std::optional<Channel_binding> value)
+{
+  channel_binding_ = value;
+  return *this;
+}
+
+DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_ssl_enabled(const std::optional<bool> value)
 {
   is_ssl_enabled_ = value;
+  return *this;
+}
+
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::set_ssl_min_protocol_version(
+  const std::optional<Ssl_protocol_version> value)
+{
+  ssl_min_protocol_version_ = value;
+  return *this;
+}
+
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::set_ssl_max_protocol_version(
+  const std::optional<Ssl_protocol_version> value)
+{
+  ssl_max_protocol_version_ = value;
   return *this;
 }
 
@@ -280,6 +339,15 @@ Connection_options::set_ssl_private_key_file(std::optional<std::filesystem::path
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::set_ssl_private_key_file_password(std::optional<std::string> value)
+{
+  if (value)
+    validate(is_non_empty(*value), "SSL private key file password");
+  ssl_private_key_file_password_ = std::move(value);
+  return *this;
+}
+
+DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_ssl_certificate_authority_file(
   std::optional<std::filesystem::path> value)
 {
@@ -300,18 +368,18 @@ Connection_options::set_ssl_certificate_revocation_list_file(
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::set_ssl_server_hostname_verification_enabled(const bool value)
+Connection_options::set_ssl_server_hostname_verification_enabled(
+  const std::optional<bool> value)
 {
   ssl_server_hostname_verification_enabled_ = value;
   return *this;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::set_password_file(std::optional<std::filesystem::path> value)
+Connection_options::set_ssl_server_name_indication_enabled(
+  const std::optional<bool> value)
 {
-  if (value)
-    validate(is_non_empty(*value), "password file");
-  password_file_ = std::move(value);
+  ssl_server_name_indication_enabled_ = value;
   return *this;
 }
 
@@ -344,6 +412,8 @@ public:
         values_[keepalives_interval] = std::to_string(v->count());
       if (const auto v = o.tcp_keepalives_count())
         values_[keepalives_count] = std::to_string(*v);
+      if (const auto v = o.tcp_user_timeout())
+        values_[tcp_user_timeout] = std::to_string(v->count());
       break;
     }
     case Communication_mode::uds:
@@ -359,12 +429,27 @@ public:
       std::terminate();
     }
 
+    if (const auto& v = o.session_mode())
+      values_[target_session_attrs] = to_literal(*v);
+    else
+      values_[target_session_attrs] = to_literal(Session_mode::any);
+
     if (const auto& v = o.database())
       values_[dbname] = *v;
     if (const auto& v = o.username())
       values_[user] = *v;
     if (const auto& v = o.password())
       values_[password] = *v;
+    if (const auto& v = o.password_file())
+      values_[passfile] = v->generic_string();
+
+    if (const auto v = o.channel_binding())
+      values_[channel_binding] = to_literal(*v);
+    else
+      values_[channel_binding] = to_literal(Channel_binding::disabled);
+
+    if (const auto& v = o.kerberos_service_name())
+      values_[krbsrvname] = *v;
 
     values_[sslmode] = "disable";
     if (const auto is_ssl = o.is_ssl_enabled(); is_ssl && *is_ssl) {
@@ -377,24 +462,30 @@ public:
       } else
         values_[sslmode] = "verify-full";
 
+      if (const auto v = o.ssl_min_protocol_version())
+        values_[ssl_min_protocol_version] = to_literal(*v);
+      else
+        values_[ssl_min_protocol_version] =
+          to_literal(Ssl_protocol_version::tls1_2);
+
+      if (const auto v = o.ssl_max_protocol_version())
+        values_[ssl_max_protocol_version] = to_literal(*v);
+
       if (const auto v = o.is_ssl_compression_enabled())
         values_[sslcompression] = std::to_string(*v);
       if (const auto& v = o.ssl_certificate_file())
         values_[sslcert] = v->generic_string();
       if (const auto& v = o.ssl_private_key_file())
         values_[sslkey] = v->generic_string();
+      if (const auto& v = o.ssl_private_key_file_password())
+        values_[sslpassword] = *v;
       if (const auto& v = o.ssl_certificate_authority_file())
         values_[sslrootcert] = v->generic_string();
       if (const auto& v = o.ssl_certificate_revocation_list_file())
         values_[sslcrl] = v->generic_string();
+      if (const auto v = o.is_ssl_server_name_indication_enabled())
+        values_[sslsni] = std::to_string(*v);
     }
-
-    if (const auto& v = o.kerberos_service_name())
-      values_[krbsrvname] = *v;
-
-    if (const auto& v = o.password_file())
-      values_[passfile] = v->generic_string();
-
 
     // -------------------------------------------------------------------------
     // Options that are unavailable from Pgfe API (at least for now)
@@ -494,16 +585,19 @@ private:
    */
   enum Keyword : std::size_t {
     host = 0, hostaddr, port,
-    dbname, user, password,
+    dbname, user, password, passfile, channel_binding, krbsrvname,
+
     keepalives, keepalives_idle, keepalives_interval, keepalives_count,
-    sslmode, sslcompression, sslcert, sslkey, sslrootcert, sslcrl,
-    requirepeer,
-    krbsrvname,
-    passfile,
+    tcp_user_timeout,
+
+    sslmode, sslcompression, sslcert, sslkey, sslpassword, sslrootcert, sslcrl,
+    sslsni, requirepeer, ssl_min_protocol_version, ssl_max_protocol_version,
+
+    target_session_attrs,
 
     // Options that are unavailable from Pgfe API (at least for now):
     gsslib, connect_timeout, client_encoding, options, application_name,
-    fallback_application_name, service, target_session_attrs,
+    fallback_application_name, service,
 
     // The last member is special - it denotes keyword count.
     Keyword_count_
@@ -519,19 +613,25 @@ private:
     case dbname: return "dbname";
     case user: return "user";
     case password: return "password";
+    case passfile: return "passfile";
+    case channel_binding: return "channel_binding";
+    case krbsrvname: return "krbsrvname";
     case keepalives: return "keepalives";
     case keepalives_idle: return "keepalives_idle";
     case keepalives_interval: return "keepalives_interval";
     case keepalives_count: return "keepalives_count";
+    case tcp_user_timeout: return "tcp_user_timeout";
     case sslmode: return "sslmode";
     case sslcompression: return "sslcompression";
     case sslcert: return "sslcert";
     case sslkey: return "sslkey";
+    case sslpassword: return "sslpassword";
     case sslrootcert: return "sslrootcert";
     case sslcrl: return "sslcrl";
-    case krbsrvname: return "krbsrvname";
+    case sslsni: return "sslsni";
     case requirepeer: return "requirepeer";
-    case passfile: return "passfile";
+    case ssl_min_protocol_version: return "ssl_min_protocol_version";
+    case ssl_max_protocol_version: return "ssl_max_protocol_version";
     case connect_timeout: return "connect_timeout";
     case client_encoding: return "client_encoding";
     case options: return "options";
@@ -541,6 +641,48 @@ private:
     case service: return "service";
     case target_session_attrs: return "target_session_attrs";
     case Keyword_count_:;
+    }
+    assert(false);
+    std::terminate();
+  }
+
+  /// @returns The value literal for libpq.
+  static const char* to_literal(const Channel_binding value) noexcept
+  {
+    using Cb = Channel_binding;
+    switch (value) {
+    case Cb::disabled: return "disable";
+    case Cb::preferred: return "prefer";
+    case Cb::required: return "require";
+    }
+    assert(false);
+    std::terminate();
+  }
+
+  /// @returns The value literal for libpq.
+  static const char* to_literal(const Ssl_protocol_version value) noexcept
+  {
+    using Spv = Ssl_protocol_version;
+    switch (value) {
+    case Spv::tls1_0: return "TLSv1";
+    case Spv::tls1_1: return "TLSv1.1";
+    case Spv::tls1_2: return "TLSv1.2";
+    case Spv::tls1_3: return "TLSv1.3";
+    }
+    assert(false);
+    std::terminate();
+  }
+
+  /// @returns The value literal for libpq.
+  static const char* to_literal(const Session_mode value) noexcept
+  {
+    using Sm = Session_mode;
+    switch (value) {
+    case Sm::any: return "any";
+    case Sm::read_write: return "read-write";
+    case Sm::read_only: return "read-only";
+    case Sm::primary: return "primary";
+    case Sm::standby: return "standby";
     }
     assert(false);
     std::terminate();

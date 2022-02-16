@@ -103,6 +103,63 @@ enum class Communication_mode {
   net = 100
 };
 
+/**
+ * @ingroup main
+ *
+ * @brief A channel binding.
+ */
+enum class Channel_binding {
+  /// Disabled.
+  disabled = 0,
+
+  /// Used if available.
+  preferred = 100,
+
+  /// Required.
+  required = 200
+};
+
+/**
+ * @ingroup main
+ *
+ * @brief SSL protocol version.
+ */
+enum class Ssl_protocol_version {
+  /// TLS of version 1.0.
+  tls1_0 = 0,
+
+  /// TLS of version 1.1.
+  tls1_1 = 100,
+
+  /// TLS of version 1.2.
+  tls1_2 = 200,
+
+  /// TLS of version 1.3.
+  tls1_3 = 300
+};
+
+/**
+ * @ingroup main
+ *
+ * @brief Session mode.
+ */
+enum class Session_mode {
+  /// Any successful connection.
+  any = 0,
+
+  /// Session must accept read-write transactions by default.
+  read_write = 100,
+
+  /// Session must not accept read-write transactions by default.
+  read_only = 200,
+
+  /// Server must not be in hot standby mode.
+  primary = 300,
+
+  /// Server must be in hot standby mode.
+  standby = 400
+};
+
 // =============================================================================
 
 /**

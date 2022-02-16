@@ -80,6 +80,24 @@ public:
 
   // ---------------------------------------------------------------------------
 
+  /// Sets the session mode.
+  DMITIGR_PGFE_API Connection_options&
+  set_session_mode(std::optional<Session_mode> value) noexcept;
+
+  /// Shortcut of set_session_mode().
+  Connection_options& set(const std::optional<Session_mode> value) noexcept
+  {
+    return set_session_mode(value);
+  }
+
+  /// @returns The current value of the option.
+  std::optional<Session_mode> session_mode() const noexcept
+  {
+    return session_mode_;
+  }
+
+  // ---------------------------------------------------------------------------
+
   /**
    * @brief Sets the timeout of the connect operation.
    *
@@ -213,7 +231,7 @@ public:
   // ---------------------------------------------------------------------------
 
   /**
-   * @brief Sets the interval (in seconds) after which to start the keepalives.
+   * @brief Sets the duration after which to start the keepalives.
    *
    * @par Requires
    * `!value || value->count() >= 0`.
@@ -233,7 +251,7 @@ public:
   // ---------------------------------------------------------------------------
 
   /**
-   * @brief Sets the interval (in seconds) between the keepalives.
+   * @brief Sets the duration between the keepalives.
    *
    * @par Requires
    * `!value || value->count() >= 0`.
@@ -268,6 +286,27 @@ public:
   std::optional<int> tcp_keepalives_count() const noexcept
   {
     return tcp_keepalives_count_;
+  }
+
+  // ---------------------------------------------------------------------------
+
+  /**
+   * @brief Sets the duration that transmitted data may remain unacknowledged
+   * before a connection is forcibly closed.
+   *
+   * @par Requires
+   * `!value || value->count() >= 0`.
+   *
+   * @remarks This option is system dependent and has no effect on systems where
+   * the `TCP_USER_TIMEOUT` socket option (or its equivalent) is unavailable.
+   */
+  DMITIGR_PGFE_API Connection_options&
+  set_tcp_user_timeout(std::optional<std::chrono::milliseconds> value);
+
+  /// @returns The current value of the option.
+  std::optional<std::chrono::milliseconds> tcp_user_timeout() const noexcept
+  {
+    return tcp_user_timeout_;
   }
 
   // ---------------------------------------------------------------------------
@@ -385,6 +424,48 @@ public:
   // ---------------------------------------------------------------------------
 
   /**
+   * @brief Sets the name of the file used to store passwords.
+   *
+   * @par Requires
+   * `!value || !value->empty()`.
+   *
+   * @see <a href="https://www.postgresql.org/docs/current/libpq-pgpass.html">The Password File</a>.
+   */
+  DMITIGR_PGFE_API Connection_options&
+  set_password_file(std::optional<std::filesystem::path> value);
+
+  /// @returns The current value of the option.
+  const std::optional<std::filesystem::path>& password_file() const noexcept
+  {
+    return password_file_;
+  }
+
+  // ---------------------------------------------------------------------------
+
+  /**
+   * @brief Sets the mode of channel binding.
+   *
+   * @remarks Channel binding is only available over SSL connections with
+   * PostgreSQL 11+ servers using the SCRAM authentication method.
+   */
+  DMITIGR_PGFE_API Connection_options&
+  set_channel_binding(std::optional<Channel_binding> value);
+
+  /// Shortcut of set_channel_binding().
+  Connection_options& set(std::optional<Channel_binding> value)
+  {
+    return set_channel_binding(value);
+  }
+
+  /// @returns The current value of the option.
+  const std::optional<Channel_binding>& channel_binding() const noexcept
+  {
+    return channel_binding_;
+  }
+
+  // ---------------------------------------------------------------------------
+
+  /**
    * @brief Sets the Kerberos service name to use when authenticating with
    * GSSAPI Authentication.
    *
@@ -424,6 +505,46 @@ public:
 
   // ---------------------------------------------------------------------------
 
+  /**
+   * @brief Sets the minimum SSL protocol version allowed.
+   *
+   * @remarks Ssl_protocol_version::tls1_2 is used by default.
+   */
+  DMITIGR_PGFE_API Connection_options&
+  set_ssl_min_protocol_version(std::optional<Ssl_protocol_version> value);
+
+  /// Shortcut of set_ssl_min_protocol_version().
+  Connection_options& set_min(const std::optional<Ssl_protocol_version> value) noexcept
+  {
+    return set_ssl_min_protocol_version(value);
+  }
+
+  /// @returns The current value of the option.
+  std::optional<Ssl_protocol_version> ssl_min_protocol_version() const noexcept
+  {
+    return ssl_min_protocol_version_;
+  }
+
+  // ---------------------------------------------------------------------------
+
+  /// Sets the maximum SSL protocol version allowed.
+  DMITIGR_PGFE_API Connection_options&
+  set_ssl_max_protocol_version(std::optional<Ssl_protocol_version> value);
+
+  /// Shortcut of set_ssl_max_protocol_version().
+  Connection_options& set_max(const std::optional<Ssl_protocol_version> value) noexcept
+  {
+    return set_ssl_max_protocol_version(value);
+  }
+
+  /// @returns The current value of the option.
+  std::optional<Ssl_protocol_version> ssl_max_protocol_version() const noexcept
+  {
+    return ssl_max_protocol_version_;
+  }
+
+  // ---------------------------------------------------------------------------
+
   /// Enables the SSL compression if `value && *value`.
   DMITIGR_PGFE_API Connection_options&
   set_ssl_compression_enabled(std::optional<bool> value);
@@ -458,6 +579,8 @@ public:
    *
    * @par Requires
    * `!value || !value->empty()`.
+   *
+   * @see set_ssl_private_key_file_password().
    */
   DMITIGR_PGFE_API Connection_options&
   set_ssl_private_key_file(std::optional<std::filesystem::path> value);
@@ -466,6 +589,30 @@ public:
   const std::optional<std::filesystem::path>& ssl_private_key_file() const noexcept
   {
     return ssl_private_key_file_;
+  }
+
+  // ---------------------------------------------------------------------------
+
+  /**
+   * @brief Sets the password for the ssl_private_key_file().
+   *
+   * @details This parameter has no effect:
+   *   -# if the key file is not encrypted;
+   *   -# on key files specified by OpenSSL engines. (Unless the OpenSSL engine
+   *   uses callback which prompts for passwords.)
+   *
+   * @par Requires
+   * `!value || !value->empty()`.
+   *
+   * @see set_ssl_private_key_file().
+   */
+  DMITIGR_PGFE_API Connection_options&
+  set_ssl_private_key_file_password(std::optional<std::string> value);
+
+  /// @returns The current value of the option.
+  const std::optional<std::string>& ssl_private_key_file_password() const noexcept
+  {
+    return ssl_private_key_file_password_;
   }
 
   // ---------------------------------------------------------------------------
@@ -521,7 +668,7 @@ public:
    * @see ssl_certificate_authority_file().
    */
   DMITIGR_PGFE_API Connection_options&
-  set_ssl_server_hostname_verification_enabled(bool value);
+  set_ssl_server_hostname_verification_enabled(std::optional<bool> value);
 
   /// @returns The current value of the option.
   std::optional<bool> is_ssl_server_hostname_verification_enabled() const noexcept
@@ -529,28 +676,18 @@ public:
     return ssl_server_hostname_verification_enabled_;
   }
 
-  /// @}
-
   // ---------------------------------------------------------------------------
 
-  /// @name Miscellaneous options
-  /// @{
-
   /**
-   * @brief Sets the name of the file used to store passwords.
-   *
-   * @par Requires
-   * `!value || !value->empty()`.
-   *
-   * @see <a href="https://www.postgresql.org/docs/current/libpq-pgpass.html">The Password File</a>.
+   * @brief Sets the TLS extension "Server Name Indication" (SNI).
    */
   DMITIGR_PGFE_API Connection_options&
-  set_password_file(std::optional<std::filesystem::path> value);
+  set_ssl_server_name_indication_enabled(std::optional<bool> value);
 
   /// @returns The current value of the option.
-  const std::optional<std::filesystem::path>& password_file() const noexcept
+  std::optional<bool> is_ssl_server_name_indication_enabled() const noexcept
   {
-    return password_file_;
+    return ssl_server_name_indication_enabled_;
   }
 
   /// @}
@@ -560,29 +697,36 @@ private:
     const Connection_options& rhs) noexcept;
 
   std::optional<Communication_mode> communication_mode_;
+  std::optional<Session_mode> session_mode_;
   std::optional<std::chrono::milliseconds> connect_timeout_;
   std::optional<std::chrono::milliseconds> wait_response_timeout_;
   std::optional<std::filesystem::path> uds_directory_;
   std::optional<std::string> uds_require_server_process_username_;
-  std::optional<bool> tcp_keepalives_enabled_{};
+  std::optional<bool> tcp_keepalives_enabled_;
   std::optional<std::chrono::seconds> tcp_keepalives_idle_;
   std::optional<std::chrono::seconds> tcp_keepalives_interval_;
   std::optional<int> tcp_keepalives_count_;
+  std::optional<std::chrono::milliseconds> tcp_user_timeout_;
   std::optional<std::string> net_address_;
   std::optional<std::string> net_hostname_;
   std::optional<std::int_fast32_t> port_{5432};
   std::optional<std::string> username_;
   std::optional<std::string> database_;
   std::optional<std::string> password_;
+  std::optional<std::filesystem::path> password_file_;
+  std::optional<Channel_binding> channel_binding_;
   std::optional<std::string> kerberos_service_name_;
-  std::optional<bool> is_ssl_enabled_{};
-  std::optional<bool> ssl_compression_enabled_{};
+  std::optional<bool> is_ssl_enabled_;
+  std::optional<Ssl_protocol_version> ssl_min_protocol_version_;
+  std::optional<Ssl_protocol_version> ssl_max_protocol_version_;
+  std::optional<bool> ssl_compression_enabled_;
   std::optional<std::filesystem::path> ssl_certificate_file_;
   std::optional<std::filesystem::path> ssl_private_key_file_;
+  std::optional<std::string> ssl_private_key_file_password_;
   std::optional<std::filesystem::path> ssl_certificate_authority_file_;
   std::optional<std::filesystem::path> ssl_certificate_revocation_list_file_;
-  std::optional<bool> ssl_server_hostname_verification_enabled_{};
-  std::optional<std::filesystem::path> password_file_;
+  std::optional<bool> ssl_server_hostname_verification_enabled_;
+  std::optional<bool> ssl_server_name_indication_enabled_;
 };
 
 /// Connection_options is swappable.
@@ -596,20 +740,27 @@ inline bool operator==(const Connection_options& lhs,
   const Connection_options& rhs) noexcept
 {
   return
-    lhs.communication_mode_ == rhs.communication_mode_ &&
     // booleans
     lhs.tcp_keepalives_enabled_ == rhs.tcp_keepalives_enabled_ &&
     lhs.is_ssl_enabled_ == rhs.is_ssl_enabled_ &&
     lhs.ssl_compression_enabled_ == rhs.ssl_compression_enabled_ &&
     lhs.ssl_server_hostname_verification_enabled_ ==
     rhs.ssl_server_hostname_verification_enabled_ &&
+    lhs.ssl_server_name_indication_enabled_ ==
+    rhs.ssl_server_name_indication_enabled_ &&
     // numerics
+    lhs.communication_mode_ == rhs.communication_mode_ &&
+    lhs.session_mode_ == rhs.session_mode_ &&
+    lhs.channel_binding_ == rhs.channel_binding_ &&
     lhs.connect_timeout_ == rhs.connect_timeout_ &&
     lhs.wait_response_timeout_ == rhs.wait_response_timeout_ &&
     lhs.tcp_keepalives_idle_ == rhs.tcp_keepalives_idle_ &&
     lhs.tcp_keepalives_interval_ == rhs.tcp_keepalives_interval_ &&
     lhs.tcp_keepalives_count_ == rhs.tcp_keepalives_count_ &&
+    lhs.tcp_user_timeout_ == rhs.tcp_user_timeout_ &&
     lhs.port_ == rhs.port_ &&
+    lhs.ssl_min_protocol_version_ == rhs.ssl_min_protocol_version_ &&
+    lhs.ssl_max_protocol_version_ == rhs.ssl_max_protocol_version_ &&
     // strings
     lhs.uds_directory_ == rhs.uds_directory_ &&
     lhs.uds_require_server_process_username_ ==
@@ -619,9 +770,11 @@ inline bool operator==(const Connection_options& lhs,
     lhs.username_ == rhs.username_ &&
     lhs.database_ == rhs.database_ &&
     lhs.password_ == rhs.password_ &&
+    lhs.password_file_ == rhs.password_file_ &&
     lhs.kerberos_service_name_ == rhs.kerberos_service_name_ &&
     lhs.ssl_certificate_file_ == rhs.ssl_certificate_file_ &&
     lhs.ssl_private_key_file_ == rhs.ssl_private_key_file_ &&
+    lhs.ssl_private_key_file_password_ == rhs.ssl_private_key_file_password_ &&
     lhs.ssl_certificate_authority_file_ ==
     rhs.ssl_certificate_authority_file_ &&
     lhs.ssl_certificate_revocation_list_file_ ==

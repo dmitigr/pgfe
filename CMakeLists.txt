@@ -400,7 +400,8 @@ foreach(lib ${dmitigr_cpplipa_libraries})
       LINKER_LANGUAGE "CXX"
       POSITION_INDEPENDENT_CODE True
       VERSION ${${dmlib}_version_major}.${${dmlib}_version_minor}
-      DEBUG_POSTFIX "d")
+      # DEBUG_POSTFIX "d"
+      )
 
     dmitigr_cpplipa_target_compile_options(${dmlib})
   endif()

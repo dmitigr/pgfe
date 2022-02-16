@@ -36,6 +36,7 @@ int main()
   namespace pgfe = dmitigr::pgfe;
   using dmitigr::util::with_catch;
   using Cm = pgfe::Communication_mode;
+  using Sm = pgfe::Session_mode;
 
   try {
     pgfe::Connection_options co;
@@ -48,8 +49,14 @@ int main()
 
     {
       const auto value = Cm::net;
-      co.set_communication_mode(value);
+      co.set(value);
       DMITIGR_ASSERT(co.communication_mode() == value);
+    }
+
+    {
+      const auto value = Sm::read_only;
+      co.set(value);
+      DMITIGR_ASSERT(co.session_mode() == value);
     }
 
     using ms = std::chrono::milliseconds;
@@ -92,13 +99,6 @@ int main()
       DMITIGR_ASSERT(co.uds_require_server_process_username() == value);
     }
 
-    // Testing the protection against the improper usage.
-    {
-      co.set_communication_mode(Cm::net);
-      co.uds_directory();
-      co.uds_require_server_process_username();
-    }
-
     {
       const auto value = true;
       co.set_tcp_keepalives_enabled(value);
@@ -128,6 +128,13 @@ int main()
 
       const auto invalid_value = -100;
       DMITIGR_ASSERT(with_catch<std::runtime_error>([&]() { co.set_tcp_keepalives_count(invalid_value); }));
+    }
+
+    {
+      using namespace std::chrono_literals;
+      const auto value = 10s;
+      co.set_tcp_user_timeout(value);
+      DMITIGR_ASSERT(co.tcp_user_timeout() == value);
     }
 
     {
@@ -162,19 +169,6 @@ int main()
       DMITIGR_ASSERT(with_catch<std::runtime_error>([&]() { co.set_port(invalid_value); }));
     }
 
-    // Testing the protection against the improper usage.
-    {
-      using namespace std::chrono_literals;
-      co.set_communication_mode(pgfe::Communication_mode::uds);
-      co.is_tcp_keepalives_enabled();
-      co.tcp_keepalives_idle();
-      co.tcp_keepalives_interval();
-      co.tcp_keepalives_count();
-      co.net_address();
-      co.net_hostname();
-      co.port();
-    }
-
     {
       const auto value = "some user name";
       co.set_username(value);
@@ -200,8 +194,29 @@ int main()
     }
 
     {
+      const auto value = "some value";
+      co.set_password_file(value);
+      DMITIGR_ASSERT(co.password_file() == value);
+    }
+
+    {
+      const auto value = pgfe::Channel_binding::required;
+      co.set(value);
+      DMITIGR_ASSERT(co.channel_binding() == value);
+    }
+
+    {
       co.set_ssl_enabled(true);
       DMITIGR_ASSERT(co.is_ssl_enabled() == true);
+    }
+
+    {
+      const auto min_value = pgfe::Ssl_protocol_version::tls1_1;
+      const auto max_value = pgfe::Ssl_protocol_version::tls1_3;
+      co.set_min(min_value);
+      co.set_max(max_value);
+      DMITIGR_ASSERT(co.ssl_min_protocol_version() == min_value);
+      DMITIGR_ASSERT(co.ssl_max_protocol_version() == max_value);
     }
 
     {
@@ -217,6 +232,11 @@ int main()
       DMITIGR_ASSERT(co.is_ssl_server_hostname_verification_enabled() == value);
       co.set_ssl_server_hostname_verification_enabled(!value);
       DMITIGR_ASSERT(co.is_ssl_server_hostname_verification_enabled() == !value);
+
+      co.set_ssl_server_name_indication_enabled(value);
+      DMITIGR_ASSERT(co.is_ssl_server_name_indication_enabled() == value);
+      co.set_ssl_server_name_indication_enabled(!value);
+      DMITIGR_ASSERT(co.is_ssl_server_name_indication_enabled() == !value);
     }
 
     {
@@ -241,25 +261,14 @@ int main()
 
     {
       const auto value = "some value";
-      co.set_ssl_certificate_revocation_list_file(value);
-      DMITIGR_ASSERT(co.ssl_certificate_revocation_list_file() == value);
+      co.set_ssl_private_key_file_password(value);
+      DMITIGR_ASSERT(co.ssl_private_key_file_password() == value);
     }
 
     {
       const auto value = "some value";
-      co.set_password_file(value);
-      DMITIGR_ASSERT(co.password_file() == value);
-    }
-
-    // Testing the protection against the improper usage.
-    {
-      co.set_ssl_enabled(false);
-      co.is_ssl_server_hostname_verification_enabled();
-      co.is_ssl_compression_enabled();
-      co.ssl_certificate_file();
-      co.ssl_private_key_file();
-      co.ssl_certificate_authority_file();
-      co.ssl_certificate_revocation_list_file();
+      co.set_ssl_certificate_revocation_list_file(value);
+      DMITIGR_ASSERT(co.ssl_certificate_revocation_list_file() == value);
     }
 
     // detail::pq::Connection_options
