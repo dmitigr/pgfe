@@ -163,11 +163,13 @@ public:
    * @returns The absolute position of the query of the speficied SQL string.
    *
    * @param index An index of SQL string.
+   * @param conn A server connection.
    *
    * @par Requires
-   * `(index < sql_string_count())`.
+   * `index < sql_string_count() && conn.is_connected()`.
    */
-  DMITIGR_PGFE_API std::string::size_type query_absolute_position(std::size_t index) const;
+  DMITIGR_PGFE_API std::string::size_type
+  query_absolute_position(std::size_t index, const Connection& conn) const;
 
   /**
    * @brief Appends the SQL string to this vector.

@@ -20,11 +20,12 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
+#include "connection.hpp"
 #include "data.hpp"
 #include "sql_string.hpp"
 
-#include <memory>
 #include <cstring>
+#include <memory>
 #include <stdexcept>
 
 namespace dmitigr::pgfe {
@@ -118,19 +119,44 @@ DMITIGR_PGFE_INLINE void Sql_string::append(const Sql_string& appendix)
   assert(is_invariant_ok());
 }
 
-DMITIGR_PGFE_INLINE void Sql_string::replace_parameter(const std::string_view name, const Sql_string& replacement)
+DMITIGR_PGFE_INLINE void
+Sql_string::bind(const std::string_view name, const std::optional<std::string>& value)
 {
-  assert(parameter_index(name) < parameter_count());
+  assert(has_parameter(name));
+  for (auto& fragment : fragments_) {
+    if (fragment.is_named_parameter(name))
+      fragment.value = value;
+  }
+  assert(is_invariant_ok());
+}
+
+DMITIGR_PGFE_INLINE const std::optional<std::string>&
+Sql_string::bound(const std::string_view name) const
+{
+  assert(has_parameter(name));
+  for (auto& fragment : fragments_) {
+    if (fragment.is_named_parameter(name))
+      return fragment.value;
+  }
+  assert(false);
+  std::terminate();
+}
+
+DMITIGR_PGFE_INLINE void
+Sql_string::replace_parameter(const std::string_view name, const Sql_string& replacement)
+{
+  assert(has_parameter(name));
   assert(this != &replacement);
 
   // Updating fragments
   auto old_fragments = fragments_;
   try {
     for (auto fi = begin(fragments_); fi != end(fragments_);) {
-      if (fi->type == Fragment::Type::named_parameter && fi->str == name) {
-        // Firstly, we'll insert the `replacement` just before `fi`.
-        fragments_.insert(fi, cbegin(replacement.fragments_), cend(replacement.fragments_));
-        // Secondly, we'll erase named parameter pointed by `fi` and got the next iterator.
+      if (fi->is_named_parameter(name)) {
+        // Insert the `replacement` just before `fi`.
+        fragments_.insert(fi, cbegin(replacement.fragments_),
+          cend(replacement.fragments_));
+        // Erase named parameter pointed by `fi` and got the next iterator.
         fi = fragments_.erase(fi);
       } else
         ++fi;
@@ -147,28 +173,39 @@ DMITIGR_PGFE_INLINE void Sql_string::replace_parameter(const std::string_view na
 
 DMITIGR_PGFE_INLINE std::string Sql_string::to_string() const
 {
+  using Ft = Fragment::Type;
   std::string result;
   result.reserve(512);
   for (const auto& fragment : fragments_) {
     switch (fragment.type) {
-    case Fragment::Type::text:
+    case Ft::text:
       result += fragment.str;
       break;
-    case Fragment::Type::one_line_comment:
+    case Ft::one_line_comment:
       result += "--";
       result += fragment.str;
       result += '\n';
       break;
-    case Fragment::Type::multi_line_comment:
+    case Ft::multi_line_comment:
       result += "/*";
       result += fragment.str;
       result += "*/";
       break;
-    case Fragment::Type::named_parameter:
+    case Ft::named_parameter:
       result += ':';
       result += fragment.str;
       break;
-    case Fragment::Type::positional_parameter:
+    case Ft::named_parameter_literal:
+      result += ":'";
+      result += fragment.str;
+      result += '\'';
+      break;
+    case Ft::named_parameter_identifier:
+      result += ":\"";
+      result += fragment.str;
+      result += '"';
+      break;
+    case Ft::positional_parameter:
       result += '$';
       result += fragment.str;
       break;
@@ -178,26 +215,56 @@ DMITIGR_PGFE_INLINE std::string Sql_string::to_string() const
   return result;
 }
 
-DMITIGR_PGFE_INLINE std::string Sql_string::to_query_string() const
+DMITIGR_PGFE_INLINE std::string
+Sql_string::to_query_string(const Connection& conn) const
 {
+  using Ft = Fragment::Type;
+
+  static const auto check_value_bound = [](const auto& fragment)
+  {
+    assert(fragment.is_named_parameter());
+    if (!fragment.value) {
+      std::string what{"named parameter "};
+      what.append(fragment.str);
+      const char* const type_str =
+        fragment.type == Ft::named_parameter_literal ? "literal" :
+        fragment.type == Ft::named_parameter_identifier ? "identifier" : nullptr;
+      if (type_str)
+        what.append(" declared as ").append(type_str);
+      what.append(" has no value bound");
+      throw std::runtime_error{what};
+    }
+  };
+
   std::string result;
   result.reserve(512);
   for (const auto& fragment : fragments_) {
     switch (fragment.type) {
-    case Fragment::Type::text:
+    case Ft::text:
       result += fragment.str;
       break;
-    case Fragment::Type::one_line_comment:
-    case Fragment::Type::multi_line_comment:
+    case Ft::one_line_comment:
+      [[fallthrough]];
+    case Ft::multi_line_comment:
       break;
-    case Fragment::Type::named_parameter: {
-      const auto idx = named_parameter_index(fragment.str);
-      assert(idx < parameter_count());
-      result += '$';
-      result += std::to_string(idx + 1);
+    case Ft::named_parameter:
+      if (!fragment.value) {
+        const auto idx = named_parameter_index(fragment.str);
+        assert(idx < parameter_count());
+        result += '$';
+        result += std::to_string(idx + 1);
+      } else
+        result += *fragment.value;
       break;
-    }
-    case Fragment::Type::positional_parameter:
+    case Ft::named_parameter_literal:
+      check_value_bound(fragment);
+      result += conn.to_quoted_literal(*fragment.value);
+      break;
+    case Ft::named_parameter_identifier:
+      check_value_bound(fragment);
+      result += conn.to_quoted_identifier(*fragment.value);
+      break;
+    case Ft::positional_parameter:
       result += '$';
       result += fragment.str;
       break;
@@ -478,6 +545,7 @@ private:
   std::pair<Fragment_list::const_iterator, Fragment_list::const_iterator>
   static first_related_comments(const Fragment_list& fragments, const std::locale& loc)
   {
+    using Ft = Fragment::Type;
     const auto b = cbegin(fragments);
     const auto e = cend(fragments);
     auto result = std::make_pair(e, e);
@@ -502,16 +570,16 @@ private:
      */
     auto i = find_if(b, e, [&loc, &is_nearby_string](const Fragment& f)
     {
-      return (f.type == Fragment::Type::text && is_nearby_string(f.str, loc) && !is_blank_string(f.str, loc)) ||
-        f.type == Fragment::Type::named_parameter ||
-        f.type == Fragment::Type::positional_parameter;
+      return (f.type == Ft::text && is_nearby_string(f.str, loc) && !is_blank_string(f.str, loc)) ||
+        f.type == Ft::named_parameter ||
+        f.type == Ft::positional_parameter;
     });
     if (i != b && i != e && is_text(*i)) {
       result.second = i;
       do {
         --i;
         assert(is_comment(*i) || (is_text(*i) && is_blank_string(i->str, loc)));
-        if (i->type == Fragment::Type::text) {
+        if (i->type == Ft::text) {
           if (!is_nearby_string(i->str, loc))
             break;
         }
@@ -533,19 +601,22 @@ private:
   std::pair<std::pair<std::string, Extra::Comment_type>, Fragment_list::const_iterator>
   static joined_comments_of_same_type(Fragment_list::const_iterator i, const Fragment_list::const_iterator e)
   {
+    using Ft = Fragment::Type;
     assert(is_comment(*i));
     std::string result;
     const auto fragment_type = i->type;
     for (; i->type == fragment_type && i != e; ++i) {
       result.append(i->str);
-      if (fragment_type == Fragment::Type::one_line_comment)
+      if (fragment_type == Ft::one_line_comment)
         result.append("\n");
     }
-    const auto comment_type = [](const Fragment::Type ft)
+    const auto comment_type = [](const Ft ft)
     {
       switch (ft) {
-      case Fragment::Type::one_line_comment: return Extra::Comment_type::one_line;
-      case Fragment::Type::multi_line_comment: return Extra::Comment_type::multi_line;
+      case Ft::one_line_comment:
+        return Extra::Comment_type::one_line;
+      case Ft::multi_line_comment:
+        return Extra::Comment_type::multi_line;
       default:
         assert(false);
         std::terminate();
@@ -603,23 +674,30 @@ void Sql_string::push_positional_parameter(const std::string& str)
   else if (static_cast<Size>(position) > positional_parameters_.size())
     positional_parameters_.resize(static_cast<Size>(position), false);
 
-  positional_parameters_[static_cast<Size>(position) - 1] = true; // set parameter presence flag
+  // Set parameter presence flag.
+  positional_parameters_[static_cast<Size>(position) - 1] = true;
 
   assert(is_invariant_ok());
 }
 
-void Sql_string::push_named_parameter(const std::string& str)
+void Sql_string::push_named_parameter(const std::string& str, const char quote_char)
 {
+  assert(!quote_char || is_quote_char(quote_char));
   if (parameter_count() < max_parameter_count()) {
-    push_back_fragment(Fragment::Type::named_parameter, str);
+    using Ft = Fragment::Type;
+    const auto type =
+      quote_char == '\'' ? Ft::named_parameter_literal :
+      quote_char == '\"' ? Ft::named_parameter_identifier : Ft::named_parameter;
+    push_back_fragment(type, str);
     if (none_of(cbegin(named_parameters_), cend(named_parameters_),
-        [&str](const auto& i) { return (i->str == str); })) {
+        [&str](const auto& i){return (i->str == str);})) {
       auto e = cend(fragments_);
       --e;
       named_parameters_.push_back(e);
     }
   } else
-    throw std::runtime_error{"maximum parameters count (" + std::to_string(max_parameter_count()) + ") exceeded"};
+    throw std::runtime_error{"maximum parameters count (" +
+      std::to_string(max_parameter_count()) + ") exceeded"};
 
   assert(is_invariant_ok());
 }
@@ -665,42 +743,13 @@ void Sql_string::update_cache(const Sql_string& rhs)
   assert(is_invariant_ok());
 }
 
-// ---------------------------------------------------------------------------
-// Generators
-// ---------------------------------------------------------------------------
-
-auto Sql_string::unique_fragments(const Fragment::Type type) const
-  -> std::vector<Fragment_list::const_iterator>
-{
-  std::vector<Fragment_list::const_iterator> result;
-  result.reserve(8);
-  const auto e = cend(fragments_);
-  for (auto i = cbegin(fragments_); i != e; ++i) {
-    if (i->type == type) {
-      if (none_of(cbegin(result), cend(result), [&i](const auto& result_i) { return (i->str == result_i->str); }))
-        result.push_back(i);
-    }
-  }
-  return result;
-}
-
-std::size_t Sql_string::unique_fragment_index(
-  const std::vector<Fragment_list::const_iterator>& unique_fragments,
-  const std::string_view str) const noexcept
-{
-  const auto b = cbegin(unique_fragments);
-  const auto e = cend(unique_fragments);
-  const auto i = find_if(b, e, [&str](const auto& pi) { return (pi->str == str); });
-  return static_cast<std::size_t>(i - b);
-}
-
 // -----------------------------------------------------------------------------
-// Very basic SQL input parser
+// Basic SQL input parser
 // -----------------------------------------------------------------------------
 
 /*
  * SQL SYNTAX BASICS (from PostgreSQL documentation):
- * http://www.postgresql.org/docs/10/static/sql-syntax-lexical.html
+ * https://www.postgresql.org/docs/current/static/sql-syntax-lexical.html
  *
  * COMMANDS
  *
@@ -756,20 +805,10 @@ std::size_t Sql_string::unique_fragment_index(
  * - The colon (":") is used to select "slices" from arrays. In certain SQL
  * dialects (such as Embedded SQL), the colon is used to prefix variable
  * names.
- * [In Pgfe we will use ":" to prefix named parameters and placeholders.]
+ * [In Pgfe ":" is user to prefix named parameters and placeholders.]
  *
  * - Brackets ([]) are used to select the elements of an array.
  */
-
-namespace {
-
-/// @returns `true` if `c` is a valid character of unquoted SQL identifier.
-inline bool is_ident_char(const char c, const std::locale& loc) noexcept
-{
-  return isalnum(c, loc) || c == '_' || c == '$';
-}
-
-} // namespace
 
 /**
  * @returns Preparsed SQL string in pair with the pointer to a character
@@ -956,7 +995,7 @@ Sql_string::parse_sql_input(const std::string_view text, const std::locale& loc)
 
     case colon:
       assert(previous_char == ':');
-      if (is_ident_char(current_char, loc)) {
+      if (is_ident_char(current_char, loc) || is_quote_char(current_char)) {
         state = named_parameter;
         result.push_text(fragment);
         fragment.clear();
@@ -966,21 +1005,29 @@ Sql_string::parse_sql_input(const std::string_view text, const std::locale& loc)
         fragment += previous_char;
       }
 
-      if (current_char != ';') {
+      if (state == named_parameter && is_quote_char(current_char)) {
+        quote_char = current_char;
+        continue;
+      } else if (current_char != ';') {
         fragment += current_char;
         continue;
       } else
         goto finish;
 
     case named_parameter:
-      assert(is_ident_char(previous_char, loc));
+      assert(is_ident_char(previous_char, loc) ||
+        (is_quote_char(previous_char) && quote_char));
+
       if (!is_ident_char(current_char, loc)) {
         state = top;
-        result.push_named_parameter(fragment);
+        result.push_named_parameter(fragment, quote_char);
         fragment.clear();
       }
 
-      if (current_char != ';') {
+      if (current_char == quote_char) {
+        quote_char = 0;
+        continue;
+      } if (current_char != ';') {
         fragment += current_char;
         continue;
       } else
@@ -1001,6 +1048,7 @@ Sql_string::parse_sql_input(const std::string_view text, const std::locale& loc)
         // Skip previous quote.
       } else {
         state = top;
+        quote_char = 0;
         fragment += previous_char; // store previous quote
       }
 
@@ -1115,12 +1163,15 @@ Sql_string::parse_sql_input(const std::string_view text, const std::locale& loc)
     result.push_positional_parameter(fragment);
     break;
   case named_parameter:
-    result.push_named_parameter(fragment);
-    break;
+    if (!quote_char) {
+      result.push_named_parameter(fragment, quote_char);
+      break;
+    }
+    [[fallthrough]];
   default: {
     std::string message{"invalid SQL input"};
     if (!result.fragments_.empty())
-      message.append(" follows after: ").append(result.fragments_.back().str);
+      message.append(" after: ").append(result.fragments_.back().str);
     throw std::runtime_error{message};
   }
   }

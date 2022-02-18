@@ -22,8 +22,10 @@
 
 #include "../../src/base/assert.hpp"
 #include "../../src/pgfe/composite.hpp"
+#include "../../src/pgfe/connection.hpp"
 #include "../../src/pgfe/exceptions.hpp"
 #include "../../src/pgfe/sql_string.hpp"
+#include "pgfe-unit.hpp"
 
 #include <functional>
 
@@ -72,6 +74,36 @@ int main()
       DMITIGR_ASSERT(!str.has_missing_parameters());
 
       std::cout << str.to_string() << std::endl;
+    }
+
+    {
+      pgfe::Sql_string str{R"(SELECT :num, :num, :'txt', :'txt' FROM :"tab", :"tab")"};
+      DMITIGR_ASSERT(!str.is_empty());
+      DMITIGR_ASSERT(str.positional_parameter_count() == 0);
+      DMITIGR_ASSERT(str.named_parameter_count() == 3);
+      DMITIGR_ASSERT(str.parameter_count() == 3);
+      DMITIGR_ASSERT(!str.has_positional_parameters());
+      DMITIGR_ASSERT(str.has_named_parameters());
+      DMITIGR_ASSERT(str.has_parameters());
+      DMITIGR_ASSERT(!str.has_missing_parameters());
+      DMITIGR_ASSERT(!str.is_parameter_literal("num"));
+      DMITIGR_ASSERT(!str.is_parameter_identifier("num"));
+      DMITIGR_ASSERT(str.is_parameter_literal("txt"));
+      DMITIGR_ASSERT(str.is_parameter_identifier("tab"));
+
+      str.replace_parameter("num", "1");
+      DMITIGR_ASSERT(str.named_parameter_count() == 2);
+      DMITIGR_ASSERT(str.parameter_count() == 2);
+
+      str.bind("txt", "one");
+      DMITIGR_ASSERT(str.bound("txt") == "one");
+      str.bind("tab", "number");
+      DMITIGR_ASSERT(str.bound("tab") == "number");
+
+      const auto conn = pgfe::test::make_connection();
+      conn->connect();
+      std::cout << str.to_string() << std::endl;
+      std::cout << str.to_query_string(*conn) << std::endl;
     }
 
     {

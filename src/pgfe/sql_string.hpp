@@ -47,10 +47,15 @@ namespace dmitigr::pgfe {
  *
  * @brief A preparsed SQL strings.
  *
- * A dollar sign ("$") followed by digits is used to denote a parameter with
- * explicitly specified position. A colon (":") followed by alphanumerics is
- * used to denote a named parameter with automatically assignable position.
+ * @details A dollar sign ("$") followed by digits is used to denote a parameter
+ * with explicitly specified position. A colon (":") followed by alphanumerics
+ * is used to denote a named parameter with automatically assignable position.
  * The valid parameter positions range is [1, max_parameter_count()].
+ *
+ * Quoting the name of named parameter with either single or double quotes will
+ * lead to automatically quoting the content of such a parameter as a literal or
+ * an identifier accordingly at the time of generating the resulting query string
+ * with to_query_string().
  *
  * Examples of valid SQL strings:
  *
@@ -62,6 +67,9 @@ namespace dmitigr::pgfe {
  *
  *   - the SQL string with named parameter:
  *     @code{sql} WHERE :name = 'Dmitry Igrishin' @endcode
+ *
+ *   - the SQL string with quoted named parameters:
+ *     @code{sql} SELECT :'text' AS :"name" @endcode
  */
 class Sql_string final : public Parameterizable {
 public:
@@ -122,7 +130,7 @@ public:
   /// @see Parameterizable::parameter_count().
   std::size_t parameter_count() const noexcept override
   {
-    return (positional_parameter_count() + named_parameter_count());
+    return positional_parameter_count() + named_parameter_count();
   }
 
   /// @see Parameterizable::has_positional_parameters().
@@ -189,6 +197,48 @@ public:
   }
 
   /**
+   * @returns `true` if the parameter at specified `index` represents the
+   * literal and can be bound with the value for further quoting (escaping).
+   *
+   * @par Requires
+   * `index` in range `[positional_parameter_count(), parameter_count())`.
+   *
+   * @see bind().
+   */
+  bool is_parameter_literal(const std::size_t index) const noexcept
+  {
+    assert(positional_parameter_count() <= index && index < parameter_count());
+    return named_parameter_type(index) == Fragment::Type::named_parameter_literal;
+  }
+
+  /// @overload
+  bool is_parameter_literal(const std::string_view name) const noexcept
+  {
+    return is_parameter_literal(parameter_index(name));
+  }
+
+  /**
+   * @returns `true` if the parameter at specified `index` represents the
+   * identifier and can be bound with the value for further quoting (escaping).
+   *
+   * @par Requires
+   * `index` in range `[positional_parameter_count(), parameter_count())`.
+   *
+   * @see bind().
+   */
+  bool is_parameter_identifier(const std::size_t index) const noexcept
+  {
+    assert(positional_parameter_count() <= index && index < parameter_count());
+    return named_parameter_type(index) == Fragment::Type::named_parameter_identifier;
+  }
+
+  /// @overload
+  bool is_parameter_identifier(const std::string_view name) const noexcept
+  {
+    return is_parameter_identifier(parameter_index(name));
+  }
+
+  /**
    * @returns `true` if this SQL string has a positional parameter with the
    * index `i` such that `(is_parameter_missing(i) == false)`.
    *
@@ -214,6 +264,33 @@ public:
   DMITIGR_PGFE_API void append(const Sql_string& appendix);
 
   /**
+   * @brief Binds the parameter named by the `name` with the specified `value`.
+   *
+   * @par Requires
+   * `has_parameter(name)`.
+   *
+   * @par Effects
+   * The parameter `name` is associated with the given `value` which will be used
+   * as the parameter substitution upon of calling to_query_string().
+   *
+   * @par Exception safety guarantee
+   * Basic.
+   *
+   * @see has_parameter(), replace_parameter().
+   */
+  DMITIGR_PGFE_API void bind(const std::string_view name,
+    const std::optional<std::string>& value);
+
+  /**
+   * @returns The value bound to parameter.
+   *
+   * @par Requires
+   * `has_parameter(name)`.
+   */
+  DMITIGR_PGFE_API const std::optional<std::string>&
+  bound(const std::string_view name) const;
+
+  /**
    * @brief Replaces the parameter named by the `name` with the specified
    * `replacement`.
    *
@@ -227,15 +304,20 @@ public:
    * @par Exception safety guarantee
    * Strong.
    *
-   * @see has_parameter().
+   * @see has_parameter(), bind().
    */
   DMITIGR_PGFE_API void replace_parameter(std::string_view name, const Sql_string& replacement);
 
   /// @returns The result of conversion of this instance to the instance of type `std::string`.
   DMITIGR_PGFE_API std::string to_string() const;
 
-  /// @returns The query string that's actually passed to a PostgreSQL server.
-  DMITIGR_PGFE_API std::string to_query_string() const;
+  /**
+   * @returns The query string that's actually passed to a PostgreSQL server.
+   *
+   * @par Requires
+   * `conn.is_connected()`.
+   */
+  DMITIGR_PGFE_API std::string to_query_string(const Connection& conn) const;
 
   /// @returns The extra data associated with this instance.
   ///
@@ -345,6 +427,8 @@ private:
       one_line_comment,
       multi_line_comment,
       named_parameter,
+      named_parameter_literal,
+      named_parameter_identifier,
       positional_parameter
     };
 
@@ -353,8 +437,22 @@ private:
       , str(s)
     {}
 
+    bool is_named_parameter() const noexcept
+    {
+      using Ft = Fragment::Type;
+      return type == Ft::named_parameter ||
+        type == Ft::named_parameter_literal ||
+        type == Ft::named_parameter_identifier;
+    }
+
+    bool is_named_parameter(const std::string_view name) const noexcept
+    {
+      return is_named_parameter() && str == name;
+    }
+
     Type type;
     std::string str;
+    std::optional<std::string> value;
   };
   using Fragment_list = std::list<Fragment>;
 
@@ -411,7 +509,7 @@ private:
   }
 
   void push_positional_parameter(const std::string& str);
-  void push_named_parameter(const std::string& str);
+  void push_named_parameter(const std::string& str, char quote_char);
 
   // ---------------------------------------------------------------------------
   // Updaters
@@ -421,23 +519,41 @@ private:
   void update_cache(const Sql_string& rhs);
 
   // ---------------------------------------------------------------------------
-  // Generators
+  // Named parameters helpers
   // ---------------------------------------------------------------------------
 
-  std::vector<Fragment_list::const_iterator> unique_fragments(Fragment::Type type) const;
-
-  std::size_t unique_fragment_index(
-    const std::vector<Fragment_list::const_iterator>& unique_fragments,
-    const std::string_view str) const noexcept;
+  Fragment::Type named_parameter_type(const std::size_t index) const noexcept
+  {
+    assert(positional_parameter_count() <= index && index < parameter_count());
+    const auto relative_index = index - positional_parameter_count();
+    return named_parameters_[relative_index]->type;
+  }
 
   std::size_t named_parameter_index(const std::string_view name) const noexcept
   {
-    return positional_parameter_count() + unique_fragment_index(named_parameters_, name);
+    const auto relative_index = [this, name]() noexcept
+    {
+      const auto b = cbegin(named_parameters_);
+      const auto e = cend(named_parameters_);
+      const auto i = find_if(b, e, [name](const auto& pi){return pi->str == name;});
+      return static_cast<std::size_t>(i - b);
+    }();
+    return positional_parameter_count() + relative_index;
   }
 
   std::vector<Fragment_list::const_iterator> named_parameters() const
   {
-    return unique_fragments(Fragment::Type::named_parameter);
+    std::vector<Fragment_list::const_iterator> result;
+    result.reserve(8);
+    const auto e = cend(fragments_);
+    for (auto i = cbegin(fragments_); i != e; ++i) {
+      if (i->is_named_parameter()) {
+        if (none_of(cbegin(result), cend(result),
+            [i](const auto& result_i){return i->str == result_i->str;}))
+          result.push_back(i);
+      }
+    }
+    return result;
   }
 
   // ---------------------------------------------------------------------------
@@ -462,6 +578,18 @@ private:
   static bool is_text(const Fragment& f) noexcept
   {
     return (f.type == Fragment::Type::text);
+  }
+
+  /// @returns `true` if `c` is a valid character of unquoted SQL identifier.
+  static bool is_ident_char(const char c, const std::locale& loc) noexcept
+  {
+    return isalnum(c, loc) || c == '_' || c == '$';
+  }
+
+  /// @returns `true` if `c` is either single or double quote character.
+  static bool is_quote_char(const char c) noexcept
+  {
+    return c == '\'' || c == '\"';
   }
 
   // ---------------------------------------------------------------------------

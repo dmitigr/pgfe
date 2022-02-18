@@ -134,11 +134,15 @@ DMITIGR_PGFE_INLINE void Prepared_statement::execute_nio__(const Sql_string* con
 
     const int send_ok = statement
       ?
-      ::PQsendQueryParams(connection_->conn(), statement->to_query_string().c_str(),
-        param_count, nullptr, values.data(), lengths.data(), formats.data(), result_format)
+      ::PQsendQueryParams(connection_->conn(),
+        statement->to_query_string(*connection_).c_str(),
+        param_count, nullptr, values.data(), lengths.data(),
+        formats.data(), result_format)
       :
-      ::PQsendQueryPrepared(connection_->conn(), name_.c_str(),
-        param_count, values.data(), lengths.data(), formats.data(), result_format);
+      ::PQsendQueryPrepared(connection_->conn(),
+        name_.c_str(),
+        param_count, values.data(), lengths.data(),
+        formats.data(), result_format);
 
     if (!send_ok)
       throw std::runtime_error{connection_->error_message()};

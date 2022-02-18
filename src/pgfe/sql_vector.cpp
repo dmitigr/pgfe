@@ -71,11 +71,14 @@ DMITIGR_PGFE_INLINE std::size_t Sql_vector::index_of(
   return static_cast<std::size_t>(i - b);
 }
 
-DMITIGR_PGFE_INLINE std::string::size_type Sql_vector::query_absolute_position(const std::size_t index) const
+DMITIGR_PGFE_INLINE std::string::size_type
+Sql_vector::query_absolute_position(const std::size_t index,
+  const Connection& conn) const
 {
   assert(index < size());
 
-  const auto junk_size = operator[](index).to_string().size() - operator[](index).to_query_string().size();
+  const auto junk_size = operator[](index).to_string().size() -
+    operator[](index).to_query_string(conn).size();
   const auto sql_string_position = [this](const std::size_t idx)
   {
     std::string::size_type result{};

@@ -33,7 +33,6 @@
 #include "notification.hpp"
 #include "pq.hpp"
 #include "prepared_statement.hpp"
-#include "sql_string.hpp"
 #include "types_fwd.hpp"
 
 #include <cassert>
@@ -730,11 +729,8 @@ public:
    *
    * @see unprepare_nio().
    */
-  void prepare_nio(const Sql_string& statement, const std::string& name = {})
-  {
-    assert(!statement.has_missing_parameters());
-    prepare_nio__(statement.to_query_string().c_str(), name.c_str(), &statement); // can throw
-  }
+  DMITIGR_PGFE_API void prepare_nio(const Sql_string& statement,
+    const std::string& name = {});
 
   /// Same as prepare_nio() except the statement will be send without preparsing.
   void prepare_nio_as_is(const std::string& statement, const std::string& name = {})
@@ -755,14 +751,12 @@ public:
    *
    * @see unprepare().
    */
-  Prepared_statement& prepare(const Sql_string& statement, const std::string& name = {})
-  {
-    using M = void(Connection::*)(const Sql_string&, const std::string&);
-    return prepare__(static_cast<M>(&Connection::prepare_nio), statement, name);
-  }
+  DMITIGR_PGFE_API Prepared_statement& prepare(const Sql_string& statement,
+    const std::string& name = {});
 
   /// Same as prepare() except the statement will be send without preparsing.
-  Prepared_statement& prepare_as_is(const std::string& statement, const std::string& name = {})
+  Prepared_statement& prepare_as_is(const std::string& statement,
+    const std::string& name = {})
   {
     return prepare__(&Connection::prepare_nio_as_is, statement, name);
   }
@@ -1302,7 +1296,8 @@ private:
   // Prepared statement helpers
   // ---------------------------------------------------------------------------
 
-  void prepare_nio__(const char* const query, const char* const name, const Sql_string* const preparsed);
+  void prepare_nio__(const char* const query, const char* const name,
+    const Sql_string* const preparsed);
 
   template<typename M, typename T>
   Prepared_statement& prepare__(M&& prepare, T&& statement, const std::string& name)

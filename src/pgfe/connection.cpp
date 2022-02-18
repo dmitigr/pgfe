@@ -24,6 +24,7 @@
 #include "connection.hpp"
 #include "exceptions.hpp"
 #include "large_object.hpp"
+#include "sql_string.hpp"
 
 namespace dmitigr::pgfe {
 
@@ -476,6 +477,21 @@ DMITIGR_PGFE_INLINE Completion Connection::completion() noexcept
   default:
     return {};
   }
+}
+
+DMITIGR_PGFE_INLINE void
+Connection::prepare_nio(const Sql_string& statement, const std::string& name)
+{
+  assert(!statement.has_missing_parameters());
+  prepare_nio__(statement.to_query_string(*this).c_str(),
+    name.c_str(), &statement); // can throw
+}
+
+DMITIGR_PGFE_INLINE Prepared_statement&
+Connection::prepare(const Sql_string& statement, const std::string& name)
+{
+  using M = void(Connection::*)(const Sql_string&, const std::string&);
+  return prepare__(static_cast<M>(&Connection::prepare_nio), statement, name);
 }
 
 DMITIGR_PGFE_INLINE void Connection::describe_nio(const std::string& name)
