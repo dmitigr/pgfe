@@ -45,6 +45,20 @@ DMITIGR_PGFE_API void set_initialization(External_library library);
 /// @returns The case-folded and double-quote processed SQL identifier.
 DMITIGR_PGFE_API std::string unquote_identifier(std::string_view identifier);
 
+/**
+ * @brief PostgreSQL array dimension determiner.
+ *
+ * @details The function doesn't traverse the specified literal completely!
+ * It's not the parser. The function simply counts the number of opening curly
+ * brackets, performing basic check for well-formed literal.
+ *
+ * @returns The determined array dimension.
+ *
+ * @throws Client_exception if malformed array literal detected.
+ */
+DMITIGR_PGFE_API int array_dimension(std::string_view literal,
+  const char delimiter = ',');
+
 } // namespace dmitigr::pgfe
 
 #ifndef DMITIGR_PGFE_NOT_HEADER_ONLY

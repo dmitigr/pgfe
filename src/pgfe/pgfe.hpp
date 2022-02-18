@@ -23,6 +23,7 @@
 #ifndef DMITIGR_PGFE_PGFE_HPP
 #define DMITIGR_PGFE_PGFE_HPP
 
+#include "array_aliases.hpp"
 #include "array_conversions.hpp"
 #include "basic_conversions.hpp"
 #include "basics.hpp"

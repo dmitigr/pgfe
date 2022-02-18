@@ -22,9 +22,6 @@
 
 #include "pgfe-unit-benchmark_array.hpp"
 
-#include <optional>
-#include <vector>
-
 int main(int argc, char* argv[])
 try {
   namespace pgfe = dmitigr::pgfe;
@@ -32,7 +29,7 @@ try {
   auto [output_file, conn] = pgfe::test::arraybench::prepare(argc, argv);
   conn->execute([&output_file](auto&& row)
   {
-    using Array = std::vector<std::optional<std::string>>;
+    using Array = pgfe::Array_optional<std::string>;
     for (const auto& elem : pgfe::to<Array>(row[0])) {
       if (elem)
         output_file << *elem;

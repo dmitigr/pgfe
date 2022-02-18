@@ -63,4 +63,25 @@ DMITIGR_PGFE_INLINE std::string unquote_identifier(const std::string_view identi
   return result;
 }
 
+DMITIGR_PGFE_INLINE int array_dimension(const std::string_view literal,
+  const char delimiter)
+{
+  if (!literal.data())
+    return 0;
+
+  int dimension{};
+  const std::locale loc;
+  for (const auto c : literal) {
+    if (c == '{')
+      ++dimension;
+    else if (std::isspace(c, loc))
+      ; // Skip space.
+    else if (!dimension || c == delimiter)
+      throw Client_exception{Client_errc::malformed_array_literal};
+    else
+      break;
+  }
+  return dimension;
+}
+
 } // namespace dmitigr::pgfe

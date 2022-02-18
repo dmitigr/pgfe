@@ -31,6 +31,7 @@ dmitigr_cpplipa_set_library_info(pgfe 1 0 "Client API for PostgreSQL")
 # ------------------------------------------------------------------------------
 
 set(dmitigr_pgfe_headers
+  array_aliases.hpp
   array_conversions.hpp
   basic_conversions.hpp
   basics.hpp
@@ -110,6 +111,7 @@ endif()
 
 if(DMITIGR_CPPLIPA_TESTS)
   set(dmitigr_pgfe_tests
+    array_dimension
     benchmark_array_client
     benchmark_array_server
     benchmark_sql_string_replace
