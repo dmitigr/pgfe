@@ -115,7 +115,7 @@ public:
 
   const void* bytes() const noexcept override
   {
-    return storage_.get();
+    return storage_.get() ? storage_.get() : "";
   }
 
 private:

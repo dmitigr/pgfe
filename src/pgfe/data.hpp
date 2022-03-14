@@ -53,14 +53,7 @@ public:
   /// The destructor.
   virtual ~Data() = default;
 
-  /**
-   * @returns `true` if the instance is valid.
-   *
-   * @warning The behavior is undefined if any method other than this one, the
-   * destructor or the move-assignment operator is called on an instance for
-   * which `(is_valid() == false)`. It's okay to move an instance for which
-   * `(is_valid() == false)`.
-   */
+  /// @returns `true` if the instance is valid.
   bool is_valid() const noexcept
   {
     return (static_cast<int>(format()) >= 0);
@@ -136,9 +129,7 @@ public:
 
   /// @}
 
-  // ---------------------------------------------------------------------------
-
-  /// @name Observers and modifiers
+  /// @name Observers
   /// @{
 
   /// @returns The data format.
@@ -150,11 +141,7 @@ public:
   /// @returns `(size() == 0)`.
   virtual bool is_empty() const noexcept = 0;
 
-  /**
-   * @returns The pointer to a unmodifiable memory area.
-   *
-   * @remarks Any bits stored in the array shall not be altered!
-   */
+  /// @returns The pointer to a unmodifiable memory area. (Shall not be altered!)
   virtual const void* bytes() const noexcept = 0;
 
   /// @}
