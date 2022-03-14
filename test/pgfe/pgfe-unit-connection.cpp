@@ -117,6 +117,7 @@ try {
       conn = pgfe::test::make_connection();
       DMITIGR_ASSERT(conn);
       conn->connect();
+      conn->set_nio_output_enabled(true);
       DMITIGR_ASSERT(conn->options().communication_mode() == Communication_mode::net);
       DMITIGR_ASSERT(!conn->is_ssl_secured());
       DMITIGR_ASSERT(conn->status() == Connection_status::connected);

@@ -56,11 +56,8 @@ inline auto make_connection()
 inline auto make_uds_connection()
 {
   return std::make_unique<pgfe::Connection>(
-    pgfe::Connection_options{}
+    connection_options()
     .set(pgfe::Communication_mode::uds)
-    .set_database("pgfe_test")
-    .set_username("pgfe_test")
-    .set_password("pgfe_test")
 #ifdef _WIN32
     .set_uds_directory("C:/tmp")
 #else

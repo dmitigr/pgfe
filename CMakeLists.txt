@@ -36,8 +36,6 @@ include(dmitigr_cpplipa)
 # Build options
 # ------------------------------------------------------------------------------
 
-set(DMITIGR_LIBRARIAN_DEBUG Off CACHE BOOL
-  "Print librarian.cmake debug output?")
 set(DMITIGR_CPPLIPA_CLANG_USE_LIBCPP On CACHE BOOL
   "Use libc++ with Clang?")
 set(DMITIGR_CPPLIPA_HEADER_ONLY Off CACHE BOOL
@@ -50,6 +48,8 @@ set(DMITIGR_CPPLIPA_OPENSSL Off CACHE BOOL
   "Link to OpenSSL where possible?")
 set(DMITIGR_CPPLIPA_ZLIB Off CACHE BOOL
   "Link to Zlib where possible?")
+set(DMITIGR_CPPLIPA_AIO "uv" CACHE STRING
+  "What AIO to use? (\"uv\" - is the only option now.)")
 set(BUILD_SHARED_LIBS Off CACHE BOOL
   "Build shared libraries?")
 set(CMAKE_VERBOSE_MAKEFILE On CACHE BOOL
@@ -88,21 +88,15 @@ if(DMITIGR_CPPLIPA_TESTS)
   message("Tests are requested (${CMAKE_BUILD_TYPE})")
 endif()
 
-# The libraries sources root directory.
-set(lib_root "src")
+string(REGEX MATCH "(uv)$" aio "${DMITIGR_CPPLIPA_AIO}")
+if(NOT aio)
+  message(FATAL_ERROR "Invalid AIO -- \"${DMITIGR_CPPLIPA_AIO}\"")
+endif()
 
 # ------------------------------------------------------------------------------
-# Installation options
-# ------------------------------------------------------------------------------
 
-set(DMITIGR_CPPLIPA_INSTALL_SHARE On CACHE BOOL
-  "Install shared stuff?")
-set(DMITIGR_CPPLIPA_INSTALL_CMAKE On CACHE BOOL
-  "Install cmake stuff?")
-set(DMITIGR_CPPLIPA_INSTALL_LIBS On CACHE BOOL
-  "Install libraries?")
-set(DMITIGR_CPPLIPA_INSTALL_INCLUDES On CACHE BOOL
-  "Install includes?")
+set(DMITIGR_CPPLIPA_INSTALL On CACHE BOOL
+  "Install the stuff?")
 
 if(UNIX)
   set(DMITIGR_CPPLIPA_SHARE_INSTALL_DIR "share/dmitigr_cpplipa" CACHE
@@ -139,6 +133,9 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # ------------------------------------------------------------------------------
 # Get the actual list of libraries
 # ------------------------------------------------------------------------------
+
+# The libraries sources root directory.
+set(lib_root "src")
 
 # Ensure that dmitigr_cpplipa_libraries is empty!
 set(dmitigr_cpplipa_libraries)
@@ -211,6 +208,10 @@ if ("ws" IN_LIST dmitigr_cpplipa_libraries)
   include(dmitigr_3rdparty_uwebsockets)
 endif()
 
+if ("wscl" IN_LIST dmitigr_cpplipa_libraries)
+  include(dmitigr_3rdparty_uwsc)
+endif()
+
 # ------------------------------------------------------------------------------
 # Output settings
 # ------------------------------------------------------------------------------
@@ -240,12 +241,9 @@ add_custom_target(dmitigr_cpplipa_create_resource_destination_dir ALL
 # Installing
 # --------------------------------------
 
-if(DMITIGR_CPPLIPA_INSTALL_SHARE)
+if(DMITIGR_CPPLIPA_INSTALL)
   install(FILES LICENSE.txt
     DESTINATION ${DMITIGR_CPPLIPA_SHARE_INSTALL_DIR})
-endif()
-
-if(DMITIGR_CPPLIPA_INSTALL_CMAKE)
   install(FILES
     cmake/dmitigr_cpplipa_libraries.cmake
     cmake/dmitigr_cpplipa_libraries_all.cmake
@@ -449,15 +447,13 @@ foreach(lib ${dmitigr_cpplipa_libraries})
   # Installing
   # ------------------------------------
 
-  if(DMITIGR_CPPLIPA_INSTALL_INCLUDES)
+  if(DMITIGR_CPPLIPA_INSTALL)
     dmitigr_install_lib_includes(${dmlib}_preprocessed_headers)
     dmitigr_install_lib_includes(${dmlib}_headers)
     if(${${dmlib}_header_only})
       dmitigr_install_lib_includes(${dmlib}_implementations)
     endif()
-  endif()
 
-  if(DMITIGR_CPPLIPA_INSTALL_LIBS)
     if(NOT ${${dmlib}_header_only})
       install(TARGETS ${dmlib}
         EXPORT ${dmlib}_export
@@ -469,9 +465,7 @@ foreach(lib ${dmitigr_cpplipa_libraries})
         EXPORT ${dmlib}_export
         INCLUDES DESTINATION ${DMITIGR_CPPLIPA_INCLUDE_INSTALL_DIR})
     endif()
-  endif()
 
-  if(DMITIGR_CPPLIPA_INSTALL_CMAKE)
     # Don't use NAMESPACE, since ${dmlib} contains "dmitigr_" prefix already
     # and it seems there is no way to omit it in order to use NAMESPACE...
     install(EXPORT ${dmlib}_export

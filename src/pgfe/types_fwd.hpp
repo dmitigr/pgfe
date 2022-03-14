@@ -58,6 +58,7 @@ enum class Large_object_seek_whence;
 // Classes
 // -----------------------------------------------------------------------------
 
+class Copier;
 class Completion;
 class Composite;
 class Compositional;

@@ -89,7 +89,8 @@ public:
    * `storage`.
    */
   static DMITIGR_PGFE_API std::unique_ptr<Data> make(
-    std::unique_ptr<void, void(*)(void*)>&& storage, std::size_t size,
+    std::unique_ptr<void, void(*)(void*)>&& storage,
+    std::size_t size,
     Data_format format);
 
   /**

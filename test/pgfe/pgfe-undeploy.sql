@@ -20,5 +20,5 @@
 -- Dmitry Igrishin
 -- dmitigr@gmail.com
 
-DROP DATABASE IF EXISTS pgfe_test;
-DROP USER IF EXISTS pgfe_test;
+drop database if exists pgfe_test;
+drop user if exists pgfe_test;

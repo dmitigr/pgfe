@@ -35,6 +35,7 @@ set(dmitigr_pgfe_headers
   array_conversions.hpp
   basic_conversions.hpp
   basics.hpp
+  copier.hpp
   completion.hpp
   compositional.hpp
   composite.hpp
@@ -67,6 +68,7 @@ set(dmitigr_pgfe_headers
   )
 
 set(dmitigr_pgfe_implementations
+  copier.cpp
   completion.cpp
   connection.cpp
   connection_options.cpp
@@ -125,6 +127,7 @@ if(DMITIGR_CPPLIPA_TESTS)
     connection_ssl
     conversions
     conversions_online
+    copier
     data
     hello_world
     pq_vs_pgfe

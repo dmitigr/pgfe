@@ -20,5 +20,5 @@
 -- Dmitry Igrishin
 -- dmitigr@gmail.com
 
-CREATE USER pgfe_test ENCRYPTED PASSWORD 'pgfe_test';
-CREATE DATABASE pgfe_test OWNER pgfe_test;
+create user pgfe_test encrypted password 'pgfe_test';
+create database pgfe_test owner pgfe_test;

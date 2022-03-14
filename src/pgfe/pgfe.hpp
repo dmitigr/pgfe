@@ -27,6 +27,7 @@
 #include "array_conversions.hpp"
 #include "basic_conversions.hpp"
 #include "basics.hpp"
+#include "copier.hpp"
 #include "completion.hpp"
 #include "composite.hpp"
 #include "compositional.hpp"

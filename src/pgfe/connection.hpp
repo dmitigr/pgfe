@@ -337,6 +337,47 @@ public:
    */
   DMITIGR_PGFE_API Response_status handle_input(bool wait_response = false);
 
+  /**
+   * @brief Sets nonblocking output mode on connection.
+   *
+   * @details When this mode is enabled the calling thread will not block
+   * waiting to send output to the server.
+   *
+   * @par Requires
+   * `is_connected()`.
+   *
+   * @see flush_output().
+   */
+  DMITIGR_PGFE_API void set_nio_output_enabled(bool value);
+
+  /**
+   * @returns `true` if nonblocking output mode is enabled on connection.
+   *
+   * @see set_nio_output_enabled().
+   */
+  DMITIGR_PGFE_API bool is_nio_output_enabled() const;
+
+  /**
+   * @brief Flushes any queued output data to the server.
+   *
+   * @details This function should be called repeatedly until it returns `true`.
+   *
+   * @param wait If `true` the function will block until the output will be
+   * flushed completely.
+   *
+   * @returns `true` if the output has been flushed completely.
+   *
+   * @see set_nio_output_enabled().
+   */
+  DMITIGR_PGFE_API bool flush_output(bool wait = false);
+
+  /**
+   * @returns `true` if the output has been flushed completely.
+   *
+   * @see flush_output().
+   */
+  DMITIGR_PGFE_API bool is_output_flushed() const;
+
   /// @}
 
   // -----------------------------------------------------------------------------
@@ -524,6 +565,16 @@ public:
    * @par Exception safety guarantee
    * Strong.
    *
+   * @see wait_response(), completion().
+   */
+  DMITIGR_PGFE_API Copier copier() noexcept;
+
+  /**
+   * @returns The released instance if available.
+   *
+   * @par Exception safety guarantee
+   * Strong.
+   *
    * @see wait_response(), row().
    */
   DMITIGR_PGFE_API Completion completion() noexcept;
@@ -693,8 +744,7 @@ public:
    */
   bool is_ready_for_request() const noexcept
   {
-    // Same as is_ready_for_nio_request() at the moment.
-    return is_ready_for_nio_request();
+    return !is_copy_in_progress_ && is_ready_for_nio_request();
   }
 
   /**
@@ -1231,6 +1281,7 @@ public:
 
   ///@}
 private:
+  friend Copier;
   friend Large_object;
   friend Prepared_statement;
 
@@ -1269,6 +1320,8 @@ private:
   Response_status response_status_{}; // status last assigned by handle_input()
   Request_id last_processed_request_id_{}; // type last assigned by handle_input()
   Prepared_statement* last_prepared_statement_{};
+  bool is_output_flushed_{true};
+  bool is_copy_in_progress_{};
 
   mutable std::list<Prepared_statement> named_prepared_statements_;
   mutable Prepared_statement unnamed_prepared_statement_;

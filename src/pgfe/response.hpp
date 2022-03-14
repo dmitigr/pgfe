@@ -36,6 +36,7 @@ namespace dmitigr::pgfe {
  * @brief A synchronous (requested) message from a PostgreSQL server.
  */
 class Response : public Message {
+  friend Copier;
   friend Completion;
   friend Error;
   friend Prepared_statement;

@@ -22,6 +22,7 @@
 
 #include "../net/socket.hpp"
 #include "connection.hpp"
+#include "copier.hpp"
 #include "exceptions.hpp"
 #include "large_object.hpp"
 #include "sql_string.hpp"
@@ -361,7 +362,10 @@ DMITIGR_PGFE_INLINE Response_status Connection::handle_input(const bool wait_res
     assert(rstatus != PGRES_SINGLE_TUPLE);
     if (rstatus == PGRES_TUPLES_OK) {
       assert(last_processed_request_id_ == Request_id::execute);
+    } else if (rstatus == PGRES_COPY_OUT || rstatus == PGRES_COPY_IN) {
+      is_copy_in_progress_ = true;
     } else if (rstatus == PGRES_FATAL_ERROR) {
+      is_copy_in_progress_ = false;
       request_prepared_statement_ = {};
       request_prepared_statement_name_.reset();
     } else if (rstatus == PGRES_COMMAND_OK) {
@@ -383,6 +387,7 @@ DMITIGR_PGFE_INLINE Response_status Connection::handle_input(const bool wait_res
         unregister_ps(*request_prepared_statement_name_);
         request_prepared_statement_name_.reset();
       }
+      is_copy_in_progress_ = false;
     }
   } else if (response_status_ == Response_status::empty)
     dismiss_request(); // just in case
@@ -402,6 +407,47 @@ DMITIGR_PGFE_INLINE Response_status Connection::handle_input(const bool wait_res
 
   assert(is_invariant_ok());
   return response_status_;
+}
+
+DMITIGR_PGFE_INLINE void Connection::set_nio_output_enabled(const bool value)
+{
+  if (PQsetnonblocking(conn(), value))
+    throw Client_exception{"cannot set nonblocking output mode on connection"};
+}
+
+DMITIGR_PGFE_INLINE bool Connection::is_nio_output_enabled() const
+{
+  return PQisnonblocking(conn());
+}
+
+DMITIGR_PGFE_INLINE bool Connection::flush_output(const bool wait)
+{
+  if (is_output_flushed_)
+    return true;
+
+  using Sr = Socket_readiness;
+  if (const int r{PQflush(conn())}; r == 1) {
+    if (wait) {
+      const auto sr = wait_socket_readiness(Sr::read_ready | Sr::write_ready);
+      if (sr == Sr::read_ready) {
+        read_input();
+        return flush_output(wait);
+      } else if (sr == Sr::write_ready)
+        return flush_output(wait);
+    } else
+      return false;
+  } else if (!r) {
+    if (wait)
+      wait_socket_readiness(Sr::read_ready);
+    return is_output_flushed_ = true;
+  }
+
+  throw Client_exception{"cannot flush queued output data to the server"};
+}
+
+DMITIGR_PGFE_INLINE bool Connection::is_output_flushed() const
+{
+  return is_output_flushed_;
 }
 
 DMITIGR_PGFE_INLINE bool Connection::wait_response(std::optional<std::chrono::milliseconds> timeout)
@@ -440,6 +486,13 @@ DMITIGR_PGFE_INLINE Notification Connection::pop_notification()
 {
   auto* const n = ::PQnotifies(conn());
   return n ? Notification{n} : Notification{};
+}
+
+DMITIGR_PGFE_INLINE Copier Connection::copier() noexcept
+{
+  const auto s = response_.status();
+  return (s == PGRES_COPY_IN || s == PGRES_COPY_OUT) ?
+    Copier{*this, std::move(response_)} : Copier{};
 }
 
 DMITIGR_PGFE_INLINE Completion Connection::completion() noexcept

@@ -360,6 +360,16 @@ public:
     return ::PQftablecol(native_handle(), position);
   }
 
+  /**
+   * @returns The overall data format.
+   *
+   * @remarks To use only in connection with COPY!
+   */
+  Data_format overall_field_format() const noexcept
+  {
+    return to_data_format(::PQbinaryTuples(native_handle()));
+  }
+
   /// @returns The data format of the field.
   Data_format field_format(const int position) const noexcept
   {

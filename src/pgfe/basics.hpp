@@ -256,6 +256,21 @@ enum class Data_format {
 /**
  * @ingroup main
  *
+ * @brief A data direction.
+ */
+enum class Data_direction {
+  /// Data directed to the server.
+  to_server = 0,
+
+  /// Data directed from the server.
+  from_server = 100
+};
+
+// =============================================================================
+
+/**
+ * @ingroup main
+ *
  * @brief A problem info severity.
  */
 enum class Problem_severity {
