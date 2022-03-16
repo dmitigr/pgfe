@@ -109,21 +109,23 @@ DMITIGR_PGFE_INLINE bool Copier::end(const std::string& error_message) const
   DMITIGR_ASSERT(false);
 }
 
-DMITIGR_PGFE_INLINE std::unique_ptr<Data> Copier::receive(const bool wait) const
+DMITIGR_PGFE_INLINE Data_view Copier::receive(const bool wait) const
 {
   check_receive();
 
+  buffer_ = decltype(buffer_){nullptr, &dummy_free};
   char* buffer{};
   const int size{PQgetCopyData(connection().conn(), &buffer, !wait)};
-  DMITIGR_ASSERT(!buffer || size > 0);
+  if (buffer)
+    buffer_ = decltype(buffer_){buffer, &::PQfreemem};
+  DMITIGR_ASSERT(!buffer_ || size > 0);
 
   if (size == -1)
-    return nullptr;
+    return Data_view{};
   else if (size == 0)
-    return Data::make(std::string_view{"", 0}, data_format(0));
+    return Data_view{"", 0, data_format(0)};
   else if (size > 0)
-    return Data::make(std::unique_ptr<char, void(*)(void*)>{buffer, &::PQfreemem},
-      static_cast<std::size_t>(size), data_format(0));
+    return Data_view{buffer_.get(), static_cast<std::size_t>(size), data_format(0)};
   else if (size == -2)
     throw Client_exception{PQerrorMessage(connection().conn())};
 

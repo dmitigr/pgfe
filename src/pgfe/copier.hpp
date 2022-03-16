@@ -27,6 +27,8 @@
 #include "dll.hpp"
 #include "response.hpp"
 
+#include <memory>
+
 namespace dmitigr::pgfe {
 
 /**
@@ -124,14 +126,14 @@ public:
    * `data_direction() == Data_direction::from_server`.
    *
    * @returns Returns:
-   *   -# `nullptr` if the `COPY` command is done;
-   *   -# the empty data to indicate that the COPY is undone, but no row is yet
-   *   available (this is only possible when `wait` is `false`);
-   *   -# the non-empty data received from the server.
+   *   -# invalid instance if the `COPY` command is done;
+   *   -# the empty instance to indicate that the COPY is undone, but no row is
+   *   yet available (this is only possible when `wait` is `false`);
+   *   -# the non-empty instance received from the server.
    *
    *  @remarks The format of returned data is equals to `data_format(0)`.
    */
-  DMITIGR_PGFE_API std::unique_ptr<Data> receive(bool wait = true) const;
+  DMITIGR_PGFE_API Data_view receive(bool wait = true) const;
 
   /**
    * @returns The underlying connection instance.
@@ -149,11 +151,13 @@ private:
 
   Connection* connection_{};
   detail::pq::Result pq_result_;
+  mutable std::unique_ptr<char, void(*)(void*)> buffer_{nullptr, &dummy_free};
 
   /// The constructor.
   explicit DMITIGR_PGFE_API Copier(Connection& connection,
     detail::pq::Result&& pq_result) noexcept;
 
+  static inline void dummy_free(void*)noexcept{};
   void check_send() const;
   void check_receive() const;
 };

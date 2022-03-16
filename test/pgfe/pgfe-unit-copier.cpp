@@ -66,7 +66,7 @@ try {
   ASSERT(copier.data_direction() == pgfe::Data_direction::from_server);
   int i{};
   while (const auto data = copier.receive()) {
-    const char* const bytes = static_cast<const char*>(data->bytes()); // with '\n'
+    const char* const bytes = static_cast<const char*>(data.bytes()); // with '\n'
     ASSERT(expected[i++] == bytes);
     std::cout << bytes;
   }
