@@ -6,13 +6,7 @@ use with performance in mind.
 
 ## Upcoming release 2.0
 
-**ATTENTION, API breaking changes starting from commit [62ceba3][v20alpha1]!**
-
-I'm currently working on Pgfe 2.0. The current stage is early alpha. Nonetheless,
-I recommend to switch to the new API despite the fact that it's still a subject
-to change while work on release 2.0 is in progress. (Although I don't think the
-changes will be significant.) Efforts will be made to make the API of Pgfe 2.0
-as stable as possible.
+I'm currently working on Pgfe 2.0. The current stage is beta!
 
 ## Hello, World
 
@@ -81,7 +75,7 @@ int main() try {
   - execute prepared statements (named parameters are supported);
   - conveniently call functions and procedures;
   - conveniently handle errors by either via exceptions or error conditions;
-  - conveniently work with [large objects][lob];
+  - conveniently work with [large objects][lob], [COPY][copy] and [pipeline];
   - enum entry for each predefined [SQLSTATE][errcodes];
   - easily convert the data from the client side representation to the server
     side representation and vice versa (conversions of multidimensional
@@ -186,7 +180,8 @@ options:
 // Example 1. Making connection options.
 auto make_options()
 {
-  return Connection_options{Communication_mode::net}
+  return Connection_options{}
+    .set(Communication_mode::net)
     .set_net_hostname("localhost")
     .set_database("db")
     .set_username("user")
@@ -208,11 +203,11 @@ auto make_connection(const Connection_options& opts = {})
 
 ### Executing SQL commands
 
-Since [v20alpha2] only extended query protocol is used under the hood to execute SQL
-commands. SQL commands can be executed and processed either synchronously or in
-non-blocking IO maner, i.e. without need of waiting a server response(-s), and thus,
-without thread blocking. In the latter case the methods of the class `Connection` with
-the suffix `_nio` shall be used.
+Only extended query protocol is used under the hood to execute SQL commands. SQL
+commands can be executed and processed either synchronously or in non-blocking IO
+maner, i.e. without need of waiting a server response(-s), and thus, without thread
+blocking. In the latter case the methods of the class `Connection` with the suffix
+`_nio` shall be used.
 
 With Pgfe it's easy to execute single commands:
 
@@ -232,12 +227,12 @@ void foo(Connection& conn)
 }
 ```
 
-Extended query protocol used by Pgfe is based on prepared statements. In Pgfe prepared
-statements can be parameterized with either positional or named parameters. The
-class `Sql_string` provides functionality for constructing SQL statements,
-providing support for named parameters, as well as functionality for direct
-parameters replacement with any SQL statement to generate complex SQL expressions
-dynamically.
+Extended query protocol used by Pgfe is based on prepared statements. In Pgfe
+prepared statements can be parameterized with either positional or named
+parameters. The class `Sql_string` provides functionality for constructing SQL
+statements, providing support for named parameters, as well as functionality for
+direct parameters replacement with any SQL statement to generate complex SQL
+expressions dynamically.
 
 When using "extended query" protocol in its simplest form unnamed statements are
 prepared implicitly:
@@ -383,8 +378,9 @@ as the container with elements of type `T` rather than `Optional<T>`. But in cas
 when the source array (which comes from the PostgreSQL server) contain at least
 one `NULL` element a runtime exception will be thrown. Summarizing:
 
-  - the types `Container<Optional<T>>`, `Container<Optional<Container<Optional<T>>>>`, `...`
-    can be used to represent N-dimensional arrays of `T` which *may* contain `NULL` values;
+  - the types `Container<Optional<T>>`, `Container<Optional<Container<Optional<T>>>>`,
+    `...` can be used to represent N-dimensional arrays of `T` which *may* contain `NULL`
+    values;
 
   - the types `Container<T>`, `Container<Container<T>>`, `...` can be used to represent
     N-dimensional arrays of `T` which *may not* contain `NULL` values.
@@ -492,16 +488,9 @@ void foo(Connection& conn)
 
 ### Signal handling
 
-Server signals are represented by classes, inherited from `Signal`:
-
-  - notices are represented by the class `Notice`;
-  - notifications are represented by the class `Notification`.
-
-Signals can be handled:
-
-  - by using the signal handlers (see `Connection::set_notice_handler()`,
-    `Connection::set_notification_handler()`);
-
+Server signals are represented by classes `Notice` and `Notification`, inherited
+from class `Signal`. Signals can be handled by using the signal handlers (see
+`Connection::set_notice_handler()` and `Connection::set_notification_handler()`).
 Notifications can also be handled in non-blocking IO maner, by using the method
 `Connection::pop_notification()`.
 
@@ -587,13 +576,12 @@ Pgfe provides a simple connection pool implemented in class `Connection_pool`:
 ```cpp
 // Example 16. Using the connection pool.
 
-inline std::unique_ptr<Connection_pool> pool;
 Connection_options connection_options(); // defined somewhere.
 
 int main()
 {
   Connection_pool pool{2, connection_options()};
-  pool.connect(); // opening up 2 connections
+  pool.connect(); // open 2 connections
   {
     auto conn1 = pool.connection(); // 1st attempt to get the connection from pool
     assert(conn1);  // ok
@@ -631,7 +619,7 @@ Pgfe is depends on the [libpq] library.
 
 ## CMake options
 
-Since Pgfe is a C++ library subpackage of [Cpplipa][dmitigr_cpp_lipa], almost
+Since Pgfe is a C++ library subpackage of [Cpplipa][dmitigr_cpplipa], almost
 all the [CMake options of Cpplipa][dmitigr_cpplipa_cmake_options] are applicable
 to Pgfe.
 
@@ -650,15 +638,14 @@ Please, pay attention to the following:
 [dmitigr_cpplipa_usage]: https://github.com/dmitigr/cpplipa.git#usage
 [dmitigr_pgfe]: https://github.com/dmitigr/pgfe.git
 
-[v20alpha1]: https://github.com/dmitigr/pgfe/commit/62ceba3e4e1285178d223fdadaf6ca87c6d514d9
-[v20alpha2]: https://github.com/dmitigr/pgfe/commit/c69d3625175d30515319efc738dca8e7d5e9af2a
-
 [PostgreSQL]: https://www.postgresql.org/
 [dollar-quoting]: https://www.postgresql.org/docs/current/static/sql-syntax-lexical.html#SQL-SYNTAX-DOLLAR-QUOTING
 [datatype-datetime]: https://www.postgresql.org/docs/current/datatype-datetime.html
 [errcodes]: https://www.postgresql.org/docs/current/static/errcodes-appendix.html
 [libpq]: https://www.postgresql.org/docs/current/static/libpq.html
 [lob]: https://www.postgresql.org/docs/current/static/largeobjects.html
+[copy]: https://www.postgresql.org/docs/current/sql-copy.html
+[pipeline]: https://www.postgresql.org/docs/current/libpq-pipeline-mode.html
 
 [boost_datetime]: https://www.boost.org/doc/libs/release/libs/date_time/
 [boost_optional]: https://www.boost.org/doc/libs/release/libs/optional/
