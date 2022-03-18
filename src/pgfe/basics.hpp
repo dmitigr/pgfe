@@ -190,6 +190,8 @@ enum class Connection_status {
   connected = 400
 };
 
+// =============================================================================
+
 /**
  * @ingroup main
  *
@@ -234,6 +236,24 @@ enum class Transaction_status {
    * unless that command is a kind of `ROLLBACK`.
    */
   failed = 300
+};
+
+// =============================================================================
+
+/**
+ * @ingroup main
+ *
+ * @brief A pipeline status.
+ */
+enum class Pipeline_status {
+  /// Pipeline is disabled.
+  disabled = 0,
+
+  /// Pipeline is enabled.
+  enabled = 100,
+
+  /// Error occurred while processing the pipeline.
+  aborted = 200
 };
 
 // =============================================================================

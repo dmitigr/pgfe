@@ -120,7 +120,7 @@ DMITIGR_PGFE_INLINE void Prepared_statement::execute_nio__(const Sql_string* con
   std::vector<int> lengths(static_cast<unsigned>(param_count), 0);
   std::vector<int> formats(static_cast<unsigned>(param_count), 0);
 
-  connection_->requests_.push(Connection::Request_id::execute); // can throw
+  connection_->requests_.emplace(Connection::Request::Id::execute); // can throw
   try {
     // Prepare the input for libpq.
     for (unsigned i{}; i < static_cast<unsigned>(param_count); ++i) {
@@ -147,9 +147,8 @@ DMITIGR_PGFE_INLINE void Prepared_statement::execute_nio__(const Sql_string* con
     if (!send_ok)
       throw std::runtime_error{connection_->error_message()};
 
-    const auto set_ok = ::PQsetSingleRowMode(connection_->conn());
-    if (!set_ok)
-      throw std::runtime_error{"cannot switch to single-row mode"};
+    if (connection_->pipeline_status() == Pipeline_status::disabled)
+      connection_->set_single_row_mode_enabled();
   } catch (...) {
     connection_->requests_.pop(); // rollback
     throw;

@@ -57,6 +57,7 @@ set(dmitigr_pgfe_headers
   pq.hpp
   prepared_statement.hpp
   problem.hpp
+  ready_for_query.hpp
   response.hpp
   row.hpp
   row_info.hpp
@@ -79,6 +80,7 @@ set(dmitigr_pgfe_implementations
   misc.cpp
   prepared_statement.cpp
   problem.cpp
+  ready_for_query.cpp
   row_info.cpp
   sql_string.cpp
   sql_vector.cpp
@@ -130,6 +132,7 @@ if(DMITIGR_CPPLIPA_TESTS)
     copier
     data
     hello_world
+    pipeline
     pq_vs_pgfe
     ps
     row

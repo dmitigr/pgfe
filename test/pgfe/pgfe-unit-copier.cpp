@@ -41,6 +41,7 @@ try {
   // Test send.
   conn->execute("copy num from stdin (format csv)");
   ASSERT(!conn->is_ready_for_request());
+  ASSERT(conn->is_copy_in_progress());
   auto copier = conn->copier();
   ASSERT(copier);
   ASSERT(!conn->copier());
@@ -54,10 +55,12 @@ try {
   conn->wait_response_throw();
   ASSERT(conn->completion().operation_name() == "COPY");
   ASSERT(conn->is_ready_for_request());
+  ASSERT(!conn->is_copy_in_progress());
 
   // Test receive.
   conn->execute("copy num to stdout (format csv)");
   ASSERT(!conn->is_ready_for_request());
+  ASSERT(conn->is_copy_in_progress());
   copier = conn->copier();
   ASSERT(copier);
   ASSERT(!conn->copier());
@@ -74,6 +77,7 @@ try {
   conn->wait_response_throw();
   ASSERT(conn->completion().operation_name() == "COPY");
   ASSERT(conn->is_ready_for_request());
+  ASSERT(!conn->is_copy_in_progress());
 } catch (const std::exception& e) {
   std::cerr << e.what() << std::endl;
   return 1;

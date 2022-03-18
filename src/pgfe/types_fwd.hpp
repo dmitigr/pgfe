@@ -75,6 +75,7 @@ class Notification;
 class Parameterizable;
 class Prepared_statement;
 class Problem;
+class Ready_for_query;
 class Response;
 class Row;
 class Row_info;

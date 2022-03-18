@@ -124,13 +124,11 @@ public:
     swap(session_start_time_, rhs.session_start_time_);
     swap(response_, rhs.response_);
     swap(response_status_, rhs.response_status_);
-    swap(last_processed_request_id_, rhs.last_processed_request_id_);
+    swap(last_processed_request_, rhs.last_processed_request_);
     swap(last_prepared_statement_, rhs.last_prepared_statement_);
     swap(named_prepared_statements_, rhs.named_prepared_statements_);
     unnamed_prepared_statement_.swap(rhs.unnamed_prepared_statement_);
     swap(requests_, rhs.requests_);
-    request_prepared_statement_.swap(rhs.request_prepared_statement_);
-    swap(request_prepared_statement_name_, rhs.request_prepared_statement_name_);
   }
 
   /// @name General observers
@@ -163,6 +161,13 @@ public:
   bool is_connected() const noexcept
   {
     return status() == Status::connected;
+  }
+
+  /// @returns `true` if the connection is open and no operation in progress.
+  bool is_connected_and_idle() const
+  {
+    const auto ts = transaction_status();
+    return ts && ts != Transaction_status::active;
   }
 
   /**
@@ -382,9 +387,7 @@ public:
 
   // -----------------------------------------------------------------------------
 
-  /**
-   * @name Signals
-   */
+  /// @name Signals
   /// @{
 
   /// @returns The valid released instance if available.
@@ -449,12 +452,6 @@ public:
 
   /// @name Responses
   /// @{
-
-  /// @returns `true` if there is uncompleted request.
-  bool has_uncompleted_request() const noexcept
-  {
-    return !requests_.empty();
-  }
 
   /// @returns `true` if there is ready response available.
   bool has_response() const noexcept
@@ -718,12 +715,31 @@ public:
     return ps(name);
   }
 
+  /**
+   * @returns The released instance if available.
+   *
+   * @par Exception safety guarantee
+   * Strong.
+   *
+   * @remarks At present, this method is only useful to get the synchronization
+   * point in a pipeline sent by send_sync().
+   *
+   * @see send_sync(), wait_response().
+   */
+  DMITIGR_PGFE_API Ready_for_query ready_for_query();
+
   ///@}
 
   // ---------------------------------------------------------------------------
 
   /// @name Requests
   /// @{
+
+  /// @returns `true` if `COPY` command in progress.
+  bool is_copy_in_progress() const noexcept
+  {
+    return is_copy_in_progress_;
+  }
 
   /**
    * @returns `true` if the connection is ready for requesting a server in a
@@ -733,18 +749,35 @@ public:
    */
   bool is_ready_for_nio_request() const noexcept
   {
-    const auto ts = transaction_status();
-    return ts && ts != Transaction_status::active;
+    return (pipeline_status() == Pipeline_status::disabled)
+      ? is_ready_for_request() : is_connected();
   }
 
   /**
-   * @returns `true` if the connection is ready for requesting a server.
+   * @returns The request queue size.
+   *
+   * @remarks The request queue size can be greater than 1 only if pipeline
+   * is enabled.
+   *
+   * @see set_pipeline_enabled().
+   */
+  DMITIGR_PGFE_API std::size_t request_queue_size() const;
+
+  /// @returns `true` if there is uncompleted request.
+  bool has_uncompleted_request() const noexcept
+  {
+    return !requests_.empty();
+  }
+
+  /**
+   * @returns `true` if the connection is ready for requesting a server,
+   * i.e. if the connection is open and no command in progress.
    *
    * @see is_ready_for_nio_request().
    */
   bool is_ready_for_request() const noexcept
   {
-    return !is_copy_in_progress_ && is_ready_for_nio_request();
+    return (pipeline_status() == Pipeline_status::disabled) && is_connected_and_idle();
   }
 
   /**
@@ -900,9 +933,6 @@ public:
    * @par Responses
    * Similar to Prepared_statement::execute().
    *
-   * @param queries A string, containing the SQL query(-es). Adjacent
-   * queries must be separated by a semicolon.
-   *
    * @par Effects
    * `has_uncompleted_request()`.
    *
@@ -948,6 +978,7 @@ public:
   std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
   execute(F&& callback, const Sql_string& statement, Types&& ... parameters)
   {
+    assert(is_ready_for_request());
     execute_nio(statement, std::forward<Types>(parameters)...);
     return process_responses<on_exception>(std::forward<F>(callback));
   }
@@ -1086,6 +1117,59 @@ public:
   {
     return call<on_exception>([](auto&&){}, procedure, std::forward<Types>(arguments)...);
   }
+
+  /**
+   * @briefs Enables or disables the pipeline on this instance.
+   *
+   * @details When pipeline is enabled, only asynchronous operations are
+   * permitted. After enabling the pipeline, the application queues requests
+   * using prepare_nio(), unprepare_nio(), prepare_nio_as_is(), describe_nio()
+   * or execute_nio(). These requests are flushed to the server when send_sync()
+   * is called to establish a synchronization point in the pipeline, or when
+   * flush_output() is called.
+   * The server executes commands in the pipeline as they are received, and
+   * sends the results of executed statements according to the queue. The
+   * results are buffered on the server side until the buffer is flushed, when
+   * either Sync or Flush messages, issued on client side with send_sync() or
+   * send_flush() accordingly, will be processed by the server. If any operation
+   * fails, the server aborts the current transaction and sends the Error
+   * response. After receiving the Error response, the application must skip the
+   * results of subsequent commands with either wait_response() or
+   * wait_response_throw() until the Ready_for_query response is received.
+   *
+   * @par Effects
+   *   - if `value`, then `!is_ready_for_request()` and
+   *   `is_ready_for_nio_request()` and `pipeline_status() == Pipeline_status::enabled`;
+   *   - if `!value`, then `is_ready_for_request()` and
+   *   `is_ready_for_nio_request()` and `pipeline_status() == Pipeline_status::disabled`.
+   *
+   * @see pipeline_status(), send_sync(), send_flush().
+   */
+  DMITIGR_PGFE_API void set_pipeline_enabled(bool value);
+
+  /// @returns The status of pipeline.
+  DMITIGR_PGFE_API Pipeline_status pipeline_status() const;
+
+  /**
+   * @brief Sends a Sync message to the server.
+   *
+   * @remarks At present, this method is only useful to mark a synchronization
+   * point in a pipeline and to cause the server to flush its output buffer.
+   *
+   * @see send_flush(), set_pipeline_enabled().
+   */
+  DMITIGR_PGFE_API void send_sync();
+
+  /**
+   * @brief Sends a Flush message to the server.
+   *
+   * @remarks At present, this method is only useful to flush the server's
+   * point in a pipeline and to cause the server to flush its output buffer
+   * without establishing a synchronization point (as with send_sync().)
+   *
+   * @see send_sync(), set_pipeline_enabled().
+   */
+  DMITIGR_PGFE_API void send_flush();
 
   /**
    * @brief Sets the default data format of statements execution results.
@@ -1304,31 +1388,53 @@ private:
   ::PGconn* conn() const noexcept { return conn_.get(); }
 
   // ---------------------------------------------------------------------------
-  // Session data / requests data
+  // Session data / requests
   // ---------------------------------------------------------------------------
 
-  enum class Request_id {
-    execute = 1,
-    prepare,
-    describe,
-    unprepare
+  struct Request final {
+    enum class Id {
+      execute = 1,
+      prepare,
+      describe,
+      unprepare,
+      sync
+    };
+
+    Request() = default;
+
+    explicit Request(const Id id)
+      : id_{id}
+    {}
+
+    Request(const Id id, Prepared_statement prepared_statement)
+      : id_{id}
+      , prepared_statement_{std::move(prepared_statement)}
+    {}
+
+    Request(const Id id, std::string prepared_statement_name)
+      : id_{id}
+      , prepared_statement_name_{std::move(prepared_statement_name)}
+    {}
+
+    Id id_{};
+    Prepared_statement prepared_statement_;
+    std::optional<std::string> prepared_statement_name_;
   };
 
   std::optional<std::chrono::system_clock::time_point> session_start_time_;
 
   detail::pq::Result response_; // allowed to not match to response_status_
   Response_status response_status_{}; // status last assigned by handle_input()
-  Request_id last_processed_request_id_{}; // type last assigned by handle_input()
   Prepared_statement* last_prepared_statement_{};
   bool is_output_flushed_{true};
   bool is_copy_in_progress_{};
+  bool is_single_row_mode_enabled_{};
 
   mutable std::list<Prepared_statement> named_prepared_statements_;
   mutable Prepared_statement unnamed_prepared_statement_;
 
-  std::queue<Request_id> requests_; // for batch mode
-  Prepared_statement request_prepared_statement_;
-  std::optional<std::string> request_prepared_statement_name_;
+  std::queue<Request> requests_;
+  Request last_processed_request_;
 
   bool is_invariant_ok() const noexcept;
 
@@ -1337,6 +1443,7 @@ private:
   // ---------------------------------------------------------------------------
 
   void reset_session() noexcept;
+  void set_single_row_mode_enabled();
 
   // ---------------------------------------------------------------------------
   // Handlers
@@ -1401,7 +1508,7 @@ private:
 
   std::string error_message() const;
 
-  bool is_out_of_memory() const
+  bool is_out_of_memory() const noexcept
   {
     constexpr char msg[] = "out of memory";
     return !std::strncmp(::PQerrorMessage(conn()), msg, sizeof(msg) - 1);

@@ -90,7 +90,7 @@ DMITIGR_PGFE_INLINE bool Copier::send(const std::string_view data) const
   if (r == 0 || r == 1)
     return r;
   else if (r == -1)
-    throw Client_exception{PQerrorMessage(connection().conn())};
+    throw Client_exception{connection().error_message()};
 
   DMITIGR_ASSERT(false);
 }
@@ -104,7 +104,7 @@ DMITIGR_PGFE_INLINE bool Copier::end(const std::string& error_message) const
   if (r == 0 || r == 1)
     return r;
   else if (r == -1)
-    throw Client_exception{PQerrorMessage(connection().conn())};
+    throw Client_exception{connection().error_message()};
 
   DMITIGR_ASSERT(false);
 }
@@ -127,7 +127,7 @@ DMITIGR_PGFE_INLINE Data_view Copier::receive(const bool wait) const
   else if (size > 0)
     return Data_view{buffer_.get(), static_cast<std::size_t>(size), data_format(0)};
   else if (size == -2)
-    throw Client_exception{PQerrorMessage(connection().conn())};
+    throw Client_exception{connection().error_message()};
 
   DMITIGR_ASSERT(false);
 }

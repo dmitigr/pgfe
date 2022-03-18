@@ -20,41 +20,38 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
-#ifndef DMITIGR_PGFE_PGFE_HPP
-#define DMITIGR_PGFE_PGFE_HPP
-
-#include "array_aliases.hpp"
-#include "array_conversions.hpp"
-#include "basic_conversions.hpp"
-#include "basics.hpp"
-#include "copier.hpp"
-#include "completion.hpp"
-#include "composite.hpp"
-#include "compositional.hpp"
-#include "connection.hpp"
-#include "connection_options.hpp"
-#include "connection_pool.hpp"
-#include "conversions_api.hpp"
-#include "conversions.hpp"
-#include "data.hpp"
-#include "errc.hpp"
-#include "error.hpp"
-#include "exceptions.hpp"
-#include "large_object.hpp"
-#include "message.hpp"
-#include "misc.hpp"
-#include "notice.hpp"
-#include "notification.hpp"
-#include "parameterizable.hpp"
-#include "problem.hpp"
+#include "../base/assert.hpp"
 #include "ready_for_query.hpp"
-#include "response.hpp"
-#include "row.hpp"
-#include "row_info.hpp"
-#include "signal.hpp"
-#include "sql_string.hpp"
-#include "sql_vector.hpp"
-#include "std_system_error.hpp"
-#include "version.hpp"
 
-#endif  // DMITIGR_PGFE_PGFE_HPP
+namespace dmitigr::pgfe {
+
+DMITIGR_PGFE_INLINE
+Ready_for_query::Ready_for_query(detail::pq::Result&& pq_result) noexcept
+  : pq_result_{std::move(pq_result)}
+{}
+
+DMITIGR_PGFE_INLINE
+Ready_for_query::Ready_for_query(Ready_for_query&& rhs) noexcept
+  : pq_result_{std::move(rhs.pq_result_)}
+{}
+
+DMITIGR_PGFE_INLINE Ready_for_query&
+Ready_for_query::operator=(Ready_for_query&& rhs) noexcept
+{
+  Ready_for_query tmp{std::move(rhs)};
+  swap(tmp);
+  return *this;
+}
+
+DMITIGR_PGFE_INLINE void Ready_for_query::swap(Ready_for_query& rhs) noexcept
+{
+  using std::swap;
+  swap(pq_result_, rhs.pq_result_);
+}
+
+DMITIGR_PGFE_INLINE bool Ready_for_query::is_valid() const noexcept
+{
+  return static_cast<bool>(pq_result_);
+}
+
+} // namespace dmitigr::pgfe

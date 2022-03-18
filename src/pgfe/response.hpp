@@ -40,6 +40,7 @@ class Response : public Message {
   friend Completion;
   friend Error;
   friend Prepared_statement;
+  friend Ready_for_query;
   friend Row;
 
   Response() = default;
