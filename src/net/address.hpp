@@ -239,13 +239,16 @@ public:
   {
     ::sockaddr_un addr{};
     addr.sun_family = AF_UNIX;
-    if (path.native().size() <= sizeof(::sockaddr_un::sun_path) - 1) {
+    constexpr auto max_path_size = sizeof(::sockaddr_un::sun_path) - 1;
+    if (path.native().size() <= max_path_size) {
       const auto pathstr = path.string();
 #ifdef _WIN32
-      ::strncpy_s(addr.sun_path, sizeof(::sockaddr_un::sun_path),
+      const auto err = ::strncpy_s(addr.sun_path, max_path_size + 1,
         pathstr.c_str(), pathstr.size());
+      DMITIGR_ASSERT(!err);
 #else
-      std::strncpy(addr.sun_path, pathstr.c_str(), sizeof(::sockaddr_un::sun_path));
+      std::strncpy(addr.sun_path, pathstr.c_str(), max_path_size);
+      addr.sun_path[max_path_size] = '\0';
 #endif
     } else
       throw Exception{"UDS path too long"};

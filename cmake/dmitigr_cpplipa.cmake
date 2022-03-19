@@ -80,7 +80,7 @@ function(dmitigr_cpplipa_target_compile_options t)
       -pedantic
       -Wall
       -Wextra
-      -Winline
+      # -Winline
       -Winit-self
       -Wuninitialized
       -Wmaybe-uninitialized
