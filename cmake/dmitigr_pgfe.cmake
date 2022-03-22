@@ -42,6 +42,7 @@ set(dmitigr_pgfe_headers
   connection.hpp
   connection_options.hpp
   connection_pool.hpp
+  contract.hpp
   conversions_api.hpp
   conversions.hpp
   data.hpp
@@ -76,6 +77,7 @@ set(dmitigr_pgfe_implementations
   connection_pool.cpp
   data.cpp
   errc.cpp
+  exceptions.cpp
   large_object.cpp
   misc.cpp
   prepared_statement.cpp

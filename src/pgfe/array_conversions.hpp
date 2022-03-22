@@ -23,11 +23,12 @@
 #ifndef DMITIGR_PGFE_ARRAY_CONVERSIONS_HPP
 #define DMITIGR_PGFE_ARRAY_CONVERSIONS_HPP
 
+#include "../base/assert.hpp"
+#include "../str/c_str.hpp"
 #include "basic_conversions.hpp"
 #include "conversions_api.hpp"
 #include "data.hpp"
 #include "exceptions.hpp"
-#include "../str/c_str.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -198,14 +199,18 @@ struct Array_data_conversions_opts<Container<Optional<T>, Allocator<Optional<T>>
   template<typename ... Types>
   static Type to_type(const Data& data, Types&& ... args)
   {
-    assert(data.format() == Data_format::text);
+    if (!(data.format() == Data_format::text))
+      throw Client_exception{"cannot convert array to native type:"
+        " unsupported input data format"};
     return to_container<Type>(static_cast<const char*>(data.bytes()), ',', std::forward<Types>(args)...);
   }
 
   template<typename ... Types>
   static Type to_type(std::unique_ptr<Data>&& data, Types&& ... args)
   {
-    assert(data);
+    if (!data)
+      throw Client_exception{"cannot convert array to native type:"
+        " null data given"};
     return to_type(*data, std::forward<Types>(args)...);
   }
 
@@ -265,7 +270,9 @@ struct Array_data_conversions_vals<Container<T, Allocator<T>>> final {
   template<typename ... Types>
   static Type to_type(std::unique_ptr<Data>&& data, Types&& ... args)
   {
-    assert(data);
+    if (!data)
+      throw Client_exception{"cannot convert array to native type:"
+        " null data given"};
     return to_container_of_values(Array_data_conversions_opts<Cont>::to_type(std::move(data), std::forward<Types>(args)...));
   }
 
@@ -451,17 +458,18 @@ Optional<T> to_container_of_optionals(T&& element)
 /**
  * @brief PostgreSQL array parsing routine.
  *
- * Calls `handler(dimension)` every time the opening curly bracket is reached.
- * Here, dimension - is a zero-based index of type `int` of the reached
- * dimension of the literal.
- *
- * Calls `handler(element, is_element_null, dimension, args)` each time when
- * the element is extracted. Here:
- *   - element (std::string&&) -- is a text representation of the array element;
- *   - is_element_null (bool) is a flag that equals to true if the extracted
- *     element is SQL NULL;
- *   - dimension -- is a zero-based index of type `int` of the element dimension;
- *   - args -- extra arguments for passing to the conversion routine.
+ * @details
+ *   -# calls `handler(dimension)` every time the opening curly bracket is
+ *   reached. Here, dimension - is a zero-based index of type `int` of the
+ *   reached dimension of the literal;
+ *   -# calls `handler(element, is_element_null, dimension, args)` each time
+ *   when the element is extracted. Here:
+ *     - element (std::string&&) -- is a text representation of the array
+ *       element;
+ *     - is_element_null (bool) is a flag that equals to true if the extracted
+ *       element is SQL NULL;
+ *     - dimension -- is a zero-based index of type `int` of the element dimension;
+ *     - args -- extra arguments for passing to the conversion routine.
  *
  * @returns The pointer that points to a next character after the last closing
  * curly bracket found in the `literal`.
@@ -471,7 +479,7 @@ Optional<T> to_container_of_optionals(T&& element)
 template<class F, typename ... Types>
 const char* parse_array_literal(const char* literal, const char delimiter, F& handler, Types&& ... args)
 {
-  assert(literal);
+  DMITIGR_ASSERT(literal);
 
   /*
    * Syntax of the array literals:
@@ -511,7 +519,7 @@ const char* parse_array_literal(const char* literal, const char delimiter, F& ha
     }
 
     case in_dimension: {
-      assert(dimension > 0);
+      DMITIGR_ASSERT(dimension > 0);
 
       if (std::isspace(c, loc)) {
         // Skip space.
@@ -611,7 +619,7 @@ const char* parse_array_literal(const char* literal, const char delimiter, F& ha
  * @returns The pointer that points to a next character after the last closing
  * curly bracket found in the `literal`.
  *
- * @throws Client_error.
+ * @throws Client_exception.
  */
 template<typename T,
   template<class> class Optional,
@@ -621,8 +629,8 @@ template<typename T,
 const char* fill_container(Container<Optional<T>, Allocator<Optional<T>>>& result,
   const char* literal, const char delimiter, Types&& ... args)
 {
-  assert(result.empty());
-  assert(literal);
+  DMITIGR_ASSERT(result.empty());
+  DMITIGR_ASSERT(literal);
 
   /*
    * Note: On MSVS the "fatal error C1001: An internal error has occurred in the compiler."
@@ -718,6 +726,7 @@ std::string to_array_literal(const Container<Optional<T>, Allocator<Optional<T>>
 template<class Container, typename ... Types>
 Container to_container(const char* const literal, const char delimiter, Types&& ... args)
 {
+  DMITIGR_ASSERT(literal);
   Container result;
   fill_container(result, literal, delimiter, std::forward<Types>(args)...);
   return result;
@@ -726,7 +735,7 @@ Container to_container(const char* const literal, const char delimiter, Types&& 
 /**
  * @returns A container of non-null values converted from PostgreSQL array literal.
  *
- * @throws Improper_value_type_of_container.
+ * @throws Client_exception with code Client_errc::improper_value_type_of_container.
  */
 template<typename T,
   template<class> class Optional,
@@ -824,8 +833,8 @@ struct Conversions<Container<Optional<T>, Allocator<Optional<T>>>> final
  * @tparam Container The container template class, such as `std::vector`.
  * @tparam Allocator The allocator template class, such as `std::allocator`.
  *
- * @throws An instance of type Improper_value_type_of_container when converting
- * the PostgreSQL array representations with at least one `NULL` element.
+ * @throws Client_exception with code Client_errc::Improper_value_type_of_container
+ * when converting the PostgreSQL array representations with at least one `NULL` element.
  *
  * The support of the following data formats is implemented:
  *   - for input data  - Data_format::text;

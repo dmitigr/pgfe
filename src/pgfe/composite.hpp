@@ -43,7 +43,7 @@ public:
    * @par Requires
    * `(index < field_count())`.
    */
-  virtual Data_view data(std::size_t index) const noexcept = 0;
+  virtual Data_view data(std::size_t index) const = 0;
 
   /**
    * @overload
@@ -57,13 +57,13 @@ public:
   virtual Data_view data(std::string_view name, std::size_t offset = 0) const = 0;
 
   /// @returns `data(index)`.
-  Data_view operator[](const std::size_t index) const noexcept
+  Data_view operator[](const std::size_t index) const
   {
     return data(index);
   }
 
   /// @returns `data(name)`.
-  Data_view operator[](const std::string_view name) const noexcept
+  Data_view operator[](const std::string_view name) const
   {
     return data(name);
   }

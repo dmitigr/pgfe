@@ -22,7 +22,6 @@
 
 #include "prepared_statement.hpp"
 #include "connection.hpp"
-#include "exceptions.hpp"
 #include "sql_string.hpp"
 
 #include <algorithm>
@@ -45,9 +44,10 @@ DMITIGR_PGFE_INLINE std::size_t Prepared_statement::parameter_index(const std::s
   return static_cast<std::size_t>(i - b);
 }
 
-DMITIGR_PGFE_INLINE std::uint_fast32_t Prepared_statement::parameter_type_oid(const std::size_t index) const noexcept
+DMITIGR_PGFE_INLINE std::uint_fast32_t Prepared_statement::parameter_type_oid(const std::size_t index) const
 {
-  assert(index < parameter_count());
+  if (!(index < parameter_count()))
+    throw_exception("cannot get parameter type OID of");
   return is_described() ? description_.pq_result_.ps_param_type_oid(static_cast<int>(index)) : invalid_oid;
 }
 
@@ -85,7 +85,7 @@ DMITIGR_PGFE_INLINE Prepared_statement::Prepared_statement(std::string name,
 
 DMITIGR_PGFE_INLINE void Prepared_statement::init_connection__(Connection* const connection)
 {
-  assert(connection && connection->session_start_time());
+  DMITIGR_ASSERT(connection && connection->session_start_time());
   connection_ = connection;
   session_start_time_ = *connection_->session_start_time();
   result_format_ = connection_->result_format();
@@ -112,7 +112,8 @@ DMITIGR_PGFE_INLINE void Prepared_statement::execute_nio()
 
 DMITIGR_PGFE_INLINE void Prepared_statement::execute_nio__(const Sql_string* const statement)
 {
-  assert(connection()->is_ready_for_nio_request());
+  if (!(connection()->is_ready_for_nio_request()))
+    throw_exception("cannot execute");
 
   // All the values are NULLs initially. (Can throw.)
   const int param_count = static_cast<int>(parameter_count());
@@ -145,7 +146,7 @@ DMITIGR_PGFE_INLINE void Prepared_statement::execute_nio__(const Sql_string* con
         formats.data(), result_format);
 
     if (!send_ok)
-      throw std::runtime_error{connection_->error_message()};
+      throw Client_exception{connection_->error_message()};
 
     if (connection_->pipeline_status() == Pipeline_status::disabled)
       connection_->set_single_row_mode_enabled();

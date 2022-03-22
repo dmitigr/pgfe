@@ -29,6 +29,8 @@
 #include "ready_for_query.hpp"
 #include "sql_string.hpp"
 
+#include <iostream>
+
 namespace dmitigr::pgfe {
 
 namespace detail {
@@ -61,14 +63,13 @@ DMITIGR_PGFE_INLINE Server_status ping(const Connection_options& options)
   default:
     break;
   }
-  assert(false);
-  std::terminate();
+  DMITIGR_ASSERT(false);
 }
 
 DMITIGR_PGFE_INLINE auto Connection::status() const noexcept -> Status
 {
   if (polling_status_) {
-    assert(conn());
+    DMITIGR_ASSERT(conn());
     return *polling_status_;
   } else if (conn()) {
     return (::PQstatus(conn()) == CONNECTION_OK) ? Status::connected : Status::failure;
@@ -96,21 +97,21 @@ DMITIGR_PGFE_INLINE void Connection::connect_nio()
   if (s == Status::connected) {
     return;
   } else if (s == Status::establishment_reading || s == Status::establishment_writing) {
-    assert(conn());
+    DMITIGR_ASSERT(conn());
     switch (::PQconnectPoll(conn())) {
     case PGRES_POLLING_READING:
       polling_status_ = Status::establishment_reading;
-      assert(status() == Status::establishment_reading);
+      DMITIGR_ASSERT(status() == Status::establishment_reading);
       goto done;
 
     case PGRES_POLLING_WRITING:
       polling_status_ = Status::establishment_writing;
-      assert(status() == Status::establishment_writing);
+      DMITIGR_ASSERT(status() == Status::establishment_writing);
       goto done;
 
     case PGRES_POLLING_FAILED:
       polling_status_.reset();
-      assert(status() == Status::failure);
+      DMITIGR_ASSERT(status() == Status::failure);
       goto done;
 
     case PGRES_POLLING_OK:
@@ -120,18 +121,17 @@ DMITIGR_PGFE_INLINE void Connection::connect_nio()
        * We cannot assert here that status() is "connected", because it can become
        * "failure" at *any* time, even just after successful connection establishment!
        */
-      assert(status() == Status::connected || status() == Status::failure);
+      DMITIGR_ASSERT(status() == Status::connected || status() == Status::failure);
       goto done;
 
     default:
-      assert(false);
-      std::terminate();
+      DMITIGR_ASSERT(false);
     } // switch
   } else /* failure or disconnected */ {
     if (s == Status::failure)
       disconnect();
 
-    assert(status() == Status::disconnected);
+    DMITIGR_ASSERT(status() == Status::disconnected);
 
     const detail::pq::Connection_options pq_options{options_};
     constexpr int expand_dbname{};
@@ -139,12 +139,12 @@ DMITIGR_PGFE_INLINE void Connection::connect_nio()
     if (conn_) {
       const auto conn_status = ::PQstatus(conn());
       if (conn_status == CONNECTION_BAD)
-        throw std::runtime_error{error_message()};
+        throw Client_exception{error_message()};
       else
         polling_status_ = Status::establishment_writing;
 
       // Caution: until now we cannot use status()!
-      assert(status() == Status::establishment_writing);
+      DMITIGR_ASSERT(status() == Status::establishment_writing);
 
       ::PQsetNoticeReceiver(conn(), &notice_receiver, this);
     } else
@@ -161,7 +161,8 @@ DMITIGR_PGFE_INLINE void Connection::connect(std::optional<std::chrono::millisec
   using std::chrono::system_clock;
   using std::chrono::duration_cast;
 
-  assert(!timeout || timeout >= milliseconds{-1});
+  if (!(!timeout || timeout >= milliseconds{-1}))
+    throw Client_exception{"cannot initiate connection: invalid timeout specified"};
 
   if (is_connected())
     return; // No need to check invariant. Just return.
@@ -169,8 +170,14 @@ DMITIGR_PGFE_INLINE void Connection::connect(std::optional<std::chrono::millisec
   if (timeout == milliseconds{-1})
     timeout = options().connect_timeout();
 
-  const auto is_timeout = [&timeout]{ return timeout <= milliseconds::zero(); };
-  static const auto throw_timeout = []{ throw Client_exception{Client_errc::timed_out, "connection timeout"}; };
+  const auto is_timeout = [&timeout]
+  {
+    return timeout <= milliseconds::zero();
+  };
+  static const auto throw_timeout = []
+  {
+    throw Client_exception{Client_errc::timed_out, "connection timeout"};
+  };
 
   // Stage 1: beginning.
   auto timepoint1 = system_clock::now();
@@ -202,17 +209,16 @@ DMITIGR_PGFE_INLINE void Connection::connect(std::optional<std::chrono::millisec
       break;
 
     case Status::disconnected:
-      assert(false);
-      std::terminate();
+      DMITIGR_ASSERT(false);
 
     case Status::failure:
-      throw std::runtime_error{error_message()};
+      throw Client_exception{error_message()};
     }
 
     if (timeout) {
       *timeout -= duration_cast<milliseconds>(system_clock::now() - timepoint1);
       if (is_timeout()) {
-        assert(current_socket_readiness == Socket_readiness::unready);
+        DMITIGR_ASSERT(current_socket_readiness == Socket_readiness::unready);
         (void)current_socket_readiness;
         throw_timeout();
       }
@@ -222,6 +228,15 @@ DMITIGR_PGFE_INLINE void Connection::connect(std::optional<std::chrono::millisec
     current_status = status();
   } // while
 
+  DMITIGR_ASSERT(status() == Status::connected);
+  assert(is_invariant_ok());
+}
+
+DMITIGR_PGFE_INLINE void Connection::disconnect() noexcept
+{
+  reset_session();
+  conn_.reset(); // discarding unhandled notifications btw.
+  DMITIGR_ASSERT(status() == Status::disconnected);
   assert(is_invariant_ok());
 }
 
@@ -232,9 +247,12 @@ DMITIGR_PGFE_INLINE Socket_readiness Connection::wait_socket_readiness(Socket_re
   using std::chrono::milliseconds;
   using std::chrono::duration_cast;
 
-  assert(!timeout || timeout >= milliseconds{-1});
-  assert(status() != Status::failure && status() != Status::disconnected);
-  assert(socket() >= 0);
+  if (!(!timeout || timeout >= milliseconds{-1}))
+    throw Client_exception{"cannot wait socket readiness: invalid timeout specified"};
+  else if (!((status() != Status::failure) && (status() != Status::disconnected)))
+    throw Client_exception{"cannot wait socket readiness: invalid connection status"};
+
+  DMITIGR_ASSERT(socket() >= 0);
 
   while (true) {
     const auto timepoint1 = system_clock::now();
@@ -269,14 +287,15 @@ DMITIGR_PGFE_INLINE Socket_readiness Connection::socket_readiness(const Socket_r
  */
 DMITIGR_PGFE_INLINE Response_status Connection::handle_input(const bool wait_response)
 {
-  assert(is_connected());
+  if (!is_connected())
+    throw Client_exception{"cannot handle input from server: not connected"};
 
   const auto check_state = [this]() noexcept
   {
-    assert(response_status_ == Response_status::ready);
-    assert(response_.status() == PGRES_SINGLE_TUPLE);
-    assert(!requests_.empty());
-    assert(requests_.front().id_ == Request::Id::execute);
+    DMITIGR_ASSERT(response_status_ == Response_status::ready);
+    DMITIGR_ASSERT(response_.status() == PGRES_SINGLE_TUPLE);
+    DMITIGR_ASSERT(!requests_.empty());
+    DMITIGR_ASSERT(requests_.front().id_ == Request::Id::execute);
   };
 
   const auto dismiss_request = [this]() noexcept
@@ -374,10 +393,10 @@ DMITIGR_PGFE_INLINE Response_status Connection::handle_input(const bool wait_res
   // Preprocessing the response_.
   if (response_status_ == Response_status::ready) {
     const auto rstatus = response_.status();
-    assert(rstatus != PGRES_NONFATAL_ERROR);
-    assert(rstatus != PGRES_SINGLE_TUPLE);
+    DMITIGR_ASSERT(rstatus != PGRES_NONFATAL_ERROR);
+    DMITIGR_ASSERT(rstatus != PGRES_SINGLE_TUPLE);
     if (rstatus == PGRES_TUPLES_OK) {
-      assert(last_processed_request_.id_ == Request::Id::execute);
+      DMITIGR_ASSERT(last_processed_request_.id_ == Request::Id::execute);
       is_single_row_mode_enabled_ = false;
     } else if (rstatus == PGRES_COPY_OUT || rstatus == PGRES_COPY_IN) {
       is_copy_in_progress_ = true;
@@ -386,12 +405,12 @@ DMITIGR_PGFE_INLINE Response_status Connection::handle_input(const bool wait_res
       is_single_row_mode_enabled_ = false;
     } else if (rstatus == PGRES_COMMAND_OK) {
       auto& lpr = last_processed_request_;
-      assert(lpr.id_ != Request::Id::prepare || lpr.prepared_statement_);
-      assert(lpr.id_ != Request::Id::describe || lpr.prepared_statement_name_);
-      assert(lpr.id_ != Request::Id::unprepare || lpr.prepared_statement_name_);
+      DMITIGR_ASSERT(lpr.id_ != Request::Id::prepare || lpr.prepared_statement_);
+      DMITIGR_ASSERT(lpr.id_ != Request::Id::describe || lpr.prepared_statement_name_);
+      DMITIGR_ASSERT(lpr.id_ != Request::Id::unprepare || lpr.prepared_statement_name_);
       if (lpr.id_ == Request::Id::prepare) {
         last_prepared_statement_ = register_ps(std::move(lpr.prepared_statement_));
-        assert(!lpr.prepared_statement_);
+        DMITIGR_ASSERT(!lpr.prepared_statement_);
       } else if (lpr.id_ == Request::Id::describe) {
         last_prepared_statement_ = ps(*lpr.prepared_statement_name_);
         if (!last_prepared_statement_)
@@ -402,7 +421,7 @@ DMITIGR_PGFE_INLINE Response_status Connection::handle_input(const bool wait_res
         last_prepared_statement_->set_description(std::move(response_));
         lpr.prepared_statement_name_.reset();
       } else if (lpr.id_ == Request::Id::unprepare) {
-        assert(lpr.prepared_statement_name_ &&
+        DMITIGR_ASSERT(lpr.prepared_statement_name_ &&
           !std::strcmp(response_.command_tag(), "DEALLOCATE"));
         unregister_ps(*lpr.prepared_statement_name_);
         lpr.prepared_statement_name_.reset();
@@ -421,9 +440,9 @@ DMITIGR_PGFE_INLINE Response_status Connection::handle_input(const bool wait_res
         notification_handler_(Notification{n});
     }
   } catch (const std::exception& e) {
-    std::fprintf(stderr, "Notification handler thrown: %s\n", e.what());
+    std::clog << "notification handler: error: " << e.what() << '\n';
   } catch (...) {
-    std::fprintf(stderr, "Notification handler thrown unknown error\n");
+    std::clog << "notification handler: unknown error\n";
   }
 
   assert(is_invariant_ok());
@@ -480,14 +499,16 @@ DMITIGR_PGFE_INLINE bool Connection::wait_response(std::optional<std::chrono::mi
   if (!(is_connected() && has_uncompleted_request()))
     return false;
 
-  assert(!timeout || timeout >= milliseconds{-1});
+  if (!(!timeout || timeout >= milliseconds{-1}))
+    throw Client_exception{"cannot wait response: invalid timeout specified"};
+
   if (timeout < milliseconds::zero()) // even if timeout < -1
     timeout = options().wait_response_timeout();
 
   while (true) {
     const auto s = handle_input(!timeout);
     if (s == Response_status::unready) {
-      assert(timeout);
+      DMITIGR_ASSERT(timeout);
 
       const auto moment_of_wait = system_clock::now();
       if (wait_socket_readiness(Socket_readiness::read_ready, timeout) == Socket_readiness::read_ready)
@@ -500,7 +521,7 @@ DMITIGR_PGFE_INLINE bool Connection::wait_response(std::optional<std::chrono::mi
       return s == Response_status::ready;
   }
 
-  assert(false);
+  DMITIGR_ASSERT(false);
 }
 
 DMITIGR_PGFE_INLINE Notification Connection::pop_notification()
@@ -541,8 +562,7 @@ DMITIGR_PGFE_INLINE Completion Connection::completion() noexcept
       return result;
     }
     default:
-      assert(false);
-      std::terminate();
+      DMITIGR_ASSERT(false);
     }
   case PGRES_EMPTY_QUERY:
     return Completion{""};
@@ -567,7 +587,6 @@ DMITIGR_PGFE_INLINE std::size_t Connection::request_queue_size() const
 DMITIGR_PGFE_INLINE void
 Connection::prepare_nio(const Sql_string& statement, const std::string& name)
 {
-  assert(!statement.has_missing_parameters());
   prepare_nio__(statement.to_query_string(*this).c_str(),
     name.c_str(), &statement); // can throw
 }
@@ -581,13 +600,15 @@ Connection::prepare(const Sql_string& statement, const std::string& name)
 
 DMITIGR_PGFE_INLINE void Connection::describe_nio(const std::string& name)
 {
-  assert(is_ready_for_nio_request());
+  if (!is_ready_for_nio_request())
+    throw Client_exception{"cannot describe prepared statement:"
+      " not ready for non-blocking IO request"};
 
   requests_.emplace(Request::Id::describe, name); // can throw
   try {
     const int send_ok = ::PQsendDescribePrepared(conn(), name.c_str());
     if (!send_ok)
-      throw std::runtime_error{error_message()};
+      throw Client_exception{error_message()};
   } catch (...) {
     requests_.pop(); // rollback
     throw;
@@ -596,18 +617,39 @@ DMITIGR_PGFE_INLINE void Connection::describe_nio(const std::string& name)
   assert(is_invariant_ok());
 }
 
+DMITIGR_PGFE_INLINE Prepared_statement* Connection::describe(const std::string& name)
+{
+  if (!is_ready_for_request())
+    throw Client_exception{"cannot describe prepared statement:"
+      " not ready for non-blocking IO request"};
+  describe_nio(name);
+  return wait_prepared_statement__();
+}
+
 DMITIGR_PGFE_INLINE void Connection::unprepare_nio(const std::string& name)
 {
-  assert(!name.empty());
+  if (name.empty())
+    throw Client_exception{"cannot unprepare prepared statement:"
+      " invalid name specified"};
 
   auto name_copy = name; // can throw
   const auto query = "DEALLOCATE " + to_quoted_identifier(name); // can throw
   execute_nio(query); // can throw
-  assert(requests_.front().id_ == Request::Id::execute);
+  DMITIGR_ASSERT(requests_.front().id_ == Request::Id::execute);
   requests_.front().id_ = Request::Id::unprepare; // cannot throw
   requests_.front().prepared_statement_name_ = std::move(name_copy); // cannot throw
 
   assert(is_invariant_ok());
+}
+
+DMITIGR_PGFE_INLINE Completion Connection::unprepare(const std::string& name)
+{
+  if (!is_ready_for_request())
+    throw Client_exception{"cannot unprepare prepared statement:"
+      " not ready for request"};
+  unprepare_nio(name);
+  wait_response_throw();
+  return completion();
 }
 
 DMITIGR_PGFE_INLINE void Connection::set_pipeline_enabled(const bool value)
@@ -645,23 +687,48 @@ DMITIGR_PGFE_INLINE void Connection::send_flush()
     throw Client_exception{"cannot send flush message to the server"};
 }
 
-DMITIGR_PGFE_INLINE Oid Connection::create_large_object(const Oid oid) noexcept
+DMITIGR_PGFE_INLINE Oid Connection::create_large_object(const Oid oid)
 {
-  assert(is_ready_for_request());
+  if (!is_ready_for_request())
+    throw Client_exception{"cannot create large object: not ready for request"};
   return (oid == invalid_oid) ? ::lo_creat(conn(), static_cast<int>(
       Large_object_open_mode::reading | Large_object_open_mode::writing)) :
     ::lo_create(conn(), oid);
 }
 
-DMITIGR_PGFE_INLINE Large_object Connection::open_large_object(Oid oid, Large_object_open_mode mode) noexcept
+DMITIGR_PGFE_INLINE Large_object Connection::open_large_object(const Oid oid,
+  const Large_object_open_mode mode)
 {
-  assert(is_ready_for_request());
+  if (!is_ready_for_request())
+    throw Client_exception{"cannot open large object: not ready for request"};
   return Large_object{this, ::lo_open(conn(), oid, static_cast<int>(mode))};
+}
+
+DMITIGR_PGFE_INLINE bool Connection::remove_large_object(const Oid oid)
+{
+  if (!is_ready_for_request())
+    throw Client_exception{"cannot remove large object: not ready for request"};
+  return ::lo_unlink(conn(), oid);
+}
+
+DMITIGR_PGFE_INLINE Oid Connection::import_large_object(const std::filesystem::path& filename, const Oid oid)
+{
+  if (!is_ready_for_request())
+    throw Client_exception{"cannot import large object: not ready for request"};
+  return ::lo_import_with_oid(conn(), filename.string().c_str(), oid);
+}
+
+DMITIGR_PGFE_INLINE bool Connection::export_large_object(const Oid oid, const std::filesystem::path& filename)
+{
+  if (!is_ready_for_request())
+    throw Client_exception{"cannot export large object: not ready for request"};
+  return ::lo_export(conn(), oid, filename.string().c_str()) == 1; // lo_export returns -1 on failure
 }
 
 DMITIGR_PGFE_INLINE std::string Connection::to_quoted_literal(const std::string_view literal) const
 {
-  assert(is_connected());
+  if (!is_connected())
+    throw Client_exception{"cannot quote literal: not connected"};
 
   using Uptr = std::unique_ptr<char, void(*)(void*)>;
   if (const auto p = Uptr{::PQescapeLiteral(conn(), literal.data(), literal.size()), &::PQfreemem})
@@ -669,12 +736,13 @@ DMITIGR_PGFE_INLINE std::string Connection::to_quoted_literal(const std::string_
   else if (is_out_of_memory())
     throw std::bad_alloc{};
   else
-    throw std::runtime_error{error_message()};
+    throw Client_exception{error_message()};
 }
 
 DMITIGR_PGFE_INLINE std::string Connection::to_quoted_identifier(const std::string_view identifier) const
 {
-  assert(is_connected());
+  if (!is_connected())
+    throw Client_exception{"cannot quote identifier: not connected"};
 
   using Uptr = std::unique_ptr<char, void(*)(void*)>;
   if (const auto p = Uptr{::PQescapeIdentifier(conn(), identifier.data(), identifier.size()), &::PQfreemem})
@@ -682,7 +750,7 @@ DMITIGR_PGFE_INLINE std::string Connection::to_quoted_identifier(const std::stri
   else if (is_out_of_memory())
     throw std::bad_alloc{};
   else
-    throw std::runtime_error{error_message()};
+    throw Client_exception{error_message()};
 }
 
 // -----------------------------------------------------------------------------
@@ -757,31 +825,33 @@ DMITIGR_PGFE_INLINE void Connection::set_single_row_mode_enabled()
 
 DMITIGR_PGFE_INLINE void Connection::notice_receiver(void* const arg, const ::PGresult* const r) noexcept
 {
-  assert(arg);
-  assert(r);
+  DMITIGR_ASSERT(arg);
+  DMITIGR_ASSERT(r);
   auto* const cn = static_cast<Connection*>(arg);
   if (cn->notice_handler_) {
     try {
       cn->notice_handler_(Notice{r});
     } catch (const std::exception& e) {
-      std::fprintf(stderr, "Notice handler thrown: %s\n", e.what());
+      std::clog << "notice handler: error: " << e.what() << '\n';
     } catch (...) {
-      std::fprintf(stderr, "Notice handler thrown unknown error\n");
+      std::clog << "notice handler: unknown error\n";
     }
   }
 }
 
 DMITIGR_PGFE_INLINE void Connection::default_notice_handler(const Notice& n) noexcept
 {
-  std::fprintf(stderr, "PostgreSQL Notice: %s\n", n.brief());
+  std::clog << "PostgreSQL Notice: " << n.brief() << '\n';
 }
 
 DMITIGR_PGFE_INLINE void
 Connection::prepare_nio__(const char* const query, const char* const name, const Sql_string* const preparsed)
 {
-  assert(query);
-  assert(name);
-  assert(is_ready_for_nio_request());
+  if (!is_ready_for_nio_request())
+    throw Client_exception{"cannot prepare statement:"
+      " not ready for non-blocking IO request"};
+  DMITIGR_ASSERT(query);
+  DMITIGR_ASSERT(name);
 
   requests_.emplace(Request::Id::prepare);
   try {
@@ -790,7 +860,7 @@ Connection::prepare_nio__(const char* const query, const char* const name, const
     constexpr const ::Oid* const param_types{};
     const int send_ok = ::PQsendPrepare(conn(), name, query, n_params, param_types);
     if (!send_ok)
-      throw std::runtime_error{error_message()};
+      throw Client_exception{error_message()};
   } catch (...) {
     requests_.pop(); // rollback
     throw;
@@ -859,16 +929,16 @@ DMITIGR_PGFE_INLINE std::string Connection::error_message() const
 }
 
 DMITIGR_PGFE_INLINE std::pair<std::unique_ptr<void, void(*)(void*)>, std::size_t>
-Connection::to_hex_storage(const pgfe::Data& binary_data) const
+Connection::to_hex_storage(const pgfe::Data& data) const
 {
-  assert(is_connected());
+  if (!is_connected())
+    throw Client_exception{"cannot encode data to hex: not connected"};
+  else if (!(data && (data.format() == Data_format::binary)))
+    throw Client_exception{"cannot encode data to hex: invalid data specified"};
 
-  if (!binary_data || binary_data.format() != pgfe::Data_format::binary)
-    throw Client_exception{"cannot convert not a binary data to hex"};
-
-  const auto from_length = binary_data.size();
-  const auto* from = static_cast<const unsigned char*>(binary_data.bytes());
-  std::size_t result_length{0};
+  const auto from_length = data.size();
+  const auto* from = static_cast<const unsigned char*>(data.bytes());
+  std::size_t result_length{};
   using Uptr = std::unique_ptr<void, void(*)(void*)>;
   if (auto storage = Uptr{::PQescapeByteaConn(conn(), from, from_length, &result_length), &::PQfreemem})
     // The result_length includes the terminating zero byte of the result.

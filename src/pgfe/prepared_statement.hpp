@@ -23,13 +23,14 @@
 #ifndef DMITIGR_PGFE_PREPARED_STATEMENT_HPP
 #define DMITIGR_PGFE_PREPARED_STATEMENT_HPP
 
+#include "../util/memory.hpp"
 #include "basics.hpp"
 #include "conversions.hpp"
+#include "exceptions.hpp"
 #include "parameterizable.hpp"
 #include "response.hpp"
 #include "row_info.hpp"
 #include "types_fwd.hpp"
-#include "../util/memory.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -237,9 +238,10 @@ public:
   }
 
   /// @see Parameterizable::parameter_name().
-  std::string_view parameter_name(const std::size_t index) const noexcept override
+  std::string_view parameter_name(const std::size_t index) const override
   {
-    assert((positional_parameter_count() <= index) && (index < parameter_count()));
+    if (!((positional_parameter_count() <= index) && (index < parameter_count())))
+      throw_exception("cannot get parameter name of");
     return parameters_[index].name;
   }
 
@@ -277,9 +279,10 @@ public:
    * @par Requires
    * `(index < parameter_count())`.
    */
-  Data_view bound(const std::size_t index) const noexcept
+  Data_view bound(const std::size_t index) const
   {
-    assert(index < parameter_count());
+    if (!(index < parameter_count()))
+      throw_exception("cannot get bound parameter value of");
     const auto& result = parameters_[index].data;
     return result ? Data_view{*result} : Data_view{};
   }
@@ -290,11 +293,9 @@ public:
    * @par Requries
    * `(parameter_index(name) < parameter_count())`.
    */
-  Data_view bound(const std::string_view name) const noexcept
+  Data_view bound(const std::string_view name) const
   {
-    const auto idx = parameter_index(name);
-    assert(idx < parameter_count());
-    return bound(idx);
+    return bound(parameter_index(name));
   }
 
   /**
@@ -356,9 +357,7 @@ public:
   template<typename T>
   Prepared_statement& bind(const std::string_view name, T&& value)
   {
-    const auto idx = parameter_index(name);
-    assert(idx < parameter_count());
-    return bind(idx, std::forward<T>(value));
+    return bind(parameter_index(name), std::forward<T>(value));
   }
 
   /**
@@ -381,7 +380,7 @@ public:
    * @see bind().
    */
   template<typename ... Types>
-  Prepared_statement& bind_many(Types&& ... values) noexcept
+  Prepared_statement& bind_many(Types&& ... values)
   {
     return bind_many__(std::make_index_sequence<sizeof ... (Types)>{}, std::forward<Types>(values)...);
   }
@@ -503,7 +502,7 @@ public:
    * @par Requires
    * `(index < parameter_count())`.
    */
-  DMITIGR_PGFE_API std::uint_fast32_t parameter_type_oid(std::size_t index) const noexcept;
+  DMITIGR_PGFE_API std::uint_fast32_t parameter_type_oid(std::size_t index) const;
 
   /**
    * @overload
@@ -513,11 +512,9 @@ public:
    *
    * @see bound().
    */
-  std::uint_fast32_t parameter_type_oid(const std::string_view name) const noexcept
+  std::uint_fast32_t parameter_type_oid(const std::string_view name) const
   {
-    const auto idx = parameter_index(name);
-    assert(idx < parameter_count());
-    return parameter_type_oid(idx);
+    return parameter_type_oid(parameter_index(name));
   }
 
   /**
@@ -599,6 +596,15 @@ private:
 
   void init_connection__(Connection* connection);
 
+  [[noreturn]] void throw_exception(std::string msg) const
+  {
+    const auto id = !is_valid() ? std::string{"invalid prepared statement"} :
+      name().empty() ? std::string{"unnamed prepared statement"} :
+      std::string{"prepared statement "}.append(name());
+    msg.append(" ").append(id);
+    throw Client_exception{msg};
+  }
+
   bool is_invariant_ok() const noexcept override;
 
   // ---------------------------------------------------------------------------
@@ -608,9 +614,12 @@ private:
   Prepared_statement& bind(const std::size_t index, Data_ptr&& data)
   {
     const bool is_opaque = !is_preparsed() && !is_described();
-    assert(is_opaque || (index < parameter_count()));
+    if (!(is_opaque || (index < parameter_count())))
+      throw_exception("cannot bind parameter of");
+
     if (is_opaque) {
-      assert(index < max_parameter_count());
+      if (!(index < max_parameter_count()))
+        throw_exception("cannot bind parameter of");
       if (index >= parameters_.size())
         parameters_.resize(index + 1);
     }
@@ -655,8 +664,8 @@ private:
 
   void set_description(detail::pq::Result&& r)
   {
-    assert(r);
-    assert(!is_described());
+    DMITIGR_ASSERT(r);
+    DMITIGR_ASSERT(!is_described());
 
     if (!preparsed_)
       parameters_.resize(static_cast<std::size_t>(r.ps_param_count()));
@@ -667,13 +676,13 @@ private:
      */
     if (r.field_count() > 0) {
       description_ = Row_info{std::move(r)};
-      assert(description_);
+      DMITIGR_ASSERT(description_);
     } else {
       description_.pq_result_ = std::move(r);
-      assert(!description_);
+      DMITIGR_ASSERT(!description_);
     }
 
-    assert(is_described());
+    DMITIGR_ASSERT(is_described());
     assert(is_invariant_ok());
   }
 

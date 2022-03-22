@@ -20,10 +20,13 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
+#include "../base/assert.hpp"
 #include "../net/net.hpp"
 #include "connection_options.hpp"
+#include "exceptions.hpp"
 
 #include <algorithm>
+#include <cassert>
 #include <stdexcept>
 
 namespace dmitigr::pgfe {
@@ -66,7 +69,8 @@ inline bool is_absolute_directory_name(const std::filesystem::path& value)
 inline void validate(const bool condition, const std::string& option_name)
 {
   if (!condition)
-    throw std::runtime_error{"invalid value of \"" + option_name + "\" connection option"};
+    throw Client_exception{"invalid value of \"" + option_name
+      + "\" connection option"};
 }
 
 } // namespace validators
@@ -111,16 +115,14 @@ DMITIGR_PGFE_INLINE void Connection_options::swap(Connection_options& rhs) noexc
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::set_communication_mode(
-  const std::optional<Communication_mode> value) noexcept
+Connection_options::set_communication_mode(const std::optional<Communication_mode> value)
 {
   communication_mode_ = value;
   return *this;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::set_session_mode(
-  const std::optional<Session_mode> value) noexcept
+Connection_options::set_session_mode(const std::optional<Session_mode> value)
 {
   session_mode_ = value;
   return *this;
@@ -393,7 +395,7 @@ public:
   {
     const auto cm = o.communication_mode();
     if (!cm)
-      throw std::runtime_error{"incomplete connection options:"
+      throw Client_exception{"incomplete connection options:"
         " communication mode is not specified"};
 
     switch (*cm) {
@@ -425,8 +427,7 @@ public:
         values_[requirepeer] = *v;
       break;
     default:
-      assert(false);
-      std::terminate();
+      DMITIGR_ASSERT(false);
     }
 
     if (const auto& v = o.session_mode())
@@ -642,8 +643,7 @@ private:
     case target_session_attrs: return "target_session_attrs";
     case Keyword_count_:;
     }
-    assert(false);
-    std::terminate();
+    DMITIGR_ASSERT(false);
   }
 
   /// @returns The value literal for libpq.
@@ -655,8 +655,7 @@ private:
     case Cb::preferred: return "prefer";
     case Cb::required: return "require";
     }
-    assert(false);
-    std::terminate();
+    DMITIGR_ASSERT(false);
   }
 
   /// @returns The value literal for libpq.
@@ -669,8 +668,7 @@ private:
     case Spv::tls1_2: return "TLSv1.2";
     case Spv::tls1_3: return "TLSv1.3";
     }
-    assert(false);
-    std::terminate();
+    DMITIGR_ASSERT(false);
   }
 
   /// @returns The value literal for libpq.
@@ -684,8 +682,7 @@ private:
     case Sm::primary: return "primary";
     case Sm::standby: return "standby";
     }
-    assert(false);
-    std::terminate();
+    DMITIGR_ASSERT(false);
   }
 
   /**

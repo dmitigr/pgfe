@@ -61,10 +61,10 @@ public:
   virtual bool has_positional_parameters() const noexcept = 0;
 
   /// @returns `(named_parameter_count() > 0)`.
-  virtual bool has_named_parameters() const = 0;
+  virtual bool has_named_parameters() const noexcept = 0;
 
   /// @returns `(parameter_count() > 0)`.
-  virtual bool has_parameters() const = 0;
+  virtual bool has_parameters() const noexcept = 0;
 
   /**
    * @returns The name of the parameter by the `index`.
@@ -72,7 +72,7 @@ public:
    * @par Requires
    * `index` in range `[positional_parameter_count(), parameter_count())`.
    */
-  virtual std::string_view parameter_name(std::size_t index) const noexcept = 0;
+  virtual std::string_view parameter_name(std::size_t index) const = 0;
 
   /// @returns The parameter index if presents, or `parameter_count()` othersize.
   virtual std::size_t parameter_index(std::string_view name) const noexcept = 0;

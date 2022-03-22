@@ -33,29 +33,28 @@ namespace dmitigr::os {
 /// @returns String describing OS error code.
 inline std::string error_message(const int code)
 {
-  constexpr const char* const errmsg{"cannot get an OS error message"};
 #ifdef _WIN32
   char buf[128];
   if (const int e = ::strerror_s(buf, code))
-    throw Sys_exception{e, errmsg};
+    throw Sys_exception{e, "cannot get an OS error message"};
   else
     return std::string{buf};
 #else
   char buf[1024];
-#ifdef _GNU_SOURCE
+#if (_POSIX_C_SOURCE >= 200112L) && !_GNU_SOURCE
+  const int e = ::strerror_r(code, buf, sizeof(buf));
+  if (e < 0)
+    throw Sys_exception{e, "cannot get an OS error message"};
+  else if (e > 0)
+    return "unknown error";
+  else
+    return std::string{buf};
+#elif _GNU_SOURCE
   const char* const msg = ::strerror_r(code, buf, sizeof(buf));
   if (msg)
     return msg;
   else
     return "unknown error";
-#elif (_POSIX_C_SOURCE >= 200112L)
-  const int e = ::strerror_r(code, buf, sizeof(buf));
-  if (e < 0)
-    throw Sys_exception{e, errmsg};
-  else if (e > 0)
-    return "unknown error";
-  else
-    return std::string{buf};
 #else
 #error Supported version of strerror_r() is not available.
 #endif

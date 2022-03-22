@@ -83,10 +83,10 @@ public:
   DMITIGR_PGFE_API bool is_empty() const noexcept override;
 
   /// @see Compositional::field_name().
-  DMITIGR_PGFE_API std::string_view field_name(const std::size_t index) const noexcept override;
+  DMITIGR_PGFE_API std::string_view field_name(const std::size_t index) const override;
 
   /// @see Compositional::index_of().
-  DMITIGR_PGFE_API std::size_t field_index(const std::string_view name, std::size_t offset = 0) const noexcept override;
+  DMITIGR_PGFE_API std::size_t field_index(const std::string_view name, std::size_t offset = 0) const override;
 
   /**
    * @returns The OID of the table if a field at `index` can be identified as a
@@ -97,7 +97,7 @@ public:
    * @par Requires
    * `(index < size())`.
    */
-  DMITIGR_PGFE_API std::uint_fast32_t table_oid(std::size_t index) const noexcept;
+  DMITIGR_PGFE_API std::uint_fast32_t table_oid(std::size_t index) const;
 
   /**
    * @overload
@@ -110,7 +110,7 @@ public:
    *
    * @see has_field().
    */
-  std::uint_fast32_t table_oid(const std::string_view name, std::size_t offset = 0) const noexcept
+  std::uint_fast32_t table_oid(const std::string_view name, std::size_t offset = 0) const
   {
     return table_oid(field_index(name, offset));
   }
@@ -126,7 +126,7 @@ public:
    *
    * @remarks System columns, such as "oid", have arbitrary negative numbers.
    */
-  DMITIGR_PGFE_API std::int_fast32_t table_column_number(std::size_t index) const noexcept;
+  DMITIGR_PGFE_API std::int_fast32_t table_column_number(std::size_t index) const;
 
   /**
    * @overload
@@ -139,7 +139,7 @@ public:
    *
    * @see has_field().
    */
-  std::int_fast32_t table_column_number(const std::string_view name, std::size_t offset = 0) const noexcept
+  std::int_fast32_t table_column_number(const std::string_view name, std::size_t offset = 0) const
   {
     return table_column_number(field_index(name, offset));
   }
@@ -152,7 +152,7 @@ public:
    * @par Requires
    * `(index < size())`.
    */
-  DMITIGR_PGFE_API std::uint_fast32_t type_oid(std::size_t index) const noexcept;
+  DMITIGR_PGFE_API std::uint_fast32_t type_oid(std::size_t index) const;
 
   /**
    * @overload
@@ -165,7 +165,7 @@ public:
    *
    * @see has_field().
    */
-  std::uint_fast32_t type_oid(const std::string_view name, std::size_t offset = 0) const noexcept
+  std::uint_fast32_t type_oid(const std::string_view name, std::size_t offset = 0) const
   {
     return type_oid(field_index(name, offset));
   }
@@ -181,7 +181,7 @@ public:
    * @par Requires
    * `(index < size())`.
    */
-  DMITIGR_PGFE_API std::int_fast32_t type_size(std::size_t index) const noexcept;
+  DMITIGR_PGFE_API std::int_fast32_t type_size(std::size_t index) const;
 
   /**
    * @overload
@@ -192,7 +192,7 @@ public:
    * @par Requires
    * `has_field(name, offset)`.
    */
-  std::int_fast32_t type_size(const std::string_view name, std::size_t offset = 0) const noexcept
+  std::int_fast32_t type_size(const std::string_view name, std::size_t offset = 0) const
   {
     return type_size(field_index(name, offset));
   }
@@ -207,7 +207,7 @@ public:
    * @par Requires
    * `(index < size())`.
    */
-  DMITIGR_PGFE_API std::int_fast32_t type_modifier(std::size_t index) const noexcept;
+  DMITIGR_PGFE_API std::int_fast32_t type_modifier(std::size_t index) const;
 
   /**
    * @overload
@@ -218,7 +218,7 @@ public:
    * @par Requires
    * `has_field(name, offset)`.
    */
-  std::int_fast32_t type_modifier(const std::string_view name, std::size_t offset = 0) const noexcept
+  std::int_fast32_t type_modifier(const std::string_view name, std::size_t offset = 0) const
   {
     return type_modifier(field_index(name, offset));
   }
@@ -231,7 +231,7 @@ public:
    * @par Requires
    * `(index < size())`.
    */
-  DMITIGR_PGFE_API Data_format data_format(std::size_t index) const noexcept;
+  DMITIGR_PGFE_API Data_format data_format(std::size_t index) const;
 
   /**
    * @overload
@@ -242,7 +242,7 @@ public:
    * @par Requires
    * `has_field(name, offset)`.
    */
-  Data_format data_format(const std::string_view name, std::size_t offset = 0) const noexcept
+  Data_format data_format(const std::string_view name, std::size_t offset = 0) const
   {
     return data_format(field_index(name, offset));
   }

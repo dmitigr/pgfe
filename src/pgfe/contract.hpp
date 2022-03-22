@@ -20,35 +20,27 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
-#include "problem.hpp"
-#include "std_system_error.hpp"
+#ifndef DMITIGR_PGFE_CONTRACT_HPP
+#define DMITIGR_PGFE_CONTRACT_HPP
 
-namespace dmitigr::pgfe {
+#include "../util/contract.hpp"
+#include "types_fwd.hpp"
 
-DMITIGR_PGFE_INLINE std::string Client_error_category::message(const int ev) const
+#include <utility>
+
+namespace dmitigr::pgfe::detail {
+
+/**
+ * @returns `value`.
+ *
+ * @throws Client_exception if `!value`.
+ */
+template<typename T>
+inline auto not_false(T&& value)
 {
-  std::string result{name()};
-  result += ' ';
-  result += std::to_string(ev);
-  if (const char* const literal = to_literal(static_cast<Client_errc>(ev))) {
-    result += ' ';
-    result += literal;
-  }
-  return result;
+  return util::not_false<Client_exception>(std::forward<T>(value));
 }
 
-DMITIGR_PGFE_INLINE std::string Server_error_category::message(const int ev) const
-{
-  std::string result{name()};
-  result += ' ';
-  result += std::to_string(ev);
-  result += ' ';
-  result += Problem::sqlstate_int_to_string(ev);
-  if (const char* const literal = to_literal(static_cast<Server_errc>(ev))) {
-    result += ' ';
-    result += literal;
-  }
-  return result;
-}
+} // namespace dmitigr::pgfe::detail
 
-} // namespace dmitigr::pgfe
+#endif  // DMITIGR_PGFE_CONTRACT_HPP

@@ -23,8 +23,11 @@
 #ifndef DMITIGR_PGFE_ROW_HPP
 #define DMITIGR_PGFE_ROW_HPP
 
+#include "../base/assert.hpp"
 #include "composite.hpp"
 #include "data.hpp"
+#include "exceptions.hpp"
+#include "response.hpp"
 #include "row_info.hpp"
 
 #include <cassert>
@@ -73,12 +76,12 @@ public:
   }
 
   /// @see Compositional::field_name().
-  std::string_view field_name(const std::size_t index) const noexcept override
+  std::string_view field_name(const std::size_t index) const override
   {
     return info_.field_name(index);
   }
 
-  /// @see Compositional::index_of().
+  /// @see Compositional::field_index().
   std::size_t field_index(const std::string_view name, const std::size_t offset = 0) const noexcept override
   {
     return info_.field_index(name, offset);
@@ -100,9 +103,11 @@ public:
    * @par Requires
    * `(index < field_count())`.
    */
-  Data_view data(const std::size_t index = 0) const noexcept override
+  Data_view data(const std::size_t index = 0) const override
   {
-    assert(index < field_count());
+    if (!(index < field_count()))
+      throw Client_exception{"cannot get field data of row"};
+
     constexpr int row{};
     const auto fld = static_cast<int>(index);
     const auto& r = info_.pq_result_;
@@ -147,7 +152,7 @@ public:
     /// Dereferences the iterator.
     reference operator*() noexcept
     {
-      assert(row_);
+      DMITIGR_ASSERT(row_);
       const auto& name{row_->field_name(index_)};
       return value_ = value_type{{name.data(), name.size()}, row_->data(index_)};
     }
@@ -211,8 +216,8 @@ public:
       : row_{row}
       , index_{index}
     {
-      assert(row_);
-      assert(index_ <= row_->field_count());
+      DMITIGR_ASSERT(row_);
+      DMITIGR_ASSERT(index_ <= row_->field_count());
     }
   };
 

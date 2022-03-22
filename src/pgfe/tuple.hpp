@@ -26,6 +26,7 @@
 #include "composite.hpp"
 #include "conversions.hpp"
 #include "data.hpp"
+#include "exceptions.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -108,38 +109,39 @@ public:
   }
 
   /// @see Compositional::field_name().
-  std::string_view field_name(const std::size_t index) const noexcept override
+  std::string_view field_name(const std::size_t index) const override
   {
-    assert(index < field_count());
+    if (!(index < field_count()))
+      throw Client_exception{"cannot get field name of tuple"};
     return datas_[index].first;
   }
 
-  /// @see Compositional::index_of().
+  /// @see Compositional::field_index().
   std::size_t field_index(const std::string_view name,
-    const std::size_t offset = 0) const noexcept override
+    const std::size_t offset = 0) const override
   {
-    const auto sz = field_count();
+    if (!(offset < field_count()))
+      throw Client_exception{"cannot get tuple field index: invalid offset"};
     const auto b = datas_.cbegin();
     const auto e = datas_.cend();
     using Diff = decltype(b)::difference_type;
-    const auto i = find_if(
-      std::min(b + static_cast<Diff>(offset), b + static_cast<Diff>(sz)),
-      e,
+    const auto i = find_if(b + static_cast<Diff>(offset), e,
       [&name](const auto& pair) { return pair.first == name; });
     return static_cast<std::size_t>(i - b);
   }
 
   /**
-   * @returns The field data of this composite.
+   * @returns The field data of this tuple.
    *
    * @param index See Compositional.
    *
    * @par Requires
    * `(index < field_count())`.
    */
-  Data_view data(const std::size_t index) const noexcept override
+  Data_view data(const std::size_t index) const override
   {
-    assert(index < field_count());
+    if (!(index < field_count()))
+      throw Client_exception{"cannot get data of tuple"};
     const auto& result = datas_[index].second;
     return result ? Data_view{*result} : Data_view{};
   }
@@ -160,7 +162,7 @@ public:
   }
 
   /**
-   * @brief Overwrites the field of this composite with the value of type T.
+   * @brief Overwrites the field of this tuple with the value of type T.
    *
    * @par Requires
    * `(index < field_count())`.
@@ -168,7 +170,8 @@ public:
   template<typename T>
   void set(const std::size_t index, T&& value)
   {
-    assert(index < field_count());
+    if (!(index < field_count()))
+      throw Client_exception{"cannot set data of tuple"};
     datas_[index].second = to_data(std::forward<T>(value));
   }
 
@@ -180,7 +183,7 @@ public:
   }
 
   /**
-   * @brief Appends the field to this composite.
+   * @brief Appends the field to this tuple.
    *
    * @param name See Compositional.
    * @param value A value to set.
@@ -205,7 +208,7 @@ public:
   }
 
   /**
-   * @brief Inserts new field to this composite.
+   * @brief Inserts new field to this tuple.
    *
    * @param index An index of a field before which a new field will be inserted.
    * @param name A name of a new field.
@@ -220,7 +223,8 @@ public:
   template<typename T>
   void insert(const std::size_t index, std::string name, T&& value)
   {
-    assert(index < field_count());
+    if (!(index < field_count()))
+      throw Client_exception{"cannot insert field to tuple"};
     const auto b = datas_.begin();
     using Diff = decltype(b)::difference_type;
     datas_.insert(b + static_cast<Diff>(index),
@@ -246,7 +250,7 @@ public:
   }
 
   /**
-   * @brief Removes field from this composite.
+   * @brief Removes field from this tuple.
    *
    * @par Requires
    * `(index < field_count())`.
@@ -254,9 +258,10 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  void remove(const std::size_t index) noexcept
+  void remove(const std::size_t index)
   {
-    assert(index < field_count());
+    if (!(index < field_count()))
+      throw Client_exception{"cannot remove field from tuple"};
     const auto b = datas_.cbegin();
     using Diff = decltype(b)::difference_type;
     datas_.erase(b + static_cast<Diff>(index));
@@ -272,7 +277,7 @@ public:
    * @par Effects
    * `!has_field(name, offset)`.
    */
-  void remove(const std::string_view name, const std::size_t offset = 0) noexcept
+  void remove(const std::string_view name, const std::size_t offset = 0)
   {
     if (const auto index = field_index(name, offset); index != field_count()) {
       const auto b = datas_.cbegin();

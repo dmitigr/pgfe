@@ -23,12 +23,14 @@
 #ifndef DMITIGR_PGFE_CONNECTION_HPP
 #define DMITIGR_PGFE_CONNECTION_HPP
 
+#include "../base/assert.hpp"
 #include "basics.hpp"
 #include "completion.hpp"
 #include "connection_options.hpp"
 #include "data.hpp"
 #include "dll.hpp"
 #include "error.hpp"
+#include "exceptions.hpp"
 #include "notice.hpp"
 #include "notification.hpp"
 #include "pq.hpp"
@@ -264,17 +266,8 @@ public:
    *
    * @par Effects
    * `(status() == Status::disconnected)`.
-   *
-   * @par Exception safety guarantee
-   * Strong.
    */
-  void disconnect() noexcept
-  {
-    reset_session();
-    conn_.reset(); // discarding unhandled notifications btw.
-    assert(status() == Status::disconnected);
-    assert(is_invariant_ok());
-  }
+  DMITIGR_PGFE_API void disconnect() noexcept;
 
   /**
    * @brief Waits for readiness of the connection socket if it's unready.
@@ -316,7 +309,7 @@ public:
   void read_input()
   {
     if (!::PQconsumeInput(conn()))
-      throw std::runtime_error{error_message()};
+      throw Client_exception{error_message()};
   }
 
   /**
@@ -610,7 +603,7 @@ public:
         if constexpr (on_exception == Row_processing::complete) {
           Completion comp;
           Error err;
-          std::runtime_error process_responses_error{""};
+          Client_exception process_responses_error{""};
           try {
             // std::function is used as the workaround for GCC 7.5
             std::function<void(Row&&, Error&&)> f = [&err](auto&&, auto&& e)
@@ -619,12 +612,12 @@ public:
                 err = std::move(e);
             };
             comp = process_responses(std::move(f));
-            assert((comp && !err) || (!comp && err));
+            DMITIGR_ASSERT((comp && !err) || (!comp && err));
           } catch (const std::bad_alloc&) {
             goto bad_alloc;
           } catch (const std::exception& e) {
             try {
-              process_responses_error = std::runtime_error{e.what()};
+              process_responses_error = Client_exception{e.what()};
             } catch (...) {
               goto bad_alloc;
             }
@@ -878,12 +871,7 @@ public:
    *
    * @see describe_nio(), unprepare().
    */
-  Prepared_statement* describe(const std::string& name)
-  {
-    assert(is_ready_for_request());
-    describe_nio(name);
-    return wait_prepared_statement__();
-  }
+  DMITIGR_PGFE_API Prepared_statement* describe(const std::string& name);
 
   /**
    * @brief Requests the server to deallocate the prepared statement.
@@ -918,13 +906,7 @@ public:
    * @par Exception safety guarantee
    * Basic.
    */
-  Completion unprepare(const std::string& name)
-  {
-    assert(is_ready_for_request());
-    unprepare_nio(name);
-    wait_response_throw();
-    return completion();
-  }
+  DMITIGR_PGFE_API Completion unprepare(const std::string& name);
 
   /**
    * @brief Requests the server to prepare and execute the unnamed statement
@@ -978,7 +960,8 @@ public:
   std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
   execute(F&& callback, const Sql_string& statement, Types&& ... parameters)
   {
-    assert(is_ready_for_request());
+    if (!is_ready_for_request())
+      throw Client_exception{"cannot execute statement: not ready for request"};
     execute_nio(statement, std::forward<Types>(parameters)...);
     return process_responses<on_exception>(std::forward<F>(callback));
   }
@@ -1209,7 +1192,7 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  DMITIGR_PGFE_API Oid create_large_object(Oid oid = invalid_oid) noexcept;
+  DMITIGR_PGFE_API Oid create_large_object(Oid oid = invalid_oid);
 
   /**
    * @brief Requests the server to open the large object and waits the result.
@@ -1222,7 +1205,7 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  DMITIGR_PGFE_API Large_object open_large_object(Oid oid, Large_object_open_mode mode) noexcept;
+  DMITIGR_PGFE_API Large_object open_large_object(Oid oid, Large_object_open_mode mode);
 
   /**
    * @brief Requests the server to remove the large object and waits the result.
@@ -1235,11 +1218,7 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  bool remove_large_object(Oid oid) noexcept
-  {
-    assert(is_ready_for_request());
-    return ::lo_unlink(conn(), oid);
-  }
+  DMITIGR_PGFE_API bool remove_large_object(Oid oid);
 
   /**
    * @brief Requests the server (multiple times) to import the specified file as
@@ -1253,11 +1232,7 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  Oid import_large_object(const std::filesystem::path& filename, Oid oid = invalid_oid) noexcept
-  {
-    assert(is_ready_for_request());
-    return ::lo_import_with_oid(conn(), filename.string().c_str(), oid);
-  }
+  DMITIGR_PGFE_API Oid import_large_object(const std::filesystem::path& filename, Oid oid = invalid_oid);
 
   /**
    * @brief Requests the server (multiple times) to export the specified large
@@ -1271,11 +1246,7 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  bool export_large_object(Oid oid, const std::filesystem::path& filename) noexcept
-  {
-    assert(is_ready_for_request());
-    return ::lo_export(conn(), oid, filename.string().c_str()) == 1; // lo_export returns -1 on failure
-  }
+  DMITIGR_PGFE_API bool export_large_object(Oid oid, const std::filesystem::path& filename);
 
   /// @}
 
@@ -1332,7 +1303,7 @@ public:
    * @returns The encoded data in the hex format.
    *
    * @par Requires
-   * `(is_connected() && binary_data && (binary_data->format() == Data_format::binary))`.
+   * `(is_connected() && data && (data.format() == Data_format::binary))`.
    *
    * @remarks Using of parameterized prepared statement should be considered as
    * the better alternative comparing to including the encoded binary data into
@@ -1344,9 +1315,9 @@ public:
    *
    * @see Prepared_statement.
    */
-  std::unique_ptr<Data> to_hex_data(const Data& binary_data) const
+  std::unique_ptr<Data> to_hex_data(const Data& data) const
   {
-    auto [storage, size] = to_hex_storage(binary_data);
+    auto [storage, size] = to_hex_storage(data);
     return Data::make(std::move(storage), size, Data_format::text);
   }
 
@@ -1357,9 +1328,9 @@ public:
    *
    * @see to_hex_data().
    */
-  std::string to_hex_string(const Data& binary_data) const
+  std::string to_hex_string(const Data& data) const
   {
-    const auto [storage, size] = to_hex_storage(binary_data);
+    const auto [storage, size] = to_hex_storage(data);
     return std::string{static_cast<const char*>(storage.get()), size};
   }
 
@@ -1462,10 +1433,11 @@ private:
   template<typename M, typename T>
   Prepared_statement& prepare__(M&& prepare, T&& statement, const std::string& name)
   {
-    assert(is_ready_for_request());
+    if (!is_ready_for_request())
+      throw Client_exception{"cannot prepare statement: not ready for request"};
     (this->*prepare)(std::forward<T>(statement), name);
     auto* const result = wait_prepared_statement__();
-    assert(result);
+    DMITIGR_ASSERT(result);
     return *result;
   }
 
@@ -1473,7 +1445,7 @@ private:
   {
     wait_response_throw();
     auto* const result = prepared_statement();
-    assert(!completion()); // no completion for prepare/describe
+    DMITIGR_ASSERT(!completion()); // no completion for prepare/describe
     return result;
   }
 
@@ -1515,7 +1487,7 @@ private:
   }
 
   std::pair<std::unique_ptr<void, void(*)(void*)>, std::size_t>
-  to_hex_storage(const pgfe::Data& binary_data) const;
+  to_hex_storage(const pgfe::Data& data) const;
 
   // ---------------------------------------------------------------------------
   // Large Object private API
@@ -1535,8 +1507,11 @@ private:
   template<typename ... Types>
   std::string routine_query__(std::string_view function, std::string_view invocation, Types&& ... arguments)
   {
-    assert(!function.empty());
-    assert(invocation == "SELECT * FROM" || invocation == "SELECT" || invocation == "CALL");
+    if (function.empty())
+      throw Client_exception{"cannot call/invoke: routine not specified"};
+
+    DMITIGR_ASSERT(invocation == "SELECT * FROM" ||
+      invocation == "SELECT" || invocation == "CALL");
     std::string result;
     if constexpr (sizeof...(arguments) > 0) {
       result.reserve(64);
@@ -1598,8 +1573,9 @@ template<Row_processing on_exception, typename F, typename ... Types>
 std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
 Prepared_statement::execute(F&& callback, Types&& ... parameters)
 {
-  assert(connection_);
-  assert(connection_->is_ready_for_request());
+  if (!is_valid() || !connection_->is_ready_for_request())
+    throw_exception("cannot execute");
+
   bind_many(std::forward<Types>(parameters)...).execute_nio();
   assert(is_invariant_ok());
   return connection_->process_responses<on_exception>(std::forward<F>(callback));

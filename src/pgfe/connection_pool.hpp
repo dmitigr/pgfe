@@ -26,7 +26,6 @@
 #include "connection.hpp"
 #include "dll.hpp"
 
-#include <cassert>
 #include <functional>
 #include <memory>
 #include <mutex>
@@ -67,18 +66,19 @@ public:
     /// Move-assignable.
     Handle& operator=(Handle&& rhs) = default;
 
-    /// @returns The Connection.
+    /**
+     * @returns The Connection.
+     *
+     * @par Requires
+     * `is_valid()`.
+     */
     Connection& operator*()
     {
       return const_cast<Connection&>(static_cast<const Handle*>(this)->operator*());
     }
 
     /// @overload
-    const Connection& operator*() const
-    {
-      assert(is_valid());
-      return *connection_;
-    }
+    DMITIGR_PGFE_API const Connection& operator*() const;
 
     /// @returns The Connection.
     Connection* operator->()
@@ -87,10 +87,7 @@ public:
     }
 
     /// @overload
-    const Connection* operator->() const
-    {
-      return connection_.get();
-    }
+    DMITIGR_PGFE_API const Connection* operator->() const;
 
     /// @returns `true` if handle is valid.
     bool is_valid() const noexcept
@@ -169,7 +166,7 @@ public:
    *
    * @see connect_handler().
    */
-  DMITIGR_PGFE_API void set_connect_handler(std::function<void(Connection&)> handler) noexcept;
+  DMITIGR_PGFE_API void set_connect_handler(std::function<void(Connection&)> handler);
 
   /**
    * @returns The current connect handler.
@@ -189,7 +186,7 @@ public:
    *
    * @see release_handler().
    */
-  DMITIGR_PGFE_API void set_release_handler(std::function<void(Connection&)> handler) noexcept;
+  DMITIGR_PGFE_API void set_release_handler(std::function<void(Connection&)> handler);
 
   /// @returns The current release handler.
   const std::function<void(Connection&)>& release_handler() const noexcept

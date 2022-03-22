@@ -20,17 +20,26 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
+#include "../base/assert.hpp"
+#include "../os/error.hpp"
 #include "completion.hpp"
 
+#include <cassert>
 #include <cstdlib>
 #include <system_error>
 
 namespace dmitigr::pgfe {
 
+DMITIGR_PGFE_INLINE Completion::Completion()
+{
+  DMITIGR_ASSERT(!is_valid());
+}
+
 DMITIGR_PGFE_INLINE Completion::Completion(const std::string_view tag)
   : affected_row_count_{-1} // mark instance as valid
 {
-  assert(tag.data());
+  DMITIGR_ASSERT(tag.data());
+
   constexpr char space{' '};
   auto space_before_word_pos = tag.find_last_of(space);
   if (space_before_word_pos != std::string_view::npos) {
@@ -48,7 +57,8 @@ DMITIGR_PGFE_INLINE Completion::Completion(const std::string_view tag)
       char* p{};
       const long number = std::strtol(word.c_str(), &p, 10);
       if (const int err = errno)
-        throw std::system_error{err, std::system_category()};
+        throw Client_exception{"cannot parse command completion tag:"
+          " " + os::error_message(err)};
       if (p == word.c_str())
         // The word is not a number.
         break;
@@ -62,7 +72,7 @@ DMITIGR_PGFE_INLINE Completion::Completion(const std::string_view tag)
   } else
     operation_name_ = tag;
 
-  assert(is_valid());
+  DMITIGR_ASSERT(is_valid());
   assert(is_invariant_ok());
 }
 

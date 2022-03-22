@@ -56,7 +56,7 @@ public:
   /// @returns `true` if the instance is valid.
   bool is_valid() const noexcept
   {
-    return (static_cast<int>(format()) >= 0);
+    return static_cast<int>(format()) >= 0;
   }
 
   /// @returns `true` if the instance is valid
@@ -68,9 +68,7 @@ public:
   /// @name Constructors
   /// @{
 
-  /**
-   * @returns A new instance of this class.
-   */
+  /// @returns A new instance of this class.
   static DMITIGR_PGFE_API std::unique_ptr<Data> make(
     std::string&& storage,
     Data_format format);
@@ -79,7 +77,7 @@ public:
    * @overload
    *
    * @par Requires
-   * `storage`.
+   * `storage || !size`.
    */
   static DMITIGR_PGFE_API std::unique_ptr<Data> make(
     std::unique_ptr<void, void(*)(void*)>&& storage,
@@ -118,7 +116,12 @@ public:
    */
   DMITIGR_PGFE_API std::unique_ptr<Data> to_bytea() const;
 
-  /// Similar to to_bytea().
+  /**
+   * @brief Similar to Data::to_bytea().
+   *
+   * @par Requires
+   * `text_data`.
+   */
   static DMITIGR_PGFE_API std::unique_ptr<Data> to_bytea(const char* text_data);
 
   /// @overload
@@ -248,7 +251,7 @@ public:
    * @brief Constructs the data view of the text format.
    *
    * @par Effects
-   * `bytes()`. If `bytes` then `is_valid() && format() == Format::text`.
+   * `bytes()`. If `bytes` then `is_valid() && (format() == Format::text)`.
    */
   explicit DMITIGR_PGFE_API Data_view(const char* bytes) noexcept;
 

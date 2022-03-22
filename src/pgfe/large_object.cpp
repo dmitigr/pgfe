@@ -21,6 +21,7 @@
 // dmitigr@gmail.com
 
 #include "connection.hpp"
+#include "exceptions.hpp"
 #include "large_object.hpp"
 
 #include <limits>
@@ -34,7 +35,7 @@ DMITIGR_PGFE_INLINE Large_object::~Large_object()
   } catch (...) {}
 }
 
-DMITIGR_PGFE_INLINE Large_object::Large_object(Connection* const conn, const int desc) noexcept
+DMITIGR_PGFE_INLINE Large_object::Large_object(Connection* const conn, const int desc)
   : conn_{conn}
   , desc_{desc}
 {}
@@ -79,36 +80,38 @@ DMITIGR_PGFE_INLINE bool Large_object::close() noexcept
     return false;
 }
 
-DMITIGR_PGFE_INLINE std::int_fast64_t Large_object::seek(const std::int_fast64_t offset, const Seek_whence whence) noexcept
+DMITIGR_PGFE_INLINE std::int_fast64_t Large_object::seek(const std::int_fast64_t offset, const Seek_whence whence)
 {
-  assert(is_valid());
+  if (!is_valid())
+    throw Client_exception{"cannot seek large object"};
   return conn_->seek(*this, offset, whence);
 }
 
-DMITIGR_PGFE_INLINE std::int_fast64_t Large_object::tell() noexcept
+DMITIGR_PGFE_INLINE std::int_fast64_t Large_object::tell()
 {
-  assert(is_valid());
+  if (!is_valid())
+    throw Client_exception{"cannot tell large object"};
   return conn_->tell(*this);
 }
 
-DMITIGR_PGFE_INLINE bool Large_object::truncate(const std::int_fast64_t new_size) noexcept
+DMITIGR_PGFE_INLINE bool Large_object::truncate(const std::int_fast64_t new_size)
 {
-  assert(is_valid());
-  assert(new_size >= 0);
+  if (!(is_valid() && new_size >= 0))
+    throw Client_exception{"cannot truncate large object"};
   return conn_->truncate(*this, new_size);
 }
 
-int Large_object::read(char* const buf, const std::size_t size) noexcept
+int Large_object::read(char* const buf, const std::size_t size)
 {
-  assert(is_valid());
-  assert(buf && size <= std::numeric_limits<int>::max());
+  if (!(is_valid() && buf && size <= std::numeric_limits<int>::max()))
+    throw Client_exception{"cannot read large object"};
   return conn_->read(*this, buf, size);
 }
 
-int Large_object::write(const char* const buf, const std::size_t size) noexcept
+int Large_object::write(const char* const buf, const std::size_t size)
 {
-  assert(is_valid());
-  assert(buf && size <= std::numeric_limits<int>::max());
+  if (!(is_valid() && buf && size <= std::numeric_limits<int>::max()))
+    throw Client_exception{"cannot write large object"};
   return conn_->write(*this, buf, size);
 }
 

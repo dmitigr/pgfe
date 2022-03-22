@@ -20,10 +20,10 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
+#include "exceptions.hpp"
 #include "row_info.hpp"
 
 #include <algorithm>
-#include <cassert>
 #include <vector>
 
 namespace dmitigr::pgfe {
@@ -43,17 +43,19 @@ DMITIGR_PGFE_INLINE bool Row_info::is_empty() const noexcept
 }
 
 DMITIGR_PGFE_INLINE std::string_view
-Row_info::field_name(const std::size_t index) const noexcept
+Row_info::field_name(const std::size_t index) const
 {
-  assert(index < field_count());
+  if (!(index < field_count()))
+    throw Client_exception{"cannot get field name of row"};
   return pq_result_.field_name(static_cast<int>(index));
 }
 
 DMITIGR_PGFE_INLINE std::size_t
-Row_info::field_index(const std::string_view name, const std::size_t offset) const noexcept
+Row_info::field_index(const std::string_view name, const std::size_t offset) const
 {
   const std::size_t fc{field_count()};
-  assert(offset < fc);
+  if (!(offset < fc))
+    throw Client_exception{"cannot get field index of row"};
   for (std::size_t i{offset}; i < fc; ++i) {
     const std::string_view nm{pq_result_.field_name(i)};
     if (nm == name)
@@ -63,39 +65,45 @@ Row_info::field_index(const std::string_view name, const std::size_t offset) con
 }
 
 DMITIGR_PGFE_INLINE std::uint_fast32_t
-Row_info::table_oid(const std::size_t index) const noexcept
+Row_info::table_oid(const std::size_t index) const
 {
-  assert(index < field_count());
+  if (!(index < field_count()))
+    throw Client_exception{"cannot get table OID of row"};
   return pq_result_.field_table_oid(static_cast<int>(index));
 }
 
-DMITIGR_PGFE_INLINE std::int_fast32_t Row_info::table_column_number(const std::size_t index) const noexcept
+DMITIGR_PGFE_INLINE std::int_fast32_t Row_info::table_column_number(const std::size_t index) const
 {
-  assert(index < field_count());
+  if (!(index < field_count()))
+    throw Client_exception{"cannot get table column number of row"};
   return pq_result_.field_table_column(int(index));
 }
 
-DMITIGR_PGFE_INLINE std::uint_fast32_t Row_info::type_oid(const std::size_t index) const noexcept
+DMITIGR_PGFE_INLINE std::uint_fast32_t Row_info::type_oid(const std::size_t index) const
 {
-  assert(index < field_count());
+  if (!(index < field_count()))
+    throw Client_exception{"cannot get field type OID of row"};
   return pq_result_.field_type_oid(int(index));
 }
 
-DMITIGR_PGFE_INLINE std::int_fast32_t Row_info::type_size(const std::size_t index) const noexcept
+DMITIGR_PGFE_INLINE std::int_fast32_t Row_info::type_size(const std::size_t index) const
 {
-  assert(index < field_count());
+  if (!(index < field_count()))
+    throw Client_exception{"cannot get field type size of row"};
   return pq_result_.field_type_size(int(index));
 }
 
-DMITIGR_PGFE_INLINE std::int_fast32_t Row_info::type_modifier(const std::size_t index) const noexcept
+DMITIGR_PGFE_INLINE std::int_fast32_t Row_info::type_modifier(const std::size_t index) const
 {
-  assert(index < field_count());
+  if (!(index < field_count()))
+    throw Client_exception{"cannot get field type modifier of row"};
   return pq_result_.field_type_modifier(int(index));
 }
 
-DMITIGR_PGFE_INLINE Data_format Row_info::data_format(const std::size_t index) const noexcept
+DMITIGR_PGFE_INLINE Data_format Row_info::data_format(const std::size_t index) const
 {
-  assert(index < field_count());
+  if (!(index < field_count()))
+    throw Client_exception{"cannot get field data format of row"};
   return pq_result_.field_format(int(index));
 }
 

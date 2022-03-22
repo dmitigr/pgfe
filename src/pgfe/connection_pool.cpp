@@ -20,11 +20,12 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
+#include "../base/assert.hpp"
 #include "connection_pool.hpp"
 
 #include <algorithm>
 #include <cassert>
-#include <cstdio>
+#include <iostream>
 
 namespace dmitigr::pgfe {
 
@@ -37,10 +38,24 @@ DMITIGR_PGFE_INLINE Connection_pool::Handle::~Handle()
   try {
     release();
   } catch (const std::exception& e) {
-    std::fprintf(stderr, "dmitigr::pgfe::Connection_pool::Handle::~Handle(): %s\n", e.what());
+    std::clog << "closing connection pool handle: error: " << e.what() << '\n';
   } catch (...) {
-    std::fprintf(stderr, "dmitigr::pgfe::Connection_pool::Handle::~Handle(): failure\n");
+    std::clog << "closing connection pool handle: unknown error\n";
   }
+}
+
+DMITIGR_PGFE_INLINE const Connection& Connection_pool::Handle::operator*() const
+{
+  if (!is_valid())
+    throw Client_exception{"invalid connection pool handle"};
+  return *connection_;
+}
+
+DMITIGR_PGFE_INLINE const Connection* Connection_pool::Handle::operator->() const
+{
+  if (!is_valid())
+    throw Client_exception{"invalid connection pool handle"};
+  return connection_.get();
 }
 
 DMITIGR_PGFE_INLINE Connection_pool::Handle::Handle() = default;
@@ -52,9 +67,9 @@ DMITIGR_PGFE_INLINE Connection_pool::Handle::Handle(Connection_pool* const pool,
   , connection_index_{connection_index}
 {
   // Attention! pool_->mutex_ is locked here!
-  assert(pool_);
-  assert(connection_);
-  assert(connection_index_ < pool_->connections_.size());
+  DMITIGR_ASSERT(pool_);
+  DMITIGR_ASSERT(connection_);
+  DMITIGR_ASSERT(connection_index_ < pool_->connections_.size());
 }
 
 // -----------------------------------------------------------------------------
@@ -72,13 +87,13 @@ DMITIGR_PGFE_INLINE Connection_pool::Connection_pool(std::size_t count, const Co
     connections_.emplace_back(std::make_unique<Connection>(options), false);
 }
 
-DMITIGR_PGFE_INLINE void Connection_pool::set_connect_handler(std::function<void(Connection&)> handler) noexcept
+DMITIGR_PGFE_INLINE void Connection_pool::set_connect_handler(std::function<void(Connection&)> handler)
 {
   const std::lock_guard lg{mutex_};
   connect_handler_ = std::move(handler);
 }
 
-DMITIGR_PGFE_INLINE void Connection_pool::set_release_handler(std::function<void(Connection&)> handler) noexcept
+DMITIGR_PGFE_INLINE void Connection_pool::set_release_handler(std::function<void(Connection&)> handler)
 {
   const std::lock_guard lg{mutex_};
   release_handler_ = std::move(handler);
@@ -137,7 +152,8 @@ DMITIGR_PGFE_INLINE auto Connection_pool::connection() -> Handle
     if (conn->is_ready_for_request())
       return {this, std::move(conn), static_cast<std::size_t>(i - b)};
     else
-      throw std::runtime_error{"connection isn't ready for request"};
+      throw Client_exception{"cannot use connection from connection pool handle:"
+        " connection isn't ready for request"};
   } else
     return {};
 }
@@ -149,18 +165,18 @@ DMITIGR_PGFE_INLINE void Connection_pool::release(Handle& handle) noexcept
 
   const std::lock_guard lg{mutex_};
 
-  assert(handle.connection_);
+  DMITIGR_ASSERT(handle.connection_);
   auto& conn = *handle.connection_;
   const auto index = handle.connection_index_;
-  assert(index < connections_.size());
+  DMITIGR_ASSERT(index < connections_.size());
 
   if (release_handler_) {
     try {
       release_handler_(conn); // kinda of DISCARD ALL
     } catch (const std::exception& e) {
-      std::fprintf(stderr, "connection pool's release handler thrown: %s\n", e.what());
+      std::clog << "connection pool's release handler: error:" << e.what() << '\n';
     } catch (...) {
-      std::fprintf(stderr, "connection pool's release handler thrown unknown\n");
+      std::clog << "connection pool's release handler: unknown error\n";
     }
   }
 
@@ -172,7 +188,7 @@ DMITIGR_PGFE_INLINE void Connection_pool::release(Handle& handle) noexcept
   handle.pool_ = {};
   handle.connection_ = {};
   handle.connection_index_ = {};
-  assert(!handle.is_valid());
+  DMITIGR_ASSERT(!handle.is_valid());
 }
 
 DMITIGR_PGFE_INLINE std::size_t Connection_pool::size() const noexcept

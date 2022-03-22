@@ -37,6 +37,7 @@ int main()
   using dmitigr::util::with_catch;
   using Cm = pgfe::Communication_mode;
   using Sm = pgfe::Session_mode;
+  using pgfe::Client_exception;
 
   try {
     pgfe::Connection_options co;
@@ -66,7 +67,7 @@ int main()
       DMITIGR_ASSERT(co.connect_timeout() == valid_value);
 
       ms invalid_value{-1};
-      DMITIGR_ASSERT(with_catch<std::runtime_error>([&]{ co.set_connect_timeout(invalid_value); }));
+      DMITIGR_ASSERT(with_catch<Client_exception>([&]{ co.set_connect_timeout(invalid_value); }));
     }
 
     {
@@ -75,7 +76,7 @@ int main()
       DMITIGR_ASSERT(co.wait_response_timeout() == valid_value);
 
       ms invalid_value{-1};
-      DMITIGR_ASSERT(with_catch<std::runtime_error>([&]{ co.set_wait_response_timeout(invalid_value); }));
+      DMITIGR_ASSERT(with_catch<Client_exception>([&]{ co.set_wait_response_timeout(invalid_value); }));
     }
 
     {
@@ -90,7 +91,7 @@ int main()
       DMITIGR_ASSERT(co.uds_directory() == valid_value);
 
       const auto invalid_value = "invalid directory name";
-      DMITIGR_ASSERT(with_catch<std::runtime_error>([&]{ co.set_uds_directory(invalid_value); }));
+      DMITIGR_ASSERT(with_catch<Client_exception>([&]{ co.set_uds_directory(invalid_value); }));
     }
 
     {
@@ -127,7 +128,7 @@ int main()
       DMITIGR_ASSERT(co.tcp_keepalives_count() == valid_value);
 
       const auto invalid_value = -100;
-      DMITIGR_ASSERT(with_catch<std::runtime_error>([&]() { co.set_tcp_keepalives_count(invalid_value); }));
+      DMITIGR_ASSERT(with_catch<Client_exception>([&]() { co.set_tcp_keepalives_count(invalid_value); }));
     }
 
     {
@@ -146,9 +147,9 @@ int main()
       DMITIGR_ASSERT(co.net_address() == valid_value_ipv6);
 
       const auto invalid_value_ipv4 = "127.257.0.1";
-      DMITIGR_ASSERT(with_catch<std::runtime_error>([&]() { co.set_net_address(invalid_value_ipv4); }));
+      DMITIGR_ASSERT(with_catch<Client_exception>([&]() { co.set_net_address(invalid_value_ipv4); }));
       const auto invalid_value_ipv6 = "::zz";
-      DMITIGR_ASSERT(with_catch<std::runtime_error>([&]() { co.set_net_address(invalid_value_ipv6); }));
+      DMITIGR_ASSERT(with_catch<Client_exception>([&]() { co.set_net_address(invalid_value_ipv6); }));
     }
 
     {
@@ -157,7 +158,7 @@ int main()
       DMITIGR_ASSERT(co.net_hostname() == valid_value);
 
       const auto invalid_value = "local host";
-      DMITIGR_ASSERT(with_catch<std::runtime_error>([&]() { co.set_net_hostname(invalid_value); }));
+      DMITIGR_ASSERT(with_catch<Client_exception>([&]() { co.set_net_hostname(invalid_value); }));
     }
 
     {
@@ -166,7 +167,7 @@ int main()
       DMITIGR_ASSERT(co.port() == valid_value);
 
       const auto invalid_value = 65536;
-      DMITIGR_ASSERT(with_catch<std::runtime_error>([&]() { co.set_port(invalid_value); }));
+      DMITIGR_ASSERT(with_catch<Client_exception>([&]() { co.set_port(invalid_value); }));
     }
 
     {

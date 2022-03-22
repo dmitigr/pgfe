@@ -23,6 +23,7 @@
 #include "../../src/base/assert.hpp"
 #include "../../src/pgfe/exceptions.hpp"
 #include "../../src/pgfe/misc.hpp"
+#include "../../src/pgfe/std_system_error.hpp"
 
 int main()
 {

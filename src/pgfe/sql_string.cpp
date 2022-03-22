@@ -20,15 +20,41 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
+#include "../base/assert.hpp"
 #include "connection.hpp"
 #include "data.hpp"
+#include "exceptions.hpp"
 #include "sql_string.hpp"
 
+#include <algorithm>
+#include <cassert>
 #include <cstring>
 #include <memory>
 #include <stdexcept>
 
 namespace dmitigr::pgfe {
+
+DMITIGR_PGFE_INLINE Sql_string::Fragment::Fragment(const Type tp, const std::string& s)
+  : type(tp)
+  , str(s)
+{}
+
+DMITIGR_PGFE_INLINE bool
+Sql_string::Fragment::is_named_parameter() const noexcept
+{
+  using Ft = Fragment::Type;
+  return type == Ft::named_parameter ||
+    type == Ft::named_parameter_literal ||
+    type == Ft::named_parameter_identifier;
+}
+
+DMITIGR_PGFE_INLINE bool
+Sql_string::Fragment::is_named_parameter(const std::string_view name) const noexcept
+{
+  return is_named_parameter() && str == name;
+}
+
+// =============================================================================
 
 DMITIGR_PGFE_INLINE Sql_string::Sql_string(const std::string_view text)
 {
@@ -90,6 +116,55 @@ DMITIGR_PGFE_INLINE void Sql_string::swap(Sql_string& rhs) noexcept
   std::swap(extra_, rhs.extra_);
 }
 
+DMITIGR_PGFE_INLINE std::size_t Sql_string::positional_parameter_count() const noexcept
+{
+  return positional_parameters_.size();
+}
+
+DMITIGR_PGFE_INLINE std::size_t Sql_string::named_parameter_count() const noexcept
+{
+  return named_parameters_.size();
+}
+
+DMITIGR_PGFE_INLINE std::size_t Sql_string::parameter_count() const noexcept
+{
+  return positional_parameter_count() + named_parameter_count();
+}
+
+DMITIGR_PGFE_INLINE bool Sql_string::has_positional_parameters() const noexcept
+{
+  return !positional_parameters_.empty();
+}
+
+DMITIGR_PGFE_INLINE bool Sql_string::has_named_parameters() const noexcept
+{
+  return !named_parameters_.empty();
+}
+
+DMITIGR_PGFE_INLINE bool Sql_string::has_parameters() const noexcept
+{
+  return (has_positional_parameters() || has_named_parameters());
+}
+
+DMITIGR_PGFE_INLINE std::string_view
+Sql_string::parameter_name(const std::size_t index) const
+{
+  if (!((positional_parameter_count() <= index) && (index < parameter_count())))
+    throw Client_exception{"cannot get Sql_string parameter name"};
+  return (named_parameters_[index - positional_parameter_count()])->str;
+}
+
+DMITIGR_PGFE_INLINE std::size_t
+Sql_string::parameter_index(const std::string_view name) const noexcept
+{
+  return named_parameter_index(name);
+}
+
+DMITIGR_PGFE_INLINE bool Sql_string::is_empty() const noexcept
+{
+  return fragments_.empty();
+}
+
 DMITIGR_PGFE_INLINE bool Sql_string::is_query_empty() const noexcept
 {
   return all_of(cbegin(fragments_), cend(fragments_),
@@ -97,6 +172,48 @@ DMITIGR_PGFE_INLINE bool Sql_string::is_query_empty() const noexcept
     {
       return is_comment(f) || (is_text(f) && is_blank_string(f.str, loc_));
     });
+}
+
+DMITIGR_PGFE_INLINE bool
+Sql_string::is_parameter_missing(const std::size_t index) const
+{
+  if (!(index < positional_parameter_count()))
+    throw Client_exception{"cannot determine if Sql_string parameter is missing"};
+  return !positional_parameters_[index];
+}
+
+DMITIGR_PGFE_INLINE bool
+Sql_string::is_parameter_literal(const std::size_t index) const
+{
+  if (!((positional_parameter_count() <= index) && (index < parameter_count())))
+    throw Client_exception{"cannot determine if Sql_string parameter is literal"};
+  return named_parameter_type(index) == Fragment::Type::named_parameter_literal;
+}
+
+DMITIGR_PGFE_INLINE bool
+Sql_string::is_parameter_literal(const std::string_view name) const
+{
+  return is_parameter_literal(parameter_index(name));
+}
+
+DMITIGR_PGFE_INLINE bool
+Sql_string::is_parameter_identifier(const std::size_t index) const
+{
+  if (!((positional_parameter_count() <= index) && (index < parameter_count())))
+    throw Client_exception{"cannot determine if Sql_string parameter is identifier"};
+  return named_parameter_type(index) == Fragment::Type::named_parameter_identifier;
+}
+
+DMITIGR_PGFE_INLINE bool
+Sql_string::is_parameter_identifier(const std::string_view name) const
+{
+  return is_parameter_identifier(parameter_index(name));
+}
+
+DMITIGR_PGFE_INLINE bool Sql_string::has_missing_parameters() const noexcept
+{
+  return any_of(cbegin(positional_parameters_), cend(positional_parameters_),
+    [](const auto is_present) { return !is_present; });
 }
 
 DMITIGR_PGFE_INLINE void Sql_string::append(const Sql_string& appendix)
@@ -122,7 +239,8 @@ DMITIGR_PGFE_INLINE void Sql_string::append(const Sql_string& appendix)
 DMITIGR_PGFE_INLINE void
 Sql_string::bind(const std::string_view name, const std::optional<std::string>& value)
 {
-  assert(has_parameter(name));
+  if (!has_parameter(name))
+    throw Client_exception{"cannot bind Sql_string parameter"};
   for (auto& fragment : fragments_) {
     if (fragment.is_named_parameter(name))
       fragment.value = value;
@@ -133,20 +251,20 @@ Sql_string::bind(const std::string_view name, const std::optional<std::string>& 
 DMITIGR_PGFE_INLINE const std::optional<std::string>&
 Sql_string::bound(const std::string_view name) const
 {
-  assert(has_parameter(name));
+  if (!has_parameter(name))
+    throw Client_exception{"cannot get bound Sql_string parameter"};
   for (auto& fragment : fragments_) {
     if (fragment.is_named_parameter(name))
       return fragment.value;
   }
-  assert(false);
-  std::terminate();
+  DMITIGR_ASSERT(false);
 }
 
 DMITIGR_PGFE_INLINE void
 Sql_string::replace_parameter(const std::string_view name, const Sql_string& replacement)
 {
-  assert(has_parameter(name));
-  assert(this != &replacement);
+  if (!(has_parameter(name) && (this != &replacement)))
+    throw Client_exception{"cannot replace Sql_string parameter"};
 
   // Updating fragments
   auto old_fragments = fragments_;
@@ -220,9 +338,16 @@ Sql_string::to_query_string(const Connection& conn) const
 {
   using Ft = Fragment::Type;
 
+  if (has_missing_parameters())
+    throw Client_exception{"cannot convert Sql_string to query string: "
+      "has missing parameters"};
+  else if (!conn.is_connected())
+    throw Client_exception{"cannot convert Sql_string to query string: "
+      "not connected"};
+
   static const auto check_value_bound = [](const auto& fragment)
   {
-    assert(fragment.is_named_parameter());
+    DMITIGR_ASSERT(fragment.is_named_parameter());
     if (!fragment.value) {
       std::string what{"named parameter "};
       what.append(fragment.str);
@@ -232,7 +357,7 @@ Sql_string::to_query_string(const Connection& conn) const
       if (type_str)
         what.append(" declared as ").append(type_str);
       what.append(" has no value bound");
-      throw std::runtime_error{what};
+      throw Client_exception{what};
     }
   };
 
@@ -250,7 +375,7 @@ Sql_string::to_query_string(const Connection& conn) const
     case Ft::named_parameter:
       if (!fragment.value) {
         const auto idx = named_parameter_index(fragment.str);
-        assert(idx < parameter_count());
+        DMITIGR_ASSERT(idx < parameter_count());
         result += '$';
         result += std::to_string(idx + 1);
       } else
@@ -360,7 +485,7 @@ private:
         } else if (is_valid_tag_char(current_char)) {
           dollar_quote_leading_tag_name += current_char;
         } else
-          throw std::runtime_error{"invalid dollar quote tag"};
+          throw Client_exception{"invalid dollar quote tag"};
         continue;
       case dollar_quote:
         if (current_char == '$')
@@ -391,7 +516,7 @@ private:
     }
 
     if (state != top)
-      throw std::runtime_error{"invalid comment block:\n" + std::string{input}};
+      throw Client_exception{"invalid comment block:\n" + std::string{input}};
 
     return result;
   }
@@ -472,8 +597,7 @@ private:
       return min_indent_to_content ? (*min_indent_to_content == 0 ? 0 : 1) : 1;
     }
 
-    assert(false);
-    std::terminate();
+    DMITIGR_ASSERT(false);
   }
 
   /**
@@ -578,7 +702,7 @@ private:
       result.second = i;
       do {
         --i;
-        assert(is_comment(*i) || (is_text(*i) && is_blank_string(i->str, loc)));
+        DMITIGR_ASSERT(is_comment(*i) || (is_text(*i) && is_blank_string(i->str, loc)));
         if (i->type == Ft::text) {
           if (!is_nearby_string(i->str, loc))
             break;
@@ -602,7 +726,7 @@ private:
   static joined_comments_of_same_type(Fragment_list::const_iterator i, const Fragment_list::const_iterator e)
   {
     using Ft = Fragment::Type;
-    assert(is_comment(*i));
+    DMITIGR_ASSERT(is_comment(*i));
     std::string result;
     const auto fragment_type = i->type;
     for (; i->type == fragment_type && i != e; ++i) {
@@ -618,8 +742,7 @@ private:
       case Ft::multi_line_comment:
         return Extra::Comment_type::multi_line;
       default:
-        assert(false);
-        std::terminate();
+        DMITIGR_ASSERT(false);
       }
     };
     return std::make_pair(std::make_pair(result, comment_type(fragment_type)), i);
@@ -648,7 +771,7 @@ private:
   }
 };
 
-const Tuple& Sql_string::extra() const
+DMITIGR_PGFE_INLINE const Tuple& Sql_string::extra() const
 {
   if (!extra_)
     extra_.emplace(Extra::extract(fragments_, loc_));
@@ -659,18 +782,64 @@ const Tuple& Sql_string::extra() const
   return *extra_;
 }
 
+DMITIGR_PGFE_INLINE Tuple& Sql_string::extra() noexcept
+{
+  return const_cast<Tuple&>(static_cast<const Sql_string*>(this)->extra());
+}
+
+DMITIGR_PGFE_INLINE bool Sql_string::is_invariant_ok() const noexcept
+{
+  const bool positional_parameters_ok = ((positional_parameter_count() > 0) == has_positional_parameters());
+  const bool named_parameters_ok = ((named_parameter_count() > 0) == has_named_parameters());
+  const bool parameters_ok = ((parameter_count() > 0) == has_parameters());
+  const bool parameters_count_ok = (parameter_count() == (positional_parameter_count() + named_parameter_count()));
+  const bool empty_ok = !is_empty() || !has_parameters();
+  const bool extra_ok = is_extra_data_should_be_extracted_from_comments_ || extra_;
+  const bool parameterizable_ok = Parameterizable::is_invariant_ok();
+
+  return
+    positional_parameters_ok &&
+    named_parameters_ok &&
+    parameters_ok &&
+    parameters_count_ok &&
+    empty_ok &&
+    extra_ok &&
+    parameterizable_ok;
+}
+
 // ---------------------------------------------------------------------------
 // Initializers
 // ---------------------------------------------------------------------------
 
-void Sql_string::push_positional_parameter(const std::string& str)
+void Sql_string::push_back_fragment(const Fragment::Type type, const std::string& str)
+{
+  fragments_.emplace_back(type, str);
+  assert(is_invariant_ok());
+}
+
+DMITIGR_PGFE_INLINE void Sql_string::push_text(const std::string& str)
+{
+  push_back_fragment(Fragment::Type::text, str);
+}
+
+DMITIGR_PGFE_INLINE void Sql_string::push_one_line_comment(const std::string& str)
+{
+  push_back_fragment(Fragment::Type::one_line_comment, str);
+}
+
+DMITIGR_PGFE_INLINE void Sql_string::push_multi_line_comment(const std::string& str)
+{
+  push_back_fragment(Fragment::Type::multi_line_comment, str);
+}
+
+DMITIGR_PGFE_INLINE void Sql_string::push_positional_parameter(const std::string& str)
 {
   push_back_fragment(Fragment::Type::positional_parameter, str);
 
   using Size = std::vector<bool>::size_type;
   const int position = stoi(str);
   if (position < 1 || static_cast<Size>(position) > max_parameter_count())
-    throw std::runtime_error{"invalid parameter position \"" + str + "\""};
+    throw Client_exception{"invalid parameter position \"" + str + "\""};
   else if (static_cast<Size>(position) > positional_parameters_.size())
     positional_parameters_.resize(static_cast<Size>(position), false);
 
@@ -680,9 +849,10 @@ void Sql_string::push_positional_parameter(const std::string& str)
   assert(is_invariant_ok());
 }
 
-void Sql_string::push_named_parameter(const std::string& str, const char quote_char)
+DMITIGR_PGFE_INLINE void
+Sql_string::push_named_parameter(const std::string& str, const char quote_char)
 {
-  assert(!quote_char || is_quote_char(quote_char));
+  DMITIGR_ASSERT(!quote_char || is_quote_char(quote_char));
   if (parameter_count() < max_parameter_count()) {
     using Ft = Fragment::Type;
     const auto type =
@@ -696,7 +866,7 @@ void Sql_string::push_named_parameter(const std::string& str, const char quote_c
       named_parameters_.push_back(e);
     }
   } else
-    throw std::runtime_error{"maximum parameters count (" +
+    throw Client_exception{"maximum parameters count (" +
       std::to_string(max_parameter_count()) + ") exceeded"};
 
   assert(is_invariant_ok());
@@ -707,7 +877,7 @@ void Sql_string::push_named_parameter(const std::string& str, const char quote_c
 // ---------------------------------------------------------------------------
 
 // Exception safety guarantee: strong.
-void Sql_string::update_cache(const Sql_string& rhs)
+DMITIGR_PGFE_INLINE void Sql_string::update_cache(const Sql_string& rhs)
 {
   // Preparing for merge positional parameters.
   const auto old_pos_params_size = positional_parameters_.size();
@@ -717,7 +887,7 @@ void Sql_string::update_cache(const Sql_string& rhs)
 
   try {
     const auto new_pos_params_size = positional_parameters_.size();
-    assert(new_pos_params_size >= rhs_pos_params_size);
+    DMITIGR_ASSERT(new_pos_params_size >= rhs_pos_params_size);
 
     // Creating the cache for named parameters.
     decltype (named_parameters_) new_named_parameters = named_parameters(); // can throw
@@ -725,7 +895,8 @@ void Sql_string::update_cache(const Sql_string& rhs)
     // Check the new parameter count.
     const auto new_parameter_count = new_pos_params_size + new_named_parameters.size();
     if (new_parameter_count > max_parameter_count())
-      throw std::runtime_error{"parameter count (" + std::to_string(new_parameter_count) + ") "
+      throw Client_exception{"parameter count (" +
+        std::to_string(new_parameter_count) + ") "
         "exceeds the maximum (" + std::to_string(max_parameter_count()) + ")"};
 
     // Merging positional parameters (cannot throw).
@@ -741,6 +912,89 @@ void Sql_string::update_cache(const Sql_string& rhs)
   }
 
   assert(is_invariant_ok());
+}
+
+// ---------------------------------------------------------------------------
+// Named parameters helpers
+// ---------------------------------------------------------------------------
+
+DMITIGR_PGFE_INLINE auto
+Sql_string::named_parameter_type(const std::size_t index) const noexcept
+  -> Fragment::Type
+{
+  DMITIGR_ASSERT(positional_parameter_count() <= index && index < parameter_count());
+  const auto relative_index = index - positional_parameter_count();
+  return named_parameters_[relative_index]->type;
+}
+
+DMITIGR_PGFE_INLINE std::size_t
+Sql_string::named_parameter_index(const std::string_view name) const noexcept
+{
+  const auto relative_index = [this, name]() noexcept
+  {
+    const auto b = cbegin(named_parameters_);
+    const auto e = cend(named_parameters_);
+    const auto i = find_if(b, e, [name](const auto& pi){return pi->str == name;});
+    return static_cast<std::size_t>(i - b);
+  }();
+  return positional_parameter_count() + relative_index;
+}
+
+DMITIGR_PGFE_INLINE auto Sql_string::named_parameters() const
+  -> std::vector<Fragment_list::const_iterator>
+{
+  std::vector<Fragment_list::const_iterator> result;
+  result.reserve(8);
+  const auto e = cend(fragments_);
+  for (auto i = cbegin(fragments_); i != e; ++i) {
+    if (i->is_named_parameter()) {
+      if (none_of(cbegin(result), cend(result),
+          [i](const auto& result_i){return i->str == result_i->str;}))
+        result.push_back(i);
+    }
+  }
+  return result;
+}
+
+// ---------------------------------------------------------------------------
+// Predicates
+// ---------------------------------------------------------------------------
+
+DMITIGR_PGFE_INLINE bool
+Sql_string::is_space(const char c, const std::locale& loc) noexcept
+{
+  return isspace(c, loc);
+}
+
+DMITIGR_PGFE_INLINE bool
+Sql_string::is_blank_string(const std::string& str, const std::locale& loc) noexcept
+{
+  return all_of(cbegin(str), cend(str), [&loc](const auto& c){return is_space(c, loc);});
+}
+
+DMITIGR_PGFE_INLINE bool
+Sql_string::is_comment(const Fragment& f) noexcept
+{
+  return (f.type == Fragment::Type::one_line_comment) ||
+    (f.type == Fragment::Type::multi_line_comment);
+}
+
+DMITIGR_PGFE_INLINE bool
+Sql_string::is_text(const Fragment& f) noexcept
+{
+  return (f.type == Fragment::Type::text);
+}
+
+DMITIGR_PGFE_INLINE bool
+Sql_string::is_ident_char(const char c, const std::locale& loc) noexcept
+{
+  return isalnum(c, loc) || c == '_' || c == '$';
+}
+
+DMITIGR_PGFE_INLINE bool
+Sql_string::is_quote_char(const char c) noexcept
+{
+  return c == '\'' || c == '\"';
 }
 
 // -----------------------------------------------------------------------------
@@ -914,7 +1168,7 @@ Sql_string::parse_sql_input(const std::string_view text, const std::locale& loc)
         ++depth;
 
       if (depth == 0) {
-        assert(current_char == ']');
+        DMITIGR_ASSERT(current_char == ']');
         state = top;
       }
 
@@ -922,7 +1176,7 @@ Sql_string::parse_sql_input(const std::string_view text, const std::locale& loc)
       continue;
 
     case dollar:
-      assert(previous_char == '$');
+      DMITIGR_ASSERT(previous_char == '$');
       if (isdigit(current_char, loc)) {
         state = positional_parameter;
         result.push_text(fragment);
@@ -945,7 +1199,7 @@ Sql_string::parse_sql_input(const std::string_view text, const std::locale& loc)
       continue;
 
     case positional_parameter:
-      assert(isdigit(previous_char, loc));
+      DMITIGR_ASSERT(isdigit(previous_char, loc));
       if (!isdigit(current_char, loc)) {
         state = top;
         result.push_positional_parameter(fragment);
@@ -959,7 +1213,7 @@ Sql_string::parse_sql_input(const std::string_view text, const std::locale& loc)
         goto finish;
 
     case dollar_quote_leading_tag:
-      assert(previous_char != '$' && is_ident_char(previous_char, loc));
+      DMITIGR_ASSERT(previous_char != '$' && is_ident_char(previous_char, loc));
       if (current_char == '$') {
         fragment += current_char;
         state = dollar_quote;
@@ -967,7 +1221,7 @@ Sql_string::parse_sql_input(const std::string_view text, const std::locale& loc)
         dollar_quote_leading_tag_name += current_char;
         fragment += current_char;
       } else
-        throw std::runtime_error{"invalid dollar quote tag"};
+        throw Client_exception{"invalid dollar quote tag"};
 
       continue;
 
@@ -994,7 +1248,7 @@ Sql_string::parse_sql_input(const std::string_view text, const std::locale& loc)
       continue;
 
     case colon:
-      assert(previous_char == ':');
+      DMITIGR_ASSERT(previous_char == ':');
       if (is_ident_char(current_char, loc) || is_quote_char(current_char)) {
         state = named_parameter;
         result.push_text(fragment);
@@ -1015,7 +1269,7 @@ Sql_string::parse_sql_input(const std::string_view text, const std::locale& loc)
         goto finish;
 
     case named_parameter:
-      assert(is_ident_char(previous_char, loc) ||
+      DMITIGR_ASSERT(is_ident_char(previous_char, loc) ||
         (is_quote_char(previous_char) && quote_char));
 
       if (!is_ident_char(current_char, loc)) {
@@ -1042,7 +1296,7 @@ Sql_string::parse_sql_input(const std::string_view text, const std::locale& loc)
       continue;
 
     case quote_quote:
-      assert(previous_char == quote_char);
+      DMITIGR_ASSERT(previous_char == quote_char);
       if (current_char == quote_char) {
         state = quote;
         // Skip previous quote.
@@ -1059,7 +1313,7 @@ Sql_string::parse_sql_input(const std::string_view text, const std::locale& loc)
         goto finish;
 
     case dash:
-      assert(previous_char == '-');
+      DMITIGR_ASSERT(previous_char == '-');
       if (current_char == '-') {
         state = one_line_comment;
         result.push_text(fragment);
@@ -1091,7 +1345,7 @@ Sql_string::parse_sql_input(const std::string_view text, const std::locale& loc)
       continue;
 
     case slash:
-      assert(previous_char == '/');
+      DMITIGR_ASSERT(previous_char == '/');
       if (current_char == '*') {
         state = multi_line_comment;
         if (depth > 0) {
@@ -1122,7 +1376,7 @@ Sql_string::parse_sql_input(const std::string_view text, const std::locale& loc)
       continue;
 
     case multi_line_comment_star:
-      assert(previous_char == '*');
+      DMITIGR_ASSERT(previous_char == '*');
       if (current_char == '/') {
         --depth;
         if (depth == 0) {
@@ -1172,7 +1426,7 @@ Sql_string::parse_sql_input(const std::string_view text, const std::locale& loc)
     std::string message{"invalid SQL input"};
     if (!result.fragments_.empty())
       message.append(" after: ").append(result.fragments_.back().str);
-    throw std::runtime_error{message};
+    throw Client_exception{message};
   }
   }
 

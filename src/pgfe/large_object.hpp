@@ -124,7 +124,7 @@ public:
    *
    * By default, an invalid instance is constructed.
    */
-  explicit DMITIGR_PGFE_API Large_object(Connection* conn = {}, int desc = -1) noexcept;
+  explicit DMITIGR_PGFE_API Large_object(Connection* conn = {}, int desc = -1);
 
   /// Copy-constructible.
   Large_object(const Large_object&) = default;
@@ -161,13 +161,13 @@ public:
    * @returns The new position, or `-1` on error.
    */
   DMITIGR_PGFE_API std::int_fast64_t seek(std::int_fast64_t offset,
-    Seek_whence whence) noexcept;
+    Seek_whence whence);
 
   /**
    * @returns The current position associated with the underlying large
    * object descriptor, or `-1` on error.
    */
-  DMITIGR_PGFE_API std::int_fast64_t tell() noexcept;
+  DMITIGR_PGFE_API std::int_fast64_t tell();
 
   /**
    * @brief Truncates the large object to size `new_size`.
@@ -177,7 +177,7 @@ public:
    * @par Requires
    * `(new_size >= 0)`.
    */
-  DMITIGR_PGFE_API bool truncate(std::int_fast64_t new_size) noexcept;
+  DMITIGR_PGFE_API bool truncate(std::int_fast64_t new_size);
 
   /**
    * @brief Reads up to `size` bytes from the current position associated with
@@ -189,7 +189,7 @@ public:
    * @remarks The behavior is undefined if the actual size of `buf` is less
    * than `size`.
    */
-  DMITIGR_PGFE_API int read(char* buf, std::size_t size) noexcept;
+  DMITIGR_PGFE_API int read(char* buf, std::size_t size);
 
   /**
    * @brief Writes up to `size` bytes from the current position associated with
@@ -201,10 +201,16 @@ public:
    * @remarks The behavior is undefined if the actual size of `buf` is less
    * than `size`.
    */
-  DMITIGR_PGFE_API int write(const char* buf, std::size_t size) noexcept;
+  DMITIGR_PGFE_API int write(const char* buf, std::size_t size);
 
   /// @returns The underlying connection instance.
-  Connection* connection() const noexcept
+  const Connection* connection() const noexcept
+  {
+    return conn_;
+  }
+
+  /// @overload
+  Connection* connection() noexcept
   {
     return conn_;
   }

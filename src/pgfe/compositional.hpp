@@ -52,7 +52,7 @@ public:
    * @par Requires
    * `(index < field_count())`.
    */
-  virtual std::string_view field_name(std::size_t index) const noexcept = 0;
+  virtual std::string_view field_name(std::size_t index) const = 0;
 
   /**
    * @returns The field index if presents, or `field_count()` othersize.
@@ -63,7 +63,7 @@ public:
    * `(offset < field_count())`.
    */
   virtual std::size_t field_index(std::string_view name,
-    std::size_t offset = 0) const noexcept = 0;
+    std::size_t offset = 0) const = 0;
 
 private:
   friend Composite;

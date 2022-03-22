@@ -32,7 +32,6 @@
 #include "row.hpp"
 #include "types_fwd.hpp"
 
-#include <cassert>
 #include <cstring>
 #include <limits>
 #include <sstream>
@@ -54,7 +53,7 @@ struct Generic_string_conversions final {
     std::istringstream stream{text};
     stream >> result;
     if (!stream.eof())
-      throw std::runtime_error("invalid text representation");
+      throw Client_exception{"cannot convert to type: invalid text representation"};
 
     return result;
   }
@@ -66,7 +65,7 @@ struct Generic_string_conversions final {
     stream.precision(std::numeric_limits<Type>::max_digits10);
     stream << value;
     if (stream.fail())
-      throw std::runtime_error("invalid native representation");
+      throw Client_exception("cannot convert to string: invalid native representation");
 
     return stream.str();
   }
@@ -88,7 +87,8 @@ struct Generic_data_conversions final {
   template<typename ... Types>
   static Type to_type(std::unique_ptr<Data>&& data, Types&& ... args)
   {
-    assert(data);
+    if (!data)
+      throw Client_exception{"cannot convert to type: null data given"};
     return to_type(*data, std::forward<Types>(args)...);
   }
 
@@ -129,7 +129,7 @@ protected:
       result = converter(text, &idx, 10);
 
     if (idx != text.size())
-      throw std::runtime_error{"the input string contains symbols not convertible to numeric"};
+      throw Client_exception{"cannot convert to numeric: input contains non-convertible symbols"};
 
     return result;
   }
@@ -150,7 +150,8 @@ struct Numeric_string_conversions<short int> final
     const int result = to_numeric__(text, &std::stoi);
     constexpr auto max = std::numeric_limits<short int>::max();
     if (result > max)
-      throw std::runtime_error("numeric value " + text + " > " + std::to_string(max));
+      throw Client_exception{"cannot convert to type: numeric value "
+        + std::to_string(result) + " is greater than " + std::to_string(max)};
 
     return static_cast<Type>(result);
   }
@@ -261,7 +262,8 @@ struct Numeric_data_conversions final {
   template<typename ... Types>
   static Type to_type(std::unique_ptr<Data>&& data, Types&& ... args)
   {
-    assert(data);
+    if (!data)
+      throw Client_exception{"cannot convert to type: null data given"};
     return to_type(data, std::forward<Types>(args)...);
   }
 
@@ -302,7 +304,8 @@ struct Char_string_conversions final {
   template<typename ... Types>
   static Type to_type(const std::string& text, Types&& ...)
   {
-    assert(text.size() == 1);
+    if (!(text.size() == 1))
+      throw Client_exception{"cannot convert to char: invalid input size"};
     return text[0];
   }
 
@@ -320,14 +323,16 @@ struct Char_data_conversions final {
   template<typename ... Types>
   static Type to_type(const Data& data, Types&& ...)
   {
-    assert(data.size() == 1);
+    if (!(data.size() == 1))
+      throw Client_exception{"cannot convert to char: invalid input size"};
     return static_cast<const char*>(data.bytes())[0];
   }
 
   template<typename ... Types>
   static Type to_type(std::unique_ptr<Data>&& data, Types&& ...)
   {
-    assert(data);
+    if (!data)
+      throw Client_exception{"cannot convert to char: null data given"};
     return to_type(*data);
   }
 
@@ -363,8 +368,9 @@ private:
 
   static Type to_type__(const char* const text, const std::size_t size)
   {
-    assert(text);
-    if (std::strncmp(text, "t", size) == 0 ||
+    if (!text)
+      throw Client_exception{"cannot convert to bool: null input given"};
+    else if (std::strncmp(text, "t", size) == 0 ||
       std::strncmp(text, "true", size) == 0 ||
       std::strncmp(text, "TRUE", size) == 0 ||
       std::strncmp(text, "y", size) == 0 ||
@@ -381,7 +387,7 @@ private:
       std::strncmp(text, "0", size) == 0)
       return false;
     else
-      throw std::runtime_error("invalid text bool representation");
+      throw Client_exception{"cannot convert to bool: invalid text representation"};
   }
 };
 
@@ -394,7 +400,8 @@ struct Bool_data_conversions final {
   {
     const auto* const bytes = static_cast<const char*>(data.bytes());
     if (data.format() == Data_format::binary) {
-      assert(data.size() == 1);
+      if (!(data.size() == 1))
+        throw Client_exception{"cannot convert to bool: invalid input size"};
       return bytes[0];
     } else
       return Bool_string_conversions::to_type__(bytes, data.size());
@@ -403,7 +410,8 @@ struct Bool_data_conversions final {
   template<typename ... Types>
   static Type to_type(std::unique_ptr<Data>&& data, Types&& ...)
   {
-    assert(data);
+    if (!data)
+      throw Client_exception{"cannot convert to bool: null data given"};
     return to_type(*data);
   }
 
@@ -431,7 +439,8 @@ struct String_view_data_conversions final {
   template<typename ... Types>
   static Type to_type(std::unique_ptr<Data>&& data, Types&& ...)
   {
-    assert(data);
+    if (!data)
+      throw Client_exception{"cannot convert to string_view: null data given"};
     return to_type(*data);
   }
 

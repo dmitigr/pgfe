@@ -24,10 +24,10 @@
 #define DMITIGR_PGFE_SQL_VECTOR_HPP
 
 #include "dll.hpp"
+#include "exceptions.hpp"
 #include "sql_string.hpp"
 #include "types_fwd.hpp"
 
-#include <cassert>
 #include <string>
 #include <string_view>
 #include <type_traits>
@@ -127,9 +127,10 @@ public:
   }
 
   /// @overload
-  const Sql_string& operator[](const std::size_t index) const noexcept
+  const Sql_string& operator[](const std::size_t index) const
   {
-    assert(index < size());
+    if (!(index < size()))
+      throw Client_exception{"cannot get Sql_string of Sql_vector"};
     return storage_[index];
   }
 
@@ -199,7 +200,8 @@ public:
    */
   void insert(const std::size_t index, Sql_string sql_string)
   {
-    assert(index < size());
+    if (!(index < size()))
+      throw Client_exception{"cannot insert Sql_string to Sql_vector"};
     const auto b = begin(storage_);
     using Diff = decltype(b)::difference_type;
     storage_.insert(b + static_cast<Diff>(index), std::move(sql_string));
@@ -211,9 +213,10 @@ public:
    * @par Requires
    * `(index < size())`.
    */
-  void erase(const std::size_t index) noexcept
+  void erase(const std::size_t index)
   {
-    assert(index < size());
+    if (!(index < size()))
+      throw Client_exception{"cannot erase Sql_string from Sql_vector"};
     const auto b = begin(storage_);
     using Diff = decltype(b)::difference_type;
     storage_.erase(b + static_cast<Diff>(index));

@@ -25,7 +25,7 @@
 # ------------------------------------------------------------------------------
 
 set(dmitigr_cpplipa_libraries_all
-  # Level 0
+  # Level 0 (base level)
   base
   # Level 1
   concur dt fs hsh math os que rajson rnd str ttpl util uv
@@ -58,7 +58,7 @@ set(dmitigr_cpplipa_rajson_deps base fs 3rdparty_rapidjson)
 set(dmitigr_cpplipa_rnd_deps base)
 set(dmitigr_cpplipa_str_deps base)
 set(dmitigr_cpplipa_ttpl_deps base)
-set(dmitigr_cpplipa_util_deps)
+set(dmitigr_cpplipa_util_deps base)
 set(dmitigr_cpplipa_uv_deps base)
 # Level 2
 set(dmitigr_cpplipa_mulf_deps base str)

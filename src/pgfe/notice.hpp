@@ -26,6 +26,8 @@
 #include "problem.hpp"
 #include "signal.hpp"
 
+#include <cassert>
+
 namespace dmitigr::pgfe {
 
 /**

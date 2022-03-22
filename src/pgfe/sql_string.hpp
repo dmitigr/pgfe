@@ -29,8 +29,6 @@
 #include "tuple.hpp"
 #include "types_fwd.hpp"
 
-#include <algorithm>
-#include <cassert>
 #include <cstdint>
 #include <list>
 #include <locale>
@@ -116,59 +114,33 @@ public:
   /// @}
 
   /// @see Parameterizable::positional_parameter_count().
-  std::size_t positional_parameter_count() const noexcept override
-  {
-    return positional_parameters_.size();
-  }
+  DMITIGR_PGFE_API std::size_t positional_parameter_count() const noexcept override;
 
   /// @see Parameterizable::named_parameter_count().
-  std::size_t named_parameter_count() const noexcept override
-  {
-    return named_parameters_.size();
-  }
+  DMITIGR_PGFE_API std::size_t named_parameter_count() const noexcept override;
 
   /// @see Parameterizable::parameter_count().
-  std::size_t parameter_count() const noexcept override
-  {
-    return positional_parameter_count() + named_parameter_count();
-  }
+  DMITIGR_PGFE_API std::size_t parameter_count() const noexcept override;
 
   /// @see Parameterizable::has_positional_parameters().
-  bool has_positional_parameters() const noexcept override
-  {
-    return !positional_parameters_.empty();
-  }
+  DMITIGR_PGFE_API bool has_positional_parameters() const noexcept override;
 
   /// @see Parameterizable::has_named_parameters().
-  bool has_named_parameters() const noexcept override
-  {
-    return !named_parameters_.empty();
-  }
+  DMITIGR_PGFE_API bool has_named_parameters() const noexcept override;
 
   /// @see Parameterizable::has_parameters().
-  bool has_parameters() const noexcept override
-  {
-    return (has_positional_parameters() || has_named_parameters());
-  }
+  DMITIGR_PGFE_API bool has_parameters() const noexcept override;
 
   /// @see Parameterizable::parameter_name().
-  std::string_view parameter_name(const std::size_t index) const noexcept override
-  {
-    assert(positional_parameter_count() <= index && index < parameter_count());
-    return (named_parameters_[index - positional_parameter_count()])->str;
-  }
+  DMITIGR_PGFE_API std::string_view
+  parameter_name(const std::size_t index) const override;
 
   /// @see Parameterizable::parameter_index().
-  std::size_t parameter_index(const std::string_view name) const noexcept override
-  {
-    return named_parameter_index(name);
-  }
+  DMITIGR_PGFE_API std::size_t
+  parameter_index(const std::string_view name) const noexcept override;
 
   /// @returns `true` if this SQL string is empty.
-  bool is_empty() const noexcept
-  {
-    return fragments_.empty();
-  }
+  DMITIGR_PGFE_API bool is_empty() const noexcept;
 
   /// @returns `true` if this SQL string is consists only of comments and blank line(-s).
   DMITIGR_PGFE_API bool is_query_empty() const noexcept;
@@ -190,11 +162,8 @@ public:
    *
    * @see append(), replace_parameter().
    */
-  bool is_parameter_missing(const std::size_t index) const noexcept
-  {
-    assert(index < positional_parameter_count());
-    return !positional_parameters_[index];
-  }
+  DMITIGR_PGFE_API bool
+  is_parameter_missing(const std::size_t index) const;
 
   /**
    * @returns `true` if the parameter at specified `index` represents the
@@ -205,17 +174,12 @@ public:
    *
    * @see bind().
    */
-  bool is_parameter_literal(const std::size_t index) const noexcept
-  {
-    assert(positional_parameter_count() <= index && index < parameter_count());
-    return named_parameter_type(index) == Fragment::Type::named_parameter_literal;
-  }
+  DMITIGR_PGFE_API bool
+  is_parameter_literal(const std::size_t index) const;
 
   /// @overload
-  bool is_parameter_literal(const std::string_view name) const noexcept
-  {
-    return is_parameter_literal(parameter_index(name));
-  }
+  DMITIGR_PGFE_API bool
+  is_parameter_literal(const std::string_view name) const;
 
   /**
    * @returns `true` if the parameter at specified `index` represents the
@@ -226,17 +190,12 @@ public:
    *
    * @see bind().
    */
-  bool is_parameter_identifier(const std::size_t index) const noexcept
-  {
-    assert(positional_parameter_count() <= index && index < parameter_count());
-    return named_parameter_type(index) == Fragment::Type::named_parameter_identifier;
-  }
+  DMITIGR_PGFE_API bool
+  is_parameter_identifier(const std::size_t index) const;
 
   /// @overload
-  bool is_parameter_identifier(const std::string_view name) const noexcept
-  {
-    return is_parameter_identifier(parameter_index(name));
-  }
+  DMITIGR_PGFE_API bool
+  is_parameter_identifier(const std::string_view name) const;
 
   /**
    * @returns `true` if this SQL string has a positional parameter with the
@@ -244,11 +203,7 @@ public:
    *
    * @see is_parameter_missing().
    */
-  bool has_missing_parameters() const noexcept
-  {
-    return any_of(cbegin(positional_parameters_), cend(positional_parameters_),
-      [](const auto is_present) { return !is_present; });
-  }
+  DMITIGR_PGFE_API bool has_missing_parameters() const noexcept;
 
   /**
    * @brief Appends the specified SQL string.
@@ -278,8 +233,8 @@ public:
    *
    * @see has_parameter(), replace_parameter().
    */
-  DMITIGR_PGFE_API void bind(const std::string_view name,
-    const std::optional<std::string>& value);
+  DMITIGR_PGFE_API void
+  bind(const std::string_view name, const std::optional<std::string>& value);
 
   /**
    * @returns The value bound to parameter.
@@ -306,7 +261,8 @@ public:
    *
    * @see has_parameter(), bind().
    */
-  DMITIGR_PGFE_API void replace_parameter(std::string_view name, const Sql_string& replacement);
+  DMITIGR_PGFE_API void
+  replace_parameter(std::string_view name, const Sql_string& replacement);
 
   /// @returns The result of conversion of this instance to the instance of type `std::string`.
   DMITIGR_PGFE_API std::string to_string() const;
@@ -315,7 +271,7 @@ public:
    * @returns The query string that's actually passed to a PostgreSQL server.
    *
    * @par Requires
-   * `conn.is_connected()`.
+   * `!has_missing_parameters() && conn.is_connected()`.
    */
   DMITIGR_PGFE_API std::string to_query_string(const Connection& conn) const;
 
@@ -407,10 +363,7 @@ public:
   /// @endcode
   ///
   /// The content of the `text3` association is "one\n two\n three".
-  Tuple& extra() noexcept
-  {
-    return const_cast<Tuple&>(static_cast<const Sql_string*>(this)->extra());
-  }
+  DMITIGR_PGFE_API Tuple& extra() noexcept;
 
   /// @overload
   DMITIGR_PGFE_API const Tuple& extra() const;
@@ -418,7 +371,7 @@ public:
 private:
   friend Sql_vector;
 
-  static DMITIGR_PGFE_API std::pair<Sql_string, std::string_view::size_type>
+  static std::pair<Sql_string, std::string_view::size_type>
   parse_sql_input(std::string_view, const std::locale& loc);
 
   struct Fragment final {
@@ -432,23 +385,9 @@ private:
       positional_parameter
     };
 
-    Fragment(const Type tp, const std::string& s)
-      : type(tp)
-      , str(s)
-    {}
-
-    bool is_named_parameter() const noexcept
-    {
-      using Ft = Fragment::Type;
-      return type == Ft::named_parameter ||
-        type == Ft::named_parameter_literal ||
-        type == Ft::named_parameter_identifier;
-    }
-
-    bool is_named_parameter(const std::string_view name) const noexcept
-    {
-      return is_named_parameter() && str == name;
-    }
+    Fragment(const Type tp, const std::string& s);
+    bool is_named_parameter() const noexcept;
+    bool is_named_parameter(const std::string_view name) const noexcept;
 
     Type type;
     std::string str;
@@ -463,51 +402,16 @@ private:
   mutable bool is_extra_data_should_be_extracted_from_comments_{true};
   mutable std::optional<Tuple> extra_; // cache
 
-  bool is_invariant_ok() const noexcept override
-  {
-    const bool positional_parameters_ok = ((positional_parameter_count() > 0) == has_positional_parameters());
-    const bool named_parameters_ok = ((named_parameter_count() > 0) == has_named_parameters());
-    const bool parameters_ok = ((parameter_count() > 0) == has_parameters());
-    const bool parameters_count_ok = (parameter_count() == (positional_parameter_count() + named_parameter_count()));
-    const bool empty_ok = !is_empty() || !has_parameters();
-    const bool extra_ok = is_extra_data_should_be_extracted_from_comments_ || extra_;
-    const bool parameterizable_ok = Parameterizable::is_invariant_ok();
-
-    return
-      positional_parameters_ok &&
-      named_parameters_ok &&
-      parameters_ok &&
-      parameters_count_ok &&
-      empty_ok &&
-      extra_ok &&
-      parameterizable_ok;
-  }
+  bool is_invariant_ok() const noexcept override;
 
   // ---------------------------------------------------------------------------
   // Initializers
   // ---------------------------------------------------------------------------
 
-  void push_back_fragment(const Fragment::Type type, const std::string& str)
-  {
-    fragments_.emplace_back(type, str);
-    assert(is_invariant_ok());
-  }
-
-  void push_text(const std::string& str)
-  {
-    push_back_fragment(Fragment::Type::text, str);
-  }
-
-  void push_one_line_comment(const std::string& str)
-  {
-    push_back_fragment(Fragment::Type::one_line_comment, str);
-  }
-
-  void push_multi_line_comment(const std::string& str)
-  {
-    push_back_fragment(Fragment::Type::multi_line_comment, str);
-  }
-
+  void push_back_fragment(const Fragment::Type type, const std::string& str);
+  void push_text(const std::string& str);
+  void push_one_line_comment(const std::string& str);
+  void push_multi_line_comment(const std::string& str);
   void push_positional_parameter(const std::string& str);
   void push_named_parameter(const std::string& str, char quote_char);
 
@@ -522,75 +426,20 @@ private:
   // Named parameters helpers
   // ---------------------------------------------------------------------------
 
-  Fragment::Type named_parameter_type(const std::size_t index) const noexcept
-  {
-    assert(positional_parameter_count() <= index && index < parameter_count());
-    const auto relative_index = index - positional_parameter_count();
-    return named_parameters_[relative_index]->type;
-  }
-
-  std::size_t named_parameter_index(const std::string_view name) const noexcept
-  {
-    const auto relative_index = [this, name]() noexcept
-    {
-      const auto b = cbegin(named_parameters_);
-      const auto e = cend(named_parameters_);
-      const auto i = find_if(b, e, [name](const auto& pi){return pi->str == name;});
-      return static_cast<std::size_t>(i - b);
-    }();
-    return positional_parameter_count() + relative_index;
-  }
-
-  std::vector<Fragment_list::const_iterator> named_parameters() const
-  {
-    std::vector<Fragment_list::const_iterator> result;
-    result.reserve(8);
-    const auto e = cend(fragments_);
-    for (auto i = cbegin(fragments_); i != e; ++i) {
-      if (i->is_named_parameter()) {
-        if (none_of(cbegin(result), cend(result),
-            [i](const auto& result_i){return i->str == result_i->str;}))
-          result.push_back(i);
-      }
-    }
-    return result;
-  }
+  Fragment::Type named_parameter_type(const std::size_t index) const noexcept;
+  std::size_t named_parameter_index(const std::string_view name) const noexcept;
+  std::vector<Fragment_list::const_iterator> named_parameters() const;
 
   // ---------------------------------------------------------------------------
   // Predicates
   // ---------------------------------------------------------------------------
 
-  static bool is_space(const char c, const std::locale& loc) noexcept
-  {
-    return isspace(c, loc);
-  }
-
-  static bool is_blank_string(const std::string& str, const std::locale& loc) noexcept
-  {
-    return all_of(cbegin(str), cend(str), [&loc](const auto& c){return is_space(c, loc);});
-  }
-
-  static bool is_comment(const Fragment& f) noexcept
-  {
-    return (f.type == Fragment::Type::one_line_comment || f.type == Fragment::Type::multi_line_comment);
-  }
-
-  static bool is_text(const Fragment& f) noexcept
-  {
-    return (f.type == Fragment::Type::text);
-  }
-
-  /// @returns `true` if `c` is a valid character of unquoted SQL identifier.
-  static bool is_ident_char(const char c, const std::locale& loc) noexcept
-  {
-    return isalnum(c, loc) || c == '_' || c == '$';
-  }
-
-  /// @returns `true` if `c` is either single or double quote character.
-  static bool is_quote_char(const char c) noexcept
-  {
-    return c == '\'' || c == '\"';
-  }
+  static bool is_space(const char c, const std::locale& loc) noexcept;
+  static bool is_blank_string(const std::string& str, const std::locale& loc) noexcept;
+  static bool is_comment(const Fragment& f) noexcept;
+  static bool is_text(const Fragment& f) noexcept;
+  static bool is_ident_char(const char c, const std::locale& loc) noexcept;
+  static bool is_quote_char(const char c) noexcept;
 
   // ---------------------------------------------------------------------------
   // Extra data

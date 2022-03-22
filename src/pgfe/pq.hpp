@@ -23,8 +23,9 @@
 #ifndef DMITIGR_PGFE_PQ_HPP
 #define DMITIGR_PGFE_PQ_HPP
 
-#include "basics.hpp"
+#include "../base/assert.hpp"
 #include "../str/c_str.hpp"
+#include "basics.hpp"
 
 #include <libpq-fe.h>
 
@@ -66,14 +67,15 @@ namespace dmitigr::pgfe::detail::pq {
 /// @returns The integer identifier of the specified format.
 inline int to_int(const Data_format format) noexcept
 {
-  assert(static_cast<int>(format) == 0 || static_cast<int>(format) == 1);
-  return static_cast<int>(format);
+  const auto result = static_cast<int>(format);
+  DMITIGR_ASSERT(result == 0 || result == 1);
+  return result;
 }
 
 /// @returns Data_format converted from integer.
 inline Data_format to_data_format(const int format) noexcept
 {
-  assert(format == 0 || format == 1);
+  DMITIGR_ASSERT(format == 0 || format == 1);
   return Data_format{format};
 }
 

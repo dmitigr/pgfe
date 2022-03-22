@@ -20,42 +20,32 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
-#ifndef DMITIGR_PGFE_PGFE_HPP
-#define DMITIGR_PGFE_PGFE_HPP
-
-#include "array_aliases.hpp"
-#include "array_conversions.hpp"
-#include "basic_conversions.hpp"
-#include "basics.hpp"
-#include "copier.hpp"
-#include "completion.hpp"
-#include "composite.hpp"
-#include "compositional.hpp"
-#include "connection.hpp"
-#include "connection_options.hpp"
-#include "connection_pool.hpp"
 #include "contract.hpp"
-#include "conversions_api.hpp"
-#include "conversions.hpp"
-#include "data.hpp"
-#include "errc.hpp"
 #include "error.hpp"
 #include "exceptions.hpp"
-#include "large_object.hpp"
-#include "message.hpp"
-#include "misc.hpp"
-#include "notice.hpp"
-#include "notification.hpp"
-#include "parameterizable.hpp"
-#include "problem.hpp"
-#include "ready_for_query.hpp"
-#include "response.hpp"
-#include "row.hpp"
-#include "row_info.hpp"
-#include "signal.hpp"
-#include "sql_string.hpp"
-#include "sql_vector.hpp"
-#include "std_system_error.hpp"
-#include "version.hpp"
 
-#endif  // DMITIGR_PGFE_PGFE_HPP
+namespace dmitigr::pgfe {
+
+DMITIGR_PGFE_INLINE Client_exception::Client_exception(const Client_errc errc,
+  std::string what)
+  : Exception{errc, what.empty() ? to_literal(errc) :
+    what.append(" (").append(to_literal(errc)).append(")")}
+{}
+
+DMITIGR_PGFE_INLINE Client_exception::Client_exception(const std::string& what)
+  : Exception{what}
+{}
+
+// =============================================================================
+
+DMITIGR_PGFE_INLINE Server_exception::Server_exception(std::shared_ptr<Error>&& error)
+  : Exception{detail::not_false(error)->condition(), detail::not_false(error)->brief()}
+  , error_{std::move(error)}
+{}
+
+DMITIGR_PGFE_INLINE const Error& Server_exception::error() const noexcept
+{
+  return *error_;
+}
+
+} // namespace dmitigr::pgfe

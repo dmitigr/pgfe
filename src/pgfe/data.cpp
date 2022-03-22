@@ -21,6 +21,7 @@
 // dmitigr@gmail.com
 
 #include "data.hpp"
+#include "exceptions.hpp"
 #include "pq.hpp"
 
 #include <algorithm> // swap
@@ -184,7 +185,9 @@ namespace {
 
 inline std::unique_ptr<pgfe::Data> to_bytea__(const void* const text)
 {
-  assert(text);
+  if (!text)
+    throw Client_exception{"cannot convert data to bytea: null input data"};
+
   const auto* const bytes = static_cast<const unsigned char*>(text);
   std::size_t storage_size{};
   using Uptr = std::unique_ptr<void, void(*)(void*)>;
@@ -198,13 +201,16 @@ inline std::unique_ptr<pgfe::Data> to_bytea__(const void* const text)
 
 DMITIGR_PGFE_INLINE std::unique_ptr<Data> Data::to_bytea() const
 {
-  assert(format() == Data_format::text && static_cast<const char*>(bytes())[size()] == 0);
+  if (!((format() == Data_format::text)
+      && bytes() && (static_cast<const char*>(bytes())[size()] == 0)))
+    throw Client_exception{"cannot convert data to bytea:"
+      " invalid input data format"};
+
   return to_bytea__(bytes());
 }
 
 DMITIGR_PGFE_INLINE std::unique_ptr<Data> Data::to_bytea(const char* const text_data)
 {
-  assert(text_data);
   return to_bytea__(text_data);
 }
 
@@ -224,7 +230,8 @@ Data::make(std::string&& storage, const Data_format format)
 DMITIGR_PGFE_INLINE std::unique_ptr<Data>
 Data::make(std::unique_ptr<void, void(*)(void*)>&& storage, const std::size_t size, const Data_format format)
 {
-  assert(storage);
+  if (!(storage || !size))
+    throw Client_exception{"cannot create an instance of data"};
   return std::make_unique<detail::custom_memory_Data>(std::move(storage), size, format);
 }
 

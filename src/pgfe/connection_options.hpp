@@ -23,9 +23,9 @@
 #ifndef DMITIGR_PGFE_CONNECTION_OPTIONS_HPP
 #define DMITIGR_PGFE_CONNECTION_OPTIONS_HPP
 
+#include "../fs/filesystem.hpp"
 #include "basics.hpp"
 #include "dll.hpp"
-#include "../fs/filesystem.hpp"
 
 #include <cstdint>
 #include <chrono>
@@ -64,10 +64,10 @@ public:
 
   /// Sets the communication mode.
   DMITIGR_PGFE_API Connection_options&
-  set_communication_mode(std::optional<Communication_mode> value) noexcept;
+  set_communication_mode(std::optional<Communication_mode> value);
 
   /// Shortcut of set_communication_mode().
-  Connection_options& set(const std::optional<Communication_mode> value) noexcept
+  Connection_options& set(const std::optional<Communication_mode> value)
   {
     return set_communication_mode(value);
   }
@@ -82,10 +82,10 @@ public:
 
   /// Sets the session mode.
   DMITIGR_PGFE_API Connection_options&
-  set_session_mode(std::optional<Session_mode> value) noexcept;
+  set_session_mode(std::optional<Session_mode> value);
 
   /// Shortcut of set_session_mode().
-  Connection_options& set(const std::optional<Session_mode> value) noexcept
+  Connection_options& set(const std::optional<Session_mode> value)
   {
     return set_session_mode(value);
   }
@@ -514,7 +514,7 @@ public:
   set_ssl_min_protocol_version(std::optional<Ssl_protocol_version> value);
 
   /// Shortcut of set_ssl_min_protocol_version().
-  Connection_options& set_min(const std::optional<Ssl_protocol_version> value) noexcept
+  Connection_options& set_min(const std::optional<Ssl_protocol_version> value)
   {
     return set_ssl_min_protocol_version(value);
   }
@@ -532,7 +532,7 @@ public:
   set_ssl_max_protocol_version(std::optional<Ssl_protocol_version> value);
 
   /// Shortcut of set_ssl_max_protocol_version().
-  Connection_options& set_max(const std::optional<Ssl_protocol_version> value) noexcept
+  Connection_options& set_max(const std::optional<Ssl_protocol_version> value)
   {
     return set_ssl_max_protocol_version(value);
   }

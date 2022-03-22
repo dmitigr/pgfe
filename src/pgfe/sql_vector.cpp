@@ -20,6 +20,7 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
+#include "../base/assert.hpp"
 #include "conversions.hpp"
 #include "sql_vector.hpp"
 
@@ -33,7 +34,7 @@ DMITIGR_PGFE_INLINE Sql_vector::Sql_vector(std::string_view input)
   while (!input.empty()) {
     auto [str, pos] = Sql_string::parse_sql_input(input, loc);
     storage_.emplace_back(std::move(str));
-    assert(pos <= input.size());
+    DMITIGR_ASSERT(pos <= input.size());
     input = input.substr(pos);
   }
 }
@@ -75,7 +76,8 @@ DMITIGR_PGFE_INLINE std::string::size_type
 Sql_vector::query_absolute_position(const std::size_t index,
   const Connection& conn) const
 {
-  assert(index < size());
+  if (!(index < size()))
+    throw Client_exception{"cannot get query absolute position of Sql_string"};
 
   const auto junk_size = operator[](index).to_string().size() -
     operator[](index).to_query_string(conn).size();

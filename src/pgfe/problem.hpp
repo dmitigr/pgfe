@@ -28,6 +28,7 @@
 #include "types_fwd.hpp"
 
 #include <string>
+#include <system_error>
 
 namespace dmitigr::pgfe {
 
@@ -63,7 +64,7 @@ public:
    * @returns The problem severity, or `-1` if the problem is not recognized
    * by Pgfe or occured on the PostgreSQL server of version prior to 9.6.
    */
-  Problem_severity DMITIGR_PGFE_API severity() const noexcept;
+  DMITIGR_PGFE_API Problem_severity severity() const noexcept;
 
   /**
    * @returns The brief human-readable description of the problem.
@@ -217,15 +218,15 @@ public:
   static DMITIGR_PGFE_API std::error_condition min_error_condition() noexcept;
 
   /**
-   * @returns The integer representation of the SQLSTATE, or `-1` on error.
+   * @returns The integer representation of the SQLSTATE.
    *
    * @par Requires
    * `sqlstate` must consist of five alphanumeric characters terminated by zero.
    */
-  static DMITIGR_PGFE_API int sqlstate_string_to_int(const char* sqlstate) noexcept;
+  static DMITIGR_PGFE_API int sqlstate_string_to_int(const char* sqlstate);
 
   /**
-   * @returns The textual representation of the SQLSTATE, or empty string on error.
+   * @returns The textual representation of the SQLSTATE.
    *
    * @par Requires
    * The `sqlstate` must be in range `[0, 60466175]`.

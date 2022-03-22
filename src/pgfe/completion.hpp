@@ -26,7 +26,6 @@
 #include "dll.hpp"
 #include "response.hpp"
 
-#include <cassert>
 #include <optional>
 #include <string>
 
@@ -40,10 +39,7 @@ namespace dmitigr::pgfe {
 class Completion final : public Response {
 public:
   /// Default-constructible. (Constructs an invalid instance.)
-  Completion()
-  {
-    assert(!is_valid());
-  }
+  DMITIGR_PGFE_API Completion();
 
   /// Non copy-constructible.
   Completion(const Completion&) = delete;
@@ -84,14 +80,6 @@ public:
   }
 
   /**
-   * The constructor.
-   *
-   * @par Requires
-   * `tag.data()`.
-   */
-  explicit DMITIGR_PGFE_API Completion(const std::string_view tag);
-
-  /**
    * @returns The operation name which may be:
    *   -# an empty string that denotes a response to an empty query request;
    *   -# the string "invalid response" that denotes an ununderstood response;
@@ -122,8 +110,18 @@ public:
   }
 
 private:
+  friend Connection;
+
   long affected_row_count_{-2}; // -1 denotes no value, -2 denotes invalid instance
   std::string operation_name_;
+
+  /**
+   * The constructor.
+   *
+   * @par Requires
+   * `tag.data()`.
+   */
+  explicit Completion(const std::string_view tag);
 
   bool is_invariant_ok() const noexcept
   {

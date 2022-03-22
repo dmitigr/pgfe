@@ -23,8 +23,8 @@
 #ifndef DMITIGR_PGFE_NOTIFICATION_HPP
 #define DMITIGR_PGFE_NOTIFICATION_HPP
 
+#include "contract.hpp"
 #include "data.hpp"
-#include "exceptions.hpp"
 #include "pq.hpp"
 #include "signal.hpp"
 
