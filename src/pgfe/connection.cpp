@@ -701,7 +701,12 @@ DMITIGR_PGFE_INLINE Large_object Connection::open_large_object(const Oid oid,
 {
   if (!is_ready_for_request())
     throw Client_exception{"cannot open large object: not ready for request"};
-  return Large_object{this, ::lo_open(conn(), oid, static_cast<int>(mode))};
+
+  const int desc{::lo_open(conn(), oid, static_cast<int>(mode))};
+  if (desc < 0)
+    throw Client_exception{"cannot open large object"};
+
+  return Large_object{this, desc};
 }
 
 DMITIGR_PGFE_INLINE bool Connection::remove_large_object(const Oid oid)

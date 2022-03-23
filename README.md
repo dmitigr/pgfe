@@ -376,7 +376,7 @@ where:
 In case when all the elements of the array are not `NULL`, it *can* be represented
 as the container with elements of type `T` rather than `Optional<T>`. But in case
 when the source array (which comes from the PostgreSQL server) contain at least
-one `NULL` element a runtime exception will be thrown. Summarizing:
+one `NULL` element a `Client_exception` will be thrown. Summarizing:
 
   - the types `Container<Optional<T>>`, `Container<Optional<Container<Optional<T>>>>`,
     `...` can be used to represent N-dimensional arrays of `T` which *may* contain `NULL`
@@ -658,11 +658,9 @@ Please, pay attention to the following:
 [std_error_condition]: https://en.cppreference.com/w/cpp/error/error_condition
 [std_istream]: https://en.cppreference.com/w/cpp/io/basic_istream
 [std_list]: https://en.cppreference.com/w/cpp/container/list
-[std_logic_error]: https://en.cppreference.com/w/cpp/error/logic_error
 [std_optional]: https://en.cppreference.com/w/cpp/utility/optional
 [std_ostringstream]: https://en.cppreference.com/w/cpp/io/basic_ostringstream
 [std_ostream]: https://en.cppreference.com/w/cpp/io/basic_ostream
 [std_nullopt]: https://en.cppreference.com/w/cpp/utility/optional/nullopt
-[std_runtime_error]: https://en.cppreference.com/w/cpp/error/runtime_error
 [std_string]: https://en.cppreference.com/w/cpp/string/basic_string
 [std_vector]: https://en.cppreference.com/w/cpp/container/vector

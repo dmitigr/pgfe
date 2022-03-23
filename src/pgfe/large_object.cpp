@@ -28,17 +28,13 @@
 
 namespace dmitigr::pgfe {
 
-DMITIGR_PGFE_INLINE Large_object::~Large_object()
-{
-  try {
-    close();
-  } catch (...) {}
-}
-
 DMITIGR_PGFE_INLINE Large_object::Large_object(Connection* const conn, const int desc)
   : conn_{conn}
   , desc_{desc}
-{}
+{
+  DMITIGR_ASSERT(conn && (desc >= 0) &&
+    (conn->pipeline_status() == Pipeline_status::disabled));
+}
 
 DMITIGR_PGFE_INLINE Large_object::Large_object(Large_object&& rhs) noexcept
   : conn_{rhs.conn_}
@@ -71,13 +67,14 @@ DMITIGR_PGFE_INLINE bool Large_object::is_valid() const noexcept
 
 DMITIGR_PGFE_INLINE bool Large_object::close() noexcept
 {
-  if (!is_valid())
-    return false;
-  else if (conn_->close(*this)) {
-    *this = Large_object{};
-    return true;
-  } else
-    return false;
+  bool result{true};
+  if (is_valid()) {
+    result = conn_->close(*this);
+    conn_ = {};
+    desc_ = -1;
+  }
+  DMITIGR_ASSERT(!is_valid());
+  return result;
 }
 
 DMITIGR_PGFE_INLINE std::int_fast64_t Large_object::seek(const std::int_fast64_t offset, const Seek_whence whence)

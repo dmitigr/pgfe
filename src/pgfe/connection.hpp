@@ -47,7 +47,6 @@
 #include <queue>
 #include <string>
 #include <type_traits>
-#include <vector>
 
 namespace dmitigr::pgfe {
 
@@ -1187,7 +1186,7 @@ public:
    * @returns The valid OID if successful, or `invalid_oid` otherwise.
    *
    * @par Requires
-   * `(is_ready_for_request())`.
+   * `is_ready_for_request()`.
    *
    * @par Exception safety guarantee
    * Strong.
@@ -1200,7 +1199,7 @@ public:
    * @returns The valid instance if successful.
    *
    * @par Requires
-   * `(is_ready_for_request())`.
+   * `is_ready_for_request()`.
    *
    * @par Exception safety guarantee
    * Strong.
@@ -1213,7 +1212,7 @@ public:
    * @returns `true` on success.
    *
    * @par Requires
-   * `(is_ready_for_request())`.
+   * `is_ready_for_request()`.
    *
    * @par Exception safety guarantee
    * Strong.
@@ -1227,7 +1226,7 @@ public:
    * @returns The OID of a new large object on success, or `invalid_oid` otherwise.
    *
    * @par Requires
-   * `(is_ready_for_request())`.
+   * `is_ready_for_request()`.
    *
    * @par Exception safety guarantee
    * Strong.
@@ -1241,7 +1240,7 @@ public:
    * @returns `true` on success.
    *
    * @par Requires
-   * `(is_ready_for_request())`.
+   * `is_ready_for_request()`.
    *
    * @par Exception safety guarantee
    * Strong.

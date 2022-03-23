@@ -100,7 +100,7 @@ DMITIGR_DEFINE_ENUM_BITMASK_OPERATORS(Large_object_open_mode)
  * @warning Using this API must take place within an SQL transaction block!
  *
  * @warning The behaivor is undefined if the instance of this class is used
- * after destroying the Connection object that created it.
+ * after destroying the Connection object that created it!
  */
 class Large_object final {
 public:
@@ -113,27 +113,23 @@ public:
   /**
    * @brief The destructor.
    *
-   * Submits a request to close the underlying large object descriptor.
+   * @details Do nothing! (Doesn't calls close().)
    *
    * @see close().
    */
-  DMITIGR_PGFE_API ~Large_object();
+  ~Large_object() = default;
 
-  /**
-   * @brief The constructor.
-   *
-   * By default, an invalid instance is constructed.
-   */
-  explicit DMITIGR_PGFE_API Large_object(Connection* conn = {}, int desc = -1);
+  /// Constructs invalid instance.
+  Large_object() = default;
 
   /// Copy-constructible.
-  Large_object(const Large_object&) = default;
+  Large_object(const Large_object&) = delete;
 
   /// Move-constructible.
   DMITIGR_PGFE_API Large_object(Large_object&& rhs) noexcept;
 
   /// Copy-assignable.
-  Large_object& operator=(const Large_object&) = default;
+  Large_object& operator=(const Large_object&) = delete;
 
   /// Move-assignable.
   DMITIGR_PGFE_API Large_object& operator=(Large_object&& rhs) noexcept;
@@ -144,13 +140,25 @@ public:
   /// @returns `true` if this instance is correctly initialized.
   DMITIGR_PGFE_API bool is_valid() const noexcept;
 
+  /// @returns `true` if the instance is valid.
+  explicit operator bool() const noexcept
+  {
+    return is_valid();
+  }
+
   /**
-   * @brief Closes the underlying large object descriptor and invalidates this instance.
+   * @brief Closes the underlying large object descriptor and invalidates this
+   * instance.
    *
-   * @returns `true` on success.
+   * @returns `true` on success (or if `!is_valid()`), or `false` otherwise
+   * (transaction failure).
    *
    * @par Effects
-   * If returned value is `true` then `!is_valid()`.
+   * `!is_valid()`.
+   *
+   * @remarks Large object that remain open at the end of a transaction block
+   * will be closed automatically on the server side without affecting the
+   * validity of instances of this class!
    */
   DMITIGR_PGFE_API bool close() noexcept;
 
@@ -158,21 +166,21 @@ public:
    * @brief Changes the current position associated with the underlying large
    * object descriptor.
    *
-   * @returns The new position, or `-1` on error.
+   * @returns The new position, or `-1` on error (transaction failure).
    */
   DMITIGR_PGFE_API std::int_fast64_t seek(std::int_fast64_t offset,
     Seek_whence whence);
 
   /**
    * @returns The current position associated with the underlying large
-   * object descriptor, or `-1` on error.
+   * object descriptor, or `-1` on error (transaction failure).
    */
   DMITIGR_PGFE_API std::int_fast64_t tell();
 
   /**
    * @brief Truncates the large object to size `new_size`.
    *
-   * @returns `true` on success.
+   * @returns `true` on success, or `false` otherwise (transaction failure).
    *
    * @par Requires
    * `(new_size >= 0)`.
@@ -182,6 +190,9 @@ public:
   /**
    * @brief Reads up to `size` bytes from the current position associated with
    * the underlying large object descriptor into `buf`.
+   *
+   * @returns The number of bytes actually read, or `-1` on error (transaction
+   * failure).
    *
    * @par Requires
    * `(buf && size <= std::numeric_limits<int>::max())`.
@@ -194,6 +205,9 @@ public:
   /**
    * @brief Writes up to `size` bytes from the current position associated with
    * the underlying large object descriptor from `buf`.
+   *
+   * @returns The number of bytes actually written, or `-1` on error (transaction
+   * failure).
    *
    * @par Requires
    * `(buf && size <= std::numeric_limits<int>::max())`.
@@ -215,15 +229,25 @@ public:
     return conn_;
   }
 
+private:
+  friend Connection;
+
+  Connection* conn_{};
+  int desc_{-1};
+
+  /**
+   * @brief The constructor.
+   *
+   * @par Requires
+   * `conn && (desc >= 0) && (conn->pipeline_status() == Pipeline_status::disabled)`.
+   */
+  Large_object(Connection* conn, int desc);
+
   /// @returns The underlying large object descriptor.
   int descriptor() const noexcept
   {
     return desc_;
   }
-
-private:
-  Connection* conn_{};
-  int desc_{-1};
 };
 
 /// Large_object is swappable.

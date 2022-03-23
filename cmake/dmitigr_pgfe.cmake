@@ -137,6 +137,7 @@ if(DMITIGR_CPPLIPA_TESTS)
     pipeline
     pq_vs_pgfe
     ps
+    lob
     row
     sql_string
     sql_vector
