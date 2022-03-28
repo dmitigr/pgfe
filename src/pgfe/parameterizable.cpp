@@ -20,34 +20,29 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
-#include "contract.hpp"
-#include "error.hpp"
-#include "exceptions.hpp"
-#include "std_system_error.hpp"
+#include "parameterizable.hpp"
 
 namespace dmitigr::pgfe {
 
-DMITIGR_PGFE_INLINE Client_exception::Client_exception(const Client_errc errc,
-  std::string what)
-  : Exception{errc, what.empty() ? to_literal(errc) :
-    what.append(" (").append(to_literal(errc)).append(")")}
-{}
-
-DMITIGR_PGFE_INLINE Client_exception::Client_exception(const std::string& what)
-  : Exception{what}
-{}
-
-// =============================================================================
-
-DMITIGR_PGFE_INLINE Server_exception::Server_exception(std::shared_ptr<Error>&& error)
-  : Exception{detail::not_false(error)->condition(),
-    detail::not_false(error)->brief()}
-  , error_{std::move(error)}
-{}
-
-DMITIGR_PGFE_INLINE const Error& Server_exception::error() const noexcept
+DMITIGR_PGFE_INLINE bool
+Parameterizable::has_parameter(const std::string_view name) const noexcept
 {
-  return *error_;
+  return parameter_index(name) < parameter_count();
+}
+
+DMITIGR_PGFE_INLINE bool Parameterizable::is_invariant_ok() const noexcept
+{
+  const bool params_ok = !has_parameters() || (parameter_count() > 0);
+  const bool named_params_ok = [this]
+  {
+    const std::size_t pc{parameter_count()};
+    for (std::size_t i{positional_parameter_count()}; i < pc; ++i) {
+      if (parameter_index(parameter_name(i)) != i)
+        return false;
+    }
+    return true;
+  }();
+  return params_ok && named_params_ok;
 }
 
 } // namespace dmitigr::pgfe

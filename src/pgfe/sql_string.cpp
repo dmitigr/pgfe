@@ -34,7 +34,8 @@
 
 namespace dmitigr::pgfe {
 
-DMITIGR_PGFE_INLINE Sql_string::Fragment::Fragment(const Type tp, const std::string& s)
+DMITIGR_PGFE_INLINE
+Sql_string::Fragment::Fragment(const Type tp, const std::string& s)
   : type(tp)
   , str(s)
 {}
@@ -74,7 +75,8 @@ DMITIGR_PGFE_INLINE Sql_string::Sql_string(const char* const text)
 DMITIGR_PGFE_INLINE Sql_string::Sql_string(const Sql_string& rhs)
   : fragments_{rhs.fragments_}
   , positional_parameters_{rhs.positional_parameters_}
-  , is_extra_data_should_be_extracted_from_comments_{rhs.is_extra_data_should_be_extracted_from_comments_}
+  , is_extra_data_should_be_extracted_from_comments_{
+      rhs.is_extra_data_should_be_extracted_from_comments_}
   , extra_{rhs.extra_}
 {
   named_parameters_ = named_parameters();
@@ -92,7 +94,8 @@ DMITIGR_PGFE_INLINE Sql_string& Sql_string::operator=(const Sql_string& rhs)
 DMITIGR_PGFE_INLINE Sql_string::Sql_string(Sql_string&& rhs) noexcept
   : fragments_{std::move(rhs.fragments_)}
   , positional_parameters_{std::move(rhs.positional_parameters_)}
-  , is_extra_data_should_be_extracted_from_comments_{std::move(rhs.is_extra_data_should_be_extracted_from_comments_)}
+  , is_extra_data_should_be_extracted_from_comments_{
+      std::move(rhs.is_extra_data_should_be_extracted_from_comments_)}
   , extra_{std::move(rhs.extra_)}
 {
   named_parameters_ = named_parameters();
@@ -109,14 +112,17 @@ DMITIGR_PGFE_INLINE Sql_string& Sql_string::operator=(Sql_string&& rhs) noexcept
 
 DMITIGR_PGFE_INLINE void Sql_string::swap(Sql_string& rhs) noexcept
 {
-  fragments_.swap(rhs.fragments_);
-  positional_parameters_.swap(rhs.positional_parameters_);
-  named_parameters_.swap(rhs.named_parameters_);
-  std::swap(is_extra_data_should_be_extracted_from_comments_, rhs.is_extra_data_should_be_extracted_from_comments_);
-  std::swap(extra_, rhs.extra_);
+  using std::swap;
+  swap(fragments_, rhs.fragments_);
+  swap(positional_parameters_, rhs.positional_parameters_);
+  swap(named_parameters_, rhs.named_parameters_);
+  swap(is_extra_data_should_be_extracted_from_comments_,
+    rhs.is_extra_data_should_be_extracted_from_comments_);
+  swap(extra_, rhs.extra_);
 }
 
-DMITIGR_PGFE_INLINE std::size_t Sql_string::positional_parameter_count() const noexcept
+DMITIGR_PGFE_INLINE std::size_t
+Sql_string::positional_parameter_count() const noexcept
 {
   return positional_parameters_.size();
 }
@@ -213,7 +219,7 @@ Sql_string::is_parameter_identifier(const std::string_view name) const
 DMITIGR_PGFE_INLINE bool Sql_string::has_missing_parameters() const noexcept
 {
   return any_of(cbegin(positional_parameters_), cend(positional_parameters_),
-    [](const auto is_present) { return !is_present; });
+    [](const auto is_present) {return !is_present;});
 }
 
 DMITIGR_PGFE_INLINE void Sql_string::append(const Sql_string& appendix)
@@ -223,7 +229,8 @@ DMITIGR_PGFE_INLINE void Sql_string::append(const Sql_string& appendix)
   // Updating fragments
   auto old_fragments = fragments_;
   try {
-    fragments_.insert(cend(fragments_), cbegin(appendix.fragments_), cend(appendix.fragments_));
+    fragments_.insert(cend(fragments_), cbegin(appendix.fragments_),
+      cend(appendix.fragments_));
     update_cache(appendix); // can throw (strong exception safety guarantee)
 
     if (was_query_empty)
@@ -237,7 +244,8 @@ DMITIGR_PGFE_INLINE void Sql_string::append(const Sql_string& appendix)
 }
 
 DMITIGR_PGFE_INLINE void
-Sql_string::bind(const std::string_view name, const std::optional<std::string>& value)
+Sql_string::bind(const std::string_view name,
+  const std::optional<std::string>& value)
 {
   if (!has_parameter(name))
     throw Client_exception{"cannot bind Sql_string parameter"};
@@ -261,7 +269,8 @@ Sql_string::bound(const std::string_view name) const
 }
 
 DMITIGR_PGFE_INLINE void
-Sql_string::replace_parameter(const std::string_view name, const Sql_string& replacement)
+Sql_string::replace_parameter(const std::string_view name,
+  const Sql_string& replacement)
 {
   if (!(has_parameter(name) && (this != &replacement)))
     throw Client_exception{"cannot replace Sql_string parameter"};
@@ -418,7 +427,8 @@ public:
   using Fragment_list = Sql_string::Fragment_list;
 
   /// @returns The vector of associated extra data.
-  static std::vector<std::pair<Key, Value>> extract(const Fragment_list& fragments, const std::locale& loc)
+  static std::vector<std::pair<Key, Value>>
+  extract(const Fragment_list& fragments, const std::locale& loc)
   {
     std::vector<std::pair<Key, Value>> result;
     const auto iters = first_related_comments(fragments, loc);
@@ -445,7 +455,8 @@ private:
   };
 
   /**
-   * @brief Extracts the associated data from dollar quoted literals found in comments.
+   * @brief Extracts the associated data from dollar quoted literals found in
+   * comments.
    *
    * @returns Extracted data as key/value pairs.
    *
@@ -455,7 +466,8 @@ private:
   static std::vector<std::pair<Key, Value>> extract(const std::string_view input,
     const Comment_type comment_type, const std::locale& loc)
   {
-    enum { top, dollar, dollar_quote_leading_tag, dollar_quote, dollar_quote_dollar } state = top;
+    enum { top, dollar, dollar_quote_leading_tag,
+      dollar_quote, dollar_quote_dollar } state = top;
 
     std::vector<std::pair<Key, Value>> result;
     std::string content;
@@ -502,7 +514,8 @@ private:
              */
             state = top;
             result.emplace_back(std::move(dollar_quote_leading_tag_name),
-              Data::make(cleaned_content(std::move(content), comment_type, loc), Data_format::text));
+              Data::make(cleaned_content(std::move(content), comment_type, loc),
+                Data_format::text));
             content = {};
             dollar_quote_leading_tag_name = {};
           } else
@@ -604,10 +617,12 @@ private:
    * @brief Cleans up the extra data content.
    *
    * Cleaning up includes:
-   *   - removing the indentation characters;
-   *   - trimming most leading and/or most trailing newline characters (for multiline comments only).
+   *   -# removing the indentation characters;
+   *   -# trimming most leading and/or most trailing newline characters (for
+   *   multiline comments only).
    */
-  static std::string cleaned_content(std::string&& content, const Comment_type comment_type, const std::locale& loc)
+  static std::string cleaned_content(std::string&& content,
+    const Comment_type comment_type, const std::locale& loc)
   {
     std::string result;
 
@@ -636,7 +651,10 @@ private:
     } else
       result.swap(content);
 
-    // Trimming the result string: remove the most leading and the most trailing newline-characters.
+    /*
+     * Trimming the result string: remove the most leading and the most trailing
+     * newline-characters.
+     */
     if (const auto size = result.size(); size > 0) {
       std::string::size_type start{};
       if (result[start] == '\r')
@@ -674,7 +692,8 @@ private:
     const auto e = cend(fragments);
     auto result = std::make_pair(e, e);
 
-    const auto is_nearby_string = [](const std::string_view str, const std::locale& strloc)
+    const auto is_nearby_string = [](const std::string_view str,
+      const std::locale& strloc)
     {
       std::string::size_type count{};
       for (const auto c : str) {
@@ -694,7 +713,8 @@ private:
      */
     auto i = find_if(b, e, [&loc, &is_nearby_string](const Fragment& f)
     {
-      return (f.type == Ft::text && is_nearby_string(f.str, loc) && !is_blank_string(f.str, loc)) ||
+      return (f.type == Ft::text &&
+        is_nearby_string(f.str, loc) && !is_blank_string(f.str, loc)) ||
         f.type == Ft::named_parameter ||
         f.type == Ft::positional_parameter;
     });
@@ -702,7 +722,8 @@ private:
       result.second = i;
       do {
         --i;
-        DMITIGR_ASSERT(is_comment(*i) || (is_text(*i) && is_blank_string(i->str, loc)));
+        DMITIGR_ASSERT(is_comment(*i) ||
+          (is_text(*i) && is_blank_string(i->str, loc)));
         if (i->type == Ft::text) {
           if (!is_nearby_string(i->str, loc))
             break;
@@ -722,8 +743,10 @@ private:
    *   - the iterator that points to the fragment that follows the last comment
    *     appended to the result.
    */
-  std::pair<std::pair<std::string, Extra::Comment_type>, Fragment_list::const_iterator>
-  static joined_comments_of_same_type(Fragment_list::const_iterator i, const Fragment_list::const_iterator e)
+  std::pair<std::pair<std::string, Extra::Comment_type>,
+    Fragment_list::const_iterator>
+  static joined_comments_of_same_type(Fragment_list::const_iterator i,
+    const Fragment_list::const_iterator e)
   {
     using Ft = Fragment::Type;
     DMITIGR_ASSERT(is_comment(*i));
@@ -756,7 +779,8 @@ private:
    *   - the type of the joined comments as second element.
    */
   std::vector<std::pair<std::string, Extra::Comment_type>>
-  static joined_comments(Fragment_list::const_iterator i, const Fragment_list::const_iterator e)
+  static joined_comments(Fragment_list::const_iterator i,
+    const Fragment_list::const_iterator e)
   {
     std::vector<std::pair<std::string, Extra::Comment_type>> result;
     while (i != e) {
@@ -789,10 +813,14 @@ DMITIGR_PGFE_INLINE Tuple& Sql_string::extra() noexcept
 
 DMITIGR_PGFE_INLINE bool Sql_string::is_invariant_ok() const noexcept
 {
-  const bool positional_parameters_ok = ((positional_parameter_count() > 0) == has_positional_parameters());
-  const bool named_parameters_ok = ((named_parameter_count() > 0) == has_named_parameters());
-  const bool parameters_ok = ((parameter_count() > 0) == has_parameters());
-  const bool parameters_count_ok = (parameter_count() == (positional_parameter_count() + named_parameter_count()));
+  const bool positional_parameters_ok =
+    (positional_parameter_count() > 0) == has_positional_parameters();
+  const bool named_parameters_ok =
+    (named_parameter_count() > 0) == has_named_parameters();
+  const bool parameters_ok =
+    (parameter_count() > 0) == has_parameters();
+  const bool parameters_count_ok =
+    parameter_count() == (positional_parameter_count() + named_parameter_count());
   const bool empty_ok = !is_empty() || !has_parameters();
   const bool extra_ok = is_extra_data_should_be_extracted_from_comments_ || extra_;
   const bool parameterizable_ok = Parameterizable::is_invariant_ok();
@@ -811,28 +839,33 @@ DMITIGR_PGFE_INLINE bool Sql_string::is_invariant_ok() const noexcept
 // Initializers
 // ---------------------------------------------------------------------------
 
-void Sql_string::push_back_fragment(const Fragment::Type type, const std::string& str)
+DMITIGR_PGFE_INLINE void
+Sql_string::push_back_fragment(const Fragment::Type type, const std::string& str)
 {
   fragments_.emplace_back(type, str);
   assert(is_invariant_ok());
 }
 
-DMITIGR_PGFE_INLINE void Sql_string::push_text(const std::string& str)
+DMITIGR_PGFE_INLINE void
+Sql_string::push_text(const std::string& str)
 {
   push_back_fragment(Fragment::Type::text, str);
 }
 
-DMITIGR_PGFE_INLINE void Sql_string::push_one_line_comment(const std::string& str)
+DMITIGR_PGFE_INLINE void
+Sql_string::push_one_line_comment(const std::string& str)
 {
   push_back_fragment(Fragment::Type::one_line_comment, str);
 }
 
-DMITIGR_PGFE_INLINE void Sql_string::push_multi_line_comment(const std::string& str)
+DMITIGR_PGFE_INLINE void
+Sql_string::push_multi_line_comment(const std::string& str)
 {
   push_back_fragment(Fragment::Type::multi_line_comment, str);
 }
 
-DMITIGR_PGFE_INLINE void Sql_string::push_positional_parameter(const std::string& str)
+DMITIGR_PGFE_INLINE void
+Sql_string::push_positional_parameter(const std::string& str)
 {
   push_back_fragment(Fragment::Type::positional_parameter, str);
 
@@ -889,8 +922,8 @@ DMITIGR_PGFE_INLINE void Sql_string::update_cache(const Sql_string& rhs)
     const auto new_pos_params_size = positional_parameters_.size();
     DMITIGR_ASSERT(new_pos_params_size >= rhs_pos_params_size);
 
-    // Creating the cache for named parameters.
-    decltype (named_parameters_) new_named_parameters = named_parameters(); // can throw
+    // Creating the cache for named parameters. (Can throw.)
+    decltype (named_parameters_) new_named_parameters = named_parameters();
 
     // Check the new parameter count.
     const auto new_parameter_count = new_pos_params_size + new_named_parameters.size();
@@ -900,7 +933,7 @@ DMITIGR_PGFE_INLINE void Sql_string::update_cache(const Sql_string& rhs)
         "exceeds the maximum (" + std::to_string(max_parameter_count()) + ")"};
 
     // Merging positional parameters (cannot throw).
-    for (std::size_t i = 0; i < rhs_pos_params_size; ++i) {
+    for (std::size_t i{}; i < rhs_pos_params_size; ++i) {
       if (!positional_parameters_[i] && rhs.positional_parameters_[i])
         positional_parameters_[i] = true;
     }
@@ -969,7 +1002,10 @@ Sql_string::is_space(const char c, const std::locale& loc) noexcept
 DMITIGR_PGFE_INLINE bool
 Sql_string::is_blank_string(const std::string& str, const std::locale& loc) noexcept
 {
-  return all_of(cbegin(str), cend(str), [&loc](const auto& c){return is_space(c, loc);});
+  return all_of(cbegin(str), cend(str), [&loc](const auto& c)
+  {
+    return is_space(c, loc);
+  });
 }
 
 DMITIGR_PGFE_INLINE bool
@@ -1181,7 +1217,7 @@ Sql_string::parse_sql_input(const std::string_view text, const std::locale& loc)
         state = positional_parameter;
         result.push_text(fragment);
         fragment.clear();
-        // The first digit of positional parameter (current_char) will be stored below.
+        // The 1st digit of positional parameter (current_char) will be stored below.
       } else if (is_ident_char(current_char, loc)) {
         if (current_char == '$') {
           state = dollar_quote;
@@ -1253,7 +1289,7 @@ Sql_string::parse_sql_input(const std::string_view text, const std::locale& loc)
         state = named_parameter;
         result.push_text(fragment);
         fragment.clear();
-        // The first character of the named parameter (current_char) will be stored below.
+        // The 1st character of the named parameter (current_char) will be stored below.
       } else {
         state = top;
         fragment += previous_char;

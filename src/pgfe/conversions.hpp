@@ -53,7 +53,8 @@ struct Generic_string_conversions final {
     std::istringstream stream{text};
     stream >> result;
     if (!stream.eof())
-      throw Client_exception{"cannot convert to type: invalid text representation"};
+      throw Client_exception{"cannot convert to type: "
+        "invalid text representation"};
 
     return result;
   }
@@ -65,7 +66,8 @@ struct Generic_string_conversions final {
     stream.precision(std::numeric_limits<Type>::max_digits10);
     stream << value;
     if (stream.fail())
-      throw Client_exception("cannot convert to string: invalid native representation");
+      throw Client_exception("cannot convert to string: "
+        "invalid native representation");
 
     return stream.str();
   }
@@ -93,9 +95,11 @@ struct Generic_data_conversions final {
   }
 
   template<typename U, typename ... Types>
-  static std::enable_if_t<std::is_same_v<Type, std::decay_t<U>>, std::unique_ptr<Data>> to_data(U&& value, Types&& ... args)
+  static std::enable_if_t<std::is_same_v<Type, std::decay_t<U>>, std::unique_ptr<Data>>
+  to_data(U&& value, Types&& ... args)
   {
-    return Data::make(StringConversions::to_string(std::forward<U>(value), std::forward<Types>(args)...), Data_format::text);
+    return Data::make(StringConversions::to_string(std::forward<U>(value),
+      std::forward<Types>(args)...), Data_format::text);
   }
 };
 
@@ -111,15 +115,17 @@ struct Numeric_string_conversions_base {
   template<typename ... Types>
   static std::string to_string(Type value, Types&& ... args)
   {
-    if constexpr (std::is_floating_point_v<Type>)
-      return Generic_string_conversions<Type>::to_string(value, std::forward<Types>(args)...);
-    else
+    if constexpr (std::is_floating_point_v<Type>) {
+      return Generic_string_conversions<Type>::to_string(value,
+        std::forward<Types>(args)...);
+    } else
       return std::to_string(value);
   }
 
 protected:
   template<typename R, typename ... Types>
-  static Type to_numeric__(const std::string& text, R(*converter)(const std::string&, std::size_t*, Types ...))
+  static Type to_numeric__(const std::string& text,
+    R(*converter)(const std::string&, std::size_t*, Types ...))
   {
     Type result;
     std::size_t idx;
@@ -129,7 +135,8 @@ protected:
       result = converter(text, &idx, 10);
 
     if (idx != text.size())
-      throw Client_exception{"cannot convert to numeric: input contains non-convertible symbols"};
+      throw Client_exception{"cannot convert to numeric: "
+        "input contains non-convertible symbols"};
 
     return result;
   }
@@ -256,7 +263,8 @@ struct Numeric_data_conversions final {
     if (data.format() == Data_format::binary)
       return net::conv<Type>(data.bytes(), data.size());
     else
-      return Generic_data_conversions<Type, StringConversions>::to_type(data, std::forward<Types>(args)...);
+      return Generic_data_conversions<Type, StringConversions>::to_type(data,
+        std::forward<Types>(args)...);
   }
 
   template<typename ... Types>
@@ -270,7 +278,8 @@ struct Numeric_data_conversions final {
   template<typename ... Types>
   static std::unique_ptr<Data> to_data(Type value, Types&& ... args)
   {
-    return Generic_data_conversions<Type, StringConversions>::to_data(value, std::forward<Types>(args)...);
+    return Generic_data_conversions<Type, StringConversions>::to_data(value,
+      std::forward<Types>(args)...);
   }
 };
 
@@ -339,7 +348,8 @@ struct Char_data_conversions final {
   template<typename ... Types>
   static std::unique_ptr<Data> to_data(Type value, Types&& ...)
   {
-    return Data::make(Char_string_conversions::to_string(value), Data_format::text);
+    return Data::make(Char_string_conversions::to_string(value),
+      Data_format::text);
   }
 };
 
@@ -387,7 +397,8 @@ private:
       std::strncmp(text, "0", size) == 0)
       return false;
     else
-      throw Client_exception{"cannot convert to bool: invalid text representation"};
+      throw Client_exception{"cannot convert to bool: "
+        "invalid text representation"};
   }
 };
 
@@ -418,7 +429,8 @@ struct Bool_data_conversions final {
   template<typename ... Types>
   static std::unique_ptr<Data> to_data(Type value, Types&& ...)
   {
-    return Data::make(Bool_string_conversions::to_string(value), Data_format::text);
+    return Data::make(Bool_string_conversions::to_string(value),
+      Data_format::text);
   }
 };
 
@@ -469,7 +481,9 @@ namespace dmitigr::pgfe {
  * Data_format::binary format must be less or equal to the size of the `Type`.
  */
 template<typename T>
-struct Numeric_conversions : public Basic_conversions<T, detail::Numeric_string_conversions<T>,
+struct Numeric_conversions : Basic_conversions<
+  T,
+  detail::Numeric_string_conversions<T>,
   detail::Numeric_data_conversions<T>> {};
 
 // -----------------------------------------------------------------------------
@@ -492,7 +506,9 @@ template<> struct Conversions<Row> {
  * @brief The generic conversions.
  */
 template<typename T>
-struct Conversions final : public Basic_conversions<T, detail::Generic_string_conversions<T>,
+struct Conversions final : Basic_conversions<
+  T,
+  detail::Generic_string_conversions<T>,
   detail::Generic_data_conversions<T>> {
   static_assert(!std::is_same_v<T, signed char> &&
     !std::is_same_v<T, unsigned char>,
@@ -505,13 +521,17 @@ struct Conversions final : public Basic_conversions<T, detail::Generic_string_co
  * @brief Full specialization of Conversions for `std::string`.
  *
  * Support of the following data formats is implemented:
- *   - instances of the type `std::string` can be created from both Data_format::text
- *     and Data_format::binary formats;
- *   - instances of the type Data can only be created in Data_format::text format.
+ *   - instances of the type `std::string` can be created from both
+ *   Data_format::text and Data_format::binary formats;
+ *   - instances of the type Data can only be created in Data_format::text
+ *   format.
  */
 template<>
-struct Conversions<std::string> final : public Basic_conversions<std::string,
-  detail::Forwarding_string_conversions, detail::Generic_data_conversions<std::string, detail::Forwarding_string_conversions>> {};
+struct Conversions<std::string> final : Basic_conversions<
+  std::string,
+  detail::Forwarding_string_conversions,
+  detail::Generic_data_conversions<std::string,
+    detail::Forwarding_string_conversions>> {};
 
 /**
  * @ingroup conversions
@@ -519,12 +539,14 @@ struct Conversions<std::string> final : public Basic_conversions<std::string,
  * @brief Full specialization of Conversions for `std::string_view`.
  *
  * Support of the following data formats is implemented:
- *   - instances of the type `std::string_view` can be created from both Data_format::text
- *     and Data_format::binary formats;
- *   - instances of the type Data can only be created in Data_format::text format.
+ *   - instances of the type `std::string_view` can be created from both
+ *   Data_format::text and Data_format::binary formats;
+ *   - instances of the type Data can only be created in Data_format::text
+ *   format.
  */
 template<>
-struct Conversions<std::string_view> final : public Basic_conversions<std::string_view,
+struct Conversions<std::string_view> final : Basic_conversions<
+  std::string_view,
   detail::Forwarding_string_conversions, detail::String_view_data_conversions> {};
 
 /**
@@ -533,7 +555,7 @@ struct Conversions<std::string_view> final : public Basic_conversions<std::strin
  * @brief Full specialization of Conversions for `short int`.
  */
 template<>
-struct Conversions<short int> final : public Numeric_conversions<short int>{};
+struct Conversions<short int> final : Numeric_conversions<short int> {};
 
 /**
  * @ingroup conversions
@@ -541,7 +563,8 @@ struct Conversions<short int> final : public Numeric_conversions<short int>{};
  * @brief Full specialization of Conversions for `int`.
  */
 template<>
-struct Conversions<int> final : public Numeric_conversions<int>{};
+struct Conversions<int> final : Numeric_conversions<int>
+{};
 
 /**
  * @ingroup conversions
@@ -549,7 +572,7 @@ struct Conversions<int> final : public Numeric_conversions<int>{};
  * @brief Full specialization of Conversions for `long int`.
  */
 template<>
-struct Conversions<long int> final : public Numeric_conversions<long int>{};
+struct Conversions<long int> final : Numeric_conversions<long int> {};
 
 /**
  * @ingroup conversions
@@ -557,7 +580,7 @@ struct Conversions<long int> final : public Numeric_conversions<long int>{};
  * @brief Full specialization of Conversions for `long long int`.
  */
 template<>
-struct Conversions<long long int> final : public Numeric_conversions<long long int>{};
+struct Conversions<long long int> final : Numeric_conversions<long long int> {};
 
 /**
  * @ingroup conversions
@@ -565,7 +588,7 @@ struct Conversions<long long int> final : public Numeric_conversions<long long i
  * @brief Full specialization of Conversions for `float`.
  */
 template<>
-struct Conversions<float> final : public Numeric_conversions<float>{};
+struct Conversions<float> final : Numeric_conversions<float> {};
 
 /**
  * @ingroup conversions
@@ -573,7 +596,7 @@ struct Conversions<float> final : public Numeric_conversions<float>{};
  * @brief Full specialization of Conversions for `double`.
  */
 template<>
-struct Conversions<double> final : public Numeric_conversions<double>{};
+struct Conversions<double> final : Numeric_conversions<double> {};
 
 /**
  * @ingroup conversions
@@ -581,7 +604,7 @@ struct Conversions<double> final : public Numeric_conversions<double>{};
  * @brief Full specialization of Conversions for `long double`.
  */
 template<>
-struct Conversions<long double> final : public Numeric_conversions<long double>{};
+struct Conversions<long double> final : Numeric_conversions<long double> {};
 
 /**
  * @ingroup conversions
@@ -596,8 +619,8 @@ struct Conversions<long double> final : public Numeric_conversions<long double>{
  * The size of the input data must be exactly `1`.
  */
 template<>
-struct Conversions<char> final : public Basic_conversions<char,
-  detail::Char_string_conversions, detail::Char_data_conversions>{};
+struct Conversions<char> final : Basic_conversions<char,
+  detail::Char_string_conversions, detail::Char_data_conversions> {};
 
 /**
  * @ingroup conversions
@@ -613,8 +636,8 @@ struct Conversions<char> final : public Basic_conversions<char,
  * exactly `1`.
  */
 template<>
-struct Conversions<bool> final : public Basic_conversions<bool,
-  detail::Bool_string_conversions, detail::Bool_data_conversions>{};
+struct Conversions<bool> final : Basic_conversions<bool,
+  detail::Bool_string_conversions, detail::Bool_data_conversions> {};
 
 /**
  * @ingroup conversions

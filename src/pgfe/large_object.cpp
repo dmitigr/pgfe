@@ -28,7 +28,8 @@
 
 namespace dmitigr::pgfe {
 
-DMITIGR_PGFE_INLINE Large_object::Large_object(Connection* const conn, const int desc)
+DMITIGR_PGFE_INLINE Large_object::Large_object(Connection* const conn,
+  const int desc)
   : conn_{conn}
   , desc_{desc}
 {
@@ -77,7 +78,8 @@ DMITIGR_PGFE_INLINE bool Large_object::close() noexcept
   return result;
 }
 
-DMITIGR_PGFE_INLINE std::int_fast64_t Large_object::seek(const std::int_fast64_t offset, const Seek_whence whence)
+DMITIGR_PGFE_INLINE std::int_fast64_t
+Large_object::seek(const std::int_fast64_t offset, const Seek_whence whence)
 {
   if (!is_valid())
     throw Client_exception{"cannot seek large object"};
@@ -98,18 +100,34 @@ DMITIGR_PGFE_INLINE bool Large_object::truncate(const std::int_fast64_t new_size
   return conn_->truncate(*this, new_size);
 }
 
-int Large_object::read(char* const buf, const std::size_t size)
+DMITIGR_PGFE_INLINE int Large_object::read(char* const buf, const std::size_t size)
 {
   if (!(is_valid() && buf && size <= std::numeric_limits<int>::max()))
     throw Client_exception{"cannot read large object"};
   return conn_->read(*this, buf, size);
 }
 
-int Large_object::write(const char* const buf, const std::size_t size)
+DMITIGR_PGFE_INLINE int Large_object::write(const char* const buf,
+  const std::size_t size)
 {
   if (!(is_valid() && buf && size <= std::numeric_limits<int>::max()))
     throw Client_exception{"cannot write large object"};
   return conn_->write(*this, buf, size);
+}
+
+DMITIGR_PGFE_INLINE const Connection* Large_object::connection() const noexcept
+{
+  return conn_;
+}
+
+DMITIGR_PGFE_INLINE Connection* Large_object::connection() noexcept
+{
+  return const_cast<Connection*>(static_cast<const Large_object*>(this)->connection());
+}
+
+DMITIGR_PGFE_INLINE int Large_object::descriptor() const noexcept
+{
+  return desc_;
 }
 
 } // namespace dmitigr::pgfe

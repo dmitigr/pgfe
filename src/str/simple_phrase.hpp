@@ -81,7 +81,7 @@ public:
         constexpr char escape_char = '\\';
         while (input.get(ch) && ch != quote_char) {
           if (ch == escape_char) {
-            // Escape character were reached. Read the next character to analyze.
+            // Escape character reached. Read the next character to analyze.
             if (input.get(ch)) {
               if (ch != quote_char)
                 /*

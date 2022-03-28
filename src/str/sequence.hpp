@@ -55,7 +55,8 @@ std::string to_string(const InputIterator b, const InputIterator e,
 
 /// @returns The string with stringified elements of the `Container`.
 template<class Container, typename Function>
-std::string to_string(const Container& cont, const std::string& sep, const Function& to_str)
+std::string to_string(const Container& cont, const std::string& sep,
+  const Function& to_str)
 {
   return to_string(cbegin(cont), cend(cont), sep, to_str);
 }
@@ -64,7 +65,10 @@ std::string to_string(const Container& cont, const std::string& sep, const Funct
 template<class Container>
 std::string to_string(const Container& cont, const std::string& sep)
 {
-  return to_string(cont, sep, [](const std::string& e)->const auto&{return e;});
+  return to_string(cont, sep, [](const std::string& e) -> const auto&
+    {
+      return e;
+    });
 }
 
 } // namespace dmitigr::str

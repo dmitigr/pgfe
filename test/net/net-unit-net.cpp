@@ -31,7 +31,9 @@ int main()
     const std::string v4_addr_str{"192.168.1.2"};
     DMITIGR_ASSERT(net::Ip_address::is_valid(v4_addr_str));
 
-    net::Ip_address ip{v4_addr_str};
+    auto ip = net::Ip_address::from_text(v4_addr_str);
+    DMITIGR_ASSERT(ip);
+    DMITIGR_ASSERT(ip.is_valid());
     DMITIGR_ASSERT(ip.family() == net::Protocol_family::ipv4);
     DMITIGR_ASSERT(ip.binary());
     DMITIGR_ASSERT(ip.to_string() == v4_addr_str);
@@ -40,7 +42,7 @@ int main()
     DMITIGR_ASSERT(!net::Ip_address::is_valid(invalid_v4_addr_str));
 
     const std::string v6_addr_str{"fe80::1:2:3:4"};
-    ip = net::Ip_address{v6_addr_str};
+    ip = net::Ip_address::from_text(v6_addr_str);
     DMITIGR_ASSERT(ip.family() == net::Protocol_family::ipv6);
     DMITIGR_ASSERT(ip.binary());
     DMITIGR_ASSERT(ip.to_string() == v6_addr_str);

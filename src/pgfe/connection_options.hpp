@@ -67,16 +67,12 @@ public:
   set_communication_mode(std::optional<Communication_mode> value);
 
   /// Shortcut of set_communication_mode().
-  Connection_options& set(const std::optional<Communication_mode> value)
-  {
-    return set_communication_mode(value);
-  }
+  DMITIGR_PGFE_API Connection_options&
+  set(const std::optional<Communication_mode> value);
 
   /// @returns The current value of the option.
-  std::optional<Communication_mode> communication_mode() const noexcept
-  {
-    return communication_mode_;
-  }
+  DMITIGR_PGFE_API std::optional<Communication_mode>
+  communication_mode() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -85,16 +81,12 @@ public:
   set_session_mode(std::optional<Session_mode> value);
 
   /// Shortcut of set_session_mode().
-  Connection_options& set(const std::optional<Session_mode> value)
-  {
-    return set_session_mode(value);
-  }
+  DMITIGR_PGFE_API Connection_options&
+  set(const std::optional<Session_mode> value);
 
   /// @returns The current value of the option.
-  std::optional<Session_mode> session_mode() const noexcept
-  {
-    return session_mode_;
-  }
+  DMITIGR_PGFE_API std::optional<Session_mode>
+  session_mode() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -116,10 +108,8 @@ public:
    *
    * @see Connection::connect().
    */
-  std::optional<std::chrono::milliseconds> connect_timeout() const noexcept
-  {
-    return connect_timeout_;
-  }
+  DMITIGR_PGFE_API std::optional<std::chrono::milliseconds>
+  connect_timeout() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -141,10 +131,8 @@ public:
    *
    * @see Connection::wait_response().
    */
-  std::optional<std::chrono::milliseconds> wait_response_timeout() const noexcept
-  {
-    return wait_response_timeout_;
-  }
+  DMITIGR_PGFE_API std::optional<std::chrono::milliseconds>
+  wait_response_timeout() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -153,7 +141,8 @@ public:
    *
    * @details If `communication_mode() == Communication_mode::net` it's used as
    * the TCP port number. Otherwise, it's used as the suffix of the Unix-domain
-   * socket file name `.s.PGSQL.port` and located in the `uds_directory()` directory.
+   * socket file name `.s.PGSQL.port` and located in the `uds_directory()`
+   * directory.
    *
    * @par Requires
    * `!value`, or `*value` must be a valid TCP port number.
@@ -168,10 +157,8 @@ public:
    *
    * @see set_port().
    */
-  std::optional<std::int_fast32_t> port() const noexcept
-  {
-    return port_;
-  }
+  DMITIGR_PGFE_API std::optional<std::int_fast32_t>
+  port() const noexcept;
 
   /// @}
 
@@ -191,10 +178,8 @@ public:
   set_uds_directory(std::optional<std::filesystem::path> value);
 
   /// @returns The current value of the option.
-  const std::optional<std::filesystem::path>& uds_directory() const noexcept
-  {
-    return uds_directory_;
-  }
+  DMITIGR_PGFE_API const std::optional<std::filesystem::path>&
+  uds_directory() const noexcept;
 
   /**
    * @brief Sets the obligation of verification that the PostgreSQL server
@@ -209,10 +194,8 @@ public:
   set_uds_require_server_process_username(std::optional<std::string> value);
 
   /// @returns The current value of the option.
-  const std::optional<std::string>& uds_require_server_process_username() const noexcept
-  {
-    return uds_require_server_process_username_;
-  }
+  DMITIGR_PGFE_API const std::optional<std::string>&
+  uds_require_server_process_username() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -220,13 +203,12 @@ public:
   /// @{
 
   /// Sets the keepalives mode.
-  Connection_options& set_tcp_keepalives_enabled(std::optional<bool> value);
+  DMITIGR_PGFE_API Connection_options&
+  set_tcp_keepalives_enabled(std::optional<bool> value);
 
   /// @returns The current value of the option.
-  std::optional<bool> is_tcp_keepalives_enabled() const noexcept
-  {
-    return tcp_keepalives_enabled_;
-  }
+  DMITIGR_PGFE_API std::optional<bool>
+  is_tcp_keepalives_enabled() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -243,10 +225,8 @@ public:
   set_tcp_keepalives_idle(std::optional<std::chrono::seconds> value);
 
   /// @returns The current value of the option.
-  std::optional<std::chrono::seconds> tcp_keepalives_idle() const noexcept
-  {
-    return tcp_keepalives_idle_;
-  }
+  DMITIGR_PGFE_API std::optional<std::chrono::seconds>
+  tcp_keepalives_idle() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -263,10 +243,8 @@ public:
   set_tcp_keepalives_interval(std::optional<std::chrono::seconds> value);
 
   /// @returns The current value of the option.
-  std::optional<std::chrono::seconds> tcp_keepalives_interval() const noexcept
-  {
-    return tcp_keepalives_interval_;
-  }
+  DMITIGR_PGFE_API std::optional<std::chrono::seconds>
+  tcp_keepalives_interval() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -283,10 +261,8 @@ public:
   set_tcp_keepalives_count(std::optional<int> value);
 
   /// @returns The current value of the option.
-  std::optional<int> tcp_keepalives_count() const noexcept
-  {
-    return tcp_keepalives_count_;
-  }
+  DMITIGR_PGFE_API std::optional<int>
+  tcp_keepalives_count() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -304,10 +280,8 @@ public:
   set_tcp_user_timeout(std::optional<std::chrono::milliseconds> value);
 
   /// @returns The current value of the option.
-  std::optional<std::chrono::milliseconds> tcp_user_timeout() const noexcept
-  {
-    return tcp_user_timeout_;
-  }
+  DMITIGR_PGFE_API std::optional<std::chrono::milliseconds>
+  tcp_user_timeout() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -335,10 +309,8 @@ public:
    *
    * @see net_hostname().
    */
-  const std::optional<std::string>& net_address() const noexcept
-  {
-    return net_address_;
-  }
+  DMITIGR_PGFE_API const std::optional<std::string>&
+  net_address() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -365,10 +337,8 @@ public:
    *
    * @see net_address().
    */
-  const std::optional<std::string>& net_hostname() const noexcept
-  {
-    return net_hostname_;
-  }
+  DMITIGR_PGFE_API const std::optional<std::string>&
+  net_hostname() const noexcept;
 
   /// @}
 
@@ -383,13 +353,12 @@ public:
    * @par Requires
    * `!value || !value->empty()`.
    */
-  DMITIGR_PGFE_API Connection_options& set_username(std::optional<std::string> value);
+  DMITIGR_PGFE_API Connection_options&
+  set_username(std::optional<std::string> value);
 
   /// @returns The current value of the option.
-  const std::optional<std::string>& username() const noexcept
-  {
-    return username_;
-  }
+  DMITIGR_PGFE_API const std::optional<std::string>&
+  username() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -399,13 +368,12 @@ public:
    * @par Requires
    * `!value || !value->empty()`.
    */
-  DMITIGR_PGFE_API Connection_options& set_database(std::optional<std::string> value);
+  DMITIGR_PGFE_API Connection_options&
+  set_database(std::optional<std::string> value);
 
   /// @returns The current value of the option.
-  const std::optional<std::string>& database() const noexcept
-  {
-    return database_;
-  }
+  DMITIGR_PGFE_API const std::optional<std::string>&
+  database() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -413,13 +381,12 @@ public:
    * @brief Sets the password for the authentication methods like Password
    * Authentication or LDAP Authentication.
    */
-  DMITIGR_PGFE_API Connection_options& set_password(std::optional<std::string> value);
+  DMITIGR_PGFE_API Connection_options&
+  set_password(std::optional<std::string> value);
 
   /// @returns The current value of the option.
-  const std::optional<std::string>& password() const noexcept
-  {
-    return password_;
-  }
+  DMITIGR_PGFE_API const std::optional<std::string>&
+  password() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -435,10 +402,8 @@ public:
   set_password_file(std::optional<std::filesystem::path> value);
 
   /// @returns The current value of the option.
-  const std::optional<std::filesystem::path>& password_file() const noexcept
-  {
-    return password_file_;
-  }
+  DMITIGR_PGFE_API const std::optional<std::filesystem::path>&
+  password_file() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -452,16 +417,12 @@ public:
   set_channel_binding(std::optional<Channel_binding> value);
 
   /// Shortcut of set_channel_binding().
-  Connection_options& set(std::optional<Channel_binding> value)
-  {
-    return set_channel_binding(value);
-  }
+  DMITIGR_PGFE_API Connection_options&
+  set(std::optional<Channel_binding> value);
 
   /// @returns The current value of the option.
-  const std::optional<Channel_binding>& channel_binding() const noexcept
-  {
-    return channel_binding_;
-  }
+  DMITIGR_PGFE_API const std::optional<Channel_binding>&
+  channel_binding() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -476,10 +437,8 @@ public:
   set_kerberos_service_name(std::optional<std::string> value);
 
   /// @returns The current value of the option.
-  const std::optional<std::string>& kerberos_service_name() const noexcept
-  {
-    return kerberos_service_name_;
-  }
+  DMITIGR_PGFE_API const std::optional<std::string>&
+  kerberos_service_name() const noexcept;
 
   /// @}
 
@@ -495,13 +454,12 @@ public:
    *
    * @remarks SSL mode is disabled by default.
    */
-  DMITIGR_PGFE_API Connection_options& set_ssl_enabled(std::optional<bool> value);
+  DMITIGR_PGFE_API Connection_options&
+  set_ssl_enabled(std::optional<bool> value);
 
   /// @returns The current value of the option.
-  std::optional<bool> is_ssl_enabled() const noexcept
-  {
-    return is_ssl_enabled_;
-  }
+  DMITIGR_PGFE_API std::optional<bool>
+  is_ssl_enabled() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -514,16 +472,12 @@ public:
   set_ssl_min_protocol_version(std::optional<Ssl_protocol_version> value);
 
   /// Shortcut of set_ssl_min_protocol_version().
-  Connection_options& set_min(const std::optional<Ssl_protocol_version> value)
-  {
-    return set_ssl_min_protocol_version(value);
-  }
+  DMITIGR_PGFE_API Connection_options&
+  set_min(const std::optional<Ssl_protocol_version> value);
 
   /// @returns The current value of the option.
-  std::optional<Ssl_protocol_version> ssl_min_protocol_version() const noexcept
-  {
-    return ssl_min_protocol_version_;
-  }
+  DMITIGR_PGFE_API std::optional<Ssl_protocol_version>
+  ssl_min_protocol_version() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -532,16 +486,12 @@ public:
   set_ssl_max_protocol_version(std::optional<Ssl_protocol_version> value);
 
   /// Shortcut of set_ssl_max_protocol_version().
-  Connection_options& set_max(const std::optional<Ssl_protocol_version> value)
-  {
-    return set_ssl_max_protocol_version(value);
-  }
+  DMITIGR_PGFE_API Connection_options&
+  set_max(const std::optional<Ssl_protocol_version> value);
 
   /// @returns The current value of the option.
-  std::optional<Ssl_protocol_version> ssl_max_protocol_version() const noexcept
-  {
-    return ssl_max_protocol_version_;
-  }
+  DMITIGR_PGFE_API std::optional<Ssl_protocol_version>
+  ssl_max_protocol_version() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -550,10 +500,8 @@ public:
   set_ssl_compression_enabled(std::optional<bool> value);
 
   /// @returns The current value of the option.
-  std::optional<bool> is_ssl_compression_enabled() const noexcept
-  {
-    return ssl_compression_enabled_;
-  }
+  DMITIGR_PGFE_API std::optional<bool>
+  is_ssl_compression_enabled() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -567,10 +515,8 @@ public:
   set_ssl_certificate_file(std::optional<std::filesystem::path> value);
 
   /// @returns The current value of the option.
-  const std::optional<std::filesystem::path>& ssl_certificate_file() const noexcept
-  {
-    return ssl_certificate_file_;
-  }
+  DMITIGR_PGFE_API const std::optional<std::filesystem::path>&
+  ssl_certificate_file() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -586,10 +532,8 @@ public:
   set_ssl_private_key_file(std::optional<std::filesystem::path> value);
 
   /// @returns The current value of the option.
-  const std::optional<std::filesystem::path>& ssl_private_key_file() const noexcept
-  {
-    return ssl_private_key_file_;
-  }
+  DMITIGR_PGFE_API const std::optional<std::filesystem::path>&
+  ssl_private_key_file() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -610,10 +554,8 @@ public:
   set_ssl_private_key_file_password(std::optional<std::string> value);
 
   /// @returns The current value of the option.
-  const std::optional<std::string>& ssl_private_key_file_password() const noexcept
-  {
-    return ssl_private_key_file_password_;
-  }
+  DMITIGR_PGFE_API const std::optional<std::string>&
+  ssl_private_key_file_password() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -631,11 +573,8 @@ public:
   set_ssl_certificate_authority_file(std::optional<std::filesystem::path> value);
 
   /// @returns The current value of the option.
-  const std::optional<std::filesystem::path>&
-  ssl_certificate_authority_file() const noexcept
-  {
-    return ssl_certificate_authority_file_;
-  }
+  DMITIGR_PGFE_API const std::optional<std::filesystem::path>&
+  ssl_certificate_authority_file() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -650,11 +589,8 @@ public:
   set_ssl_certificate_revocation_list_file(std::optional<std::filesystem::path> value);
 
   /// @returns The current value of the option.
-  const std::optional<std::filesystem::path>&
-  ssl_certificate_revocation_list_file() const noexcept
-  {
-    return ssl_certificate_revocation_list_file_;
-  }
+  DMITIGR_PGFE_API const std::optional<std::filesystem::path>&
+  ssl_certificate_revocation_list_file() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -671,10 +607,8 @@ public:
   set_ssl_server_hostname_verification_enabled(std::optional<bool> value);
 
   /// @returns The current value of the option.
-  std::optional<bool> is_ssl_server_hostname_verification_enabled() const noexcept
-  {
-    return ssl_server_hostname_verification_enabled_;
-  }
+  DMITIGR_PGFE_API std::optional<bool>
+  is_ssl_server_hostname_verification_enabled() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -685,10 +619,8 @@ public:
   set_ssl_server_name_indication_enabled(std::optional<bool> value);
 
   /// @returns The current value of the option.
-  std::optional<bool> is_ssl_server_name_indication_enabled() const noexcept
-  {
-    return ssl_server_name_indication_enabled_;
-  }
+  DMITIGR_PGFE_API std::optional<bool>
+  is_ssl_server_name_indication_enabled() const noexcept;
 
   /// @}
 
@@ -736,50 +668,8 @@ inline void swap(Connection_options& lhs, Connection_options& rhs) noexcept
 }
 
 /// @returns `true` if `lhs` is equals to `rhs`.
-inline bool operator==(const Connection_options& lhs,
-  const Connection_options& rhs) noexcept
-{
-  return
-    // booleans
-    lhs.tcp_keepalives_enabled_ == rhs.tcp_keepalives_enabled_ &&
-    lhs.is_ssl_enabled_ == rhs.is_ssl_enabled_ &&
-    lhs.ssl_compression_enabled_ == rhs.ssl_compression_enabled_ &&
-    lhs.ssl_server_hostname_verification_enabled_ ==
-    rhs.ssl_server_hostname_verification_enabled_ &&
-    lhs.ssl_server_name_indication_enabled_ ==
-    rhs.ssl_server_name_indication_enabled_ &&
-    // numerics
-    lhs.communication_mode_ == rhs.communication_mode_ &&
-    lhs.session_mode_ == rhs.session_mode_ &&
-    lhs.channel_binding_ == rhs.channel_binding_ &&
-    lhs.connect_timeout_ == rhs.connect_timeout_ &&
-    lhs.wait_response_timeout_ == rhs.wait_response_timeout_ &&
-    lhs.tcp_keepalives_idle_ == rhs.tcp_keepalives_idle_ &&
-    lhs.tcp_keepalives_interval_ == rhs.tcp_keepalives_interval_ &&
-    lhs.tcp_keepalives_count_ == rhs.tcp_keepalives_count_ &&
-    lhs.tcp_user_timeout_ == rhs.tcp_user_timeout_ &&
-    lhs.port_ == rhs.port_ &&
-    lhs.ssl_min_protocol_version_ == rhs.ssl_min_protocol_version_ &&
-    lhs.ssl_max_protocol_version_ == rhs.ssl_max_protocol_version_ &&
-    // strings
-    lhs.uds_directory_ == rhs.uds_directory_ &&
-    lhs.uds_require_server_process_username_ ==
-    rhs.uds_require_server_process_username_ &&
-    lhs.net_address_ == rhs.net_address_ &&
-    lhs.net_hostname_ == rhs.net_hostname_ &&
-    lhs.username_ == rhs.username_ &&
-    lhs.database_ == rhs.database_ &&
-    lhs.password_ == rhs.password_ &&
-    lhs.password_file_ == rhs.password_file_ &&
-    lhs.kerberos_service_name_ == rhs.kerberos_service_name_ &&
-    lhs.ssl_certificate_file_ == rhs.ssl_certificate_file_ &&
-    lhs.ssl_private_key_file_ == rhs.ssl_private_key_file_ &&
-    lhs.ssl_private_key_file_password_ == rhs.ssl_private_key_file_password_ &&
-    lhs.ssl_certificate_authority_file_ ==
-    rhs.ssl_certificate_authority_file_ &&
-    lhs.ssl_certificate_revocation_list_file_ ==
-    rhs.ssl_certificate_revocation_list_file_;
-}
+DMITIGR_PGFE_API bool operator==(const Connection_options& lhs,
+  const Connection_options& rhs) noexcept;
 
 /// @returns `true` if `lhs` is not equals to `rhs`.
 inline bool operator!=(const Connection_options& lhs,

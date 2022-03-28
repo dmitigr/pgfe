@@ -20,34 +20,33 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
-#include "contract.hpp"
-#include "error.hpp"
-#include "exceptions.hpp"
-#include "std_system_error.hpp"
+#include "../../src/base/assert.hpp"
+#include "../../src/pgfe/pgfe.hpp"
+#include "pgfe-unit.hpp"
 
-namespace dmitigr::pgfe {
+#define ASSERT DMITIGR_ASSERT
 
-DMITIGR_PGFE_INLINE Client_exception::Client_exception(const Client_errc errc,
-  std::string what)
-  : Exception{errc, what.empty() ? to_literal(errc) :
-    what.append(" (").append(to_literal(errc)).append(")")}
-{}
+int main()
+try {
+  namespace pgfe = dmitigr::pgfe;
 
-DMITIGR_PGFE_INLINE Client_exception::Client_exception(const std::string& what)
-  : Exception{what}
-{}
+  auto conn = pgfe::test::make_connection();
+  try {
+    conn->describe_nio("error");
+  } catch (const pgfe::Client_exception& e) {
+    ASSERT(dmitigr::generic_error_category() == e.condition().category());
+  }
 
-// =============================================================================
-
-DMITIGR_PGFE_INLINE Server_exception::Server_exception(std::shared_ptr<Error>&& error)
-  : Exception{detail::not_false(error)->condition(),
-    detail::not_false(error)->brief()}
-  , error_{std::move(error)}
-{}
-
-DMITIGR_PGFE_INLINE const Error& Server_exception::error() const noexcept
-{
-  return *error_;
+  conn->connect();
+  try {
+    conn->describe_nio("error");
+  } catch (const pgfe::Server_exception& e) {
+    ASSERT(pgfe::server_error_category() == e.condition().category());
+  }
+} catch (const std::exception& e) {
+  std::cerr << e.what() << std::endl;
+  return 1;
+} catch (...) {
+  std::cerr << "unknown error" << std::endl;
+  return 2;
 }
-
-} // namespace dmitigr::pgfe

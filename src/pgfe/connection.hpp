@@ -35,6 +35,7 @@
 #include "notification.hpp"
 #include "pq.hpp"
 #include "prepared_statement.hpp"
+#include "row.hpp"
 #include "types_fwd.hpp"
 
 #include <cassert>
@@ -83,9 +84,7 @@ public:
    *
    * @see connect().
    */
-  explicit Connection(Options options = {})
-    : options_{std::move(options)}
-  {}
+  explicit DMITIGR_PGFE_API Connection(Options options = {});
 
   /// Non copy-constructible.
   Connection(const Connection&) = delete;
@@ -94,58 +93,22 @@ public:
   Connection& operator=(const Connection&) = delete;
 
   /// Move-constructible.
-  Connection(Connection&& rhs) noexcept
-  {
-    Connection tmp;
-    tmp.swap(rhs); // reset rhs to the default state
-    swap(tmp);
-  }
+  DMITIGR_PGFE_API Connection(Connection&& rhs) noexcept;
 
   /// Move-assignable.
-  Connection& operator=(Connection&& rhs) noexcept
-  {
-    if (this != &rhs) {
-      Connection tmp{std::move(rhs)};
-      swap(tmp);
-    }
-    return *this;
-  }
+  DMITIGR_PGFE_API Connection& operator=(Connection&& rhs) noexcept;
 
   /// Swaps this instance with `rhs`.
-  void swap(Connection& rhs) noexcept
-  {
-    using std::swap;
-    swap(options_, rhs.options_);
-    swap(error_handler_, rhs.error_handler_);
-    swap(notice_handler_, rhs.notice_handler_);
-    swap(notification_handler_, rhs.notification_handler_);
-    swap(default_result_format_, rhs.default_result_format_);
-    swap(conn_, rhs.conn_);
-    swap(polling_status_, rhs.polling_status_);
-    swap(session_start_time_, rhs.session_start_time_);
-    swap(response_, rhs.response_);
-    swap(response_status_, rhs.response_status_);
-    swap(last_processed_request_, rhs.last_processed_request_);
-    swap(last_prepared_statement_, rhs.last_prepared_statement_);
-    swap(named_prepared_statements_, rhs.named_prepared_statements_);
-    unnamed_prepared_statement_.swap(rhs.unnamed_prepared_statement_);
-    swap(requests_, rhs.requests_);
-  }
+  DMITIGR_PGFE_API void swap(Connection& rhs) noexcept;
 
   /// @name General observers
   /// @{
 
   /// @returns The connection options of this instance.
-  const Connection_options& options() const noexcept
-  {
-    return options_;
-  }
+  DMITIGR_PGFE_API const Connection_options& options() const noexcept;
 
   /// @returns `true` if the connection secured by SSL.
-  bool is_ssl_secured() const noexcept
-  {
-    return conn() ? ::PQsslInUse(conn()) : false;
-  }
+  DMITIGR_PGFE_API bool is_ssl_secured() const noexcept;
 
   /**
    * @returns The connection status.
@@ -159,53 +122,39 @@ public:
    *
    * @see status().
    */
-  bool is_connected() const noexcept
-  {
-    return status() == Status::connected;
-  }
+  DMITIGR_PGFE_API bool is_connected() const noexcept;
 
   /// @returns `true` if the connection is open and no operation in progress.
-  bool is_connected_and_idle() const
-  {
-    const auto ts = transaction_status();
-    return ts && ts != Transaction_status::active;
-  }
+  DMITIGR_PGFE_API bool is_connected_and_idle() const;
 
   /**
    * @returns The transaction status.
    *
    * @see is_transaction_uncommitted().
    */
-  DMITIGR_PGFE_API std::optional<Transaction_status> transaction_status() const noexcept;
+  DMITIGR_PGFE_API std::optional<Transaction_status>
+  transaction_status() const noexcept;
 
   /**
    * @returns `(transaction_status() == Transaction_status::uncommitted)`.
    *
    * @see transaction_status().
    */
-  bool is_transaction_uncommitted() const noexcept
-  {
-    return (transaction_status() == Transaction_status::uncommitted);
-  }
+  DMITIGR_PGFE_API bool is_transaction_uncommitted() const noexcept;
 
   /**
    * @returns The valid PID of server if connected.
    *
    * @see Notification::server_pid().
    */
-  std::int_fast32_t server_pid() const noexcept
-  {
-    return is_connected() ? ::PQbackendPID(conn()) : 0;
-  }
+  DMITIGR_PGFE_API std::int_fast32_t server_pid() const noexcept;
 
   /**
    * @returns The last registered time point when is_connected() started to
    * return `true`, or `std::nullopt` if the session has never started.
    */
-  std::optional<std::chrono::system_clock::time_point> session_start_time() const noexcept
-  {
-    return session_start_time_;
-  }
+  DMITIGR_PGFE_API std::optional<std::chrono::system_clock::time_point>
+  session_start_time() const noexcept;
 
   ///@}
 
@@ -215,14 +164,16 @@ public:
   /// @{
 
   /**
-   * @brief Establishing the connection to a PostgreSQL server without blocking on I/O.
+   * @brief Establishing the connection to a PostgreSQL server without blocking
+   * on I/O.
    *
-   * This function should be called repeatedly. Until status() becomes `Status::connected`
-   * or `Status::failure` loop thus: if status() returned `Status::establishment_reading`,
-   * wait until the socket is ready to read, then call connect_nio() again; if status()
-   * returned `Status::establishment_writing`, wait until the socket ready to write, then
-   * call connect_nio() again. To determine the socket readiness use the socket_readiness()
-   * function.
+   * This function should be called repeatedly. Until status() becomes
+   * `Status::connected` or `Status::failure` loop thus: if status() returned
+   * `Status::establishment_reading`, wait until the socket is ready to read,
+   * then call connect_nio() again; if status() returned
+   * `Status::establishment_writing`, wait until the socket ready to write, then
+   * call connect_nio() again. To determine the socket readiness use the
+   * function socket_readiness().
    *
    * @par Effects
    * Possible change of the returned value of status().
@@ -258,7 +209,8 @@ public:
    *
    * @see connect_nio().
    */
-  DMITIGR_PGFE_API void connect(std::optional<std::chrono::milliseconds> timeout = std::chrono::milliseconds{-1});
+  DMITIGR_PGFE_API void connect(std::optional<std::chrono::milliseconds> timeout =
+    std::chrono::milliseconds{-1});
 
   /**
    * @brief Attempts to disconnect from a server.
@@ -305,11 +257,7 @@ public:
    *
    * @see handle_input(), socket_readiness().
    */
-  void read_input()
-  {
-    if (!::PQconsumeInput(conn()))
-      throw Client_exception{error_message()};
-  }
+  DMITIGR_PGFE_API void read_input();
 
   /**
    * @brief Attempts to handle the input from the server.
@@ -401,17 +349,10 @@ public:
    *
    * @see notice_handler().
    */
-  void set_notice_handler(Notice_handler handler) noexcept
-  {
-    notice_handler_ = std::move(handler);
-    assert(is_invariant_ok());
-  }
+  DMITIGR_PGFE_API void set_notice_handler(Notice_handler handler) noexcept;
 
   /// @returns The current notice handler.
-  const Notice_handler& notice_handler() const noexcept
-  {
-    return notice_handler_;
-  }
+  DMITIGR_PGFE_API const Notice_handler& notice_handler() const noexcept;
 
   /// An alias of a notification handler.
   using Notification_handler = std::function<void(Notification&&)>;
@@ -426,17 +367,12 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  void set_notification_handler(Notification_handler handler) noexcept
-  {
-    notification_handler_ = std::move(handler);
-    assert(is_invariant_ok());
-  }
+  DMITIGR_PGFE_API void
+  set_notification_handler(Notification_handler handler) noexcept;
 
   /// @returns The current notification handler.
-  const Notification_handler& notification_handler() const noexcept
-  {
-    return notification_handler_;
-  }
+  DMITIGR_PGFE_API const Notification_handler&
+  notification_handler() const noexcept;
 
   ///@}
 
@@ -446,10 +382,7 @@ public:
   /// @{
 
   /// @returns `true` if there is ready response available.
-  bool has_response() const noexcept
-  {
-    return static_cast<bool>(response_) && (response_status_ == Response_status::ready);
-  }
+  DMITIGR_PGFE_API bool has_response() const noexcept;
 
   /**
    * @brief Waits the next Response overwriting the current one.
@@ -473,7 +406,9 @@ public:
    *
    * @see wait_response_throw().
    */
-  DMITIGR_PGFE_API bool wait_response(std::optional<std::chrono::milliseconds> timeout = std::chrono::milliseconds{-1});
+  DMITIGR_PGFE_API bool
+  wait_response(std::optional<std::chrono::milliseconds> timeout =
+    std::chrono::milliseconds{-1});
 
   /**
    * @brief Similar to wait_response(), but throws Server_exception
@@ -481,12 +416,9 @@ public:
    *
    * @see wait_response().
    */
-  bool wait_response_throw(std::optional<std::chrono::milliseconds> timeout = std::chrono::milliseconds{-1})
-  {
-    const bool result = wait_response(timeout);
-    throw_if_error();
-    return result;
-  }
+  DMITIGR_PGFE_API bool
+  wait_response_throw(std::optional<std::chrono::milliseconds> timeout =
+    std::chrono::milliseconds{-1});
 
   /**
    * @brief An alias of error handler.
@@ -509,17 +441,10 @@ public:
    *
    * @see Error_handler, error_handler().
    */
-  void set_error_handler(Error_handler handler) noexcept
-  {
-    error_handler_ = std::move(handler);
-    assert(is_invariant_ok());
-  }
+  DMITIGR_PGFE_API void set_error_handler(Error_handler handler) noexcept;
 
   /// @returns The current error handler.
-  const Error_handler& error_handler() noexcept
-  {
-    return error_handler_;
-  }
+  DMITIGR_PGFE_API const Error_handler& error_handler() noexcept;
 
   /**
    * @returns The released instance if available.
@@ -529,10 +454,7 @@ public:
    *
    * @remarks Useful only if using non-blocking IO API.
    */
-  Error error() noexcept
-  {
-    return (response_.status() == PGRES_FATAL_ERROR) ? Error{std::move(response_)} : Error{};
-  }
+  DMITIGR_PGFE_API Error error() noexcept;
 
   /**
    * @returns The released instance if available.
@@ -542,11 +464,7 @@ public:
    *
    * @see wait_response(), completion().
    */
-  Row row() noexcept
-  {
-    return (response_.status() == PGRES_SINGLE_TUPLE)
-      ? Row{std::move(response_)} : Row{};
-  }
+  DMITIGR_PGFE_API Row row() noexcept;
 
   /**
    * @returns The released instance if available.
@@ -682,13 +600,7 @@ public:
    *
    * @see prepare().
    */
-  Prepared_statement* prepared_statement() noexcept
-  {
-    auto* const result = last_prepared_statement_;
-    last_prepared_statement_ = nullptr;
-    response_.reset();
-    return result;
-  }
+  DMITIGR_PGFE_API Prepared_statement* prepared_statement() noexcept;
 
   /**
    * @returns The pointer to a prepared statement by its name if the prepared
@@ -702,10 +614,8 @@ public:
    *
    * @see describe().
    */
-  Prepared_statement* prepared_statement(const std::string_view name) const noexcept
-  {
-    return ps(name);
-  }
+  DMITIGR_PGFE_API Prepared_statement*
+  prepared_statement(const std::string_view name) const noexcept;
 
   /**
    * @returns The released instance if available.
@@ -728,10 +638,7 @@ public:
   /// @{
 
   /// @returns `true` if `COPY` command in progress.
-  bool is_copy_in_progress() const noexcept
-  {
-    return is_copy_in_progress_;
-  }
+  DMITIGR_PGFE_API bool is_copy_in_progress() const noexcept;
 
   /**
    * @returns `true` if the connection is ready for requesting a server in a
@@ -739,11 +646,7 @@ public:
    *
    * @see is_ready_for_request().
    */
-  bool is_ready_for_nio_request() const noexcept
-  {
-    return (pipeline_status() == Pipeline_status::disabled)
-      ? is_ready_for_request() : is_connected();
-  }
+  DMITIGR_PGFE_API bool is_ready_for_nio_request() const noexcept;
 
   /**
    * @returns The request queue size.
@@ -756,10 +659,7 @@ public:
   DMITIGR_PGFE_API std::size_t request_queue_size() const;
 
   /// @returns `true` if there is uncompleted request.
-  bool has_uncompleted_request() const noexcept
-  {
-    return !requests_.empty();
-  }
+  DMITIGR_PGFE_API bool has_uncompleted_request() const noexcept;
 
   /**
    * @returns `true` if the connection is ready for requesting a server,
@@ -767,10 +667,7 @@ public:
    *
    * @see is_ready_for_nio_request().
    */
-  bool is_ready_for_request() const noexcept
-  {
-    return (pipeline_status() == Pipeline_status::disabled) && is_connected_and_idle();
-  }
+  DMITIGR_PGFE_API bool is_ready_for_request() const noexcept;
 
   /**
    * @brief Submits a request to a server to prepare the statement.
@@ -808,10 +705,8 @@ public:
     const std::string& name = {});
 
   /// Same as prepare_nio() except the statement will be send without preparsing.
-  void prepare_nio_as_is(const std::string& statement, const std::string& name = {})
-  {
-    prepare_nio__(statement.c_str(), name.c_str(), nullptr); // can throw
-  }
+  DMITIGR_PGFE_API void prepare_nio_as_is(const std::string& statement,
+    const std::string& name = {});
 
   /**
    * @returns The pointer to the just prepared statement owned by this instance.
@@ -830,11 +725,8 @@ public:
     const std::string& name = {});
 
   /// Same as prepare() except the statement will be send without preparsing.
-  Prepared_statement& prepare_as_is(const std::string& statement,
-    const std::string& name = {})
-  {
-    return prepare__(&Connection::prepare_nio_as_is, statement, name);
-  }
+  DMITIGR_PGFE_API Prepared_statement& prepare_as_is(const std::string& statement,
+    const std::string& name = {});
 
   /**
    * @brief Requests the server to describe the prepared statement.
@@ -955,7 +847,8 @@ public:
    *
    * @see process_responses().
    */
-  template<Row_processing on_exception = Row_processing::complete, typename F, typename ... Types>
+  template<Row_processing on_exception = Row_processing::complete, typename F,
+    typename ... Types>
   std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
   execute(F&& callback, const Sql_string& statement, Types&& ... parameters)
   {
@@ -969,7 +862,8 @@ public:
   template<Row_processing on_exception = Row_processing::complete, typename ... Types>
   Completion execute(const Sql_string& statement, Types&& ... parameters)
   {
-    return execute<on_exception>([](auto&&){}, statement, std::forward<Types>(parameters)...);
+    return execute<on_exception>([](auto&&){}, statement,
+      std::forward<Types>(parameters)...);
   }
 
   /**
@@ -1028,20 +922,25 @@ public:
    *
    * @see invoke_unexpanded(), call(), execute(), process_responses().
    */
-  template<Row_processing on_exception = Row_processing::complete, typename F, typename ... Types>
+  template<Row_processing on_exception = Row_processing::complete, typename F,
+    typename ... Types>
   std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
   invoke(F&& callback, std::string_view function, Types&& ... arguments)
   {
-    static_assert(is_routine_arguments_ok__<Types...>(), "named arguments cannot precede positional arguments");
-    const auto stmt = routine_query__(function, "SELECT * FROM", std::forward<Types>(arguments)...);
-    return execute<on_exception>(std::forward<F>(callback), stmt, std::forward<Types>(arguments)...);
+    static_assert(is_routine_arguments_ok__<Types...>(),
+      "named arguments cannot precede positional arguments");
+    const auto stmt = routine_query__(function,
+      "SELECT * FROM", std::forward<Types>(arguments)...);
+    return execute<on_exception>(std::forward<F>(callback),
+      stmt, std::forward<Types>(arguments)...);
   }
 
   /// @overload
   template<Row_processing on_exception = Row_processing::complete, typename ... Types>
   Completion invoke(std::string_view function, Types&& ... arguments)
   {
-    return invoke<on_exception>([](auto&&){}, function, std::forward<Types>(arguments)...);
+    return invoke<on_exception>([](auto&&){}, function,
+      std::forward<Types>(arguments)...);
   }
 
   /**
@@ -1056,20 +955,26 @@ public:
    *
    * @see invoke(), call(), execute().
    */
-  template<Row_processing on_exception = Row_processing::complete, typename F, typename ... Types>
+  template<Row_processing on_exception = Row_processing::complete, typename F,
+    typename ... Types>
   std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
   invoke_unexpanded(F&& callback, std::string_view function, Types&& ... arguments)
   {
-    static_assert(is_routine_arguments_ok__<Types...>(), "named arguments cannot precede positional arguments");
-    const auto stmt = routine_query__(function, "SELECT", std::forward<Types>(arguments)...);
-    return execute<on_exception>(std::forward<F>(callback), stmt, std::forward<Types>(arguments)...);
+    static_assert(is_routine_arguments_ok__<Types...>(),
+      "named arguments cannot precede positional arguments");
+    const auto stmt = routine_query__(function,
+      "SELECT", std::forward<Types>(arguments)...);
+    return execute<on_exception>(std::forward<F>(callback),
+      stmt, std::forward<Types>(arguments)...);
   }
 
   /// @overload
-  template<Row_processing on_exception = Row_processing::complete, typename ... Types>
+  template<Row_processing on_exception = Row_processing::complete,
+    typename ... Types>
   Completion invoke_unexpanded(std::string_view function, Types&& ... arguments)
   {
-    return invoke_unexpanded<on_exception>([](auto&&){}, function, std::forward<Types>(arguments)...);
+    return invoke_unexpanded<on_exception>([](auto&&){}, function,
+      std::forward<Types>(arguments)...);
   }
 
   /**
@@ -1084,20 +989,26 @@ public:
    *
    * @see invoke(), call(), execute().
    */
-  template<Row_processing on_exception = Row_processing::complete, typename F, typename ... Types>
+  template<Row_processing on_exception = Row_processing::complete, typename F,
+    typename ... Types>
   std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
   call(F&& callback, std::string_view procedure, Types&& ... arguments)
   {
-    static_assert(is_routine_arguments_ok__<Types...>(), "named arguments cannot precede positional arguments");
-    const auto stmt = routine_query__(procedure, "CALL", std::forward<Types>(arguments)...);
-    return execute<on_exception>(std::forward<F>(callback), stmt, std::forward<Types>(arguments)...);
+    static_assert(is_routine_arguments_ok__<Types...>(),
+      "named arguments cannot precede positional arguments");
+    const auto stmt = routine_query__(procedure,
+      "CALL", std::forward<Types>(arguments)...);
+    return execute<on_exception>(std::forward<F>(callback),
+      stmt, std::forward<Types>(arguments)...);
   }
 
   /// @overload
-  template<Row_processing on_exception = Row_processing::complete, typename ... Types>
+  template<Row_processing on_exception = Row_processing::complete,
+    typename ... Types>
   Completion call(std::string_view procedure, Types&& ... arguments)
   {
-    return call<on_exception>([](auto&&){}, procedure, std::forward<Types>(arguments)...);
+    return call<on_exception>([](auto&&){},
+      procedure, std::forward<Types>(arguments)...);
   }
 
   /**
@@ -1159,17 +1070,10 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  void set_result_format(const Data_format format) noexcept
-  {
-    default_result_format_ = format;
-    assert(is_invariant_ok());
-  }
+  DMITIGR_PGFE_API void set_result_format(const Data_format format) noexcept;
 
   /// @returns The default data format of a statement execution result.
-  Data_format result_format() const noexcept
-  {
-    return default_result_format_;
-  }
+  DMITIGR_PGFE_API Data_format result_format() const noexcept;
 
   ///@}
 
@@ -1204,7 +1108,8 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  DMITIGR_PGFE_API Large_object open_large_object(Oid oid, Large_object_open_mode mode);
+  DMITIGR_PGFE_API Large_object open_large_object(Oid oid,
+    Large_object_open_mode mode);
 
   /**
    * @brief Requests the server to remove the large object and waits the result.
@@ -1231,7 +1136,8 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  DMITIGR_PGFE_API Oid import_large_object(const std::filesystem::path& filename, Oid oid = invalid_oid);
+  DMITIGR_PGFE_API Oid import_large_object(const std::filesystem::path& filename,
+    Oid oid = invalid_oid);
 
   /**
    * @brief Requests the server (multiple times) to export the specified large
@@ -1245,7 +1151,8 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  DMITIGR_PGFE_API bool export_large_object(Oid oid, const std::filesystem::path& filename);
+  DMITIGR_PGFE_API bool export_large_object(Oid oid,
+    const std::filesystem::path& filename);
 
   /// @}
 
@@ -1273,7 +1180,8 @@ public:
    *
    * @see Prepared_statement.
    */
-  DMITIGR_PGFE_API std::string to_quoted_literal(const std::string_view literal) const;
+  DMITIGR_PGFE_API std::string
+  to_quoted_literal(const std::string_view literal) const;
 
   /**
    * @brief Quotes the given string to be used as an identifier in a SQL query.
@@ -1291,7 +1199,8 @@ public:
    *
    * @see Prepared_statement.
    */
-  DMITIGR_PGFE_API std::string to_quoted_identifier(const std::string_view identifier) const;
+  DMITIGR_PGFE_API std::string
+  to_quoted_identifier(const std::string_view identifier) const;
 
   /**
    * @brief Encodes the binary data into the textual representation to be used
@@ -1314,11 +1223,7 @@ public:
    *
    * @see Prepared_statement.
    */
-  std::unique_ptr<Data> to_hex_data(const Data& data) const
-  {
-    auto [storage, size] = to_hex_storage(data);
-    return Data::make(std::move(storage), size, Data_format::text);
-  }
+  DMITIGR_PGFE_API std::unique_ptr<Data> to_hex_data(const Data& data) const;
 
   /**
    * @brief Similar to to_hex_data(const Data&).
@@ -1327,11 +1232,7 @@ public:
    *
    * @see to_hex_data().
    */
-  std::string to_hex_string(const Data& data) const
-  {
-    const auto [storage, size] = to_hex_storage(data);
-    return std::string{static_cast<const char*>(storage.get()), size};
-  }
+  DMITIGR_PGFE_API std::string to_hex_string(const Data& data) const;
 
   ///@}
 private:
@@ -1355,7 +1256,10 @@ private:
   // Persistent data / private-modifiable data
   std::unique_ptr< ::PGconn> conn_;
   std::optional<Status> polling_status_;
-  ::PGconn* conn() const noexcept { return conn_.get(); }
+  ::PGconn* conn() const noexcept
+  {
+    return conn_.get();
+  }
 
   // ---------------------------------------------------------------------------
   // Session data / requests
@@ -1371,20 +1275,9 @@ private:
     };
 
     Request() = default;
-
-    explicit Request(const Id id)
-      : id_{id}
-    {}
-
-    Request(const Id id, Prepared_statement prepared_statement)
-      : id_{id}
-      , prepared_statement_{std::move(prepared_statement)}
-    {}
-
-    Request(const Id id, std::string prepared_statement_name)
-      : id_{id}
-      , prepared_statement_name_{std::move(prepared_statement_name)}
-    {}
+    explicit Request(const Id id);
+    Request(const Id id, Prepared_statement prepared_statement);
+    Request(const Id id, std::string prepared_statement_name);
 
     Id id_{};
     Prepared_statement prepared_statement_;
@@ -1440,13 +1333,7 @@ private:
     return *result;
   }
 
-  Prepared_statement* wait_prepared_statement__()
-  {
-    wait_response_throw();
-    auto* const result = prepared_statement();
-    DMITIGR_ASSERT(!completion()); // no completion for prepare/describe
-    return result;
-  }
+  Prepared_statement* wait_prepared_statement__();
 
   /*
    * Attempts to find the prepared statement.
@@ -1470,20 +1357,10 @@ private:
   // Utilities helpers
   // ---------------------------------------------------------------------------
 
-  int socket() const noexcept
-  {
-    return ::PQsocket(conn());
-  }
-
+  int socket() const noexcept;
   void throw_if_error();
-
   std::string error_message() const;
-
-  bool is_out_of_memory() const noexcept
-  {
-    constexpr char msg[] = "out of memory";
-    return !std::strncmp(::PQerrorMessage(conn()), msg, sizeof(msg) - 1);
-  }
+  bool is_out_of_memory() const noexcept;
 
   std::pair<std::unique_ptr<void, void(*)(void*)>, std::size_t>
   to_hex_storage(const pgfe::Data& data) const;
@@ -1492,19 +1369,21 @@ private:
   // Large Object private API
   // ---------------------------------------------------------------------------
 
-  DMITIGR_PGFE_API bool close(Large_object& lo) noexcept;
-  DMITIGR_PGFE_API std::int_fast64_t seek(Large_object& lo, std::int_fast64_t offset, Large_object_seek_whence whence) noexcept;
-  DMITIGR_PGFE_API std::int_fast64_t tell(Large_object& lo) noexcept;
-  DMITIGR_PGFE_API bool truncate(Large_object& lo, const std::int_fast64_t new_size) noexcept;
-  DMITIGR_PGFE_API int read(Large_object& lo, char* const buf, const std::size_t size) noexcept;
-  DMITIGR_PGFE_API int write(Large_object& lo, const char* const buf, const std::size_t size) noexcept;
+  bool close(Large_object& lo) noexcept;
+  std::int_fast64_t seek(Large_object& lo, std::int_fast64_t offset,
+    Large_object_seek_whence whence) noexcept;
+  std::int_fast64_t tell(Large_object& lo) noexcept;
+  bool truncate(Large_object& lo, const std::int_fast64_t new_size) noexcept;
+  int read(Large_object& lo, char* const buf, const std::size_t size) noexcept;
+  int write(Large_object& lo, const char* const buf, const std::size_t size) noexcept;
 
   // ---------------------------------------------------------------------------
   // call/invoke helpers
   // ---------------------------------------------------------------------------
 
   template<typename ... Types>
-  std::string routine_query__(std::string_view function, std::string_view invocation, Types&& ... arguments)
+  std::string routine_query__(std::string_view function,
+    std::string_view invocation, Types&& ... arguments)
   {
     if (function.empty())
       throw Client_exception{"cannot call/invoke: routine not specified"};
@@ -1516,7 +1395,9 @@ private:
       result.reserve(64);
       result.append(invocation).append(" ");
       result.append(function).append("(");
-      result.append(routine_arguments__(std::make_index_sequence<sizeof ... (Types)>{}, std::forward<Types>(arguments)...));
+      result.append(routine_arguments__(
+          std::make_index_sequence<sizeof ... (Types)>{},
+          std::forward<Types>(arguments)...));
       result.append(")");
     } else {
       result.reserve(14 + function.size() + 2);
@@ -1563,7 +1444,8 @@ private:
     constexpr bool is_both_positionals = !is_named_1 && !is_named_2;
     constexpr bool is_both_named = is_named_1 && is_named_2;
     constexpr bool is_named_follows_positional = !is_named_1 && is_named_2;
-    constexpr bool is_ok = (is_both_positionals || is_both_named || is_named_follows_positional);
+    constexpr bool is_ok = (is_both_positionals || is_both_named ||
+      is_named_follows_positional);
     return is_ok && is_routine_arguments_ok__<T2, Types...>();
   }
 };

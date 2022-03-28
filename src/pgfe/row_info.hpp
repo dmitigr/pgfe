@@ -65,10 +65,7 @@ public:
    * which `(is_valid() == false)`. It's okay to move an instance for which
    * `(is_valid() == false)`.
    */
-  bool is_valid() const noexcept
-  {
-    return static_cast<bool>(pq_result_);
-  }
+  DMITIGR_PGFE_API bool is_valid() const noexcept;
 
   /// @returns `true` if the instance is valid
   explicit operator bool() const noexcept
@@ -83,10 +80,12 @@ public:
   DMITIGR_PGFE_API bool is_empty() const noexcept override;
 
   /// @see Compositional::field_name().
-  DMITIGR_PGFE_API std::string_view field_name(const std::size_t index) const override;
+  DMITIGR_PGFE_API std::string_view
+  field_name(const std::size_t index) const override;
 
-  /// @see Compositional::index_of().
-  DMITIGR_PGFE_API std::size_t field_index(const std::string_view name, std::size_t offset = 0) const override;
+  /// @see Compositional::field_index().
+  DMITIGR_PGFE_API std::size_t field_index(const std::string_view name,
+    std::size_t offset = 0) const override;
 
   /**
    * @returns The OID of the table if a field at `index` can be identified as a
@@ -110,10 +109,8 @@ public:
    *
    * @see has_field().
    */
-  std::uint_fast32_t table_oid(const std::string_view name, std::size_t offset = 0) const
-  {
-    return table_oid(field_index(name, offset));
-  }
+  DMITIGR_PGFE_API std::uint_fast32_t
+  table_oid(const std::string_view name, std::size_t offset = 0) const;
 
   /**
    * @returns The attribute number of a column if the field at `index` can be
@@ -139,10 +136,8 @@ public:
    *
    * @see has_field().
    */
-  std::int_fast32_t table_column_number(const std::string_view name, std::size_t offset = 0) const
-  {
-    return table_column_number(field_index(name, offset));
-  }
+  DMITIGR_PGFE_API std::int_fast32_t
+  table_column_number(const std::string_view name, std::size_t offset = 0) const;
 
   /**
    * @returns The OID of the field's data type.
@@ -165,10 +160,8 @@ public:
    *
    * @see has_field().
    */
-  std::uint_fast32_t type_oid(const std::string_view name, std::size_t offset = 0) const
-  {
-    return type_oid(field_index(name, offset));
-  }
+  DMITIGR_PGFE_API std::uint_fast32_t
+  type_oid(const std::string_view name, std::size_t offset = 0) const;
 
   /**
    * @returns
@@ -192,10 +185,8 @@ public:
    * @par Requires
    * `has_field(name, offset)`.
    */
-  std::int_fast32_t type_size(const std::string_view name, std::size_t offset = 0) const
-  {
-    return type_size(field_index(name, offset));
-  }
+  DMITIGR_PGFE_API std::int_fast32_t
+  type_size(const std::string_view name, std::size_t offset = 0) const;
 
   /**
    * @returns
@@ -218,10 +209,8 @@ public:
    * @par Requires
    * `has_field(name, offset)`.
    */
-  std::int_fast32_t type_modifier(const std::string_view name, std::size_t offset = 0) const
-  {
-    return type_modifier(field_index(name, offset));
-  }
+  DMITIGR_PGFE_API std::int_fast32_t
+  type_modifier(const std::string_view name, std::size_t offset = 0) const;
 
   /**
    * @returns The field data format.
@@ -242,10 +231,8 @@ public:
    * @par Requires
    * `has_field(name, offset)`.
    */
-  Data_format data_format(const std::string_view name, std::size_t offset = 0) const
-  {
-    return data_format(field_index(name, offset));
-  }
+  DMITIGR_PGFE_API Data_format
+  data_format(const std::string_view name, std::size_t offset = 0) const;
 
 private:
   friend Connection;

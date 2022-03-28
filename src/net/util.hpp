@@ -44,7 +44,7 @@ inline bool is_hostname_valid(const std::string& hostname)
 
   constexpr std::string::size_type label_max_length{63};
   const auto limit = hostname.size();
-  for (std::string::size_type i = 0, label_length = 0; i < limit; ++i) {
+  for (std::string::size_type i{}, label_length{}; i < limit; ++i) {
     const auto c = hostname[i];
     if (c == '.') {
       if (label_length == 0)

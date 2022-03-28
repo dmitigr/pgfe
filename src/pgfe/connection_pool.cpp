@@ -51,11 +51,43 @@ DMITIGR_PGFE_INLINE const Connection& Connection_pool::Handle::operator*() const
   return *connection_;
 }
 
+DMITIGR_PGFE_INLINE Connection& Connection_pool::Handle::operator*()
+{
+  return const_cast<Connection&>(static_cast<const Handle*>(this)->operator*());
+}
+
 DMITIGR_PGFE_INLINE const Connection* Connection_pool::Handle::operator->() const
 {
   if (!is_valid())
     throw Client_exception{"invalid connection pool handle"};
   return connection_.get();
+}
+
+DMITIGR_PGFE_INLINE Connection* Connection_pool::Handle::operator->()
+{
+  return const_cast<Connection*>(static_cast<const Handle*>(this)->operator->());
+}
+
+DMITIGR_PGFE_INLINE bool Connection_pool::Handle::is_valid() const noexcept
+{
+  return static_cast<bool>(connection_);
+}
+
+DMITIGR_PGFE_INLINE const Connection_pool*
+Connection_pool::Handle::pool() const noexcept
+{
+  return pool_;
+}
+
+DMITIGR_PGFE_INLINE Connection_pool* Connection_pool::Handle::pool() noexcept
+{
+  return const_cast<Connection_pool*>(static_cast<const Handle*>(this)->pool());
+}
+
+DMITIGR_PGFE_INLINE void Connection_pool::Handle::release() noexcept
+{
+  if (pool_)
+    pool_->release(*this);
 }
 
 DMITIGR_PGFE_INLINE Connection_pool::Handle::Handle() = default;
@@ -76,7 +108,8 @@ DMITIGR_PGFE_INLINE Connection_pool::Handle::Handle(Connection_pool* const pool,
 // Connection_pool
 // -----------------------------------------------------------------------------
 
-DMITIGR_PGFE_INLINE Connection_pool::Connection_pool(std::size_t count, const Connection_options& options)
+DMITIGR_PGFE_INLINE Connection_pool::Connection_pool(std::size_t count,
+  const Connection_options& options)
   : release_handler_{[](Connection& conn)
   {
     conn.process_responses([](auto&&){});
@@ -87,16 +120,35 @@ DMITIGR_PGFE_INLINE Connection_pool::Connection_pool(std::size_t count, const Co
     connections_.emplace_back(std::make_unique<Connection>(options), false);
 }
 
-DMITIGR_PGFE_INLINE void Connection_pool::set_connect_handler(std::function<void(Connection&)> handler)
+DMITIGR_PGFE_INLINE bool Connection_pool::is_valid() const noexcept
+{
+  return !connections_.empty();
+}
+
+DMITIGR_PGFE_INLINE void
+Connection_pool::set_connect_handler(std::function<void(Connection&)> handler)
 {
   const std::lock_guard lg{mutex_};
   connect_handler_ = std::move(handler);
 }
 
-DMITIGR_PGFE_INLINE void Connection_pool::set_release_handler(std::function<void(Connection&)> handler)
+DMITIGR_PGFE_INLINE const std::function<void(Connection&)>&
+Connection_pool::connect_handler() const noexcept
+  {
+    return connect_handler_;
+  }
+
+DMITIGR_PGFE_INLINE void
+Connection_pool::set_release_handler(std::function<void(Connection&)> handler)
 {
   const std::lock_guard lg{mutex_};
   release_handler_ = std::move(handler);
+}
+
+DMITIGR_PGFE_INLINE const std::function<void(Connection&)>&
+Connection_pool::release_handler() const noexcept
+{
+  return release_handler_;
 }
 
 DMITIGR_PGFE_INLINE void Connection_pool::connect()
@@ -144,7 +196,7 @@ DMITIGR_PGFE_INLINE auto Connection_pool::connection() -> Handle
     return {};
   const auto b = begin(connections_);
   const auto e = end(connections_);
-  const auto i = std::find_if(b, e, [](const auto& pair) { return !pair.second; });
+  const auto i = find_if(b, e, [](const auto& pair) {return !pair.second;});
   if (i != e) {
     i->second = true;
     auto& conn = i->first;
@@ -152,8 +204,8 @@ DMITIGR_PGFE_INLINE auto Connection_pool::connection() -> Handle
     if (conn->is_ready_for_request())
       return {this, std::move(conn), static_cast<std::size_t>(i - b)};
     else
-      throw Client_exception{"cannot use connection from connection pool handle:"
-        " connection isn't ready for request"};
+      throw Client_exception{"cannot use connection from connection pool "
+        "handle: connection isn't ready for request"};
   } else
     return {};
 }

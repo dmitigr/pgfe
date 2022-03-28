@@ -33,12 +33,104 @@
 
 namespace dmitigr::pgfe {
 
-Problem::Problem(detail::pq::Result&& result) noexcept
+DMITIGR_PGFE_INLINE Problem::Problem(detail::pq::Result&& result) noexcept
   : pq_result_{std::move(result)}
 {
   const int condition{sqlstate_string_to_int(pq_result_.er_code())};
   condition_ = {condition, server_error_category()};
   assert(is_invariant_ok());
+}
+
+DMITIGR_PGFE_INLINE bool Problem::is_invariant_ok() const noexcept
+{
+  const int cv = condition().value();
+  return pq_result_ && (min_condition().value() <= cv &&
+    cv <= max_condition().value());
+}
+
+DMITIGR_PGFE_INLINE std::error_condition Problem::condition() const noexcept
+{
+  return condition_;
+}
+
+DMITIGR_PGFE_INLINE const char* Problem::sqlstate() const noexcept
+{
+  return pq_result_.er_code();
+}
+
+DMITIGR_PGFE_INLINE const char* Problem::brief() const noexcept
+{
+  return pq_result_.er_brief();
+}
+
+DMITIGR_PGFE_INLINE const char* Problem::detail() const noexcept
+{
+  return pq_result_.er_detail();
+}
+
+DMITIGR_PGFE_INLINE const char* Problem::hint() const noexcept
+{
+  return pq_result_.er_hint();
+}
+
+DMITIGR_PGFE_INLINE const char* Problem::query_position() const noexcept
+{
+  return pq_result_.er_query_position();
+}
+
+DMITIGR_PGFE_INLINE const char* Problem::internal_query_position() const noexcept
+{
+  return pq_result_.er_internal_query_position();
+}
+
+DMITIGR_PGFE_INLINE const char* Problem::internal_query() const noexcept
+{
+  return pq_result_.er_internal_query();
+}
+
+DMITIGR_PGFE_INLINE const char* Problem::context() const noexcept
+{
+  return pq_result_.er_context();
+}
+
+DMITIGR_PGFE_INLINE const char* Problem::schema_name() const noexcept
+{
+  return pq_result_.er_schema_name();
+}
+
+DMITIGR_PGFE_INLINE const char* Problem::table_name() const noexcept
+{
+  return pq_result_.er_table_name();
+}
+
+DMITIGR_PGFE_INLINE const char* Problem::column_name() const noexcept
+{
+  return pq_result_.er_column_name();
+}
+
+DMITIGR_PGFE_INLINE const char* Problem::data_type_name() const noexcept
+{
+  return pq_result_.er_data_type_name();
+}
+
+DMITIGR_PGFE_INLINE const char* Problem::constraint_name() const noexcept
+{
+  return pq_result_.er_constraint_name();
+}
+
+DMITIGR_PGFE_INLINE const char* Problem::source_file() const noexcept
+{
+  return pq_result_.er_source_file();
+}
+
+DMITIGR_PGFE_INLINE const char* Problem::source_line() const noexcept
+{
+  return pq_result_.er_source_line();
+}
+
+DMITIGR_PGFE_INLINE const char* Problem::source_function() const noexcept
+{
+  return pq_result_.er_source_function();
 }
 
 DMITIGR_PGFE_INLINE Problem_severity Problem::severity() const noexcept
@@ -77,7 +169,8 @@ DMITIGR_PGFE_INLINE int Problem::sqlstate_string_to_int(const char* const sqlsta
   errno = 0;
   const long int result{std::strtol(state.data(), nullptr, 36)};
   DMITIGR_ASSERT(errno == 0);
-  DMITIGR_ASSERT(min_condition().value() <= result && result <= max_condition().value());
+  DMITIGR_ASSERT(min_condition().value() <= result &&
+    result <= max_condition().value());
   return static_cast<int>(result);
 }
 

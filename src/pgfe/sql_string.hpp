@@ -142,7 +142,10 @@ public:
   /// @returns `true` if this SQL string is empty.
   DMITIGR_PGFE_API bool is_empty() const noexcept;
 
-  /// @returns `true` if this SQL string is consists only of comments and blank line(-s).
+  /**
+   * @returns `true` if this SQL string is consists only of comments and blank
+   * line(-s).
+   */
   DMITIGR_PGFE_API bool is_query_empty() const noexcept;
 
   /**
@@ -264,7 +267,10 @@ public:
   DMITIGR_PGFE_API void
   replace_parameter(std::string_view name, const Sql_string& replacement);
 
-  /// @returns The result of conversion of this instance to the instance of type `std::string`.
+  /**
+   * @returns The result of conversion of this instance to the instance of
+   * type `std::string`.
+   */
   DMITIGR_PGFE_API std::string to_string() const;
 
   /**

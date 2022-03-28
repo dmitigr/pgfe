@@ -70,26 +70,30 @@ inline int to_native(const Protocol_family value)
 /// An IP address.
 class Ip_address final {
 public:
-  /// Constructs an instance from string representation.
-  explicit Ip_address(const std::string& str)
+  /// Constructs invalid instance.
+  Ip_address() noexcept
   {
-    unsigned char buf[sizeof(::in6_addr)];
+    DMITIGR_ASSERT(!is_valid());
+  }
+
+  /// @returns A new instance from text representation.
+  static Ip_address from_text(const std::string& str)
+  {
+    Ip_address result;
+    char buf[sizeof(::in6_addr)];
     for (const auto fam : {AF_INET, AF_INET6}) {
-      if (const int result = inet_pton__(fam, str.c_str(), buf)) {
-        if (result > 0) {
-          if (fam == AF_INET) {
-            binary_ = ::in_addr{};
-            std::memcpy(binary__(), buf, sizeof(::in_addr));
-          } else {
-            binary_ = ::in6_addr{};
-            std::memcpy(binary__(), buf, sizeof(::in6_addr));
-          }
-          return; // done
+      if (const int r = inet_pton__(fam, str.c_str(), buf)) {
+        if (r > 0) {
+          if (fam == AF_INET)
+            result.init< ::in_addr>({buf, sizeof(::in_addr)});
+          else
+            result.init< ::in6_addr>({buf, sizeof(::in6_addr)});
+          DMITIGR_ASSERT(result.is_valid());
+          break; // done
         }
       }
     }
-
-    throw Exception{"IP address is invalid"};
+    return result;
   }
 
   /// @returns A new instance from binary representation.
@@ -97,32 +101,43 @@ public:
   {
     Ip_address result;
     const auto binsz = bin.size();
-    DMITIGR_ASSERT(binsz == 4 || binsz == 16);
     if (binsz == 4)
       result.init< ::in_addr>(bin);
-    else
+    else if (binsz == 16)
       result.init< ::in6_addr>(bin);
     return result;
+  }
+
+  /// @returns `true` if this instance is valid.
+  bool is_valid() const noexcept
+  {
+    return is_valid_;
+  }
+
+  /// @returns `true` if the instance is valid.
+  explicit operator bool() const noexcept
+  {
+    return is_valid();
   }
 
   /// @returns `true` if `text` is either valid IPv4 or IPv6 address.
   static bool is_valid(const std::string& str)
   {
-    unsigned char buf[sizeof(::in6_addr)];
-    if (inet_pton__(AF_INET, str.c_str(), buf) > 0)
-      return true;
-    else if (inet_pton__(AF_INET6, str.c_str(), buf) > 0)
-      return true;
-    else
-      return false;
+    char buf[sizeof(::in6_addr)];
+    return inet_pton__(AF_INET, str.c_str(), buf) > 0 ||
+      inet_pton__(AF_INET6, str.c_str(), buf) > 0;
   }
 
-  /// @returns The family of the IP address.
-  Protocol_family family() const
+  /// @returns The family of the IP address, or undefined value if `!is_valid()`.
+  Protocol_family family() const noexcept
   {
+    if (!is_valid())
+      return Protocol_family{AF_UNSPEC};
+
     return std::visit([](const auto& addr) {
       using T = std::decay_t<decltype (addr)>;
-      static_assert(std::is_same_v<T, ::in_addr> || std::is_same_v<T, ::in6_addr>);
+      static_assert(std::is_same_v<T, ::in_addr> ||
+        std::is_same_v<T, ::in6_addr>);
       if constexpr (std::is_same_v<T, ::in_addr>) {
         return Protocol_family::ipv4;
       } else {
@@ -131,9 +146,15 @@ public:
     }, binary_);
   }
 
-  /// @returns The binary representation (network byte ordering) of the IP address.
-  const void* binary() const
+  /**
+   * @returns The binary representation (network byte ordering) of the IP
+   * address, or `nullptr` if `!is_valid()`.
+   */
+  const void* binary() const noexcept
   {
+    if (!is_valid())
+      return nullptr;
+
     return std::visit([](const auto& addr) {
       const void* const result = &addr;
       return result;
@@ -142,14 +163,18 @@ public:
 
   /**
    * @returns The result of conversion of this IP address to the instance of
-   * type `std::string`.
+   * type `std::string`, or empty string if `!is_valid()`.
    */
   std::string to_string() const
   {
+    if (!is_valid())
+      return std::string{};
+
     const auto fam = to_native(family());
     const std::string::size_type result_max_size = (fam == AF_INET) ? 16 : 46;
     std::string result(result_max_size, '\0');
-    inet_ntop__(fam, binary(), result.data(), static_cast<unsigned>(result.size()));
+    inet_ntop__(fam, binary(), result.data(),
+      static_cast<unsigned>(result.size()));
 
     // Trimming right zeros.
     const auto b = cbegin(result);
@@ -160,9 +185,8 @@ public:
   }
 
 private:
+  bool is_valid_{};
   std::variant<::in_addr, ::in6_addr> binary_;
-
-  Ip_address() = default;
 
   void* binary__()
   {
@@ -176,6 +200,7 @@ private:
     Addr tmp;
     std::memcpy(&tmp, bin.data(), bin.size());
     binary_ = tmp;
+    is_valid_ = true;
   }
 
   /**
@@ -198,9 +223,11 @@ private:
    *
    * @param[out] dst The result parameter.
    */
-  static void inet_ntop__(const int af, const void* const src, char* const dst, const unsigned dst_size)
+  static void inet_ntop__(const int af, const void* const src, char* const dst,
+    const unsigned dst_size)
   {
-    DMITIGR_ASSERT((af == AF_INET || af == AF_INET6) && src && dst && dst_size >= 16);
+    DMITIGR_ASSERT((af == AF_INET || af == AF_INET6) && src && dst &&
+      dst_size >= 16);
     if (!::inet_ntop(af, src, dst, dst_size))
       throw DMITIGR_NET_EXCEPTION{"cannot convert numeric "
         "representation of IP address to text representation"};

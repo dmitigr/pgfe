@@ -54,10 +54,7 @@ public:
   virtual ~Data() = default;
 
   /// @returns `true` if the instance is valid.
-  bool is_valid() const noexcept
-  {
-    return static_cast<int>(format()) >= 0;
-  }
+  DMITIGR_PGFE_API bool is_valid() const noexcept;
 
   /// @returns `true` if the instance is valid
   explicit operator bool() const noexcept
@@ -106,8 +103,8 @@ public:
   virtual std::unique_ptr<Data> to_data() const = 0;
 
   /**
-   * @returns The result of conversion of text representation of the PostgreSQL's
-   * Bytea data type to a plain binary data.
+   * @returns The result of conversion of text representation of the
+   * PostgreSQL's Bytea data type to a plain binary data.
    *
    * @par Requires
    * `(format() == Data_format::text && bytes()[size()] == 0)`.
@@ -122,13 +119,12 @@ public:
    * @par Requires
    * `text_data`.
    */
-  static DMITIGR_PGFE_API std::unique_ptr<Data> to_bytea(const char* text_data);
+  static DMITIGR_PGFE_API std::unique_ptr<Data>
+  to_bytea(const char* text_data);
 
   /// @overload
-  static DMITIGR_PGFE_API std::unique_ptr<Data> to_bytea(const std::string& text_data)
-  {
-    return to_bytea(text_data.c_str());
-  }
+  static DMITIGR_PGFE_API std::unique_ptr<Data>
+  to_bytea(const std::string& text_data);
 
   /// @}
 
@@ -144,7 +140,7 @@ public:
   /// @returns `(size() == 0)`.
   virtual bool is_empty() const noexcept = 0;
 
-  /// @returns The pointer to a unmodifiable memory area. (Shall not be altered!)
+  /// @returns The pointer to a *unmodifiable* memory area.
   virtual const void* bytes() const noexcept = 0;
 
   /// @}
@@ -162,11 +158,7 @@ protected:
  *   - positive value if the first differing byte in `lhs` is greater than the
  *   corresponding byte in `rhs`.
  */
-inline int cmp(const Data& lhs, const Data& rhs) noexcept
-{
-  const auto lsz = lhs.size(), rsz = rhs.size();
-  return lsz == rsz ? std::memcmp(lhs.bytes(), rhs.bytes(), lsz) : lsz < rsz ? -1 : 1;
-}
+DMITIGR_PGFE_API int cmp(const Data& lhs, const Data& rhs) noexcept;
 
 /**
  * @returns `cmp(lhs, rhs) < 0`.
@@ -284,35 +276,23 @@ public:
   /// Move-assignable.
   DMITIGR_PGFE_API Data_view& operator=(Data_view&& rhs) noexcept;
 
-  /// @see Data::to_data().
-  DMITIGR_PGFE_API std::unique_ptr<Data> to_data() const override;
-
   /// Swaps this instance with `rhs`.
   DMITIGR_PGFE_API void swap(Data_view& rhs) noexcept;
 
+  /// @see Data::to_data().
+  DMITIGR_PGFE_API std::unique_ptr<Data> to_data() const override;
+
   /// @see Data::format().
-  Format format() const noexcept override
-  {
-    return format_;
-  }
+  DMITIGR_PGFE_API Format format() const noexcept override;
 
   /// @see Data::size().
-  std::size_t size() const noexcept override
-  {
-    return data_.size();
-  }
+  DMITIGR_PGFE_API std::size_t size() const noexcept override;
 
   /// @see Data::is_empty().
-  bool is_empty() const noexcept override
-  {
-    return data_.empty();
-  }
+  DMITIGR_PGFE_API bool is_empty() const noexcept override;
 
   /// @see Data::bytes().
-  const void* bytes() const noexcept override
-  {
-    return data_.data();
-  }
+  DMITIGR_PGFE_API const void* bytes() const noexcept override;
 
 private:
   Format format_{-1};

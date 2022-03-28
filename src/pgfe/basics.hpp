@@ -72,8 +72,10 @@ enum class External_library {
 } // namespace pgfe
 
 namespace util {
-template<> struct Is_bitmask_enum<pgfe::Socket_readiness> final : std::true_type {};
-template<> struct Is_bitmask_enum<pgfe::External_library> final : std::true_type {};
+template<>
+struct Is_bitmask_enum<pgfe::Socket_readiness> final : std::true_type {};
+template<>
+struct Is_bitmask_enum<pgfe::External_library> final : std::true_type {};
 } // namespace util
 
 } // namespace dmitigr

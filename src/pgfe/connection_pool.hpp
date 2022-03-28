@@ -72,28 +72,19 @@ public:
      * @par Requires
      * `is_valid()`.
      */
-    Connection& operator*()
-    {
-      return const_cast<Connection&>(static_cast<const Handle*>(this)->operator*());
-    }
-
-    /// @overload
     DMITIGR_PGFE_API const Connection& operator*() const;
 
-    /// @returns The Connection.
-    Connection* operator->()
-    {
-      return const_cast<Connection*>(static_cast<const Handle*>(this)->operator->());
-    }
-
     /// @overload
+    DMITIGR_PGFE_API Connection& operator*();
+
+    /// @returns The Connection.
     DMITIGR_PGFE_API const Connection* operator->() const;
 
+    /// @overload
+    DMITIGR_PGFE_API Connection* operator->();
+
     /// @returns `true` if handle is valid.
-    bool is_valid() const noexcept
-    {
-      return static_cast<bool>(connection_);
-    }
+    DMITIGR_PGFE_API bool is_valid() const noexcept;
 
     /// @returns `is_valid()`.
     explicit operator bool() const noexcept
@@ -102,23 +93,13 @@ public:
     }
 
     /// @returns The Connection_pool.
-    Connection_pool* pool() noexcept
-    {
-      return const_cast<Connection_pool*>(static_cast<const Handle*>(this)->pool());
-    }
+    DMITIGR_PGFE_API const Connection_pool* pool() const noexcept;
 
     /// @overload
-    const Connection_pool* pool() const noexcept
-    {
-      return pool_;
-    }
+    DMITIGR_PGFE_API Connection_pool* pool() noexcept;
 
     /// @see Connection_pool::release().
-    void release() noexcept
-    {
-      if (pool_)
-        pool_->release(*this);
-    }
+    DMITIGR_PGFE_API void release() noexcept;
 
   private:
     friend Connection_pool;
@@ -144,13 +125,11 @@ public:
    * @param count A number of connections in the pool.
    * @param options A connection options to be used for connections of pool.
    */
-  explicit DMITIGR_PGFE_API Connection_pool(std::size_t count, const Connection_options& options = {});
+  explicit DMITIGR_PGFE_API Connection_pool(std::size_t count,
+    const Connection_options& options = {});
 
   /// @returns `true` if this instance is valid.
-  bool is_valid() const noexcept
-  {
-    return !connections_.empty();
-  }
+  DMITIGR_PGFE_API bool is_valid() const noexcept;
 
   /// @returns `is_valid()`.
   explicit operator bool() const noexcept
@@ -162,7 +141,8 @@ public:
    * @brief Sets the handler which will be called just after connecting to the
    * PostgreSQL server.
    *
-   * For example, it can be used to execute a query like `SET application_name to 'foo'`.
+   * @details For example, it could be used to execute a query like
+   * `SET application_name to 'foo'`.
    *
    * @see connect_handler().
    */
@@ -173,10 +153,8 @@ public:
    *
    * @see set_connect_handler().
    */
-  const std::function<void(Connection&)>& connect_handler() const noexcept
-  {
-    return connect_handler_;
-  }
+  DMITIGR_PGFE_API const std::function<void(Connection&)>&
+  connect_handler() const noexcept;
 
   /**
    * @brief Sets the handler which will be called just after returning a connection
@@ -186,13 +164,12 @@ public:
    *
    * @see release_handler().
    */
-  DMITIGR_PGFE_API void set_release_handler(std::function<void(Connection&)> handler);
+  DMITIGR_PGFE_API void
+  set_release_handler(std::function<void(Connection&)> handler);
 
   /// @returns The current release handler.
-  const std::function<void(Connection&)>& release_handler() const noexcept
-  {
-    return release_handler_;
-  }
+  DMITIGR_PGFE_API const std::function<void(Connection&)>&
+  release_handler() const noexcept;
 
   /**
    * @brief Opens the connections to the server.
@@ -205,7 +182,8 @@ public:
   /**
    * Closes the connections to the server.
    *
-   * @remarks Connections which are busy will not be affected by calling this method.
+   * @remarks Connections which are busy will not be affected by calling this
+   * method.
    */
   DMITIGR_PGFE_API void disconnect() noexcept;
 

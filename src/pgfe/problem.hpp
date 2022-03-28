@@ -49,16 +49,10 @@ public:
   Problem& operator=(Problem&&) = default;
 
   /// @returns The error condition that corresponds to SQLSTATE sqlstate().
-  std::error_condition condition() const noexcept
-  {
-    return condition_;
-  }
+  DMITIGR_PGFE_API std::error_condition condition() const noexcept;
 
   /// @returns The SQLSTATE of the problem.
-  const char* sqlstate() const noexcept
-  {
-    return pq_result_.er_code();
-  }
+  DMITIGR_PGFE_API const char* sqlstate() const noexcept;
 
   /**
    * @returns The problem severity, or `-1` if the problem is not recognized
@@ -71,10 +65,7 @@ public:
    *
    * @remarks Typically, one line.
    */
-  const char* brief() const noexcept
-  {
-    return pq_result_.er_brief();
-  }
+  DMITIGR_PGFE_API const char* brief() const noexcept;
 
   /**
    * @returns The optional message carrying more detail about the problem.
@@ -82,10 +73,7 @@ public:
    * @remarks Might consist to multiple lines. Newline characters should
    * be treated as paragraph breaks, not line breaks.
    */
-  const char* detail() const noexcept
-  {
-    return pq_result_.er_detail();
-  }
+  DMITIGR_PGFE_API const char* detail() const noexcept;
 
   /**
    * @returns The optional suggestion what to do about the problem.
@@ -96,39 +84,27 @@ public:
    * @remarks Might consist to multiple lines. Newline characters should be
    * treated as paragraph breaks, not line breaks.
    */
-  const char* hint() const noexcept
-  {
-    return pq_result_.er_hint();
-  }
+  DMITIGR_PGFE_API const char* hint() const noexcept;
 
   /**
    * @returns The position of a character of a query string submitted.
    *
    * @remarks Positions start at `1` and measured in characters rather than bytes!
    */
-  const char* query_position() const noexcept
-  {
-    return pq_result_.er_query_position();
-  }
+  DMITIGR_PGFE_API const char* query_position() const noexcept;
 
   /**
    * @returns: Similar to query_position(), but it is used when the position
    * refers to an internally-generated query rather than the one submitted.
    */
-  const char* internal_query_position() const noexcept
-  {
-    return pq_result_.er_internal_query_position();
-  }
+  DMITIGR_PGFE_API const char* internal_query_position() const noexcept;
 
   /**
    * @returns The text of the failed internally-generated query.
    *
    * @remarks This could be, for example, a SQL query issued by a PL/pgSQL function.
    */
-  const char* internal_query() const noexcept
-  {
-    return pq_result_.er_internal_query();
-  }
+  DMITIGR_PGFE_API const char* internal_query() const noexcept;
 
   /**
    * @returns The indication of the context in which the problem occurred.
@@ -138,46 +114,31 @@ public:
    *
    * @remarks The trace is one entry per line, most recent first.
    */
-  const char* context() const noexcept
-  {
-    return pq_result_.er_context();
-  }
+  DMITIGR_PGFE_API const char* context() const noexcept;
 
   /// @returns The name of schema, associated with the problem.
-  const char* schema_name() const noexcept
-  {
-    return pq_result_.er_schema_name();
-  }
+  DMITIGR_PGFE_API const char* schema_name() const noexcept;
 
   /**
    * @returns The name of table, associated with the problem.
    *
    * @remarks Refer to schema_name() for the name of the table's schema.
    */
-  const char* table_name() const noexcept
-  {
-    return pq_result_.er_table_name();
-  }
+  DMITIGR_PGFE_API const char* table_name() const noexcept;
 
   /**
    * @returns The name of the table column, associated with the problem.
    *
    * @remarks Refer to schema_name() and table_name() to identity the table.
    */
-  const char* column_name() const noexcept
-  {
-    return pq_result_.er_column_name();
-  }
+  DMITIGR_PGFE_API const char* column_name() const noexcept;
 
   /**
    * @returns The name of the data type, associated with the problem.
    *
    * @remarks Refer to schema_name() for the name of the data type's schema.
    */
-  const char* data_type_name() const noexcept
-  {
-    return pq_result_.er_data_type_name();
-  }
+  DMITIGR_PGFE_API const char* data_type_name() const noexcept;
 
   /**
    * @returns The name of the constraint, associated with the problem.
@@ -185,28 +146,16 @@ public:
    * @remarks Indexes are treated as constraints, even if they weren't created
    * with constraint syntax.
    */
-  const char* constraint_name() const noexcept
-  {
-    return pq_result_.er_constraint_name();
-  }
+  DMITIGR_PGFE_API const char* constraint_name() const noexcept;
 
   /// @returns The file name of the source-code location reporting the problem.
-  const char* source_file() const noexcept
-  {
-    return pq_result_.er_source_file();
-  }
+  DMITIGR_PGFE_API const char* source_file() const noexcept;
 
   /// @returns The line number of the source-code location reporting the problem.
-  const char* source_line() const noexcept
-  {
-    return pq_result_.er_source_line();
-  }
+  DMITIGR_PGFE_API const char* source_line() const noexcept;
 
   /// @returns The name of the source-code function reporting the problem.
-  const char* source_function() const noexcept
-  {
-    return pq_result_.er_source_function();
-  }
+  DMITIGR_PGFE_API const char* source_function() const noexcept;
 
   /// @returns The error condition that corresponds to SQLSTATE `00000`.
   static DMITIGR_PGFE_API std::error_condition min_condition() noexcept;
@@ -241,14 +190,8 @@ private:
   std::error_condition condition_;
 
   Problem() = default;
-
   explicit Problem(detail::pq::Result&& result) noexcept;
-
-  virtual bool is_invariant_ok() const noexcept
-  {
-    const int cv = condition().value();
-    return pq_result_ && (min_condition().value() <= cv && cv <= max_condition().value());
-  }
+  virtual bool is_invariant_ok() const noexcept;
 };
 
 } // namespace dmitigr::pgfe

@@ -48,36 +48,16 @@ public:
   Completion& operator=(const Completion&) = delete;
 
   /// Move-constructible.
-  Completion(Completion&& rhs) noexcept
-    : affected_row_count_{rhs.affected_row_count_}
-    , operation_name_{std::move(rhs.operation_name_)}
-  {
-    rhs.affected_row_count_ = -2;
-  }
+  DMITIGR_PGFE_API Completion(Completion&& rhs) noexcept;
 
   /// Move-assignable.
-  Completion& operator=(Completion&& rhs) noexcept
-  {
-    if (this != &rhs) {
-      Completion tmp{std::move(rhs)};
-      swap(tmp);
-    }
-    return *this;
-  }
+  DMITIGR_PGFE_API Completion& operator=(Completion&& rhs) noexcept;
 
   /// Swaps this instance with `rhs`.
-  void swap(Completion& rhs) noexcept
-  {
-    using std::swap;
-    swap(affected_row_count_, rhs.affected_row_count_);
-    swap(operation_name_, rhs.operation_name_);
-  }
+  DMITIGR_PGFE_API void swap(Completion& rhs) noexcept;
 
   /// @see Message::is_valid().
-  bool is_valid() const noexcept override
-  {
-    return (affected_row_count_ > -2);
-  }
+  DMITIGR_PGFE_API bool is_valid() const noexcept override;
 
   /**
    * @returns The operation name which may be:
@@ -90,10 +70,7 @@ public:
    * example, the operation name for `END` command is "COMMIT", the
    * operation name for `CREATE TABLE AS` command is "SELECT" etc.
    */
-  const std::string& operation_name() const noexcept
-  {
-    return operation_name_;
-  }
+  DMITIGR_PGFE_API const std::string& operation_name() const noexcept;
 
   /**
    * @returns The number of rows affected by a completed SQL command.
@@ -102,17 +79,12 @@ public:
    * `INSERT`, `DELETE`, `UPDATE`, `SELECT` or `CREATE TABLE AS`, `MOVE`,
    * `FETCH`, `COPY`.
    */
-  std::optional<long> affected_row_count() const noexcept
-  {
-    return (affected_row_count_ >= 0) ?
-      std::make_optional<decltype(affected_row_count_)>(affected_row_count_) :
-      std::nullopt;
-  }
+  DMITIGR_PGFE_API std::optional<long> affected_row_count() const noexcept;
 
 private:
   friend Connection;
 
-  long affected_row_count_{-2}; // -1 denotes no value, -2 denotes invalid instance
+  long affected_row_count_{-2}; // -1 - no value, -2 - invalid instance
   std::string operation_name_;
 
   /**
@@ -123,10 +95,7 @@ private:
    */
   explicit Completion(const std::string_view tag);
 
-  bool is_invariant_ok() const noexcept
-  {
-    return ((affected_row_count_ < 0) || !operation_name_.empty());
-  }
+  bool is_invariant_ok() const noexcept;
 };
 
 /// Completion is swappable.

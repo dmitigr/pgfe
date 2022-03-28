@@ -36,7 +36,8 @@ enum class Endianness {
 /// @returns Endianness of the system.
 inline Endianness endianness() noexcept
 {
-  static_assert(sizeof(unsigned char) < sizeof(unsigned long), "unknown endianness");
+  static_assert(sizeof(unsigned char) < sizeof(unsigned long),
+    "unknown endianness");
   static const unsigned long number{0x01};
   static const auto result =
     (reinterpret_cast<const unsigned char*>(&number)[0] == 1)

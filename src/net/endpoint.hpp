@@ -143,7 +143,8 @@ private:
     using Cm = Communication_mode;
 #ifdef _WIN32
     const bool wnp_ok = (!wnp_pipe_name_ && !wnp_server_name_) ||
-      (wnp_pipe_name_ && wnp_server_name_ && !wnp_pipe_name_->empty() && !wnp_server_name_->empty());
+      (wnp_pipe_name_ && wnp_server_name_ && !wnp_pipe_name_->empty() &&
+        !wnp_server_name_->empty());
     const bool is_wnp = communication_mode() == Cm::wnp;
 #endif
     const bool uds_ok = !uds_path_ || !uds_path_->empty();

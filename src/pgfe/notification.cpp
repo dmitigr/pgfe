@@ -21,33 +21,44 @@
 // dmitigr@gmail.com
 
 #include "contract.hpp"
-#include "error.hpp"
-#include "exceptions.hpp"
-#include "std_system_error.hpp"
+#include "data.hpp"
+#include "notification.hpp"
+
+#include <cassert>
 
 namespace dmitigr::pgfe {
 
-DMITIGR_PGFE_INLINE Client_exception::Client_exception(const Client_errc errc,
-  std::string what)
-  : Exception{errc, what.empty() ? to_literal(errc) :
-    what.append(" (").append(to_literal(errc)).append(")")}
-{}
-
-DMITIGR_PGFE_INLINE Client_exception::Client_exception(const std::string& what)
-  : Exception{what}
-{}
-
-// =============================================================================
-
-DMITIGR_PGFE_INLINE Server_exception::Server_exception(std::shared_ptr<Error>&& error)
-  : Exception{detail::not_false(error)->condition(),
-    detail::not_false(error)->brief()}
-  , error_{std::move(error)}
-{}
-
-DMITIGR_PGFE_INLINE const Error& Server_exception::error() const noexcept
+DMITIGR_PGFE_INLINE Notification::Notification(::PGnotify* const pgnotify)
+  : pgnotify_{detail::not_false(pgnotify)}
 {
-  return *error_;
+  assert(is_invariant_ok());
+}
+
+DMITIGR_PGFE_INLINE bool Notification::is_valid() const noexcept
+{
+  return static_cast<bool>(pgnotify_);
+}
+
+DMITIGR_PGFE_INLINE std::int_fast32_t Notification::server_pid() const noexcept
+{
+  return is_valid() ? pgnotify_->be_pid : 0;
+}
+
+DMITIGR_PGFE_INLINE std::string_view Notification::channel_name() const noexcept
+{
+  return is_valid() ? pgnotify_->relname : std::string_view{};
+}
+
+DMITIGR_PGFE_INLINE Data_view Notification::payload() const noexcept
+{
+  return is_valid() ? Data_view{pgnotify_->extra} : Data_view{};
+}
+
+DMITIGR_PGFE_INLINE bool Notification::is_invariant_ok() const noexcept
+{
+  const bool server_pid_ok{server_pid() >= 0};
+  const bool channel_ok{!is_valid() || !channel_name().empty()};
+  return server_pid_ok && channel_ok;
 }
 
 } // namespace dmitigr::pgfe

@@ -23,10 +23,9 @@
 #ifndef DMITIGR_PGFE_NOTICE_HPP
 #define DMITIGR_PGFE_NOTICE_HPP
 
+#include "dll.hpp"
 #include "problem.hpp"
 #include "signal.hpp"
-
-#include <cassert>
 
 namespace dmitigr::pgfe {
 
@@ -44,44 +43,25 @@ namespace dmitigr::pgfe {
 class Notice final : public Signal, public Problem {
 public:
   /// The destructor.
-  ~Notice() override
-  {
-    pq_result_.release(); // freed in libpq/fe-protocol3.c:pqGetErrorNotice3()
-  }
+  DMITIGR_PGFE_API ~Notice() override;
 
   /// Default-constructible. (Constructs invalid instance.)
-  Notice() = default;
+  DMITIGR_PGFE_API Notice() = default;
 
   /// The constructor.
-  explicit Notice(const ::PGresult* const result) noexcept
-    : Problem{detail::pq::Result{const_cast< ::PGresult*>(result)}}
-  {
-    /*
-     * In fact result is not const. So it's okay to const_cast.
-     * (Allocated in libpq/fe-protocol3.c:pqGetErrorNotice3().)
-     */
-    assert(is_invariant_ok());
-  }
+  explicit DMITIGR_PGFE_API Notice(const ::PGresult* const result) noexcept;
 
   /// @see Message::is_valid().
-  bool is_valid() const noexcept override
-  {
-    return static_cast<bool>(pq_result_);
-  }
+  DMITIGR_PGFE_API bool is_valid() const noexcept override;
 
 private:
-  bool is_invariant_ok() const noexcept override
-  {
-    const auto sev = severity();
-    return ((static_cast<int>(sev) == -1) ||
-      (sev == Problem_severity::log) ||
-      (sev == Problem_severity::info) ||
-      (sev == Problem_severity::debug) ||
-      (sev == Problem_severity::notice) ||
-      (sev == Problem_severity::warning)) && Problem::is_invariant_ok();
-  }
+  bool is_invariant_ok() const noexcept override;
 };
 
 } // namespace dmitigr::pgfe
+
+#ifndef DMITIGR_PGFE_NOT_HEADER_ONLY
+#include "notice.cpp"
+#endif
 
 #endif  // DMITIGR_PGFE_NOTICE_HPP

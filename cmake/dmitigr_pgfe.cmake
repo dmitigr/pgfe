@@ -72,21 +72,29 @@ set(dmitigr_pgfe_headers
 set(dmitigr_pgfe_implementations
   copier.cpp
   completion.cpp
+  composite.cpp
+  compositional.cpp
   connection.cpp
   connection_options.cpp
   connection_pool.cpp
   data.cpp
   errc.cpp
+  error.cpp
   exceptions.cpp
   large_object.cpp
   misc.cpp
+  notice.cpp
+  notification.cpp
+  parameterizable.cpp
   prepared_statement.cpp
   problem.cpp
   ready_for_query.cpp
+  row.cpp
   row_info.cpp
   sql_string.cpp
   sql_vector.cpp
   std_system_error.cpp
+  tuple.cpp
   )
 
 # ------------------------------------------------------------------------------
@@ -133,6 +141,7 @@ if(DMITIGR_CPPLIPA_TESTS)
     conversions_online
     copier
     data
+    exceptions
     hello_world
     pipeline
     pq_vs_pgfe

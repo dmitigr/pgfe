@@ -20,34 +20,22 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
-#include "contract.hpp"
-#include "error.hpp"
-#include "exceptions.hpp"
-#include "std_system_error.hpp"
+#include "composite.hpp"
 
 namespace dmitigr::pgfe {
 
-DMITIGR_PGFE_INLINE Client_exception::Client_exception(const Client_errc errc,
-  std::string what)
-  : Exception{errc, what.empty() ? to_literal(errc) :
-    what.append(" (").append(to_literal(errc)).append(")")}
-{}
-
-DMITIGR_PGFE_INLINE Client_exception::Client_exception(const std::string& what)
-  : Exception{what}
-{}
-
-// =============================================================================
-
-DMITIGR_PGFE_INLINE Server_exception::Server_exception(std::shared_ptr<Error>&& error)
-  : Exception{detail::not_false(error)->condition(),
-    detail::not_false(error)->brief()}
-  , error_{std::move(error)}
-{}
-
-DMITIGR_PGFE_INLINE const Error& Server_exception::error() const noexcept
+DMITIGR_PGFE_INLINE int cmp(const Composite& lhs, const Composite& rhs) noexcept
 {
-  return *error_;
+  if (const auto lfc = lhs.field_count(), rfc = rhs.field_count(); lfc == rfc) {
+    for (std::size_t i{}; i < lfc; ++i) {
+      if (lhs.field_name(i) < rhs.field_name(i) || lhs[i] < rhs[i])
+        return -1;
+      else if (lhs.field_name(i) > rhs.field_name(i) || lhs[i] > rhs[i])
+        return 1;
+    }
+    return 0;
+  } else
+    return lfc < rfc ? -1 : 1;
 }
 
 } // namespace dmitigr::pgfe

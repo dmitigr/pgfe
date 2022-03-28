@@ -110,7 +110,8 @@ public:
     const auto typid = 0;
     const auto typlen = -1;
     const auto atttypmod = -1;
-    ::PGresAttDesc attributes[] = {{name, tableid, columnid, format, typid, typlen, atttypmod}};
+    ::PGresAttDesc attributes[] = {{name, tableid, columnid, format, typid,
+      typlen, atttypmod}};
     set_attributes(attributes, sizeof(attributes) / sizeof(::PGresAttDesc));
   }
 
@@ -214,13 +215,15 @@ public:
   /// @returns The item of the error report.
   const char* er_code() const noexcept
   {
-    return str::coalesce({::PQresultErrorField(native_handle(), PG_DIAG_SQLSTATE), "00000"});
+    return str::coalesce({
+      ::PQresultErrorField(native_handle(), PG_DIAG_SQLSTATE), "00000"});
   }
 
   /// @returns The item of the error report.
   const char* er_brief() const noexcept
   {
-    return str::literal(::PQresultErrorField(native_handle(), PG_DIAG_MESSAGE_PRIMARY));
+    return str::literal(
+      ::PQresultErrorField(native_handle(), PG_DIAG_MESSAGE_PRIMARY));
   }
 
   /// @returns The item of the error report.
@@ -428,9 +431,11 @@ public:
    *
    * @remarks The `value` is copied into the private storage.
    */
-  bool set_data_value(const int row_number, const int field_number, const char* const value, const int size) noexcept
+  bool set_data_value(const int row_number,
+    const int field_number, const char* const value, const int size) noexcept
   {
-    return ::PQsetvalue(const_cast< ::PGresult*>(native_handle()), row_number, field_number, const_cast<char*>(value), size);
+    return ::PQsetvalue(const_cast< ::PGresult*>(native_handle()), row_number,
+      field_number, const_cast<char*>(value), size);
   }
 
   /// @}
@@ -466,7 +471,8 @@ public:
    */
   bool set_attributes(::PGresAttDesc* const attributes, const int attribute_count)
   {
-    return ::PQsetResultAttrs(const_cast< ::PGresult*>(native_handle()), attribute_count, attributes);
+    return ::PQsetResultAttrs(const_cast< ::PGresult*>(native_handle()),
+      attribute_count, attributes);
   }
 
   /// @}

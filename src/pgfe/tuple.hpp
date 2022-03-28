@@ -24,11 +24,11 @@
 #define DMITIGR_PGFE_TUPLE_HPP
 
 #include "composite.hpp"
-#include "conversions.hpp"
-#include "data.hpp"
+#include "conversions_api.hpp"
+#include "dll.hpp"
 #include "exceptions.hpp"
+#include "types_fwd.hpp"
 
-#include <algorithm>
 #include <cassert>
 #include <iterator>
 #include <memory>
@@ -55,34 +55,14 @@ public:
   /// Default-constructible
   Tuple() = default;
 
-  /// See Tuple::make().
-  explicit Tuple(std::vector<Element>&& datas) noexcept
-    : datas_{std::move(datas)}
-  {
-    assert(is_invariant_ok());
-  }
+  /// The constructor.
+  DMITIGR_PGFE_API Tuple(std::vector<Element>&& datas) noexcept;
 
   /// Copy-constructible.
-  Tuple(const Tuple& rhs)
-    : datas_{rhs.datas_.size()}
-  {
-    transform(rhs.datas_.cbegin(), rhs.datas_.cend(), datas_.begin(),
-      [](const auto& pair)
-      {
-        return std::make_pair(pair.first, pair.second->to_data());
-      });
-    assert(is_invariant_ok());
-  }
+  DMITIGR_PGFE_API Tuple(const Tuple& rhs);
 
   /// Copy-assignable.
-  Tuple& operator=(const Tuple& rhs)
-  {
-    if (this != &rhs) {
-      Tuple tmp{rhs};
-      swap(tmp);
-    }
-    return *this;
-  }
+  DMITIGR_PGFE_API Tuple& operator=(const Tuple& rhs);
 
   /// Move-constructible.
   Tuple(Tuple&& rhs) = default;
@@ -91,44 +71,20 @@ public:
   Tuple& operator=(Tuple&& rhs) = default;
 
   /// Swaps the instances.
-  void swap(Tuple& rhs) noexcept
-  {
-    datas_.swap(rhs.datas_);
-  }
+  DMITIGR_PGFE_API void swap(Tuple& rhs) noexcept;
 
   /// @see Compositional::field_count().
-  std::size_t field_count() const noexcept override
-  {
-    return datas_.size();
-  }
+  DMITIGR_PGFE_API std::size_t field_count() const noexcept override;
 
   /// @see Compositional::is_empty().
-  bool is_empty() const noexcept override
-  {
-    return datas_.empty();
-  }
+  DMITIGR_PGFE_API bool is_empty() const noexcept override;
 
   /// @see Compositional::field_name().
-  std::string_view field_name(const std::size_t index) const override
-  {
-    if (!(index < field_count()))
-      throw Client_exception{"cannot get field name of tuple"};
-    return datas_[index].first;
-  }
+  DMITIGR_PGFE_API std::string_view field_name(std::size_t index) const override;
 
   /// @see Compositional::field_index().
-  std::size_t field_index(const std::string_view name,
-    const std::size_t offset = 0) const override
-  {
-    if (!(offset < field_count()))
-      throw Client_exception{"cannot get tuple field index: invalid offset"};
-    const auto b = datas_.cbegin();
-    const auto e = datas_.cend();
-    using Diff = decltype(b)::difference_type;
-    const auto i = find_if(b + static_cast<Diff>(offset), e,
-      [&name](const auto& pair) { return pair.first == name; });
-    return static_cast<std::size_t>(i - b);
-  }
+  DMITIGR_PGFE_API std::size_t field_index(std::string_view name,
+    std::size_t offset = 0) const override;
 
   /**
    * @returns The field data of this tuple.
@@ -138,13 +94,7 @@ public:
    * @par Requires
    * `(index < field_count())`.
    */
-  Data_view data(const std::size_t index) const override
-  {
-    if (!(index < field_count()))
-      throw Client_exception{"cannot get data of tuple"};
-    const auto& result = datas_[index].second;
-    return result ? Data_view{*result} : Data_view{};
-  }
+  DMITIGR_PGFE_API Data_view data(std::size_t index) const override;
 
   /**
    * @overload
@@ -155,11 +105,8 @@ public:
    * @par Requires
    * `has_field(name, offset)`.
    */
-  Data_view data(const std::string_view name,
-    const std::size_t offset = 0) const override
-  {
-    return data(field_index(name, offset));
-  }
+  DMITIGR_PGFE_API Data_view data(std::string_view name,
+    std::size_t offset = 0) const override;
 
   /**
    * @brief Overwrites the field of this tuple with the value of type T.
@@ -199,13 +146,7 @@ public:
   }
 
   /// Appends `rhs` to the end of the instance.
-  void append(Tuple&& rhs)
-  {
-    datas_.insert(datas_.cend(),
-      std::make_move_iterator(rhs.datas_.begin()),
-      std::make_move_iterator(rhs.datas_.end()));
-    assert(is_invariant_ok());
-  }
+  DMITIGR_PGFE_API void append(Tuple&& rhs);
 
   /**
    * @brief Inserts new field to this tuple.
@@ -258,15 +199,7 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  void remove(const std::size_t index)
-  {
-    if (!(index < field_count()))
-      throw Client_exception{"cannot remove field from tuple"};
-    const auto b = datas_.cbegin();
-    using Diff = decltype(b)::difference_type;
-    datas_.erase(b + static_cast<Diff>(index));
-    assert(is_invariant_ok());
-  }
+  DMITIGR_PGFE_API void remove(std::size_t index);
 
   /**
    * @overload
@@ -277,15 +210,7 @@ public:
    * @par Effects
    * `!has_field(name, offset)`.
    */
-  void remove(const std::string_view name, const std::size_t offset = 0)
-  {
-    if (const auto index = field_index(name, offset); index != field_count()) {
-      const auto b = datas_.cbegin();
-      using Diff = decltype(b)::difference_type;
-      datas_.erase(b + static_cast<Diff>(index));
-    }
-    assert(is_invariant_ok());
-  }
+  DMITIGR_PGFE_API void remove(std::string_view name, std::size_t offset = 0);
 
   /// @returns The iterator that points to the first field.
   auto begin() noexcept
@@ -334,5 +259,9 @@ inline void swap(Tuple& lhs, Tuple& rhs) noexcept
 }
 
 } // namespace dmitigr::pgfe
+
+#ifndef DMITIGR_PGFE_NOT_HEADER_ONLY
+#include "tuple.cpp"
+#endif
 
 #endif  // DMITIGR_PGFE_TUPLE_HPP

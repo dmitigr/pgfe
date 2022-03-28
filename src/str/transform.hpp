@@ -39,7 +39,8 @@ namespace dmitigr::str {
 // -----------------------------------------------------------------------------
 
 /// @returns The string with the specified `delimiter` between the characters.
-inline std::string sparsed_string(const std::string_view input, const std::string& delimiter)
+inline std::string
+sparsed_string(const std::string_view input, const std::string& delimiter)
 {
   std::string result;
   if (!input.empty()) {
@@ -71,7 +72,7 @@ inline void trim(std::string& str, const std::locale& loc = {})
   if (str.empty())
     return;
 
-  const auto is_not_space = [&loc](const auto c) { return !std::isspace(c, loc); };
+  const auto is_not_space = [&loc](const auto c){return !isspace(c, loc);};
   const auto b = begin(str);
   const auto e = end(str);
   const auto tb = find_if(b, e, is_not_space);
@@ -104,7 +105,8 @@ inline std::vector<S> split(const std::string_view input,
   while (offset < input.size()) {
     pos = input.find_first_of(separators, offset);
     DMITIGR_ASSERT(offset <= pos);
-    const auto part_size = std::min<std::string_view::size_type>(pos, input.size()) - offset;
+    const auto part_size =
+      std::min<std::string_view::size_type>(pos, input.size()) - offset;
     result.push_back(S{input.substr(offset, part_size)});
     offset += part_size + 1;
   }
@@ -124,7 +126,7 @@ inline void lowercase(std::string& str, const std::locale& loc = {})
 {
   auto b = begin(str);
   auto e = end(str);
-  std::transform(b, e, b, [&loc](const char c) { return std::tolower(c, loc); });
+  transform(b, e, b, [&loc](const char c){return tolower(c, loc);});
 }
 
 /**
@@ -138,9 +140,13 @@ inline std::string to_lowercase(std::string str, const std::locale& loc = {})
 }
 
 /// @returns `true` if all of characters of `str` are in uppercase.
-inline bool is_lowercased(const std::string_view str, const std::locale& loc = {}) noexcept
+inline bool is_lowercased(const std::string_view str,
+  const std::locale& loc = {}) noexcept
 {
-  return std::all_of(cbegin(str), cend(str), [&loc](const char c) { return std::islower(c, loc); });
+  return std::all_of(cbegin(str), cend(str), [&loc](const char c)
+  {
+    return islower(c, loc);
+  });
 }
 
 // -----------------------------------------------------------------------------
@@ -154,7 +160,7 @@ inline void uppercase(std::string& str, const std::locale& loc = {})
 {
   auto b = begin(str);
   auto e = end(str);
-  std::transform(b, e, b, [&loc](const char c) { return std::toupper(c, loc); });
+  transform(b, e, b, [&loc](const char c){return toupper(c, loc);});
 }
 
 /**
@@ -170,7 +176,10 @@ inline std::string to_uppercase(std::string str, const std::locale& loc = {})
 /// @returns `true` if all of character of `str` are in lowercase.
 inline bool is_uppercased(const std::string_view str, const std::locale& loc = {}) noexcept
 {
-  return std::all_of(cbegin(str), cend(str), [&loc](const char c) { return std::isupper(c, loc); });
+  return std::all_of(cbegin(str), cend(str), [&loc](const char c)
+  {
+    return isupper(c, loc);
+  });
 }
 
 } // namespace dmitigr::str

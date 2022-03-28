@@ -131,7 +131,9 @@ private:
   bool is_invariant_ok() const
   {
 #ifdef _WIN32
-    const bool backlog_ok = (endpoint_.communication_mode() != Communication_mode::wnp && backlog_) || !backlog_;
+    const bool backlog_ok =
+      (endpoint_.communication_mode() != Communication_mode::wnp && backlog_) ||
+      !backlog_;
 #else
     const bool backlog_ok = static_cast<bool>(backlog_);
 #endif
@@ -175,7 +177,8 @@ public:
    *
    * @see accept().
    */
-  virtual bool wait(std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) = 0;
+  virtual bool wait(std::chrono::milliseconds timeout =
+    std::chrono::milliseconds{-1}) = 0;
 
   /**
    * @brief Accepts a new client connection.
@@ -221,7 +224,8 @@ public:
     : options_{std::move(options)}
   {
     const auto cm = options_.endpoint().communication_mode();
-    DMITIGR_ASSERT(cm == Communication_mode::uds || cm == Communication_mode::net);
+    DMITIGR_ASSERT(cm == Communication_mode::uds ||
+      cm == Communication_mode::net);
     net_initialize();
   }
 
@@ -251,10 +255,12 @@ public:
 #else
       const auto optlen = static_cast<::socklen_t>(sizeof(optval));
 #endif
-      if (::setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR, reinterpret_cast<const char*>(&optval), optlen) != 0)
+      if (::setsockopt(socket_, SOL_SOCKET, SO_REUSEADDR,
+          reinterpret_cast<const char*>(&optval), optlen) != 0)
         throw DMITIGR_NET_EXCEPTION{"cannot set SO_REUSEADDR socket option"};
 
-      bind_socket(socket_, {Ip_address{*eid.net_address()}, *eid.net_port()});
+      bind_socket(socket_, {net::Ip_address::from_text(*eid.net_address()),
+        *eid.net_port()});
     };
 
     const auto uds_create_bind = [&]
@@ -272,13 +278,15 @@ public:
       throw DMITIGR_NET_EXCEPTION{"cannot start listening on socket"};
   }
 
-  bool wait(const std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) override
+  bool wait(const std::chrono::milliseconds timeout =
+    std::chrono::milliseconds{-1}) override
   {
     using std::chrono::milliseconds;
     using Sr = net::Socket_readiness;
 
     if (!is_listening())
-      throw Exception{"cannot wait for data on socket if listener is not listening"};
+      throw Exception{"cannot wait for data on socket if listener is "
+        "not listening"};
     else if (!(timeout >= milliseconds{-1}))
       throw Exception{"invalid timeout for wait operation on socket"};
 
@@ -289,7 +297,8 @@ public:
   std::unique_ptr<Descriptor> accept() override
   {
     if (!is_listening())
-      throw Exception{"cannot accept connections on listener which is not listening"};
+      throw Exception{"cannot accept connections on listener which is "
+        "not listening"};
 
     constexpr sockaddr* addr{};
 #ifdef _WIN32
@@ -297,7 +306,8 @@ public:
 #else
     constexpr ::socklen_t* addrlen{};
 #endif
-    if (net::Socket_guard sock{::accept(socket_, addr, addrlen)}; !net::is_socket_valid(sock))
+    if (net::Socket_guard sock{::accept(socket_, addr, addrlen)};
+      !net::is_socket_valid(sock))
       throw DMITIGR_NET_EXCEPTION{"cannot accept on socket"};
     else
       return std::make_unique<socket_Descriptor>(std::move(sock));
@@ -378,7 +388,8 @@ public:
     is_listening_ = true;
   }
 
-  bool wait(const std::chrono::milliseconds timeout = std::chrono::milliseconds{-1}) override
+  bool wait(const std::chrono::milliseconds timeout =
+    std::chrono::milliseconds{-1}) override
   {
     using std::chrono::milliseconds;
 
@@ -406,7 +417,8 @@ public:
 
       case ERROR_IO_PENDING: {
         DMITIGR_ASSERT(timeout.count() <= std::numeric_limits<DWORD>::max());
-        const DWORD tout = (timeout.count() == -1) ? INFINITE : static_cast<DWORD>(timeout.count());
+        const DWORD tout = (timeout.count() == -1) ? INFINITE :
+          static_cast<DWORD>(timeout.count());
         const DWORD r = ::WaitForSingleObject(ol.hEvent, tout);
         if (r == WAIT_OBJECT_0) {
           DWORD number_of_bytes_transferred{};
@@ -478,7 +490,8 @@ private:
     constexpr DWORD timeout{};
     constexpr LPSECURITY_ATTRIBUTES attrs{};
     os::windows::Handle_guard result{
-      ::CreateNamedPipeA(pipe_path_.c_str(),open_mode,pipe_mode,max_instances,out_buf_sz,in_buf_sz,timeout,attrs)};
+      ::CreateNamedPipeA(pipe_path_.c_str(), open_mode, pipe_mode, max_instances,
+        out_buf_sz,in_buf_sz,timeout,attrs)};
     if (result != INVALID_HANDLE_VALUE)
       return result;
     else

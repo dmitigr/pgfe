@@ -46,8 +46,8 @@ namespace dmitigr::str {
  * `(pos <= str.size())`.
  */
 inline std::string_view::size_type
-position_of_non_space(const std::string_view str, const std::string_view::size_type pos,
-  const std::locale& loc = {})
+position_of_non_space(const std::string_view str,
+  const std::string_view::size_type pos, const std::locale& loc = {})
 {
   if (!(pos <= str.size()))
     throw Exception{"cannot get position of non space by using invalid offset"};
@@ -58,7 +58,8 @@ position_of_non_space(const std::string_view str, const std::string_view::size_t
   {
     return is_non_space_character(ch, loc);
   });
-  return (i != e) ? static_cast<std::string_view::size_type>(i - b) : std::string_view::npos;
+  return (i != e) ? static_cast<std::string_view::size_type>(i - b) :
+    std::string_view::npos;
 }
 
 /**
@@ -71,8 +72,8 @@ position_of_non_space(const std::string_view str, const std::string_view::size_t
  */
 template<typename Pred>
 std::pair<std::string, std::string::size_type>
-substring_if(const std::string& str, const Pred& pred, std::string::size_type pos,
-  const std::locale& loc = {})
+substring_if(const std::string& str, const Pred& pred,
+  std::string::size_type pos, const std::locale& loc = {})
 {
   if (!(pos <= str.size()))
     throw Exception{"cannot get substring by using invalid offset"};
@@ -98,8 +99,8 @@ substring_if(const std::string& str, const Pred& pred, std::string::size_type po
  * `(pos <= str.size())`.
  */
 inline std::pair<std::string, std::string::size_type>
-substring_if_simple_identifier(const std::string& str, const std::string::size_type pos,
-  const std::locale& loc = {})
+substring_if_simple_identifier(const std::string& str,
+  const std::string::size_type pos, const std::locale& loc = {})
 {
   if (!(pos <= str.size()))
     throw Exception{"cannot get substring by using invalid offset"};
@@ -169,8 +170,10 @@ unquoted_substring(const std::string& str, std::string::size_type pos,
     }
 
   finish:
-    if ((pos == input_size && str.back() != quote_char) || (pos < input_size && str[pos] != quote_char))
-      throw Exception{"cannot get unquoted substring because no trailing quote found"};
+    if ((pos == input_size && str.back() != quote_char) ||
+      (pos < input_size && str[pos] != quote_char))
+      throw Exception{"cannot get unquoted substring because no trailing quote "
+        "found"};
     else
       result.second = pos + 1; // discarding the trailing quote
   } else

@@ -62,7 +62,8 @@ line_number_by_position(const std::string& str, const std::string::size_type pos
  * `(pos < str.size())`.
  */
 inline std::pair<std::size_t, std::size_t>
-line_column_numbers_by_position(const std::string& str, const std::string::size_type pos)
+line_column_numbers_by_position(const std::string& str,
+  const std::string::size_type pos)
 {
   if (!(pos < str.size()))
     throw Exception{"cannot get line and column numbers by invalid position"};

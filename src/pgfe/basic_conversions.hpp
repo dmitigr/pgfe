@@ -58,23 +58,32 @@ struct Basic_conversions {
 
   /// @overload
   template<typename String, typename ... Types>
-  static std::enable_if_t<std::is_same_v<std::string, std::decay_t<String>>, Type> to_type(String&& text, Types&& ... args)
+  static std::enable_if_t<std::is_same_v<std::string, std::decay_t<String>>, Type>
+  to_type(String&& text, Types&& ... args)
   {
-    return StringConversions::to_type(std::forward<String>(text), std::forward<Types>(args)...);
+    return StringConversions::to_type(std::forward<String>(text),
+      std::forward<Types>(args)...);
   }
 
   /// @returns The object of type Data converted from the object of the type `Type`.
   template<typename U, typename ... Types>
-  static std::enable_if_t<std::is_same_v<Type, std::decay_t<U>>, std::unique_ptr<Data>> to_data(U&& value, Types&& ... args)
+  static std::enable_if_t<std::is_same_v<Type, std::decay_t<U>>, std::unique_ptr<Data>>
+  to_data(U&& value, Types&& ... args)
   {
-    return DataConversions::to_data(std::forward<U>(value), std::forward<Types>(args)...);
+    return DataConversions::to_data(std::forward<U>(value),
+      std::forward<Types>(args)...);
   }
 
-  /// @returns The object of the type `std::string` converted from the object of the type `Type`.
+  /**
+   * @returns The object of the type `std::string` converted from the object of
+   * the type `Type`.
+   */
   template<typename U, typename ... Types>
-  static std::enable_if_t<std::is_same_v<Type, std::decay_t<U>>, std::string> to_string(U&& value, Types&& ... args)
+  static std::enable_if_t<std::is_same_v<Type, std::decay_t<U>>, std::string>
+  to_string(U&& value, Types&& ... args)
   {
-    return StringConversions::to_string(std::forward<U>(value), std::forward<Types>(args)...);
+    return StringConversions::to_string(std::forward<U>(value),
+      std::forward<Types>(args)...);
   }
 };
 

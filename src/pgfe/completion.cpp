@@ -76,4 +76,51 @@ DMITIGR_PGFE_INLINE Completion::Completion(const std::string_view tag)
   assert(is_invariant_ok());
 }
 
+DMITIGR_PGFE_INLINE bool Completion::is_invariant_ok() const noexcept
+{
+  return (affected_row_count_ < 0) || !operation_name_.empty();
+}
+
+DMITIGR_PGFE_INLINE Completion::Completion(Completion&& rhs) noexcept
+  : affected_row_count_{rhs.affected_row_count_}
+  , operation_name_{std::move(rhs.operation_name_)}
+{
+  rhs.affected_row_count_ = -2;
+}
+
+DMITIGR_PGFE_INLINE Completion& Completion::operator=(Completion&& rhs) noexcept
+{
+  if (this != &rhs) {
+    Completion tmp{std::move(rhs)};
+    swap(tmp);
+  }
+  return *this;
+}
+
+DMITIGR_PGFE_INLINE void Completion::swap(Completion& rhs) noexcept
+{
+  using std::swap;
+  swap(affected_row_count_, rhs.affected_row_count_);
+  swap(operation_name_, rhs.operation_name_);
+}
+
+DMITIGR_PGFE_INLINE bool Completion::is_valid() const noexcept
+{
+  return (affected_row_count_ > -2);
+}
+
+DMITIGR_PGFE_INLINE const std::string&
+Completion::operation_name() const noexcept
+{
+  return operation_name_;
+}
+
+DMITIGR_PGFE_INLINE std::optional<long>
+Completion::affected_row_count() const noexcept
+{
+  return (affected_row_count_ >= 0) ?
+    std::make_optional<decltype(affected_row_count_)>(affected_row_count_) :
+    std::nullopt;
+}
+
 } // namespace dmitigr::pgfe

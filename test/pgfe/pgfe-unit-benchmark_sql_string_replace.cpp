@@ -22,6 +22,8 @@
 
 #include "../../src/pgfe/sql_string.hpp"
 
+#include <iostream>
+
 int main(const int argc, char* const argv[])
 try {
   namespace pgfe = dmitigr::pgfe;

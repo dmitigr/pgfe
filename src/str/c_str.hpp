@@ -38,7 +38,8 @@ namespace dmitigr::str {
  * @returns The pointer to a next non-space character, or pointer to the
  * terminating zero character.
  */
-inline const char* next_non_space_pointer(const char* p, const std::locale& loc = {}) noexcept
+inline const char* next_non_space_pointer(const char* p,
+  const std::locale& loc = {}) noexcept
 {
   if (p) {
     while (*p != '\0' && std::isspace(*p, loc))

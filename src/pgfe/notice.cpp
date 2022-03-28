@@ -20,34 +20,41 @@
 // Dmitry Igrishin
 // dmitigr@gmail.com
 
-#include "contract.hpp"
-#include "error.hpp"
-#include "exceptions.hpp"
-#include "std_system_error.hpp"
+#include "notice.hpp"
+
+#include <cassert>
 
 namespace dmitigr::pgfe {
 
-DMITIGR_PGFE_INLINE Client_exception::Client_exception(const Client_errc errc,
-  std::string what)
-  : Exception{errc, what.empty() ? to_literal(errc) :
-    what.append(" (").append(to_literal(errc)).append(")")}
-{}
-
-DMITIGR_PGFE_INLINE Client_exception::Client_exception(const std::string& what)
-  : Exception{what}
-{}
-
-// =============================================================================
-
-DMITIGR_PGFE_INLINE Server_exception::Server_exception(std::shared_ptr<Error>&& error)
-  : Exception{detail::not_false(error)->condition(),
-    detail::not_false(error)->brief()}
-  , error_{std::move(error)}
-{}
-
-DMITIGR_PGFE_INLINE const Error& Server_exception::error() const noexcept
+DMITIGR_PGFE_INLINE Notice::~Notice()
 {
-  return *error_;
+  pq_result_.release(); // freed in libpq/fe-protocol3.c:pqGetErrorNotice3()
+}
+
+DMITIGR_PGFE_INLINE Notice::Notice(const ::PGresult* const result) noexcept
+  : Problem{detail::pq::Result{const_cast< ::PGresult*>(result)}}
+{
+  /*
+   * In fact result is not const. So it's okay to const_cast.
+   * (Allocated in libpq/fe-protocol3.c:pqGetErrorNotice3().)
+   */
+  assert(is_invariant_ok());
+}
+
+DMITIGR_PGFE_INLINE bool Notice::is_valid() const noexcept
+{
+  return static_cast<bool>(pq_result_);
+}
+
+DMITIGR_PGFE_INLINE bool Notice::is_invariant_ok() const noexcept
+{
+  const auto sev = severity();
+  return ((static_cast<int>(sev) == -1) ||
+    (sev == Problem_severity::log) ||
+    (sev == Problem_severity::info) ||
+    (sev == Problem_severity::debug) ||
+    (sev == Problem_severity::notice) ||
+    (sev == Problem_severity::warning)) && Problem::is_invariant_ok();
 }
 
 } // namespace dmitigr::pgfe

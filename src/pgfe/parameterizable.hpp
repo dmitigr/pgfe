@@ -23,10 +23,11 @@
 #ifndef DMITIGR_PGFE_PARAMETERIZABLE_HPP
 #define DMITIGR_PGFE_PARAMETERIZABLE_HPP
 
+#include "dll.hpp"
 #include "types_fwd.hpp"
 
 #include <cstdint>
-#include <string>
+#include <string_view>
 
 namespace dmitigr::pgfe {
 
@@ -40,7 +41,7 @@ namespace dmitigr::pgfe {
 class Parameterizable {
 public:
   /// @returns The maximum parameter count allowed.
-  constexpr std::size_t max_parameter_count() const noexcept
+  static constexpr std::size_t max_parameter_count() noexcept
   {
     return 65535;
   }
@@ -78,10 +79,7 @@ public:
   virtual std::size_t parameter_index(std::string_view name) const noexcept = 0;
 
   /// @returns `true` if the given parameter presents.
-  bool has_parameter(const std::string_view name) const noexcept
-  {
-    return parameter_index(name) < parameter_count();
-  }
+  DMITIGR_PGFE_API bool has_parameter(const std::string_view name) const noexcept;
 
 private:
   friend Prepared_statement;
@@ -89,23 +87,13 @@ private:
 
   Parameterizable() = default;
 
-  virtual bool is_invariant_ok() const noexcept
-  {
-    const bool params_ok = !has_parameters() || (parameter_count() > 0);
-    const bool named_params_ok = [this]
-    {
-      const std::size_t pc{parameter_count()};
-      for (std::size_t i{positional_parameter_count()}; i < pc; ++i) {
-        if (parameter_index(parameter_name(i)) != i)
-          return false;
-      }
-      return true;
-    }();
-
-    return params_ok && named_params_ok;
-  }
+  virtual bool is_invariant_ok() const noexcept;
 };
 
 } // namespace dmitigr::pgfe
+
+#ifndef DMITIGR_PGFE_NOT_HEADER_ONLY
+#include "parameterizable.cpp"
+#endif
 
 #endif  // DMITIGR_PGFE_PARAMETERIZABLE_HPP

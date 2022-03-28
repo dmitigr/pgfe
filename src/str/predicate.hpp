@@ -37,39 +37,49 @@ namespace dmitigr::str {
 // -----------------------------------------------------------------------------
 
 /// @returns `true` if `c` is a valid space character.
-inline bool is_space_character(const char c, const std::locale& loc = {}) noexcept
+inline bool is_space_character(const char c,
+  const std::locale& loc = {}) noexcept
 {
   return std::isspace(c, loc);
 }
 
 /// @returns `(is_space_character(c) == false)`.
-inline bool is_non_space_character(const char c, const std::locale& loc = {}) noexcept
+inline bool is_non_space_character(const char c,
+  const std::locale& loc = {}) noexcept
 {
   return !is_space_character(c, loc);
 }
 
 /// @returns `true` if `c` is a valid simple identifier character.
-inline bool is_simple_identifier_character(const char c, const std::locale& loc = {}) noexcept
+inline bool is_simple_identifier_character(const char c,
+  const std::locale& loc = {}) noexcept
 {
   return std::isalnum(c, loc) || c == '_';
 }
 
 /// @returns `(is_simple_identifier_character(c) == false)`.
-inline bool is_non_simple_identifier_character(const char c, const std::locale& loc = {}) noexcept
+inline bool is_non_simple_identifier_character(const char c,
+  const std::locale& loc = {}) noexcept
 {
   return !is_simple_identifier_character(c, loc);
 }
 
 /// @returns `true` if `str` has at least one space character.
-inline bool has_space(const std::string& str, const std::locale& loc = {}) noexcept
+inline bool has_space(const std::string& str,
+  const std::locale& loc = {}) noexcept
 {
-  return std::any_of(cbegin(str), cend(str), [&loc](const auto ch){return is_space_character(ch, loc);});
+  return std::any_of(cbegin(str), cend(str), [&loc](const auto ch)
+  {
+    return is_space_character(ch, loc);
+  });
 }
 
 /// @returns `true` if `input` is starting with `pattern`.
-inline bool is_begins_with(const std::string_view input, const std::string_view pattern) noexcept
+inline bool is_begins_with(const std::string_view input,
+  const std::string_view pattern) noexcept
 {
-  return (pattern.size() <= input.size()) && std::equal(cbegin(pattern), cend(pattern), cbegin(input));
+  return (pattern.size() <= input.size()) &&
+    std::equal(cbegin(pattern), cend(pattern), cbegin(input));
 }
 
 } // namespace dmitigr::str

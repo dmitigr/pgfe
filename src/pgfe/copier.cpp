@@ -125,7 +125,8 @@ DMITIGR_PGFE_INLINE Data_view Copier::receive(const bool wait) const
   else if (size == 0)
     return Data_view{"", 0, data_format(0)};
   else if (size > 0)
-    return Data_view{buffer_.get(), static_cast<std::size_t>(size), data_format(0)};
+    return Data_view{buffer_.get(),
+      static_cast<std::size_t>(size), data_format(0)};
   else if (size == -2)
     throw Client_exception{connection().error_message()};
 
@@ -148,13 +149,15 @@ DMITIGR_PGFE_INLINE Connection& Copier::connection()
 void Copier::check_send() const
 {
   if (data_direction() != Data_direction::to_server)
-    throw Client_exception{"cannot send data to the server: wrong data direction"};
+    throw Client_exception{"cannot COPY data to the server: "
+      "wrong data direction"};
 }
 
 void Copier::check_receive() const
 {
   if (data_direction() != Data_direction::from_server)
-    throw Client_exception{"cannot receive data from the server: wrong data direction"};
+    throw Client_exception{"cannot COPY data from the server: "
+      "wrong data direction"};
 }
 
 } // namespace dmitigr::pgfe

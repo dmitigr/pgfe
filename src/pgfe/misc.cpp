@@ -23,8 +23,7 @@
 #include "basics.hpp"
 #include "exceptions.hpp"
 #include "misc.hpp"
-
-#include <libpq-fe.h>
+#include "pq.hpp"
 
 #include <locale>
 

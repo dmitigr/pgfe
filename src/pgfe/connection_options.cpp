@@ -75,7 +75,8 @@ inline void validate(const bool condition, const std::string& option_name)
 
 } // namespace validators
 
-DMITIGR_PGFE_INLINE void Connection_options::swap(Connection_options& rhs) noexcept
+DMITIGR_PGFE_INLINE void
+Connection_options::swap(Connection_options& rhs) noexcept
 {
   using std::swap;
   swap(communication_mode_, rhs.communication_mode_);
@@ -83,7 +84,8 @@ DMITIGR_PGFE_INLINE void Connection_options::swap(Connection_options& rhs) noexc
   swap(connect_timeout_, rhs.connect_timeout_);
   swap(wait_response_timeout_, rhs.wait_response_timeout_);
   swap(uds_directory_, rhs.uds_directory_);
-  swap(uds_require_server_process_username_, rhs.uds_require_server_process_username_);
+  swap(uds_require_server_process_username_,
+    rhs.uds_require_server_process_username_);
   swap(tcp_keepalives_enabled_, rhs.tcp_keepalives_enabled_);
   swap(tcp_keepalives_idle_, rhs.tcp_keepalives_idle_);
   swap(tcp_keepalives_interval_, rhs.tcp_keepalives_interval_);
@@ -115,10 +117,23 @@ DMITIGR_PGFE_INLINE void Connection_options::swap(Connection_options& rhs) noexc
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::set_communication_mode(const std::optional<Communication_mode> value)
+Connection_options::set_communication_mode(
+  const std::optional<Communication_mode> value)
 {
   communication_mode_ = value;
   return *this;
+}
+
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::set(const std::optional<Communication_mode> value)
+{
+  return set_communication_mode(value);
+}
+
+DMITIGR_PGFE_INLINE std::optional<Communication_mode>
+Connection_options::communication_mode() const noexcept
+{
+  return communication_mode_;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
@@ -126,6 +141,18 @@ Connection_options::set_session_mode(const std::optional<Session_mode> value)
 {
   session_mode_ = value;
   return *this;
+}
+
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::set(const std::optional<Session_mode> value)
+{
+  return set_session_mode(value);
+}
+
+DMITIGR_PGFE_INLINE std::optional<Session_mode>
+Connection_options::session_mode() const noexcept
+{
+  return session_mode_;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
@@ -138,6 +165,12 @@ Connection_options::set_connect_timeout(
   return *this;
 }
 
+DMITIGR_PGFE_INLINE std::optional<std::chrono::milliseconds>
+Connection_options::connect_timeout() const noexcept
+{
+  return connect_timeout_;
+}
+
 DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_wait_response_timeout(
   const std::optional<std::chrono::milliseconds> value)
@@ -146,6 +179,12 @@ Connection_options::set_wait_response_timeout(
     validate(is_non_negative(value->count()), "response timeout");
   wait_response_timeout_ = value;
   return *this;
+}
+
+DMITIGR_PGFE_INLINE std::optional<std::chrono::milliseconds>
+Connection_options::wait_response_timeout() const noexcept
+{
+  return wait_response_timeout_;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
@@ -157,6 +196,12 @@ Connection_options::set_port(const std::optional<std::int_fast32_t> value)
   return *this;
 }
 
+DMITIGR_PGFE_INLINE std::optional<std::int_fast32_t>
+Connection_options::port() const noexcept
+{
+  return port_;
+}
+
 DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_uds_directory(std::optional<std::filesystem::path> value)
 {
@@ -164,6 +209,12 @@ Connection_options::set_uds_directory(std::optional<std::filesystem::path> value
     validate(is_absolute_directory_name(*value), "UDS directory");
   uds_directory_ = std::move(value);
   return *this;
+}
+
+DMITIGR_PGFE_INLINE const std::optional<std::filesystem::path>&
+Connection_options::uds_directory() const noexcept
+{
+  return uds_directory_;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
@@ -176,11 +227,23 @@ Connection_options::set_uds_require_server_process_username(
   return *this;
 }
 
+DMITIGR_PGFE_INLINE const std::optional<std::string>&
+Connection_options::uds_require_server_process_username() const noexcept
+{
+  return uds_require_server_process_username_;
+}
+
 DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_tcp_keepalives_enabled(const std::optional<bool> value)
 {
   tcp_keepalives_enabled_ = value;
   return *this;
+}
+
+DMITIGR_PGFE_INLINE std::optional<bool>
+Connection_options::is_tcp_keepalives_enabled() const noexcept
+{
+  return tcp_keepalives_enabled_;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
@@ -193,6 +256,12 @@ Connection_options::set_tcp_keepalives_idle(
   return *this;
 }
 
+DMITIGR_PGFE_INLINE std::optional<std::chrono::seconds>
+Connection_options::tcp_keepalives_idle() const noexcept
+{
+  return tcp_keepalives_idle_;
+}
+
 DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_tcp_keepalives_interval(
   const std::optional<std::chrono::seconds> value)
@@ -203,6 +272,12 @@ Connection_options::set_tcp_keepalives_interval(
   return *this;
 }
 
+DMITIGR_PGFE_INLINE std::optional<std::chrono::seconds>
+Connection_options::tcp_keepalives_interval() const noexcept
+{
+  return tcp_keepalives_interval_;
+}
+
 DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_tcp_keepalives_count(const std::optional<int> value)
 {
@@ -210,6 +285,12 @@ Connection_options::set_tcp_keepalives_count(const std::optional<int> value)
     validate(is_non_negative(*value), "TCP keepalives count");
   tcp_keepalives_count_ = value;
   return *this;
+}
+
+DMITIGR_PGFE_INLINE std::optional<int>
+Connection_options::tcp_keepalives_count() const noexcept
+{
+  return tcp_keepalives_count_;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
@@ -222,6 +303,12 @@ Connection_options::set_tcp_user_timeout(
   return *this;
 }
 
+DMITIGR_PGFE_INLINE std::optional<std::chrono::milliseconds>
+Connection_options::tcp_user_timeout() const noexcept
+{
+  return tcp_user_timeout_;
+}
+
 DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_net_address(std::optional<std::string> value)
 {
@@ -229,6 +316,12 @@ Connection_options::set_net_address(std::optional<std::string> value)
     validate(is_ip_address(*value), "Network address");
   net_address_ = std::move(value);
   return *this;
+}
+
+DMITIGR_PGFE_INLINE const std::optional<std::string>&
+Connection_options::net_address() const noexcept
+{
+  return net_address_;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
@@ -240,6 +333,12 @@ Connection_options::set_net_hostname(std::optional<std::string> value)
   return *this;
 }
 
+DMITIGR_PGFE_INLINE const std::optional<std::string>&
+Connection_options::net_hostname() const noexcept
+{
+  return net_hostname_;
+}
+
 DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_username(std::optional<std::string> value)
 {
@@ -247,6 +346,12 @@ Connection_options::set_username(std::optional<std::string> value)
     validate(is_non_empty(*value), "username");
   username_ = std::move(value);
   return *this;
+}
+
+DMITIGR_PGFE_INLINE const std::optional<std::string>&
+Connection_options::username() const noexcept
+{
+  return username_;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
@@ -258,6 +363,12 @@ Connection_options::set_database(std::optional<std::string> value)
   return *this;
 }
 
+DMITIGR_PGFE_INLINE const std::optional<std::string>&
+Connection_options::database() const noexcept
+{
+  return database_;
+}
+
 DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_password(std::optional<std::string> value)
 {
@@ -265,6 +376,12 @@ Connection_options::set_password(std::optional<std::string> value)
     validate(is_non_empty(*value), "password");
   password_ = std::move(value);
   return *this;
+}
+
+DMITIGR_PGFE_INLINE const std::optional<std::string>&
+Connection_options::password() const noexcept
+{
+  return password_;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
@@ -276,13 +393,10 @@ Connection_options::set_password_file(std::optional<std::filesystem::path> value
   return *this;
 }
 
-DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::set_kerberos_service_name(std::optional<std::string> value)
+DMITIGR_PGFE_INLINE const std::optional<std::filesystem::path>&
+Connection_options::password_file() const noexcept
 {
-  if (value)
-    validate(is_non_empty(*value), "Kerberos service name");
-  kerberos_service_name_ = std::move(value);
-  return *this;
+  return password_file_;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
@@ -293,10 +407,43 @@ Connection_options::set_channel_binding(const std::optional<Channel_binding> val
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::set(std::optional<Channel_binding> value)
+{
+  return set_channel_binding(value);
+}
+
+DMITIGR_PGFE_INLINE const std::optional<Channel_binding>&
+Connection_options::channel_binding() const noexcept
+{
+  return channel_binding_;
+}
+
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::set_kerberos_service_name(std::optional<std::string> value)
+{
+  if (value)
+    validate(is_non_empty(*value), "Kerberos service name");
+  kerberos_service_name_ = std::move(value);
+  return *this;
+}
+
+DMITIGR_PGFE_INLINE const std::optional<std::string>&
+Connection_options::kerberos_service_name() const noexcept
+{
+  return kerberos_service_name_;
+}
+
+DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_ssl_enabled(const std::optional<bool> value)
 {
   is_ssl_enabled_ = value;
   return *this;
+}
+
+DMITIGR_PGFE_INLINE std::optional<bool>
+Connection_options::is_ssl_enabled() const noexcept
+{
+  return is_ssl_enabled_;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
@@ -308,11 +455,35 @@ Connection_options::set_ssl_min_protocol_version(
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::set_min(const std::optional<Ssl_protocol_version> value)
+{
+  return set_ssl_min_protocol_version(value);
+}
+
+DMITIGR_PGFE_INLINE std::optional<Ssl_protocol_version>
+Connection_options::ssl_min_protocol_version() const noexcept
+{
+  return ssl_min_protocol_version_;
+}
+
+DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_ssl_max_protocol_version(
   const std::optional<Ssl_protocol_version> value)
 {
   ssl_max_protocol_version_ = value;
   return *this;
+}
+
+DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::set_max(const std::optional<Ssl_protocol_version> value)
+{
+  return set_ssl_max_protocol_version(value);
+}
+
+DMITIGR_PGFE_INLINE std::optional<Ssl_protocol_version>
+Connection_options::ssl_max_protocol_version() const noexcept
+{
+  return ssl_max_protocol_version_;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
@@ -322,8 +493,15 @@ Connection_options::set_ssl_compression_enabled(const std::optional<bool> value)
   return *this;
 }
 
+DMITIGR_PGFE_INLINE std::optional<bool>
+Connection_options::is_ssl_compression_enabled() const noexcept
+{
+  return ssl_compression_enabled_;
+}
+
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::set_ssl_certificate_file(std::optional<std::filesystem::path> value)
+Connection_options::set_ssl_certificate_file(
+  std::optional<std::filesystem::path> value)
 {
   if (value)
     validate(is_non_empty(*value), "SSL certificate file");
@@ -331,8 +509,15 @@ Connection_options::set_ssl_certificate_file(std::optional<std::filesystem::path
   return *this;
 }
 
+DMITIGR_PGFE_INLINE const std::optional<std::filesystem::path>&
+Connection_options::ssl_certificate_file() const noexcept
+{
+  return ssl_certificate_file_;
+}
+
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::set_ssl_private_key_file(std::optional<std::filesystem::path> value)
+Connection_options::set_ssl_private_key_file(
+  std::optional<std::filesystem::path> value)
 {
   if (value)
     validate(is_non_empty(*value), "SSL private key file");
@@ -340,13 +525,26 @@ Connection_options::set_ssl_private_key_file(std::optional<std::filesystem::path
   return *this;
 }
 
+DMITIGR_PGFE_INLINE const std::optional<std::filesystem::path>&
+Connection_options::ssl_private_key_file() const noexcept
+{
+  return ssl_private_key_file_;
+}
+
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::set_ssl_private_key_file_password(std::optional<std::string> value)
+Connection_options::set_ssl_private_key_file_password(
+  std::optional<std::string> value)
 {
   if (value)
     validate(is_non_empty(*value), "SSL private key file password");
   ssl_private_key_file_password_ = std::move(value);
   return *this;
+}
+
+DMITIGR_PGFE_INLINE const std::optional<std::string>&
+Connection_options::ssl_private_key_file_password() const noexcept
+{
+  return ssl_private_key_file_password_;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
@@ -359,6 +557,12 @@ Connection_options::set_ssl_certificate_authority_file(
   return *this;
 }
 
+DMITIGR_PGFE_INLINE const std::optional<std::filesystem::path>&
+Connection_options::ssl_certificate_authority_file() const noexcept
+{
+  return ssl_certificate_authority_file_;
+}
+
 DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_ssl_certificate_revocation_list_file(
   std::optional<std::filesystem::path> value)
@@ -369,12 +573,24 @@ Connection_options::set_ssl_certificate_revocation_list_file(
   return *this;
 }
 
+DMITIGR_PGFE_INLINE const std::optional<std::filesystem::path>&
+Connection_options::ssl_certificate_revocation_list_file() const noexcept
+{
+  return ssl_certificate_revocation_list_file_;
+}
+
 DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_ssl_server_hostname_verification_enabled(
   const std::optional<bool> value)
 {
   ssl_server_hostname_verification_enabled_ = value;
   return *this;
+}
+
+DMITIGR_PGFE_INLINE std::optional<bool>
+Connection_options::is_ssl_server_hostname_verification_enabled() const noexcept
+{
+  return ssl_server_hostname_verification_enabled_;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
@@ -384,6 +600,61 @@ Connection_options::set_ssl_server_name_indication_enabled(
   ssl_server_name_indication_enabled_ = value;
   return *this;
 }
+
+DMITIGR_PGFE_INLINE std::optional<bool>
+Connection_options::is_ssl_server_name_indication_enabled() const noexcept
+{
+  return ssl_server_name_indication_enabled_;
+}
+
+// =============================================================================
+
+DMITIGR_PGFE_INLINE bool
+operator==(const Connection_options& lhs, const Connection_options& rhs) noexcept
+{
+  return
+    // booleans
+    lhs.tcp_keepalives_enabled_ == rhs.tcp_keepalives_enabled_ &&
+    lhs.is_ssl_enabled_ == rhs.is_ssl_enabled_ &&
+    lhs.ssl_compression_enabled_ == rhs.ssl_compression_enabled_ &&
+    lhs.ssl_server_hostname_verification_enabled_ ==
+    rhs.ssl_server_hostname_verification_enabled_ &&
+    lhs.ssl_server_name_indication_enabled_ ==
+    rhs.ssl_server_name_indication_enabled_ &&
+    // numerics
+    lhs.communication_mode_ == rhs.communication_mode_ &&
+    lhs.session_mode_ == rhs.session_mode_ &&
+    lhs.channel_binding_ == rhs.channel_binding_ &&
+    lhs.connect_timeout_ == rhs.connect_timeout_ &&
+    lhs.wait_response_timeout_ == rhs.wait_response_timeout_ &&
+    lhs.tcp_keepalives_idle_ == rhs.tcp_keepalives_idle_ &&
+    lhs.tcp_keepalives_interval_ == rhs.tcp_keepalives_interval_ &&
+    lhs.tcp_keepalives_count_ == rhs.tcp_keepalives_count_ &&
+    lhs.tcp_user_timeout_ == rhs.tcp_user_timeout_ &&
+    lhs.port_ == rhs.port_ &&
+    lhs.ssl_min_protocol_version_ == rhs.ssl_min_protocol_version_ &&
+    lhs.ssl_max_protocol_version_ == rhs.ssl_max_protocol_version_ &&
+    // strings
+    lhs.uds_directory_ == rhs.uds_directory_ &&
+    lhs.uds_require_server_process_username_ ==
+    rhs.uds_require_server_process_username_ &&
+    lhs.net_address_ == rhs.net_address_ &&
+    lhs.net_hostname_ == rhs.net_hostname_ &&
+    lhs.username_ == rhs.username_ &&
+    lhs.database_ == rhs.database_ &&
+    lhs.password_ == rhs.password_ &&
+    lhs.password_file_ == rhs.password_file_ &&
+    lhs.kerberos_service_name_ == rhs.kerberos_service_name_ &&
+    lhs.ssl_certificate_file_ == rhs.ssl_certificate_file_ &&
+    lhs.ssl_private_key_file_ == rhs.ssl_private_key_file_ &&
+    lhs.ssl_private_key_file_password_ == rhs.ssl_private_key_file_password_ &&
+    lhs.ssl_certificate_authority_file_ ==
+    rhs.ssl_certificate_authority_file_ &&
+    lhs.ssl_certificate_revocation_list_file_ ==
+    rhs.ssl_certificate_revocation_list_file_;
+}
+
+// =============================================================================
 
 namespace detail::pq {
 
@@ -711,7 +982,7 @@ private:
   const char* pq_values_[Keyword_count_ + 1];
   std::string values_[Keyword_count_];
 
-  constexpr bool is_invariant_ok() const
+  constexpr bool is_invariant_ok() const noexcept
   {
     constexpr auto keywords_count = sizeof(pq_keywords_) / sizeof(*pq_keywords_);
     constexpr auto values_count = sizeof(values_) / sizeof(*values_);

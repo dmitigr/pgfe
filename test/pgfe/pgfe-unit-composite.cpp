@@ -21,6 +21,7 @@
 // dmitigr@gmail.com
 
 #include "../../src/base/assert.hpp"
+#include "../../src/pgfe/conversions.hpp"
 #include "../../src/pgfe/data.hpp"
 #include "../../src/pgfe/tuple.hpp"
 

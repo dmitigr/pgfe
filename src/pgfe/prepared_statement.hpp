@@ -25,14 +25,13 @@
 
 #include "../util/memory.hpp"
 #include "basics.hpp"
-#include "conversions.hpp"
-#include "exceptions.hpp"
+#include "conversions_api.hpp"
+#include "dll.hpp"
 #include "parameterizable.hpp"
 #include "response.hpp"
 #include "row_info.hpp"
 #include "types_fwd.hpp"
 
-#include <algorithm>
 #include <cassert>
 #include <chrono>
 #include <cstdint>
@@ -58,12 +57,7 @@ public:
    * @par Effects
    * `!is_data_owner()`.
    */
-  explicit Named_argument(std::string name) noexcept
-    : name_{std::move(name)}
-    , data_{nullptr, Data_deletion_required{false}}
-  {
-    assert(is_invariant_ok());
-  }
+  explicit DMITIGR_PGFE_API Named_argument(std::string name) noexcept;
 
   /**
    * @brief Constructs the named argument bound to `data`.
@@ -73,12 +67,7 @@ public:
    *
    * @remarks No deep copy of `data` performed.
    */
-  Named_argument(std::string name, const Data& data) noexcept
-    : name_{std::move(name)}
-    , data_{&data, Data_deletion_required{false}}
-  {
-    assert(is_invariant_ok());
-  }
+  DMITIGR_PGFE_API Named_argument(std::string name, const Data& data) noexcept;
 
   /**
    * @brief Constructs the named argument bound to `data`.
@@ -86,12 +75,8 @@ public:
    * @par Effects
    * `is_data_owner()`.
    */
-  Named_argument(std::string name, std::unique_ptr<Data>&& data) noexcept
-    : name_{std::move(name)}
-    , data_{data.release(), Data_deletion_required{true}}
-  {
-    assert(is_invariant_ok());
-  }
+  DMITIGR_PGFE_API Named_argument(std::string name,
+    std::unique_ptr<Data>&& data) noexcept;
 
   /// @overload
   template<typename T>
@@ -103,22 +88,13 @@ public:
   }
 
   /// @returns The argument name.
-  const std::string& name() const noexcept
-  {
-    return name_;
-  }
+  DMITIGR_PGFE_API const std::string& name() const noexcept;
 
   /// @returns The bound data.
-  Data_view data() const noexcept
-  {
-    return data_ ? Data_view{*data_} : Data_view{};
-  }
+  DMITIGR_PGFE_API Data_view data() const noexcept;
 
   /// @returns `true` if the bound data is owned by this instance.
-  bool is_data_owner() const noexcept
-  {
-    return data_.get_deleter().condition();
-  }
+  DMITIGR_PGFE_API bool is_data_owner() const noexcept;
 
   /**
    * @brief Releases the ownership of the bound data.
@@ -126,14 +102,7 @@ public:
    * @returns The instance of Data if it's owned by this instance, or
    * `nullptr` otherwise.
    */
-  std::unique_ptr<Data> release() noexcept
-  {
-    if (!is_data_owner()) {
-      data_.reset();
-      return nullptr;
-    } else
-      return std::unique_ptr<Data>(const_cast<Data*>(data_.release()));
-  }
+  DMITIGR_PGFE_API std::unique_ptr<Data> release() noexcept;
 
 private:
   using Data_deletion_required = util::Conditional_delete<const Data>;
@@ -142,10 +111,7 @@ private:
   std::string name_;
   Data_ptr data_;
 
-  bool is_invariant_ok() const noexcept
-  {
-    return !name_.empty();
-  }
+  bool is_invariant_ok() const noexcept;
 };
 
 /**
@@ -198,52 +164,44 @@ public:
   /// Default-constructible. (Constructs invalid instance.)
   Prepared_statement() = default;
 
+  /// Non copy-constructible.
+  Prepared_statement(const Prepared_statement&) = delete;
+
+  /// Move constructible.
+  DMITIGR_PGFE_API Prepared_statement(Prepared_statement&& rhs) noexcept;
+
+  /// Non copy-assignable.
+  Prepared_statement& operator=(const Prepared_statement&) = delete;
+
+  /// Move-assignable.
+  DMITIGR_PGFE_API Prepared_statement& operator=(Prepared_statement&& rhs) noexcept;
+
+  /// Swaps this instance with `rhs`.
+  DMITIGR_PGFE_API void swap(Prepared_statement& rhs) noexcept;
+
   /// @see Message::is_valid().
-  bool is_valid() const noexcept override
-  {
-    return connection_;
-  }
+  DMITIGR_PGFE_API bool is_valid() const noexcept override;
 
   /// @see Parameterizable::positional_parameter_count().
   DMITIGR_PGFE_API std::size_t positional_parameter_count() const noexcept override;
 
   /// @see Parameterizable::named_parameter_count().
-  std::size_t named_parameter_count() const noexcept override
-  {
-    return parameter_count() - positional_parameter_count();
-  }
+  DMITIGR_PGFE_API std::size_t named_parameter_count() const noexcept override;
 
   /// @see Parameterizable::parameter_count().
-  std::size_t parameter_count() const noexcept override
-  {
-    return parameters_.size();
-  }
+  DMITIGR_PGFE_API std::size_t parameter_count() const noexcept override;
 
   /// @see Parameterizable::has_positional_parameters().
-  bool has_positional_parameters() const noexcept override
-  {
-    return positional_parameter_count() > 0;
-  }
+  DMITIGR_PGFE_API bool has_positional_parameters() const noexcept override;
 
   /// @see Parameterizable::has_named_parameters().
-  bool has_named_parameters() const noexcept override
-  {
-    return named_parameter_count() > 0;
-  }
+  DMITIGR_PGFE_API bool has_named_parameters() const noexcept override;
 
   /// @see Parameterizable::has_parameters().
-  bool has_parameters() const noexcept override
-  {
-    return !parameters_.empty();
-  }
+  DMITIGR_PGFE_API bool has_parameters() const noexcept override;
 
   /// @see Parameterizable::parameter_name().
-  std::string_view parameter_name(const std::size_t index) const override
-  {
-    if (!((positional_parameter_count() <= index) && (index < parameter_count())))
-      throw_exception("cannot get parameter name of");
-    return parameters_[index].name;
-  }
+  DMITIGR_PGFE_API std::string_view parameter_name(const std::size_t index) const override;
 
   /// @see Parameterizable::parameter_index().
   DMITIGR_PGFE_API std::size_t parameter_index(std::string_view name) const noexcept override;
@@ -253,10 +211,7 @@ public:
    *
    * @remarks The empty name denotes the unnamed prepared statement.
    */
-  const std::string& name() const noexcept
-  {
-    return name_;
-  }
+  DMITIGR_PGFE_API const std::string& name() const noexcept;
 
   /**
    * @returns `true` if the information inferred by the Pgfe about
@@ -265,10 +220,7 @@ public:
    *
    * @see Sql_string.
    */
-  bool is_preparsed() const noexcept
-  {
-    return preparsed_;
-  }
+  DMITIGR_PGFE_API bool is_preparsed() const noexcept;
 
   /// @name Parameter binding
   /// @{
@@ -279,13 +231,7 @@ public:
    * @par Requires
    * `(index < parameter_count())`.
    */
-  Data_view bound(const std::size_t index) const
-  {
-    if (!(index < parameter_count()))
-      throw_exception("cannot get bound parameter value of");
-    const auto& result = parameters_[index].data;
-    return result ? Data_view{*result} : Data_view{};
-  }
+  DMITIGR_PGFE_API Data_view bound(const std::size_t index) const;
 
   /**
    * @overload
@@ -293,10 +239,7 @@ public:
    * @par Requries
    * `(parameter_index(name) < parameter_count())`.
    */
-  Data_view bound(const std::string_view name) const
-  {
-    return bound(parameter_index(name));
-  }
+  DMITIGR_PGFE_API Data_view bound(const std::string_view name) const;
 
   /**
    * @brief Binds the parameter of the specified index with the specified value.
@@ -399,21 +342,14 @@ public:
    *
    * @see Connection::set_result_format().
    */
-  void set_result_format(const Data_format format) noexcept
-  {
-    result_format_ = format;
-    assert(is_invariant_ok());
-  }
+  DMITIGR_PGFE_API void set_result_format(const Data_format format) noexcept;
 
   /**
    * @returns The data format for all fields of response rows.
    *
    * @see Connection::result_format().
    */
-  Data_format result_format() const noexcept
-  {
-    return result_format_;
-  }
+  DMITIGR_PGFE_API Data_format result_format() const noexcept;
 
   /**
    * @brief Submits a request to a PostgreSQL server to execute this prepared
@@ -458,25 +394,16 @@ public:
   execute(F&& callback, Types&& ... parameters);
 
   /// @overload
-  Completion execute()
-  {
-    return execute([](auto&&){});
-  }
+  DMITIGR_PGFE_API Completion execute();
 
   /**
    * @returns The pointer to the instance of type Connection on which this
    * statement is prepared.
    */
-  Connection* connection() noexcept
-  {
-    return connection_;
-  }
+  DMITIGR_PGFE_API const Connection* connection() const noexcept;
 
   /// @overload
-  const Connection* connection() const noexcept
-  {
-    return connection_;
-  }
+  DMITIGR_PGFE_API Connection* connection() noexcept;
 
   /// Similar to Connection::describe_prepared_statement_nio().
   DMITIGR_PGFE_API void describe_nio();
@@ -490,10 +417,7 @@ public:
    *
    * @see describe(), parameter_type_oid(), row_info().
    */
-  bool is_described() const noexcept
-  {
-    return static_cast<bool>(description_.pq_result_);
-  }
+  DMITIGR_PGFE_API bool is_described() const noexcept;
 
   /**
    * @returns The object identifier of the parameter type, or
@@ -512,10 +436,7 @@ public:
    *
    * @see bound().
    */
-  std::uint_fast32_t parameter_type_oid(const std::string_view name) const
-  {
-    return parameter_type_oid(parameter_index(name));
-  }
+  DMITIGR_PGFE_API std::uint_fast32_t parameter_type_oid(const std::string_view name) const;
 
   /**
    * @returns
@@ -546,87 +467,30 @@ private:
   std::vector<Parameter> parameters_;
   Row_info description_; // may be invalid, see set_description()
 
+  // ---------------------------------------------------------------------------
+
   /// Constructs when preparing.
-  Prepared_statement(std::string name, Connection* connection, const Sql_string* preparsed);
+  Prepared_statement(std::string name, Connection* connection,
+    const Sql_string* preparsed);
 
   /// Constructs when describing.
-  Prepared_statement(std::string name, Connection* connection, std::size_t parameters_count);
-
-  /// Non copy-constructible.
-  Prepared_statement(const Prepared_statement&) = delete;
-
-  /// Non copy-assignable.
-  Prepared_statement& operator=(const Prepared_statement&) = delete;
-
-  /// Move constructible.
-  Prepared_statement(Prepared_statement&& rhs) noexcept
-    : result_format_{std::move(rhs.result_format_)}
-    , name_{std::move(rhs.name_)}
-    , preparsed_{std::move(rhs.preparsed_)}
-    , connection_{std::move(rhs.connection_)}
-    , session_start_time_{std::move(rhs.session_start_time_)}
-    , parameters_{std::move(rhs.parameters_)}
-    , description_{std::move(rhs.description_)}
-  {
-    rhs.connection_ = nullptr;
-  }
-
-  /// Move-assignable.
-  Prepared_statement& operator=(Prepared_statement&& rhs) noexcept
-  {
-    if (this != &rhs) {
-      Prepared_statement tmp{std::move(rhs)};
-      swap(tmp);
-    }
-    return *this;
-  }
-
-  /// Swaps this instance with `rhs`.
-  void swap(Prepared_statement& rhs) noexcept
-  {
-    using std::swap;
-    swap(result_format_, rhs.result_format_);
-    swap(name_, rhs.name_);
-    swap(preparsed_, rhs.preparsed_);
-    swap(connection_, rhs.connection_);
-    swap(session_start_time_, rhs.session_start_time_);
-    swap(parameters_, rhs.parameters_);
-    swap(description_, rhs.description_);
-  }
+  Prepared_statement(std::string name, Connection* connection,
+    std::size_t parameters_count);
 
   void init_connection__(Connection* connection);
-
-  [[noreturn]] void throw_exception(std::string msg) const
-  {
-    const auto id = !is_valid() ? std::string{"invalid prepared statement"} :
-      name().empty() ? std::string{"unnamed prepared statement"} :
-      std::string{"prepared statement "}.append(name());
-    msg.append(" ").append(id);
-    throw Client_exception{msg};
-  }
-
   bool is_invariant_ok() const noexcept override;
+  [[noreturn]] void throw_exception(std::string msg) const;
 
   // ---------------------------------------------------------------------------
-  // Parameters
-  // ---------------------------------------------------------------------------
 
-  Prepared_statement& bind(const std::size_t index, Data_ptr&& data)
+  Prepared_statement& bind(const std::size_t index, Data_ptr&& data);
+  Prepared_statement& bind__(const std::size_t, Named_argument&& na);
+  Prepared_statement& bind__(const std::size_t, const Named_argument& na);
+
+  template<typename T>
+  Prepared_statement& bind__(const std::size_t index, T&& value)
   {
-    const bool is_opaque = !is_preparsed() && !is_described();
-    if (!(is_opaque || (index < parameter_count())))
-      throw_exception("cannot bind parameter of");
-
-    if (is_opaque) {
-      if (!(index < max_parameter_count()))
-        throw_exception("cannot bind parameter of");
-      if (index >= parameters_.size())
-        parameters_.resize(index + 1);
-    }
-    parameters_[index].data = std::move(data);
-
-    assert(is_invariant_ok());
-    return *this;
+    return bind(index, std::forward<T>(value));
   }
 
   template<std::size_t ... I, typename ... Types>
@@ -638,59 +502,18 @@ private:
       return (bind__(I, std::forward<Types>(args)), ...);
   }
 
-  Prepared_statement& bind__(const std::size_t, Named_argument&& na)
-  {
-    if (na.is_data_owner())
-      return bind(na.name(), na.release());
-    else
-      return bind(na.name(), na.data());
-  }
-
-  Prepared_statement& bind__(const std::size_t, const Named_argument& na)
-  {
-    if (na.is_data_owner())
-      return bind(na.name(), na.data().to_data());
-    else
-      return bind(na.name(), na.data());
-  }
-
-  template<typename T>
-  Prepared_statement& bind__(const std::size_t index, T&& value)
-  {
-    return bind(index, std::forward<T>(value));
-  }
-
   // ---------------------------------------------------------------------------
 
-  void set_description(detail::pq::Result&& r)
-  {
-    DMITIGR_ASSERT(r);
-    DMITIGR_ASSERT(!is_described());
-
-    if (!preparsed_)
-      parameters_.resize(static_cast<std::size_t>(r.ps_param_count()));
-
-    /*
-     * If result contains fields info, initialize Row_info.
-     * Otherwise, just set description_.pq_result_.
-     */
-    if (r.field_count() > 0) {
-      description_ = Row_info{std::move(r)};
-      DMITIGR_ASSERT(description_);
-    } else {
-      description_.pq_result_ = std::move(r);
-      DMITIGR_ASSERT(!description_);
-    }
-
-    DMITIGR_ASSERT(is_described());
-    assert(is_invariant_ok());
-  }
-
-  // ---------------------------------------------------------------------------
-
+  void set_description(detail::pq::Result&& r);
   void execute_nio(const Sql_string& statement);
   void execute_nio__(const Sql_string* const statement);
 };
+
+/// Prepared_statement is swappable.
+inline void swap(Prepared_statement& lhs, Prepared_statement& rhs) noexcept
+{
+  lhs.swap(rhs);
+}
 
 } // namespace dmitigr::pgfe
 

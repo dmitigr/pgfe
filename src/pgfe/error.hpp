@@ -23,10 +23,9 @@
 #ifndef DMITIGR_PGFE_ERROR_HPP
 #define DMITIGR_PGFE_ERROR_HPP
 
+#include "dll.hpp"
 #include "problem.hpp"
 #include "response.hpp"
-
-#include <cassert>
 
 namespace dmitigr::pgfe {
 
@@ -41,29 +40,19 @@ public:
   Error() = default;
 
   /// The constructor.
-  explicit Error(detail::pq::Result&& result) noexcept
-    : Problem{std::move(result)}
-  {
-    assert(is_invariant_ok());
-  }
+  explicit DMITIGR_PGFE_API Error(detail::pq::Result&& result) noexcept;
 
   /// @see Message::is_valid().
-  bool is_valid() const noexcept override
-  {
-    return static_cast<bool>(pq_result_);
-  }
+  DMITIGR_PGFE_API bool is_valid() const noexcept override;
 
 private:
-  bool is_invariant_ok() const noexcept override
-  {
-    const auto sev = severity();
-    return ((static_cast<int>(sev) == -1) ||
-      (sev == Problem_severity::error) ||
-      (sev == Problem_severity::fatal) ||
-      (sev == Problem_severity::panic)) && Problem::is_invariant_ok();
-  }
+  bool is_invariant_ok() const noexcept override;
 };
 
 } // namespace dmitigr::pgfe
+
+#ifndef DMITIGR_PGFE_NOT_HEADER_ONLY
+#include "error.cpp"
+#endif
 
 #endif  // DMITIGR_PGFE_ERROR_HPP

@@ -96,7 +96,8 @@ public:
 
   std::unique_ptr<Data> to_data() const override
   {
-    return Data::make(std::string_view{static_cast<char*>(storage_.get()), size_}, format_);
+    return Data::make(std::string_view{static_cast<char*>(storage_.get()), size_},
+      format_);
   }
 
   Format format() const noexcept override
@@ -173,8 +174,6 @@ private:
 
 } // namespace dmitigr::pgfe::detail
 
-// =============================================================================
-
 namespace dmitigr::pgfe {
 
 // -----------------------------------------------------------------------------
@@ -192,12 +191,18 @@ inline std::unique_ptr<pgfe::Data> to_bytea__(const void* const text)
   std::size_t storage_size{};
   using Uptr = std::unique_ptr<void, void(*)(void*)>;
   if (auto storage = Uptr{::PQunescapeBytea(bytes, &storage_size), &::PQfreemem})
-    return pgfe::Data::make(std::move(storage), storage_size, pgfe::Data_format::binary);
+    return pgfe::Data::make(std::move(storage), storage_size,
+      pgfe::Data_format::binary);
   else
     throw std::bad_alloc{};
 }
 
 } // namespace
+
+DMITIGR_PGFE_INLINE bool Data::is_valid() const noexcept
+{
+  return static_cast<int>(format()) >= 0;
+}
 
 DMITIGR_PGFE_INLINE std::unique_ptr<Data> Data::to_bytea() const
 {
@@ -209,9 +214,16 @@ DMITIGR_PGFE_INLINE std::unique_ptr<Data> Data::to_bytea() const
   return to_bytea__(bytes());
 }
 
-DMITIGR_PGFE_INLINE std::unique_ptr<Data> Data::to_bytea(const char* const text_data)
+DMITIGR_PGFE_INLINE std::unique_ptr<Data>
+Data::to_bytea(const char* const text_data)
 {
   return to_bytea__(text_data);
+}
+
+DMITIGR_PGFE_INLINE std::unique_ptr<Data>
+Data::to_bytea(const std::string& text_data)
+{
+  return to_bytea__(text_data.c_str());
 }
 
 DMITIGR_PGFE_INLINE bool Data::is_invariant_ok() const
@@ -228,11 +240,13 @@ Data::make(std::string&& storage, const Data_format format)
 }
 
 DMITIGR_PGFE_INLINE std::unique_ptr<Data>
-Data::make(std::unique_ptr<void, void(*)(void*)>&& storage, const std::size_t size, const Data_format format)
+Data::make(std::unique_ptr<void, void(*)(void*)>&& storage,
+  const std::size_t size, const Data_format format)
 {
   if (!(storage || !size))
     throw Client_exception{"cannot create an instance of data"};
-  return std::make_unique<detail::custom_memory_Data>(std::move(storage), size, format);
+  return std::make_unique<detail::custom_memory_Data>(std::move(storage),
+    size, format);
 }
 
 DMITIGR_PGFE_INLINE std::unique_ptr<Data>
@@ -242,7 +256,8 @@ Data::make(const std::string_view bytes, const Data_format format)
     std::unique_ptr<char[]> storage{new char[bytes.size() + 1]};
     std::memcpy(storage.get(), bytes.data(), bytes.size());
     storage.get()[bytes.size()] = '\0';
-    return std::make_unique<detail::array_memory_Data>(std::move(storage), bytes.size(), format);
+    return std::make_unique<detail::array_memory_Data>(std::move(storage),
+      bytes.size(), format);
   } else
     return std::make_unique<detail::empty_Data>(format);
 }
@@ -254,6 +269,13 @@ Data::make_no_copy(const std::string_view bytes, const Data_format format)
     return std::make_unique<Data_view>(bytes.data(), bytes.size(), format);
   else
     return std::make_unique<detail::empty_Data>(format);
+}
+
+DMITIGR_PGFE_INLINE int cmp(const Data& lhs, const Data& rhs) noexcept
+{
+  const auto lsz = lhs.size(), rsz = rhs.size();
+  return lsz == rsz ? std::memcmp(lhs.bytes(), rhs.bytes(), lsz) :
+    lsz < rsz ? -1 : 1;
 }
 
 // -----------------------------------------------------------------------------
@@ -306,12 +328,33 @@ DMITIGR_PGFE_INLINE void Data_view::swap(Data_view& rhs) noexcept
   swap(data_, rhs.data_);
 }
 
-std::unique_ptr<Data> Data_view::to_data() const
+DMITIGR_PGFE_INLINE std::unique_ptr<Data> Data_view::to_data() const
 {
   const auto sz = static_cast<std::size_t>(data_.size());
   std::unique_ptr<char[]> storage{new char[sz]};
   std::memcpy(storage.get(), data_.data(), sz);
-  return std::make_unique<detail::array_memory_Data>(std::move(storage), sz, format_);
+  return std::make_unique<detail::array_memory_Data>(std::move(storage),
+    sz, format_);
+}
+
+DMITIGR_PGFE_INLINE auto Data_view::format() const noexcept -> Format
+{
+  return format_;
+}
+
+DMITIGR_PGFE_INLINE std::size_t Data_view::size() const noexcept
+{
+  return data_.size();
+}
+
+DMITIGR_PGFE_INLINE bool Data_view::is_empty() const noexcept
+{
+  return data_.empty();
+}
+
+DMITIGR_PGFE_INLINE const void* Data_view::bytes() const noexcept
+{
+  return data_.data();
 }
 
 } // namespace dmitigr::pgfe

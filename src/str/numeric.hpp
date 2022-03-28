@@ -48,15 +48,17 @@ template<typename Number>
 std::enable_if_t<std::is_integral<Number>::value, std::string>
 to_string(Number value, const Number base = 10)
 {
-  static_assert(std::numeric_limits<Number>::min() <= 2 && std::numeric_limits<Number>::max() >= 36);
+  static_assert(std::numeric_limits<Number>::min() <= 2 &&
+    std::numeric_limits<Number>::max() >= 36);
 
   if (!(2 <= base && base <= 36))
     throw Exception{"cannot convert number to text by using invalid base"};
 
-  static const char digits[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-                                'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
-                                'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
-                                'U', 'V', 'W', 'X', 'Y', 'Z'};
+  constexpr const char digits[] =
+    {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
+     'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J',
+     'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T',
+     'U', 'V', 'W', 'X', 'Y', 'Z'};
   static_assert(sizeof(digits) == 36);
   const bool negative = (value < 0);
   std::string result;

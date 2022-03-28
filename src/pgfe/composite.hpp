@@ -25,6 +25,7 @@
 
 #include "compositional.hpp"
 #include "data.hpp"
+#include "dll.hpp"
 
 namespace dmitigr::pgfe {
 
@@ -85,19 +86,7 @@ private:
  *   - positive value if the first differing field in `lhs` is greater than the
  *   corresponding field in `rhs`.
  */
-inline int cmp(const Composite& lhs, const Composite& rhs) noexcept
-{
-  if (const auto lfc = lhs.field_count(), rfc = rhs.field_count(); lfc == rfc) {
-    for (std::size_t i{}; i < lfc; ++i) {
-      if (lhs.field_name(i) < rhs.field_name(i) || lhs[i] < rhs[i])
-        return -1;
-      else if (lhs.field_name(i) > rhs.field_name(i) || lhs[i] > rhs[i])
-        return 1;
-    }
-    return 0;
-  } else
-    return lfc < rfc ? -1 : 1;
-}
+DMITIGR_PGFE_API int cmp(const Composite& lhs, const Composite& rhs) noexcept;
 
 /**
  * @returns `cmp(lhs, rhs) < 0`.
@@ -160,5 +149,9 @@ inline bool operator>=(const Composite& lhs, const Composite& rhs) noexcept
 }
 
 } // namespace dmitigr::pgfe
+
+#ifndef DMITIGR_PGFE_NOT_HEADER_ONLY
+#include "composite.cpp"
+#endif
 
 #endif  // DMITIGR_PGFE_COMPOSITE_HPP

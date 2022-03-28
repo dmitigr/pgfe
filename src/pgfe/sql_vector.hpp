@@ -73,30 +73,19 @@ public:
   explicit DMITIGR_PGFE_API Sql_vector(std::string_view input);
 
   /// @overload
-  explicit Sql_vector(std::vector<Sql_string>&& storage)
-    : storage_{std::move(storage)}
-  {}
+  explicit DMITIGR_PGFE_API Sql_vector(std::vector<Sql_string>&& storage);
 
   /// Swaps the instances.
-  void swap(Sql_vector& rhs) noexcept
-  {
-    storage_.swap(rhs.storage_);
-  }
+  DMITIGR_PGFE_API void swap(Sql_vector& rhs) noexcept;
 
   /// @returns The count of SQL strings this vector contains.
-  std::size_t size() const noexcept
-  {
-    return storage_.size();
-  }
+  DMITIGR_PGFE_API std::size_t size() const noexcept;
 
   /// @returns The count of non-empty SQL query strings this vector contains.
   DMITIGR_PGFE_API std::size_t non_empty_count() const noexcept;
 
   /// @returns `true` if this SQL vector is empty.
-  bool is_empty() const noexcept
-  {
-    return storage_.empty();
-  }
+  DMITIGR_PGFE_API bool is_empty() const noexcept;
 
   /**
    * @returns The index of the SQL string that owns by this vector, or `size()`
@@ -109,8 +98,9 @@ public:
    *
    * @see Sql_string::extra().
    */
-  std::size_t index_of(const std::string_view extra_name,
-    const std::string_view extra_value,
+  DMITIGR_PGFE_API std::size_t index_of(
+    std::string_view extra_name,
+    std::string_view extra_value,
     std::size_t offset = 0, std::size_t extra_offset = 0) const noexcept;
 
   /**
@@ -121,18 +111,10 @@ public:
    * @par Requires
    * `(index < size())`.
    */
-  Sql_string& operator[](const std::size_t index) noexcept
-  {
-    return const_cast<Sql_string&>(static_cast<const Sql_vector&>(*this)[index]);
-  }
+  DMITIGR_PGFE_API const Sql_string& operator[](std::size_t index) const;
 
   /// @overload
-  const Sql_string& operator[](const std::size_t index) const
-  {
-    if (!(index < size()))
-      throw Client_exception{"cannot get Sql_string of Sql_vector"};
-    return storage_[index];
-  }
+  DMITIGR_PGFE_API Sql_string& operator[](std::size_t index) noexcept;
 
   /**
    * @returns The SQL string that owns by this vector, or `nullptr` if no
@@ -143,22 +125,16 @@ public:
    *
    * @see index_of(), Sql_string::extra().
    */
-  Sql_string* find(const std::string_view extra_name,
-    const std::string_view extra_value,
-    const std::size_t offset = 0, const std::size_t extra_offset = 0)
-  {
-    return const_cast<Sql_string*>(static_cast<const Sql_vector*>(this)->
-      find(extra_name, extra_value, offset, extra_offset));
-  }
+  DMITIGR_PGFE_API const Sql_string* find(
+    std::string_view extra_name,
+    std::string_view extra_value,
+    std::size_t offset = 0, std::size_t extra_offset = 0) const;
 
   /// @overload
-  const Sql_string* find(const std::string_view extra_name,
-    const std::string_view extra_value,
-    const std::size_t offset = 0, const std::size_t extra_offset = 0) const
-  {
-    const auto index = index_of(extra_name, extra_value, offset, extra_offset);
-    return (index < size()) ? &operator[](index) : nullptr;
-  }
+  DMITIGR_PGFE_API Sql_string* find(
+    std::string_view extra_name,
+    std::string_view extra_value,
+    std::size_t offset = 0, std::size_t extra_offset = 0);
 
   /**
    * @returns The absolute position of the query of the speficied SQL string.
@@ -177,10 +153,7 @@ public:
    *
    * @param sql_string A SQL string to append.
    */
-  void push_back(Sql_string sql_string) noexcept
-  {
-    storage_.push_back(std::move(sql_string));
-  }
+  DMITIGR_PGFE_API void push_back(Sql_string sql_string) noexcept;
 
   /// @overload
   template<typename ... Types>
@@ -198,14 +171,7 @@ public:
    * @par Requires
    * `(index < size())`.
    */
-  void insert(const std::size_t index, Sql_string sql_string)
-  {
-    if (!(index < size()))
-      throw Client_exception{"cannot insert Sql_string to Sql_vector"};
-    const auto b = begin(storage_);
-    using Diff = decltype(b)::difference_type;
-    storage_.insert(b + static_cast<Diff>(index), std::move(sql_string));
-  }
+  DMITIGR_PGFE_API void insert(std::size_t index, Sql_string sql_string);
 
   /**
    * @brief Removes the SQL string from the vector.
@@ -213,17 +179,13 @@ public:
    * @par Requires
    * `(index < size())`.
    */
-  void erase(const std::size_t index)
-  {
-    if (!(index < size()))
-      throw Client_exception{"cannot erase Sql_string from Sql_vector"};
-    const auto b = begin(storage_);
-    using Diff = decltype(b)::difference_type;
-    storage_.erase(b + static_cast<Diff>(index));
-  }
+  DMITIGR_PGFE_API void erase(std::size_t index);
 
-  /// @returns The result of conversion of this instance to the instance of type `std::string`.
-  std::string to_string() const;
+  /**
+   * @returns The result of conversion of this instance to the instance of
+   * type `std::string`.
+   */
+  DMITIGR_PGFE_API std::string to_string() const;
 
   /**
    * @returns The released storage.
@@ -231,12 +193,7 @@ public:
    * @par Effects
    * `!has_sql_strings()`.
    */
-  std::vector<Sql_string> release() noexcept
-  {
-    decltype(storage_) result;
-    storage_.swap(result);
-    return result;
-  }
+  DMITIGR_PGFE_API std::vector<Sql_string> release() noexcept;
 
 private:
   mutable std::vector<Sql_string> storage_;

@@ -60,8 +60,10 @@ template<typename F>
 struct Response_callback_traits<F,
   std::enable_if_t<std::is_invocable_v<F, Row&&>>> final {
   using Result = std::invoke_result_t<F, Row&&>;
-  constexpr static bool is_result_row_processing = std::is_same_v<Result, Row_processing>;
-  constexpr static bool is_result_void = std::is_same_v<Result, void>;
+  constexpr static bool is_result_row_processing =
+    std::is_same_v<Result, Row_processing>;
+  constexpr static bool is_result_void =
+    std::is_same_v<Result, void>;
   constexpr static bool is_valid = is_result_row_processing || is_result_void;
   constexpr static bool has_error_parameter = false;
 };
@@ -70,7 +72,8 @@ template<typename F>
 struct Response_callback_traits<F,
   std::enable_if_t<std::is_invocable_v<F, Row&&, Error&&>>> final {
   using Result = std::invoke_result_t<F, Row&&, Error&&>;
-  constexpr static bool is_result_row_processing = std::is_same_v<Result, Row_processing>;
+  constexpr static bool is_result_row_processing =
+    std::is_same_v<Result, Row_processing>;
   constexpr static bool is_result_void = std::is_same_v<Result, void>;
   constexpr static bool is_valid = is_result_row_processing || is_result_void;
   constexpr static bool has_error_parameter = true;

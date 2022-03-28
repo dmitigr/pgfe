@@ -48,11 +48,11 @@ namespace dmitigr::pgfe {
  * structure Conversions must define:
  * @code
  * template<> struct Conversions<T> {
- *   static T to_type(const std::string& text, Types&& ... args);                      // 1
- *   static std::string to_string(const T& value, Types&& ... args);                   // 2
- *   static T to_type(const Data& data, Types&& ... args);                             // 3
- *   static std::unique_ptr<Data> to_data(const T& value, Types&& ... args);           // 4
- *   static T to_type(const Row& row, Types&& ... args);                               // 5
+ *   static T to_type(const std::string& text, Types&& ... args);            // 1
+ *   static std::string to_string(const T& value, Types&& ... args);         // 2
+ *   static T to_type(const Data& data, Types&& ... args);                   // 3
+ *   static std::unique_ptr<Data> to_data(const T& value, Types&& ... args); // 4
+ *   static T to_type(const Row& row, Types&& ... args);                     // 5
  * };
  * @endcode
  *
@@ -60,11 +60,11 @@ namespace dmitigr::pgfe {
  * defined:
  * @code
  * template<> struct Conversions<T> {
- *   static T to_type(std::string&& text, Types&& ... args);                      // 11
- *   static std::string to_string(T&& value, Types&& ... args);                   // 12
- *   static T to_type(std::unique_ptr<Data>&& data, Types&& ... args);            // 13
- *   static std::unique_ptr<Data> to_data(T&& value, Types&& ... args);           // 14
- *   static T to_type(Row&& row, Types&& ... args);                               // 15
+ *   static T to_type(std::string&& text, Types&& ... args);                 // 11
+ *   static std::string to_string(T&& value, Types&& ... args);              // 12
+ *   static T to_type(std::unique_ptr<Data>&& data, Types&& ... args);       // 13
+ *   static std::unique_ptr<Data> to_data(T&& value, Types&& ... args);      // 14
+ *   static T to_type(Row&& row, Types&& ... args);                          // 15
  * };
  * @endcode
  *
@@ -191,7 +191,8 @@ template<typename T, typename ... Types>
 inline std::unique_ptr<Data> to_data(T&& value, Types&& ... args)
 {
   using U = std::decay_t<T>;
-  return Conversions<U>::to_data(std::forward<T>(value), std::forward<Types>(args)...);
+  return Conversions<U>::to_data(std::forward<T>(value),
+    std::forward<Types>(args)...);
 }
 
 /// @overload
@@ -203,7 +204,8 @@ inline std::unique_ptr<Data> to_data(const Data& value, Types&& ...)
 
 /// @overload
 template<typename ... Types>
-inline std::unique_ptr<Data> to_data(std::unique_ptr<Data>&& value, Types&& ...) noexcept
+inline std::unique_ptr<Data> to_data(std::unique_ptr<Data>&& value,
+  Types&& ...) noexcept
 {
   return std::move(value);
 }

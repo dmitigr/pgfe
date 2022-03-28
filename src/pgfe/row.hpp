@@ -26,7 +26,6 @@
 #include "../base/assert.hpp"
 #include "composite.hpp"
 #include "data.hpp"
-#include "exceptions.hpp"
 #include "response.hpp"
 #include "row_info.hpp"
 
@@ -55,45 +54,30 @@ public:
   }
 
   /// @see Message::is_valid().
-  bool is_valid() const noexcept override
-  {
-    return static_cast<bool>(info_.pq_result_);
-  }
+  DMITIGR_PGFE_API bool is_valid() const noexcept override;
 
   /// @name Compositional overridings
   /// @{
 
   /// @see Compositional::field_count().
-  std::size_t field_count() const noexcept override
-  {
-    return info_.field_count();
-  }
+  DMITIGR_PGFE_API std::size_t field_count() const noexcept override;
 
   /// @see Compositional::is_empty().
-  bool is_empty() const noexcept override
-  {
-    return info_.is_empty();
-  }
+  DMITIGR_PGFE_API bool is_empty() const noexcept override;
 
   /// @see Compositional::field_name().
-  std::string_view field_name(const std::size_t index) const override
-  {
-    return info_.field_name(index);
-  }
+  DMITIGR_PGFE_API std::string_view
+  field_name(const std::size_t index) const override;
 
   /// @see Compositional::field_index().
-  std::size_t field_index(const std::string_view name, const std::size_t offset = 0) const noexcept override
-  {
-    return info_.field_index(name, offset);
-  }
+  DMITIGR_PGFE_API std::size_t
+  field_index(const std::string_view name,
+    const std::size_t offset = 0) const noexcept override;
 
   /// @}
 
   /// @returns The information about this row.
-  const Row_info& info() const noexcept
-  {
-    return info_;
-  }
+  DMITIGR_PGFE_API const Row_info& info() const noexcept;
 
   /**
    * @returns The field data of this row, or invalid instance if NULL.
@@ -103,19 +87,7 @@ public:
    * @par Requires
    * `(index < field_count())`.
    */
-  Data_view data(const std::size_t index = 0) const override
-  {
-    if (!(index < field_count()))
-      throw Client_exception{"cannot get field data of row"};
-
-    constexpr int row{};
-    const auto fld = static_cast<int>(index);
-    const auto& r = info_.pq_result_;
-    return !r.is_data_null(row, fld) ?
-      Data_view{r.data_value(row, fld),
-        static_cast<std::size_t>(r.data_size(row, fld)), r.field_format(fld)} :
-      Data_view{};
-  }
+  DMITIGR_PGFE_API Data_view data(const std::size_t index = 0) const override;
 
   /**
    * @overload
@@ -126,11 +98,8 @@ public:
    * @par Requires
    * `field_index(name, offset) < field_count()`.
    */
-  Data_view data(const std::string_view name,
-    std::size_t offset = 0) const noexcept override
-  {
-    return data(field_index(name, offset));
-  }
+  DMITIGR_PGFE_API Data_view data(const std::string_view name,
+    std::size_t offset = 0) const noexcept override;
 
   /// @name Iterators
   /// @{
@@ -268,13 +237,13 @@ public:
 private:
   Row_info info_; // has pq_result_
 
-  bool is_invariant_ok() const override
-  {
-    const bool info_ok = (info_.pq_result_.status() == PGRES_SINGLE_TUPLE);
-    return info_ok && Composite::is_invariant_ok();
-  }
+  bool is_invariant_ok() const override;
 };
 
 } // namespace dmitigr::pgfe
+
+#ifndef DMITIGR_PGFE_NOT_HEADER_ONLY
+#include "row.cpp"
+#endif
 
 #endif  // DMITIGR_PGFE_ROW_HPP

@@ -55,7 +55,7 @@ public:
   virtual std::string_view field_name(std::size_t index) const = 0;
 
   /**
-   * @returns The field index if presents, or `field_count()` othersize.
+   * @returns The field index if presents, or `field_count()` otherwise.
    *
    * @param offset For cases when several fields are named equally.
    *
@@ -71,21 +71,13 @@ private:
 
   Compositional() = default;
 
-  virtual bool is_invariant_ok() const
-  {
-    const bool fields_ok = is_empty() || field_count() > 0;
-    const bool field_names_ok = [this]
-    {
-      const std::size_t fc{field_count()};
-      for (std::size_t i{}; i < fc; ++i)
-        if (field_index(field_name(i), i) != i)
-          return false;
-      return true;
-    }();
-    return fields_ok && field_names_ok;
-  }
+  virtual bool is_invariant_ok() const;
 };
 
 } // namespace dmitigr::pgfe
+
+#ifndef DMITIGR_PGFE_NOT_HEADER_ONLY
+#include "compositional.cpp"
+#endif
 
 #endif  // DMITIGR_PGFE_COMPOSITIONAL_HPP

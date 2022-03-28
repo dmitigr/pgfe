@@ -67,7 +67,7 @@ private:
   detail::pq::Result pq_result_;
 
   /// The constructor.
-  explicit DMITIGR_PGFE_API Ready_for_query(detail::pq::Result&& pq_result) noexcept;
+  explicit Ready_for_query(detail::pq::Result&& pq_result) noexcept;
 };
 
 /// Ready_for_query is swappable.

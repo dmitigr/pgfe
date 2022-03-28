@@ -218,16 +218,10 @@ public:
   DMITIGR_PGFE_API int write(const char* buf, std::size_t size);
 
   /// @returns The underlying connection instance.
-  const Connection* connection() const noexcept
-  {
-    return conn_;
-  }
+  DMITIGR_PGFE_API const Connection* connection() const noexcept;
 
   /// @overload
-  Connection* connection() noexcept
-  {
-    return conn_;
-  }
+  DMITIGR_PGFE_API Connection* connection() noexcept;
 
 private:
   friend Connection;
@@ -244,10 +238,7 @@ private:
   Large_object(Connection* conn, int desc);
 
   /// @returns The underlying large object descriptor.
-  int descriptor() const noexcept
-  {
-    return desc_;
-  }
+  int descriptor() const noexcept;
 };
 
 /// Large_object is swappable.

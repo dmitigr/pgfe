@@ -23,8 +23,9 @@
 #ifndef DMITIGR_STR_STREAM_HPP
 #define DMITIGR_STR_STREAM_HPP
 
-#include "version.hpp"
 #include "../fs/filesystem.hpp"
+#include "exceptions.hpp"
+#include "version.hpp"
 
 #include <array>
 #include <cstddef>
@@ -39,8 +40,8 @@ namespace dmitigr::str {
  * @brief Reads the file into the vector of strings.
  *
  * @param path The path to the file to read the data from.
- * @param pred The predicate of form `pred(line)` that returns `true` to indicate
- * that `line` read from the file must be appended to the result.
+ * @param pred The predicate of form `pred(line)` that returns `true` to
+ * indicate that `line` read from the file must be appended to the result.
  * @param delimiter The delimiter character.
  * @param is_binary The indicator of binary read mode.
  */
@@ -88,10 +89,12 @@ inline std::vector<std::string> read_to_strings(std::istream& input,
  *
  * @see read_to_strings_if().
  */
-inline std::vector<std::string> read_to_strings(const std::filesystem::path& path,
+inline std::vector<std::string>
+read_to_strings(const std::filesystem::path& path,
   const char delimiter = '\n', const bool is_binary = true)
 {
-  return read_to_strings_if(path, [](const auto&){return true;}, delimiter, is_binary);
+  return read_to_strings_if(path, [](const auto&){return true;},
+    delimiter, is_binary);
 }
 
 /**
@@ -126,7 +129,7 @@ inline std::string read_to_string(const std::filesystem::path& path,
   if (input)
     return read_to_string(input);
   else
-    throw std::runtime_error{"unable to open \"" + path.generic_string() + "\""};
+    throw Exception{"unable to open \"" + path.generic_string() + "\""};
 }
 
 } // namespace dmitigr::str

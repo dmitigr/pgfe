@@ -85,9 +85,12 @@ inline std::unique_ptr<Descriptor> make_tcp_connection(const Client_options& opt
     throw Exception{"TCP connections over named pipes are not implemented"};
 #endif
   case Communication_mode::uds:
-    return std::make_unique<Sockdesc>(make_tcp_connection({remote.uds_path().value()}));
+    return std::make_unique<Sockdesc>(
+      make_tcp_connection({remote.uds_path().value()}));
   case Communication_mode::net:
-    return std::make_unique<Sockdesc>(make_tcp_connection({Ip_address{remote.net_address().value()}, remote.net_port().value()}));
+    return std::make_unique<Sockdesc>(
+      make_tcp_connection({net::Ip_address::from_text(
+        remote.net_address().value()), remote.net_port().value()}));
   }
   DMITIGR_ASSERT(false);
 }
