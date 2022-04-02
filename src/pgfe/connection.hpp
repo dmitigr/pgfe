@@ -31,6 +31,7 @@
 #include "dll.hpp"
 #include "error.hpp"
 #include "exceptions.hpp"
+#include "large_object.hpp"
 #include "notice.hpp"
 #include "notification.hpp"
 #include "pq.hpp"
@@ -75,6 +76,9 @@ public:
 
   /// An alias of Connection_status.
   using Status = Connection_status;
+
+  /// The destructor.
+  DMITIGR_PGFE_API ~Connection() noexcept;
 
   /**
    * @brief The constructor.
@@ -597,25 +601,12 @@ public:
    * prepare.
    *
    * @remarks The object pointed by the returned value is owned by this instance.
-   *
-   * @see prepare().
-   */
-  DMITIGR_PGFE_API Prepared_statement* prepared_statement() noexcept;
-
-  /**
-   * @returns The pointer to a prepared statement by its name if the prepared
-   * statement with the given name is known by this instance.
-   *
-   * @param name A name of prepared statement.
-   *
-   * @remarks The object pointed by the returned value is owned by this instance.
    * @remarks The statements prepared by using the SQL command `PREPARE` must be
    * described first in order to be accessible by this method.
    *
-   * @see describe().
+   * @see prepare_nio(), describe_nio().
    */
-  DMITIGR_PGFE_API Prepared_statement*
-  prepared_statement(const std::string_view name) const noexcept;
+  DMITIGR_PGFE_API Prepared_statement prepared_statement() noexcept;
 
   /**
    * @returns The released instance if available.
@@ -680,8 +671,7 @@ public:
    *
    * @par Effects
    * - `has_uncompleted_request()` - just after the successful request submission;
-   * - `(prepared_statement(name) && prepared_statement(name)->is_preparsed())` -
-   * just after the successful response.
+   * - `prepared_statement()` - just after the successful response.
    *
    * @par Requires
    * `(is_ready_for_nio_request() && !statement.has_missing_parameters())`.
@@ -709,7 +699,7 @@ public:
     const std::string& name = {});
 
   /**
-   * @returns The pointer to the just prepared statement owned by this instance.
+   * @returns The prepared statement.
    *
    * @par Requires
    * `(is_ready_for_request() && !statement.has_missing_parameters())`.
@@ -721,11 +711,11 @@ public:
    *
    * @see unprepare().
    */
-  DMITIGR_PGFE_API Prepared_statement& prepare(const Sql_string& statement,
+  DMITIGR_PGFE_API Prepared_statement prepare(const Sql_string& statement,
     const std::string& name = {});
 
   /// Same as prepare() except the statement will be send without preparsing.
-  DMITIGR_PGFE_API Prepared_statement& prepare_as_is(const std::string& statement,
+  DMITIGR_PGFE_API Prepared_statement prepare_as_is(const std::string& statement,
     const std::string& name = {});
 
   /**
@@ -738,8 +728,7 @@ public:
    *
    * @par Effects
    * - `has_uncompleted_request()` - just after the successful request submission;
-   * - `(prepared_statement(name) && prepared_statement(name)->is_described())` -
-   * just after the successful response.
+   * - `prepared_statement()` - just after the successful response.
    *
    * @par Requires
    * `is_ready_for_nio_request()`.
@@ -752,7 +741,7 @@ public:
   DMITIGR_PGFE_API void describe_nio(const std::string& name);
 
   /**
-   * @returns The pointer to the prepared statement owned by this instance.
+   * @returns The prepared statement if exists on server.
    *
    * @par Requires
    * `is_ready_for_request()`.
@@ -762,7 +751,7 @@ public:
    *
    * @see describe_nio(), unprepare().
    */
-  DMITIGR_PGFE_API Prepared_statement* describe(const std::string& name);
+  DMITIGR_PGFE_API Prepared_statement describe(const std::string& name);
 
   /**
    * @brief Requests the server to deallocate the prepared statement.
@@ -774,7 +763,7 @@ public:
    *
    * @par Effects
    * - `has_uncompleted_request()` - just after the successful request;
-   * - `!prepared_statement(name)` - just after the successful response.
+   * - `completion()` - just after the successful response.
    *
    * @par Requires
    * `(is_ready_for_nio_request() && !name.empty())`.
@@ -820,7 +809,7 @@ public:
   template<typename ... Types>
   void execute_nio(const Sql_string& statement, Types&& ... parameters)
   {
-    Prepared_statement ps{"", this, &statement};
+    Prepared_statement ps{execute_ps_state_, &statement, false};
     ps.bind_many(std::forward<Types>(parameters)...).execute_nio(statement);
   }
 
@@ -1087,7 +1076,9 @@ public:
    *
    * @param oid A desired OID. `invalid_oid` means *unused oid*.
    *
-   * @returns The valid OID if successful, or `invalid_oid` otherwise.
+   * @returns The valid OID.
+   *
+   * @throws Client_exception on error.
    *
    * @par Requires
    * `is_ready_for_request()`.
@@ -1114,15 +1105,13 @@ public:
   /**
    * @brief Requests the server to remove the large object and waits the result.
    *
-   * @returns `true` on success.
-   *
    * @par Requires
    * `is_ready_for_request()`.
    *
    * @par Exception safety guarantee
    * Strong.
    */
-  DMITIGR_PGFE_API bool remove_large_object(Oid oid);
+  DMITIGR_PGFE_API void remove_large_object(Oid oid);
 
   /**
    * @brief Requests the server (multiple times) to import the specified file as
@@ -1143,15 +1132,13 @@ public:
    * @brief Requests the server (multiple times) to export the specified large
    * object to the specified file.
    *
-   * @returns `true` on success.
-   *
    * @par Requires
    * `is_ready_for_request()`.
    *
    * @par Exception safety guarantee
    * Strong.
    */
-  DMITIGR_PGFE_API bool export_large_object(Oid oid,
+  DMITIGR_PGFE_API void export_large_object(Oid oid,
     const std::filesystem::path& filename);
 
   /// @}
@@ -1254,12 +1241,14 @@ private:
   Data_format default_result_format_{Data_format::text};
 
   // Persistent data / private-modifiable data
+  std::shared_ptr<Prepared_statement::State> execute_ps_state_;
   std::unique_ptr< ::PGconn> conn_;
   std::optional<Status> polling_status_;
   ::PGconn* conn() const noexcept
   {
     return conn_.get();
   }
+  std::int_fast64_t lo_id_{};
 
   // ---------------------------------------------------------------------------
   // Session data / requests
@@ -1278,6 +1267,10 @@ private:
     explicit Request(const Id id);
     Request(const Id id, Prepared_statement prepared_statement);
     Request(const Id id, std::string prepared_statement_name);
+    Request(const Request&) = delete;
+    Request& operator=(const Request&) = delete;
+    Request(Request&&) = default;
+    Request& operator=(Request&&) = default;
 
     Id id_{};
     Prepared_statement prepared_statement_;
@@ -1288,13 +1281,13 @@ private:
 
   detail::pq::Result response_; // allowed to not match to response_status_
   Response_status response_status_{}; // status last assigned by handle_input()
-  Prepared_statement* last_prepared_statement_{};
+  Prepared_statement last_prepared_statement_;
   bool is_output_flushed_{true};
   bool is_copy_in_progress_{};
   bool is_single_row_mode_enabled_{};
 
-  mutable std::list<Prepared_statement> named_prepared_statements_;
-  mutable Prepared_statement unnamed_prepared_statement_;
+  std::list<std::shared_ptr<Prepared_statement::State>> ps_states_;
+  std::list<std::shared_ptr<Large_object::State>> lo_states_;
 
   std::queue<Request> requests_;
   Request last_processed_request_;
@@ -1304,6 +1297,27 @@ private:
   // ---------------------------------------------------------------------------
   // Session data helpers
   // ---------------------------------------------------------------------------
+
+  template<class C, typename T>
+  static auto registered(C&& container, const T& id) noexcept
+  {
+    const auto b = begin(std::forward<C>(container));
+    const auto e = end(std::forward<C>(container));
+    const auto p = find_if(b, e, [&id](const auto& reg)
+    {
+      return reg->id_ == id;
+    });
+    return std::make_pair(p, e);
+  }
+
+  template<class C>
+  void unregister(C& states, typename C::const_iterator p) const noexcept
+  {
+    DMITIGR_ASSERT(p != end(states));
+    DMITIGR_ASSERT((*p)->connection_ == this);
+    (*p)->connection_ = nullptr; // invalidate instance(-s)
+    states.erase(p);             // remove the copy of state
+  }
 
   void reset_session() noexcept;
   void set_single_row_mode_enabled();
@@ -1323,35 +1337,25 @@ private:
     const Sql_string* const preparsed);
 
   template<typename M, typename T>
-  Prepared_statement& prepare__(M&& prepare, T&& statement, const std::string& name)
+  Prepared_statement prepare__(M&& prepare, T&& statement, const std::string& name)
   {
     if (!is_ready_for_request())
       throw Client_exception{"cannot prepare statement: not ready for request"};
     (this->*prepare)(std::forward<T>(statement), name);
-    auto* const result = wait_prepared_statement__();
+    auto result = wait_prepared_statement__();
     DMITIGR_ASSERT(result);
-    return *result;
+    return result;
   }
 
-  Prepared_statement* wait_prepared_statement__();
+  Prepared_statement wait_prepared_statement__();
 
-  /*
-   * Attempts to find the prepared statement.
-   *
-   * @returns The pointer to a prepared statement, or `nullptr` if no statement
-   * with the given `name` known by this instance.
-   */
-  Prepared_statement* ps(std::string_view name) const noexcept;
-
-  /*
-   * Registers the prepared statement.
-   *
-   * @returns The pointer to the registered prepared statement.
-   */
-  Prepared_statement* register_ps(Prepared_statement&& ps) const noexcept;
-
-  // Unregisters the prepared statement.
+  auto registered_ps(const std::string_view name) const noexcept
+  {
+    return registered(ps_states_, name);
+  }
+  void register_ps(Prepared_statement&& ps);
   void unregister_ps(std::string_view name) noexcept;
+  void unregister_ps(decltype(ps_states_)::const_iterator p) noexcept;
 
   // ---------------------------------------------------------------------------
   // Utilities helpers
@@ -1369,13 +1373,20 @@ private:
   // Large Object private API
   // ---------------------------------------------------------------------------
 
+  auto registered_lo(const int desc) const noexcept
+  {
+    return registered(lo_states_, desc);
+  }
+  void register_lo(const Large_object& lo);
+  void unregister_lo(Large_object& lo) noexcept;
+  void unregister_lo(decltype(lo_states_)::const_iterator p) noexcept;
   bool close(Large_object& lo) noexcept;
   std::int_fast64_t seek(Large_object& lo, std::int_fast64_t offset,
-    Large_object_seek_whence whence) noexcept;
-  std::int_fast64_t tell(Large_object& lo) noexcept;
-  bool truncate(Large_object& lo, const std::int_fast64_t new_size) noexcept;
-  int read(Large_object& lo, char* const buf, const std::size_t size) noexcept;
-  int write(Large_object& lo, const char* const buf, const std::size_t size) noexcept;
+    Large_object_seek_whence whence);
+  std::int_fast64_t tell(Large_object& lo);
+  void truncate(Large_object& lo, const std::int_fast64_t new_size);
+  int read(Large_object& lo, char* const buf, const std::size_t size);
+  int write(Large_object& lo, const char* const buf, const std::size_t size);
 
   // ---------------------------------------------------------------------------
   // call/invoke helpers
@@ -1454,12 +1465,12 @@ template<Row_processing on_exception, typename F, typename ... Types>
 std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
 Prepared_statement::execute(F&& callback, Types&& ... parameters)
 {
-  if (!is_valid() || !connection_->is_ready_for_request())
+  if (!is_valid() || !connection().is_ready_for_request())
     throw_exception("cannot execute");
 
   bind_many(std::forward<Types>(parameters)...).execute_nio();
   assert(is_invariant_ok());
-  return connection_->process_responses<on_exception>(std::forward<F>(callback));
+  return connection().process_responses<on_exception>(std::forward<F>(callback));
 }
 
 /// Connection is swappable.
@@ -1472,6 +1483,7 @@ inline void swap(Connection& lhs, Connection& rhs) noexcept
 
 #ifndef DMITIGR_PGFE_NOT_HEADER_ONLY
 #include "connection.cpp"
+#include "large_object.cpp"
 #include "prepared_statement.cpp"
 #endif
 

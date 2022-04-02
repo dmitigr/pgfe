@@ -34,6 +34,7 @@
 namespace dmitigr::pgfe {
 
 namespace detail {
+
 /// A wrapper around net::poll().
 inline Socket_readiness poll_sock(const int socket, const Socket_readiness mask,
   const std::optional<std::chrono::milliseconds> timeout)
@@ -45,6 +46,7 @@ inline Socket_readiness poll_sock(const int socket, const Socket_readiness mask,
       static_cast<Sock_readiness>(mask),
       timeout ? *timeout : std::chrono::milliseconds{-1}));
 }
+
 } // namespace detail
 
 DMITIGR_PGFE_INLINE Server_status ping(const Connection_options& options)
@@ -88,8 +90,14 @@ DMITIGR_PGFE_INLINE Connection::Request::Request(const Id id,
 
 // =============================================================================
 
+DMITIGR_PGFE_INLINE Connection::~Connection() noexcept
+{
+  reset_session();
+}
+
 DMITIGR_PGFE_INLINE Connection::Connection(Options options)
   : options_{std::move(options)}
+  , execute_ps_state_{std::make_shared<Prepared_statement::State>("", this)}
 {}
 
 DMITIGR_PGFE_INLINE Connection::Connection(Connection&& rhs) noexcept
@@ -123,8 +131,8 @@ DMITIGR_PGFE_INLINE void Connection::swap(Connection& rhs) noexcept
   swap(response_status_, rhs.response_status_);
   swap(last_processed_request_, rhs.last_processed_request_);
   swap(last_prepared_statement_, rhs.last_prepared_statement_);
-  swap(named_prepared_statements_, rhs.named_prepared_statements_);
-  swap(unnamed_prepared_statement_, rhs.unnamed_prepared_statement_);
+  swap(ps_states_, rhs.ps_states_);
+  swap(lo_states_, rhs.lo_states_);
   swap(requests_, rhs.requests_);
 }
 
@@ -529,29 +537,26 @@ Connection::handle_input(const bool wait_response)
       is_single_row_mode_enabled_ = false;
     } else if (rstatus == PGRES_COMMAND_OK) {
       auto& lpr = last_processed_request_;
-      DMITIGR_ASSERT(lpr.id_ != Request::Id::prepare ||
-        lpr.prepared_statement_);
-      DMITIGR_ASSERT(lpr.id_ != Request::Id::describe ||
-        lpr.prepared_statement_name_);
-      DMITIGR_ASSERT(lpr.id_ != Request::Id::unprepare ||
-        lpr.prepared_statement_name_);
+      DMITIGR_ASSERT(lpr.id_ != Request::Id::prepare || lpr.prepared_statement_);
+      DMITIGR_ASSERT(lpr.id_ != Request::Id::describe || lpr.prepared_statement_);
+      DMITIGR_ASSERT(lpr.id_ != Request::Id::unprepare || lpr.prepared_statement_name_);
       if (lpr.id_ == Request::Id::prepare) {
-        last_prepared_statement_ = register_ps(std::move(lpr.prepared_statement_));
-        DMITIGR_ASSERT(!lpr.prepared_statement_);
+        auto& ps = lpr.prepared_statement_;
+        DMITIGR_ASSERT(ps);
+        const auto [p, e] = registered_ps(ps.name());
+        DMITIGR_ASSERT(p == e);
+        register_ps(std::move(ps));
+        DMITIGR_ASSERT(last_prepared_statement_);
       } else if (lpr.id_ == Request::Id::describe) {
-        last_prepared_statement_ = ps(*lpr.prepared_statement_name_);
-        if (!last_prepared_statement_)
-          last_prepared_statement_ = register_ps(Prepared_statement{
-            std::move(*lpr.prepared_statement_name_),
-            this,
-            static_cast<std::size_t>(response_.field_count())});
-        last_prepared_statement_->set_description(std::move(response_));
-        lpr.prepared_statement_name_.reset();
+        auto& ps = lpr.prepared_statement_;
+        DMITIGR_ASSERT(ps);
+        ps.set_description(std::move(response_));
+        register_ps(std::move(ps));
+        DMITIGR_ASSERT(last_prepared_statement_);
       } else if (lpr.id_ == Request::Id::unprepare) {
         DMITIGR_ASSERT(lpr.prepared_statement_name_ &&
           !std::strcmp(response_.command_tag(), "DEALLOCATE"));
         unregister_ps(*lpr.prepared_statement_name_);
-        lpr.prepared_statement_name_.reset();
       }
       is_copy_in_progress_ = false;
       is_single_row_mode_enabled_ = false;
@@ -767,19 +772,11 @@ DMITIGR_PGFE_INLINE Completion Connection::completion() noexcept
   }
 }
 
-DMITIGR_PGFE_INLINE Prepared_statement*
+DMITIGR_PGFE_INLINE Prepared_statement
 Connection::prepared_statement() noexcept
 {
-  auto* const result = last_prepared_statement_;
-  last_prepared_statement_ = nullptr;
   response_.reset();
-  return result;
-}
-
-DMITIGR_PGFE_INLINE Prepared_statement*
-Connection::prepared_statement(const std::string_view name) const noexcept
-{
-  return ps(name);
+  return std::move(last_prepared_statement_);
 }
 
 DMITIGR_PGFE_INLINE Ready_for_query Connection::ready_for_query()
@@ -828,14 +825,14 @@ Connection::prepare_nio_as_is(const std::string& statement, const std::string& n
   prepare_nio__(statement.c_str(), name.c_str(), nullptr); // can throw
 }
 
-DMITIGR_PGFE_INLINE Prepared_statement&
+DMITIGR_PGFE_INLINE Prepared_statement
 Connection::prepare(const Sql_string& statement, const std::string& name)
 {
   using M = void(Connection::*)(const Sql_string&, const std::string&);
   return prepare__(static_cast<M>(&Connection::prepare_nio), statement, name);
 }
 
-DMITIGR_PGFE_INLINE Prepared_statement&
+DMITIGR_PGFE_INLINE Prepared_statement
 Connection::prepare_as_is(const std::string& statement, const std::string& name)
 {
   return prepare__(&Connection::prepare_nio_as_is, statement, name);
@@ -847,7 +844,11 @@ DMITIGR_PGFE_INLINE void Connection::describe_nio(const std::string& name)
     throw Client_exception{"cannot describe prepared statement: "
       "not ready for non-blocking IO request"};
 
-  requests_.emplace(Request::Id::describe, name); // can throw
+  const auto [p, e] = registered_ps(name);
+  auto state = (p == e) ?
+    std::make_shared<Prepared_statement::State>(name, this) : *p;
+  Prepared_statement ps{state};
+  requests_.emplace(Request::Id::describe, std::move(ps)); // can throw
   try {
     const int send_ok = ::PQsendDescribePrepared(conn(), name.c_str());
     if (!send_ok)
@@ -860,7 +861,7 @@ DMITIGR_PGFE_INLINE void Connection::describe_nio(const std::string& name)
   assert(is_invariant_ok());
 }
 
-DMITIGR_PGFE_INLINE Prepared_statement* Connection::describe(const std::string& name)
+DMITIGR_PGFE_INLINE Prepared_statement Connection::describe(const std::string& name)
 {
   if (!is_ready_for_request())
     throw Client_exception{"cannot describe prepared statement: "
@@ -888,8 +889,8 @@ DMITIGR_PGFE_INLINE void Connection::unprepare_nio(const std::string& name)
 DMITIGR_PGFE_INLINE Completion Connection::unprepare(const std::string& name)
 {
   if (!is_ready_for_request())
-    throw Client_exception{"cannot unprepare prepared statement:"
-      " not ready for request"};
+    throw Client_exception{"cannot unprepare prepared statement: "
+      "not ready for request"};
   unprepare_nio(name);
   wait_response_throw();
   return completion();
@@ -950,9 +951,15 @@ DMITIGR_PGFE_INLINE Oid Connection::create_large_object(const Oid oid)
 {
   if (!is_ready_for_request())
     throw Client_exception{"cannot create large object: not ready for request"};
-  return (oid == invalid_oid) ? ::lo_creat(conn(), static_cast<int>(
-      Large_object_open_mode::reading | Large_object_open_mode::writing)) :
+  const Oid result = (oid == invalid_oid) ?
+    ::lo_creat(conn(),
+      static_cast<int>(
+        Large_object_open_mode::reading |
+        Large_object_open_mode::writing)) :
     ::lo_create(conn(), oid);
+  if (result == invalid_oid)
+    throw Client_exception{"cannot create large object: "+error_message()};
+  return result;
 }
 
 DMITIGR_PGFE_INLINE Large_object Connection::open_large_object(const Oid oid,
@@ -963,16 +970,20 @@ DMITIGR_PGFE_INLINE Large_object Connection::open_large_object(const Oid oid,
 
   const int desc{::lo_open(conn(), oid, static_cast<int>(mode))};
   if (desc < 0)
-    throw Client_exception{"cannot open large object"};
+    throw Client_exception{"cannot open large object: "+error_message()};
 
-  return Large_object{this, desc};
+  Large_object result{std::make_shared<Large_object::State>(++lo_id_, desc, this)};
+  register_lo(result);
+  return result;
 }
 
-DMITIGR_PGFE_INLINE bool Connection::remove_large_object(const Oid oid)
+DMITIGR_PGFE_INLINE void Connection::remove_large_object(const Oid oid)
 {
   if (!is_ready_for_request())
     throw Client_exception{"cannot remove large object: not ready for request"};
-  return ::lo_unlink(conn(), oid);
+
+  if (::lo_unlink(conn(), oid) == -1)
+    throw Client_exception{"cannot remove large object: "+error_message()};
 }
 
 DMITIGR_PGFE_INLINE Oid
@@ -981,17 +992,23 @@ Connection::import_large_object(const std::filesystem::path& filename,
 {
   if (!is_ready_for_request())
     throw Client_exception{"cannot import large object: not ready for request"};
-  return ::lo_import_with_oid(conn(), filename.string().c_str(), oid);
+
+  const Oid result = ::lo_import_with_oid(conn(), filename.string().c_str(), oid);
+  if (result == invalid_oid)
+    throw Client_exception{"cannot import large object: "+error_message()};
+
+  return result;
 }
 
-DMITIGR_PGFE_INLINE bool
+DMITIGR_PGFE_INLINE void
 Connection::export_large_object(const Oid oid,
   const std::filesystem::path& filename)
 {
   if (!is_ready_for_request())
     throw Client_exception{"cannot export large object: not ready for request"};
-  // lo_export() returns -1 on failure
-  return ::lo_export(conn(), oid, filename.string().c_str()) == 1;
+
+  if (::lo_export(conn(), oid, filename.string().c_str()) == -1)
+    throw Client_exception{"cannot export large object: "+error_message()};
 }
 
 DMITIGR_PGFE_INLINE std::string
@@ -1058,8 +1075,8 @@ DMITIGR_PGFE_INLINE bool Connection::is_invariant_ok() const noexcept
     !session_start_time_ &&
     !response_ &&
     (response_status_ == Response_status::empty) &&
-    named_prepared_statements_.empty() &&
-    !unnamed_prepared_statement_ &&
+    ps_states_.empty() &&
+    lo_states_.empty() &&
     requests_.empty();
   const bool session_data_ok = session_data_empty ||
     (status() == Status::failure) || (status() == Status::connected);
@@ -1094,15 +1111,27 @@ DMITIGR_PGFE_INLINE bool Connection::is_invariant_ok() const noexcept
 DMITIGR_PGFE_INLINE void Connection::reset_session() noexcept
 {
   session_start_time_.reset();
-
   response_.reset();
   response_status_ = {};
-  last_prepared_statement_ = {};
-
-  named_prepared_statements_.clear();
-  unnamed_prepared_statement_ = {};
-
   requests_ = {};
+  is_output_flushed_ = true;
+  is_copy_in_progress_ =  false;
+  is_single_row_mode_enabled_ = false;
+
+  // Reset prepared statements.
+  last_prepared_statement_ = {};
+  for (auto& s : ps_states_) {
+    DMITIGR_ASSERT(s);
+    s->connection_ = nullptr;
+  }
+  ps_states_.clear();
+
+  // Reset large objects.
+  for (auto& s : lo_states_) {
+    DMITIGR_ASSERT(s);
+    s->connection_ = nullptr;
+  }
+  lo_states_.clear();
 }
 
 DMITIGR_PGFE_INLINE void Connection::set_single_row_mode_enabled()
@@ -1140,14 +1169,15 @@ Connection::prepare_nio__(const char* const query, const char* const name,
   const Sql_string* const preparsed)
 {
   if (!is_ready_for_nio_request())
-    throw Client_exception{"cannot prepare statement:"
-      " not ready for non-blocking IO request"};
+    throw Client_exception{"cannot prepare statement: "
+      "not ready for non-blocking IO request"};
   DMITIGR_ASSERT(query);
   DMITIGR_ASSERT(name);
 
-  requests_.emplace(Request::Id::prepare);
+  auto state = std::make_shared<Prepared_statement::State>(name, this);
+  Prepared_statement ps{std::move(state), preparsed, true};
+  requests_.emplace(Request::Id::prepare, std::move(ps));
   try {
-    requests_.front().prepared_statement_ = {name, this, preparsed};
     constexpr int n_params{};
     constexpr const ::Oid* const param_types{};
     const int send_ok{::PQsendPrepare(conn(), name, query, n_params, param_types)};
@@ -1161,50 +1191,35 @@ Connection::prepare_nio__(const char* const query, const char* const name,
   assert(is_invariant_ok());
 }
 
-DMITIGR_PGFE_INLINE Prepared_statement* Connection::wait_prepared_statement__()
+DMITIGR_PGFE_INLINE Prepared_statement Connection::wait_prepared_statement__()
 {
   wait_response_throw();
-  auto* const result = prepared_statement();
-  DMITIGR_ASSERT(!completion()); // no completion for prepare/describe
-  return result;
+  auto com = completion();
+  DMITIGR_ASSERT(!com); // no completion for prepare/describe
+  return prepared_statement();
 }
 
-DMITIGR_PGFE_INLINE Prepared_statement*
-Connection::ps(const std::string_view name) const noexcept
+DMITIGR_PGFE_INLINE void
+Connection::register_ps(Prepared_statement&& ps)
 {
-  if (!name.empty()) {
-    const auto b = begin(named_prepared_statements_);
-    const auto e = end(named_prepared_statements_);
-    const auto p = find_if(b, e,
-      [&name](const auto& ps)
-      {
-        return ps.name() == name;
-      });
-    return (p != e) ? &*p : nullptr;
-  } else
-    return unnamed_prepared_statement_ ? &unnamed_prepared_statement_ : nullptr;
-}
-
-DMITIGR_PGFE_INLINE Prepared_statement*
-Connection::register_ps(Prepared_statement&& ps) const noexcept
-{
-  if (!ps.name().empty()) {
-    named_prepared_statements_.emplace_front();
-    return &(named_prepared_statements_.front() = std::move(ps));
-  } else
-    return &(unnamed_prepared_statement_ = std::move(ps));
+  if (const auto [p, e] = registered_ps(ps.name()); p == e)
+    ps_states_.push_back(ps.state_);
+  last_prepared_statement_ = std::move(ps);
+  DMITIGR_ASSERT(last_prepared_statement_);
 }
 
 DMITIGR_PGFE_INLINE void
 Connection::unregister_ps(const std::string_view name) noexcept
 {
-  if (name.empty())
-    unnamed_prepared_statement_ = {};
-  else
-    named_prepared_statements_.remove_if([&name](const auto& ps)
-    {
-      return ps.name() == name;
-    });
+  const auto [p, e] = registered_ps(name);
+  (void)e;
+  unregister_ps(p);
+}
+
+DMITIGR_PGFE_INLINE void
+Connection::unregister_ps(decltype(ps_states_)::const_iterator p) noexcept
+{
+  unregister(ps_states_, p);
 }
 
 DMITIGR_PGFE_INLINE int Connection::socket() const noexcept
@@ -1265,39 +1280,73 @@ Connection::to_hex_storage(const pgfe::Data& data) const
     throw std::bad_alloc{};
 }
 
+DMITIGR_PGFE_INLINE void Connection::register_lo(const Large_object& lo)
+{
+  lo_states_.push_back(lo.state_);
+}
+
+DMITIGR_PGFE_INLINE void Connection::unregister_lo(Large_object& lo) noexcept
+{
+  const auto [l, e] = registered_lo(lo.state_->id_);
+  (void)e;
+  unregister(lo_states_, l);
+}
+
+DMITIGR_PGFE_INLINE void
+Connection::unregister_lo(decltype(lo_states_)::const_iterator p) noexcept
+{
+  unregister(lo_states_, p);
+}
+
 DMITIGR_PGFE_INLINE bool Connection::close(Large_object& lo) noexcept
 {
+  unregister_lo(lo);
   return ::lo_close(conn(), lo.descriptor()) == 0;
 }
 
 DMITIGR_PGFE_INLINE std::int_fast64_t Connection::seek(Large_object& lo,
-  std::int_fast64_t offset, Large_object_seek_whence whence) noexcept
+  std::int_fast64_t offset, Large_object_seek_whence whence)
 {
-  return ::lo_lseek64(conn(), lo.descriptor(), offset, static_cast<int>(whence));
+  const auto result = ::lo_lseek64(conn(), lo.descriptor(), offset,
+    static_cast<int>(whence));
+  if (result == -1)
+    throw Client_exception{"cannot seek large object: "+error_message()};
+  return result;
 }
 
-DMITIGR_PGFE_INLINE std::int_fast64_t Connection::tell(Large_object& lo) noexcept
+DMITIGR_PGFE_INLINE std::int_fast64_t Connection::tell(Large_object& lo)
 {
-  return ::lo_tell64(conn(), lo.descriptor());
+  const auto result = ::lo_tell64(conn(), lo.descriptor());
+  if (result == -1)
+    throw Client_exception{"cannot tell large object: "+error_message()};
+  return result;
 }
 
-DMITIGR_PGFE_INLINE bool Connection::truncate(Large_object& lo,
-  const std::int_fast64_t new_size) noexcept
+DMITIGR_PGFE_INLINE void Connection::truncate(Large_object& lo,
+  const std::int_fast64_t new_size)
 {
-  return ::lo_truncate64(conn(), lo.descriptor(),
-    static_cast<pg_int64>(new_size)) == 0;
+  const int result = ::lo_truncate64(conn(), lo.descriptor(),
+    static_cast<pg_int64>(new_size));
+  if (result == -1)
+    throw Client_exception{"cannot truncate large object: "+error_message()};
 }
 
 DMITIGR_PGFE_INLINE int Connection::read(Large_object& lo, char* const buf,
-  const std::size_t size) noexcept
+  const std::size_t size)
 {
-  return ::lo_read(conn(), lo.descriptor(), buf, size);
+  const int result = ::lo_read(conn(), lo.descriptor(), buf, size);
+  if (result == -1)
+    throw Client_exception{"cannot read large object: "+error_message()};
+  return result;
 }
 
 DMITIGR_PGFE_INLINE int Connection::write(Large_object& lo, const char* const buf,
-  const std::size_t size) noexcept
+  const std::size_t size)
 {
-  return ::lo_write(conn(), lo.descriptor(), buf, size);
+  const int result = ::lo_write(conn(), lo.descriptor(), buf, size);
+  if (result == -1)
+    throw Client_exception{"cannot write large object: "+error_message()};
+  return result;
 }
 
 } // namespace dmitigr::pgfe

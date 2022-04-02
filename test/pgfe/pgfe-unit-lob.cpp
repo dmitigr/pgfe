@@ -83,16 +83,15 @@ try {
 
   conn->execute("begin");
   // Open.
-  lob = conn->open_large_object(oid,
-    pgfe::Large_object_open_mode::writing |
-    pgfe::Large_object_open_mode::reading);
+  lob.assign(conn->open_large_object(oid,
+      pgfe::Large_object_open_mode::writing |
+      pgfe::Large_object_open_mode::reading));
   ASSERT(lob);
   // Seek.
   pos = lob.seek(0, pgfe::Large_object_seek_whence::end);
   ASSERT(pos == 7);
   // Truncate.
-  ok = lob.truncate(4);
-  ASSERT(ok);
+  lob.truncate(4);
   // Seek.
   pos = lob.seek(0, pgfe::Large_object_seek_whence::end);
   ASSERT(pos == 4);
@@ -107,8 +106,7 @@ try {
 
   // Export.
   conn->execute("begin");
-  ok = conn->export_large_object(oid, lob_txt);
-  ASSERT(ok);
+  conn->export_large_object(oid, lob_txt);
   conn->execute("end");
 
   // Compare.
@@ -121,9 +119,12 @@ try {
   ASSERT(oid != pgfe::invalid_oid);
   conn->execute("end");
 
+  // Close outside of transaction.
+  lob.close();
+
   // Open and compare.
   conn->execute("begin");
-  lob = conn->open_large_object(oid, pgfe::Large_object_open_mode::reading);
+  lob.assign(conn->open_large_object(oid, pgfe::Large_object_open_mode::reading));
   ASSERT(lob);
   phrase_size = lob.read(buf, sizeof(buf));
   ASSERT(phrase_size == 7);
@@ -133,8 +134,7 @@ try {
 
   // Remove.
   conn->execute("begin");
-  ok = conn->remove_large_object(oid);
-  ASSERT(ok);
+  conn->remove_large_object(oid);
   conn->execute("end");
 } catch (const std::exception& e) {
   std::cerr << e.what() << std::endl;

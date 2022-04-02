@@ -77,7 +77,12 @@ public:
     /// @overload
     DMITIGR_PGFE_API Connection& operator*();
 
-    /// @returns The Connection.
+    /**
+     * @returns The Connection.
+     *
+     * @par Requires
+     * `is_valid()`.
+     */
     DMITIGR_PGFE_API const Connection* operator->() const;
 
     /// @overload

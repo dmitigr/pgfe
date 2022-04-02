@@ -24,55 +24,67 @@
 #include "exceptions.hpp"
 #include "large_object.hpp"
 
+#include <algorithm>
 #include <limits>
 
 namespace dmitigr::pgfe {
 
-DMITIGR_PGFE_INLINE Large_object::Large_object(Connection* const conn,
-  const int desc)
-  : conn_{conn}
-  , desc_{desc}
+DMITIGR_PGFE_INLINE Large_object::~Large_object() noexcept
 {
-  DMITIGR_ASSERT(conn && (desc >= 0) &&
-    (conn->pipeline_status() == Pipeline_status::disabled));
+  if (is_valid()) {
+    auto* const conn = state_->connection_;
+    auto [p, e] = conn->registered_lo(state_->id_);
+    DMITIGR_ASSERT(p != e);
+    state_ = nullptr;
+    DMITIGR_ASSERT((*p).use_count() == 1);
+    conn->unregister_lo(p);
+    DMITIGR_ASSERT(!is_valid());
+  }
+}
+
+DMITIGR_PGFE_INLINE Large_object::Large_object(std::shared_ptr<State> state)
+  : state_{std::move(state)}
+{
+  DMITIGR_ASSERT(is_valid());
 }
 
 DMITIGR_PGFE_INLINE Large_object::Large_object(Large_object&& rhs) noexcept
-  : conn_{rhs.conn_}
-  , desc_{rhs.desc_}
-{
-  rhs.conn_ = {};
-  rhs.desc_ = -1;
-}
+  : state_{std::move(rhs.state_)}
+{}
 
-DMITIGR_PGFE_INLINE Large_object& Large_object::operator=(Large_object&& rhs) noexcept
+DMITIGR_PGFE_INLINE Large_object& Large_object::assign(Large_object&& rhs)
 {
+  if (is_valid())
+    throw Client_exception{"cannot assign large object"};
+
   if (this != &rhs) {
     Large_object tmp{std::move(rhs)};
+    DMITIGR_ASSERT(!rhs);
     swap(tmp);
   }
+
   return *this;
 }
 
 DMITIGR_PGFE_INLINE void Large_object::swap(Large_object& rhs) noexcept
 {
   using std::swap;
-  swap(conn_, rhs.conn_);
-  swap(desc_, rhs.desc_);
+  swap(state_, rhs.state_);
 }
 
 DMITIGR_PGFE_INLINE bool Large_object::is_valid() const noexcept
 {
-  return conn_ && (desc_ >= 0);
+  return state_ && state_->connection_ &&
+    state_->connection_->pipeline_status() == Pipeline_status::disabled &&
+    state_->desc_ >= 0;
 }
 
 DMITIGR_PGFE_INLINE bool Large_object::close() noexcept
 {
   bool result{true};
   if (is_valid()) {
-    result = conn_->close(*this);
-    conn_ = {};
-    desc_ = -1;
+    result = state_->connection_->close(*this);
+    state_ = nullptr;
   }
   DMITIGR_ASSERT(!is_valid());
   return result;
@@ -83,51 +95,54 @@ Large_object::seek(const std::int_fast64_t offset, const Seek_whence whence)
 {
   if (!is_valid())
     throw Client_exception{"cannot seek large object"};
-  return conn_->seek(*this, offset, whence);
+  return state_->connection_->seek(*this, offset, whence);
 }
 
 DMITIGR_PGFE_INLINE std::int_fast64_t Large_object::tell()
 {
   if (!is_valid())
     throw Client_exception{"cannot tell large object"};
-  return conn_->tell(*this);
+  return state_->connection_->tell(*this);
 }
 
-DMITIGR_PGFE_INLINE bool Large_object::truncate(const std::int_fast64_t new_size)
+DMITIGR_PGFE_INLINE void Large_object::truncate(const std::int_fast64_t new_size)
 {
   if (!(is_valid() && new_size >= 0))
     throw Client_exception{"cannot truncate large object"};
-  return conn_->truncate(*this, new_size);
+  state_->connection_->truncate(*this, new_size);
 }
 
-DMITIGR_PGFE_INLINE int Large_object::read(char* const buf, const std::size_t size)
+DMITIGR_PGFE_INLINE std::size_t
+Large_object::read(char* const buf, const std::size_t size)
 {
   if (!(is_valid() && buf && size <= std::numeric_limits<int>::max()))
     throw Client_exception{"cannot read large object"};
-  return conn_->read(*this, buf, size);
+  return static_cast<std::size_t>(state_->connection_->read(*this, buf, size));
 }
 
-DMITIGR_PGFE_INLINE int Large_object::write(const char* const buf,
-  const std::size_t size)
+DMITIGR_PGFE_INLINE std::size_t
+Large_object::write(const char* const buf, const std::size_t size)
 {
   if (!(is_valid() && buf && size <= std::numeric_limits<int>::max()))
     throw Client_exception{"cannot write large object"};
-  return conn_->write(*this, buf, size);
+  return static_cast<std::size_t>(state_->connection_->write(*this, buf, size));
 }
 
-DMITIGR_PGFE_INLINE const Connection* Large_object::connection() const noexcept
+DMITIGR_PGFE_INLINE const Connection& Large_object::connection() const
 {
-  return conn_;
+  if (!is_valid())
+    throw Client_exception{"cannot get connection of invalid large object"};
+  return *state_->connection_;
 }
 
-DMITIGR_PGFE_INLINE Connection* Large_object::connection() noexcept
+DMITIGR_PGFE_INLINE Connection& Large_object::connection()
 {
-  return const_cast<Connection*>(static_cast<const Large_object*>(this)->connection());
+  return const_cast<Connection&>(static_cast<const Large_object*>(this)->connection());
 }
 
 DMITIGR_PGFE_INLINE int Large_object::descriptor() const noexcept
 {
-  return desc_;
+  return is_valid() ? state_->desc_ : -1;
 }
 
 } // namespace dmitigr::pgfe

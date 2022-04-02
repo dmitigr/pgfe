@@ -55,9 +55,9 @@ int main() try {
   },"select :begin b, :end e", a{"end", 1}, a{"begin", 0});
 
   // Prepare and execute the statement.
-  auto& ps = conn.prepare("select $1::int i");
+  auto ps = conn.prepare("select $1::int i");
   for (int i{}; i < 3; ++i)
-    ps.execute([](auto&& r){ std::printf("%i\n", to<int>(r["i"])); }, i);
+    ps.execute([](auto&& r){std::printf("%i\n", to<int>(r["i"]));}, i);
 
   // Invoking the function.
   conn.invoke([](auto&& r)

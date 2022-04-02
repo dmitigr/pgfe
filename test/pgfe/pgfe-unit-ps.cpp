@@ -33,7 +33,8 @@ try {
   DMITIGR_ASSERT(conn->is_connected());
 
   {
-    auto& ps1 = conn->prepare_as_is("SELECT $1::integer", "ps1");
+    auto ps1 = conn->prepare_as_is("SELECT $1::integer", "ps1");
+    DMITIGR_ASSERT(ps1 && ps1.name() == "ps1");
     DMITIGR_ASSERT(!ps1.is_preparsed());
     DMITIGR_ASSERT(!ps1.is_described());
     DMITIGR_ASSERT(!ps1.has_parameters());
@@ -67,7 +68,8 @@ try {
     "SELECT 1::integer AS const,"
       " generate_series(:infinum::integer, :supremum::integer) AS var,"
       " 2::integer AS const"};
-  auto& ps2 = conn->prepare(ss, "ps2");
+  auto ps2 = conn->prepare(ss, "ps2");
+  DMITIGR_ASSERT(ps2 && ps2.name() == "ps2");
   DMITIGR_ASSERT(ps2.is_preparsed());
   DMITIGR_ASSERT(!ps2.is_described());
   DMITIGR_ASSERT(ps2.positional_parameter_count() == 0);
@@ -107,7 +109,7 @@ try {
   DMITIGR_ASSERT(ps2.bound(1) && to<int>(ps2.bound(1)) == 3);
   //
   DMITIGR_ASSERT(ps2.result_format() == conn->result_format());
-  DMITIGR_ASSERT(ps2.connection() == conn.get());
+  DMITIGR_ASSERT(&ps2.connection() == conn.get());
   DMITIGR_ASSERT(!ps2.is_described());
   DMITIGR_ASSERT(!ps2.parameter_type_oid(0));
   DMITIGR_ASSERT(!ps2.row_info());
@@ -117,32 +119,32 @@ try {
   constexpr std::uint_fast32_t integer_oid{23};
   DMITIGR_ASSERT(ps2.parameter_type_oid(0) == integer_oid);
   DMITIGR_ASSERT(ps2.parameter_type_oid(1) == integer_oid);
-  const auto ri = ps2.row_info();
+  const auto& ri = ps2.row_info();
   DMITIGR_ASSERT(ri);
-  DMITIGR_ASSERT(ri->field_count() == 3);
-  DMITIGR_ASSERT(!ri->is_empty());
-  DMITIGR_ASSERT(ri->field_name(0) == "const");
-  DMITIGR_ASSERT(ri->field_name(1) == "var");
-  DMITIGR_ASSERT(ri->field_name(2) == "const");
-  DMITIGR_ASSERT(ri->field_index("const")      == 0);
-  DMITIGR_ASSERT(ri->field_index("var")        == 1);
-  DMITIGR_ASSERT(ri->field_index("const", 1)   == 2);
-  DMITIGR_ASSERT(ri->field_index("const") < ri->field_count());
-  DMITIGR_ASSERT(ri->field_index("var") < ri->field_count());
+  DMITIGR_ASSERT(ri.field_count() == 3);
+  DMITIGR_ASSERT(!ri.is_empty());
+  DMITIGR_ASSERT(ri.field_name(0) == "const");
+  DMITIGR_ASSERT(ri.field_name(1) == "var");
+  DMITIGR_ASSERT(ri.field_name(2) == "const");
+  DMITIGR_ASSERT(ri.field_index("const")      == 0);
+  DMITIGR_ASSERT(ri.field_index("var")        == 1);
+  DMITIGR_ASSERT(ri.field_index("const", 1)   == 2);
+  DMITIGR_ASSERT(ri.field_index("const") < ri.field_count());
+  DMITIGR_ASSERT(ri.field_index("var") < ri.field_count());
   for (std::size_t i = 0; i < 3; ++i) {
-    const auto fname = ri->field_name(i);
-    DMITIGR_ASSERT(ri->table_oid(i)        == 0);
-    DMITIGR_ASSERT(ri->table_oid(fname, i) == 0);
-    DMITIGR_ASSERT(ri->table_column_number(i)        == 0);
-    DMITIGR_ASSERT(ri->table_column_number(fname, i) == 0);
-    DMITIGR_ASSERT(ri->type_oid(i)        == integer_oid);
-    DMITIGR_ASSERT(ri->type_oid(fname, i) == integer_oid);
-    DMITIGR_ASSERT(ri->type_size(i)        >= 0);
-    DMITIGR_ASSERT(ri->type_size(fname, i) >= 0);
-    DMITIGR_ASSERT(ri->type_modifier(i)        == -1);
-    DMITIGR_ASSERT(ri->type_modifier(fname, i) == -1);
-    DMITIGR_ASSERT(ri->data_format(i)        == pgfe::Data_format::text);
-    DMITIGR_ASSERT(ri->data_format(fname, i) == pgfe::Data_format::text);
+    const auto fname = ri.field_name(i);
+    DMITIGR_ASSERT(ri.table_oid(i)        == 0);
+    DMITIGR_ASSERT(ri.table_oid(fname, i) == 0);
+    DMITIGR_ASSERT(ri.table_column_number(i)        == 0);
+    DMITIGR_ASSERT(ri.table_column_number(fname, i) == 0);
+    DMITIGR_ASSERT(ri.type_oid(i)        == integer_oid);
+    DMITIGR_ASSERT(ri.type_oid(fname, i) == integer_oid);
+    DMITIGR_ASSERT(ri.type_size(i)        >= 0);
+    DMITIGR_ASSERT(ri.type_size(fname, i) >= 0);
+    DMITIGR_ASSERT(ri.type_modifier(i)        == -1);
+    DMITIGR_ASSERT(ri.type_modifier(fname, i) == -1);
+    DMITIGR_ASSERT(ri.data_format(i)        == pgfe::Data_format::text);
+    DMITIGR_ASSERT(ri.data_format(fname, i) == pgfe::Data_format::text);
   }
   //
   ps2.execute([i = 1](auto&& row) mutable
@@ -180,6 +182,15 @@ try {
     DMITIGR_ASSERT(na4.data());
     DMITIGR_ASSERT(pgfe::to<int>(na4.data()) == 14);
   }
+
+  // Test invalidation of prepared statements after disconnection.
+  auto ps3 = conn->prepare("select 3", "ps3");
+  auto ps3_2 = conn->describe("ps3");
+  DMITIGR_ASSERT(ps3);
+  DMITIGR_ASSERT(ps3_2);
+  conn->disconnect();
+  DMITIGR_ASSERT(!ps3);
+  DMITIGR_ASSERT(!ps3_2);
 } catch (const std::exception& e) {
   std::cerr << e.what() << std::endl;
   return 1;

@@ -80,7 +80,8 @@ public:
 
   /// @overload
   template<typename T>
-  Named_argument(std::enable_if_t<!std::is_convertible_v<std::decay_t<T>, const Data&>,
+  Named_argument(std::enable_if_t<!std::is_convertible_v<std::decay_t<T>,
+    const Data&>,
     std::string> name, T&& value) noexcept
     : Named_argument{std::move(name), to_data(std::forward<T>(value))}
   {
@@ -138,7 +139,7 @@ using a = Named_argument;
  *   -# a <a href="https://www.postgresql.org/docs/current/static/sql-prepare.html">PREPARE</a> SQL command.
  *
  * In the first case the prepared statement **must** be deallocated via
- * Connection::unprepare_statement() or Connection::unprepare_statement_nio().
+ * Connection::unprepare() or Connection::unprepare_nio().
  * The behaviour is undefined if such a prepared statement is deallocated by using
  * <a href="https://www.postgresql.org/docs/current/static/sql-deallocate.html">DEALLOCATE</a>
  * SQL command.
@@ -157,10 +158,14 @@ using a = Named_argument;
  * statements depends on the PostgreSQL server version. An exception will be
  * thrown if the mentioned maximum exceeds.
  *
- * @see Connection::prepare_statement(), Connection::unprepare_statement(), Connection::prepared_statement().
+ * @see Connection::prepare(), Connection::unprepare(),
+ * Connection::prepared_statement().
  */
 class Prepared_statement final : public Response, public Parameterizable {
 public:
+  /// The destructor.
+  ~Prepared_statement() noexcept;
+
   /// Default-constructible. (Constructs invalid instance.)
   Prepared_statement() = default;
 
@@ -179,7 +184,13 @@ public:
   /// Swaps this instance with `rhs`.
   DMITIGR_PGFE_API void swap(Prepared_statement& rhs) noexcept;
 
-  /// @see Message::is_valid().
+  /**
+   * @returns `true` if this instance is valid, i.e. both the Connection object
+   * and the remote session it's tracked and where the statement is prepared are
+   * still alive.
+   *
+   * @see Message::is_valid().
+   */
   DMITIGR_PGFE_API bool is_valid() const noexcept override;
 
   /// @see Parameterizable::positional_parameter_count().
@@ -201,10 +212,12 @@ public:
   DMITIGR_PGFE_API bool has_parameters() const noexcept override;
 
   /// @see Parameterizable::parameter_name().
-  DMITIGR_PGFE_API std::string_view parameter_name(const std::size_t index) const override;
+  DMITIGR_PGFE_API std::string_view
+  parameter_name(const std::size_t index) const override;
 
   /// @see Parameterizable::parameter_index().
-  DMITIGR_PGFE_API std::size_t parameter_index(std::string_view name) const noexcept override;
+  DMITIGR_PGFE_API std::size_t
+  parameter_index(std::string_view name) const noexcept override;
 
   /**
    * @returns The name of this prepared statement.
@@ -216,7 +229,7 @@ public:
   /**
    * @returns `true` if the information inferred by the Pgfe about
    * this prepared statement is available. (Every statement prepared from
-   * an instance of class Sql_string is prepared.)
+   * an instance of class Sql_string is preparsed.)
    *
    * @see Sql_string.
    */
@@ -259,7 +272,7 @@ public:
    * @param value A value to bind.
    *
    * @par Requires
-   * If `!is_preparsed() && !is_described()` then `index < maximum_parameter_count()`,
+   * If `!is_preparsed() && !is_described()` then `index < max_parameter_count()`,
    * otherwise `index < parameter_count()`.
    *
    * @par Effects
@@ -315,7 +328,8 @@ public:
    * -# Each value of `values` must be Data-convertible.
    * -# `((!is_preparsed() && !is_described()
    *       &&
-   *       sizeof ... (Types) < maximum_parameter_count()) || sizeof ... (Types) < parameter_count())`
+   *       sizeof ... (Types) < maximum_parameter_count()) ||
+   *       (sizeof ... (Types) < parameter_count()))`
    *
    * @par Exception safety guarantee
    * Basic.
@@ -325,7 +339,8 @@ public:
   template<typename ... Types>
   Prepared_statement& bind_many(Types&& ... values)
   {
-    return bind_many__(std::make_index_sequence<sizeof ... (Types)>{}, std::forward<Types>(values)...);
+    return bind_many__(std::make_index_sequence<sizeof ... (Types)>{},
+      std::forward<Types>(values)...);
   }
 
   /// @}
@@ -389,7 +404,8 @@ public:
    *
    * @see Connection::execute(), Connection::process_responses().
    */
-  template<Row_processing on_exception = Row_processing::complete, typename F, typename ... Types>
+  template<Row_processing on_exception = Row_processing::complete, typename F,
+    typename ... Types>
   std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
   execute(F&& callback, Types&& ... parameters);
 
@@ -397,18 +413,31 @@ public:
   DMITIGR_PGFE_API Completion execute();
 
   /**
-   * @returns The pointer to the instance of type Connection on which this
-   * statement is prepared.
+   * @returns The related Connection instance which prepared this statement.
+   *
+   * @par Requires
+   * `is_valid()`.
    */
-  DMITIGR_PGFE_API const Connection* connection() const noexcept;
+  DMITIGR_PGFE_API const Connection& connection() const;
 
   /// @overload
-  DMITIGR_PGFE_API Connection* connection() noexcept;
+  DMITIGR_PGFE_API Connection& connection();
 
-  /// Similar to Connection::describe_prepared_statement_nio().
+  /**
+   * @brief Requests the server to describe this prepared statement.
+   *
+   * @see is_described() describe(), Connection::describe_nio().
+   */
   DMITIGR_PGFE_API void describe_nio();
 
-  /// Similar to Connection::describe_prepared_statement().
+  /**
+   * @brief Describes this prepared statement by requesting the server.
+   *
+   * @par Effects
+   * `is_described()`.
+   *
+   * @see is_described(), describe_nio(), Connection::describe().
+   */
   DMITIGR_PGFE_API void describe();
 
   /**
@@ -420,8 +449,8 @@ public:
   DMITIGR_PGFE_API bool is_described() const noexcept;
 
   /**
-   * @returns The object identifier of the parameter type, or
-   * `invalid_oid` if `(is_described() == false)`.
+   * @returns The object identifier of the parameter type, or `invalid_oid`
+   * if `!is_described()`.
    *
    * @par Requires
    * `(index < parameter_count())`.
@@ -436,15 +465,17 @@ public:
    *
    * @see bound().
    */
-  DMITIGR_PGFE_API std::uint_fast32_t parameter_type_oid(const std::string_view name) const;
+  DMITIGR_PGFE_API std::uint_fast32_t
+  parameter_type_oid(const std::string_view name) const;
 
   /**
    * @returns
-   *   -# `nullptr` if `(is_described() == false)`, or
-   *   -# `nullptr` if the execution will not provoke producing the rows, or
-   *   -# the Row_info that describes the rows which a server would produce.
+   *   -# invalid instance if `!is_described()`;
+   *   -# invalid instance if the execution will not provoke producing the rows;
+   *   -# otherwise, valid instance that describes the rows which a server would
+   *   produce.
    */
-  DMITIGR_PGFE_API const Row_info* row_info() const noexcept;
+  DMITIGR_PGFE_API const Row_info& row_info() const noexcept;
 
   /// @}
 
@@ -459,25 +490,33 @@ private:
     std::string name;
   };
 
-  Data_format result_format_{Data_format::text};
-  std::string name_;
-  bool preparsed_{};
-  Connection* connection_{};
-  std::chrono::system_clock::time_point session_start_time_;
+  struct State final {
+    State(std::string id, Connection* const connection)
+      : id_{std::move(id)}
+      , connection_{connection}
+    {}
+
+    std::string id_;
+    Connection* connection_{};
+    bool preparsed_{};
+    Row_info description_; // may be invalid, see set_description()
+  };
+
+  bool is_registered_{};
+  std::shared_ptr<State> state_;
   std::vector<Parameter> parameters_;
-  Row_info description_; // may be invalid, see set_description()
+  Data_format result_format_{Data_format::text};
 
   // ---------------------------------------------------------------------------
 
-  /// Constructs when preparing.
-  Prepared_statement(std::string name, Connection* connection,
-    const Sql_string* preparsed);
+  /// Constructs when preparing. (Or just executing without preparement.)
+  Prepared_statement(std::shared_ptr<Prepared_statement::State> state,
+    const Sql_string* preparsed, const bool is_registered);
 
   /// Constructs when describing.
-  Prepared_statement(std::string name, Connection* connection,
-    std::size_t parameters_count);
+  explicit Prepared_statement(std::shared_ptr<Prepared_statement::State> state);
 
-  void init_connection__(Connection* connection);
+  void init_connection__(std::shared_ptr<Prepared_statement::State> state);
   bool is_invariant_ok() const noexcept override;
   [[noreturn]] void throw_exception(std::string msg) const;
 

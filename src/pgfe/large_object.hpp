@@ -27,8 +27,8 @@
 #include "dll.hpp"
 #include "types_fwd.hpp"
 
-#include <algorithm>
 #include <cstdint>
+#include <memory>
 
 namespace dmitigr {
 namespace pgfe {
@@ -98,9 +98,6 @@ DMITIGR_DEFINE_ENUM_BITMASK_OPERATORS(Large_object_open_mode)
  * @brief A client-side pointer to a large object.
  *
  * @warning Using this API must take place within an SQL transaction block!
- *
- * @warning The behaivor is undefined if the instance of this class is used
- * after destroying the Connection object that created it!
  */
 class Large_object final {
 public:
@@ -113,31 +110,52 @@ public:
   /**
    * @brief The destructor.
    *
-   * @details Do nothing! (Doesn't calls close().)
+   * @details Do nothing!
    *
    * @see close().
    */
-  ~Large_object() = default;
+  DMITIGR_PGFE_API ~Large_object() noexcept;
 
   /// Constructs invalid instance.
   Large_object() = default;
 
-  /// Copy-constructible.
+  /// Non copy-constructible.
   Large_object(const Large_object&) = delete;
 
   /// Move-constructible.
   DMITIGR_PGFE_API Large_object(Large_object&& rhs) noexcept;
 
-  /// Copy-assignable.
+  /// Non copy-assignable.
   Large_object& operator=(const Large_object&) = delete;
 
-  /// Move-assignable.
-  DMITIGR_PGFE_API Large_object& operator=(Large_object&& rhs) noexcept;
+  /**
+   * @brief Non move-assignable.
+   *
+   * @see assign().
+   */
+  Large_object& operator=(Large_object&& rhs) = delete;
+
+  /**
+   * @brief Assigns `rhs` to this instance.
+   *
+   * @returns `*this`.
+   *
+   * @par Requires
+   * `!is_valid()`.
+   */
+  DMITIGR_PGFE_API Large_object& assign(Large_object&& rhs);
 
   /// Swaps this instance with `rhs`.
   DMITIGR_PGFE_API void swap(Large_object& rhs) noexcept;
 
-  /// @returns `true` if this instance is correctly initialized.
+  /**
+   * @returns `true` if this instance is valid, i.e. both the Connection object
+   * and the remote session it's tracked and where the large object is open are
+   * still alive.
+   *
+   * @remarks Neither transaction commit nor transaction rollback doesn't
+   * invalidates the instance.
+   */
   DMITIGR_PGFE_API bool is_valid() const noexcept;
 
   /// @returns `true` if the instance is valid.
@@ -166,33 +184,38 @@ public:
    * @brief Changes the current position associated with the underlying large
    * object descriptor.
    *
-   * @returns The new position, or `-1` on error (transaction failure).
+   * @returns The new position.
+   *
+   * @throw Client_exception on error.
    */
   DMITIGR_PGFE_API std::int_fast64_t seek(std::int_fast64_t offset,
     Seek_whence whence);
 
   /**
    * @returns The current position associated with the underlying large
-   * object descriptor, or `-1` on error (transaction failure).
+   * object descriptor.
+   *
+   * @throw Client_exception on error.
    */
   DMITIGR_PGFE_API std::int_fast64_t tell();
 
   /**
    * @brief Truncates the large object to size `new_size`.
    *
-   * @returns `true` on success, or `false` otherwise (transaction failure).
+   * @throw Client_exception on error.
    *
    * @par Requires
    * `(new_size >= 0)`.
    */
-  DMITIGR_PGFE_API bool truncate(std::int_fast64_t new_size);
+  DMITIGR_PGFE_API void truncate(std::int_fast64_t new_size);
 
   /**
    * @brief Reads up to `size` bytes from the current position associated with
    * the underlying large object descriptor into `buf`.
    *
-   * @returns The number of bytes actually read, or `-1` on error (transaction
-   * failure).
+   * @returns The number of bytes actually read.
+   *
+   * @throw Client_exception on error.
    *
    * @par Requires
    * `(buf && size <= std::numeric_limits<int>::max())`.
@@ -200,14 +223,15 @@ public:
    * @remarks The behavior is undefined if the actual size of `buf` is less
    * than `size`.
    */
-  DMITIGR_PGFE_API int read(char* buf, std::size_t size);
+  DMITIGR_PGFE_API std::size_t read(char* buf, std::size_t size);
 
   /**
    * @brief Writes up to `size` bytes from the current position associated with
    * the underlying large object descriptor from `buf`.
    *
-   * @returns The number of bytes actually written, or `-1` on error (transaction
-   * failure).
+   * @returns The number of bytes actually written.
+   *
+   * @throw Client_exception on error.
    *
    * @par Requires
    * `(buf && size <= std::numeric_limits<int>::max())`.
@@ -215,29 +239,37 @@ public:
    * @remarks The behavior is undefined if the actual size of `buf` is less
    * than `size`.
    */
-  DMITIGR_PGFE_API int write(const char* buf, std::size_t size);
+  DMITIGR_PGFE_API std::size_t write(const char* buf, std::size_t size);
 
-  /// @returns The underlying connection instance.
-  DMITIGR_PGFE_API const Connection* connection() const noexcept;
+  /**
+   * @returns The related connection instance.
+   *
+   * @par Requires
+   * `is_valid()`.
+   */
+  DMITIGR_PGFE_API const Connection& connection() const;
 
   /// @overload
-  DMITIGR_PGFE_API Connection* connection() noexcept;
+  DMITIGR_PGFE_API Connection& connection();
 
 private:
   friend Connection;
 
-  Connection* conn_{};
-  int desc_{-1};
+  struct State final {
+    State(const std::int_fast64_t id,
+      const int desc, Connection* const connection)
+      : id_{id}
+      , desc_{desc}
+      , connection_{connection}
+    {}
+    std::int_fast64_t id_{};
+    int desc_{-1};
+    Connection* connection_{};
+  };
 
-  /**
-   * @brief The constructor.
-   *
-   * @par Requires
-   * `conn && (desc >= 0) && (conn->pipeline_status() == Pipeline_status::disabled)`.
-   */
-  Large_object(Connection* conn, int desc);
+  std::shared_ptr<State> state_;
 
-  /// @returns The underlying large object descriptor.
+  Large_object(std::shared_ptr<State> conn);
   int descriptor() const noexcept;
 };
 
@@ -249,9 +281,5 @@ inline void swap(Large_object& lhs, Large_object& rhs) noexcept
 
 } // namespace pgfe
 } // namespace dmitigr
-
-#ifndef DMITIGR_PGFE_NOT_HEADER_ONLY
-#include "large_object.cpp"
-#endif
 
 #endif  // DMITIGR_PGFE_LARGE_OBJECT_HPP

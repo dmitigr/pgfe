@@ -83,18 +83,26 @@ DMITIGR_PGFE_INLINE bool Named_argument::is_invariant_ok() const noexcept
 
 // =============================================================================
 
+DMITIGR_PGFE_INLINE Prepared_statement::~Prepared_statement() noexcept
+{
+  if (is_registered_ && is_valid()) {
+    auto* const conn = state_->connection_;
+    auto [p, e] = conn->registered_ps(state_->id_);
+    DMITIGR_ASSERT(p != e);
+
+    state_ = nullptr;
+    if ((*p).use_count() == 1)
+      conn->unregister_ps(p);
+  }
+}
+
 DMITIGR_PGFE_INLINE
 Prepared_statement::Prepared_statement(Prepared_statement&& rhs) noexcept
-  : result_format_{std::move(rhs.result_format_)}
-  , name_{std::move(rhs.name_)}
-  , preparsed_{std::move(rhs.preparsed_)}
-  , connection_{std::move(rhs.connection_)}
-  , session_start_time_{std::move(rhs.session_start_time_)}
+  : is_registered_{rhs.is_registered_}
+  , state_{std::move(rhs.state_)}
   , parameters_{std::move(rhs.parameters_)}
-  , description_{std::move(rhs.description_)}
-{
-  rhs.connection_ = nullptr;
-}
+  , result_format_{std::move(rhs.result_format_)}
+{}
 
 DMITIGR_PGFE_INLINE Prepared_statement&
 Prepared_statement::operator=(Prepared_statement&& rhs) noexcept
@@ -109,18 +117,15 @@ Prepared_statement::operator=(Prepared_statement&& rhs) noexcept
 DMITIGR_PGFE_INLINE void Prepared_statement::swap(Prepared_statement& rhs) noexcept
 {
   using std::swap;
-  swap(result_format_, rhs.result_format_);
-  swap(name_, rhs.name_);
-  swap(preparsed_, rhs.preparsed_);
-  swap(connection_, rhs.connection_);
-  swap(session_start_time_, rhs.session_start_time_);
+  swap(is_registered_, rhs.is_registered_);
+  swap(state_, rhs.state_);
   swap(parameters_, rhs.parameters_);
-  swap(description_, rhs.description_);
+  swap(result_format_, rhs.result_format_);
 }
 
 DMITIGR_PGFE_INLINE bool Prepared_statement::is_valid() const noexcept
 {
-  return connection_;
+  return state_ && state_->connection_;
 }
 
 DMITIGR_PGFE_INLINE std::size_t
@@ -187,12 +192,12 @@ Prepared_statement::parameter_index(const std::string_view name) const noexcept
 
 DMITIGR_PGFE_INLINE const std::string& Prepared_statement::name() const noexcept
 {
-  return name_;
+  return state_->id_;
 }
 
 DMITIGR_PGFE_INLINE bool Prepared_statement::is_preparsed() const noexcept
 {
-  return preparsed_;
+  return state_->preparsed_;
 }
 
 DMITIGR_PGFE_INLINE Data_view Prepared_statement::bound(const std::size_t index) const
@@ -235,7 +240,9 @@ DMITIGR_PGFE_INLINE void Prepared_statement::execute_nio(const Sql_string& state
 DMITIGR_PGFE_INLINE void
 Prepared_statement::execute_nio__(const Sql_string* const statement)
 {
-  if (!(connection()->is_ready_for_nio_request()))
+  if (!is_valid())
+    throw_exception("cannot execute invalid");
+  else if (!(connection().is_ready_for_nio_request()))
     throw_exception("cannot execute");
 
   // All the values are NULLs initially. (Can throw.)
@@ -244,7 +251,8 @@ Prepared_statement::execute_nio__(const Sql_string* const statement)
   std::vector<int> lengths(static_cast<unsigned>(param_count), 0);
   std::vector<int> formats(static_cast<unsigned>(param_count), 0);
 
-  connection_->requests_.emplace(Connection::Request::Id::execute); // can throw
+  auto& conn = connection();
+  conn.requests_.emplace(Connection::Request::Id::execute); // can throw
   try {
     // Prepare the input for libpq.
     for (unsigned i{}; i < static_cast<unsigned>(param_count); ++i) {
@@ -258,23 +266,23 @@ Prepared_statement::execute_nio__(const Sql_string* const statement)
 
     const int send_ok = statement
       ?
-      ::PQsendQueryParams(connection_->conn(),
-        statement->to_query_string(*connection_).c_str(),
+      ::PQsendQueryParams(conn.conn(),
+        statement->to_query_string(conn).c_str(),
         param_count, nullptr, values.data(), lengths.data(),
         formats.data(), result_format)
       :
-      ::PQsendQueryPrepared(connection_->conn(),
-        name_.c_str(),
+      ::PQsendQueryPrepared(conn.conn(),
+        name().c_str(),
         param_count, values.data(), lengths.data(),
         formats.data(), result_format);
 
     if (!send_ok)
-      throw Client_exception{connection_->error_message()};
+      throw Client_exception{conn.error_message()};
 
-    if (connection_->pipeline_status() == Pipeline_status::disabled)
-      connection_->set_single_row_mode_enabled();
+    if (conn.pipeline_status() == Pipeline_status::disabled)
+      conn.set_single_row_mode_enabled();
   } catch (...) {
-    connection_->requests_.pop(); // rollback
+    conn.requests_.pop(); // rollback
     throw;
   }
 
@@ -286,32 +294,44 @@ DMITIGR_PGFE_INLINE Completion Prepared_statement::execute()
   return execute([](auto&&){});
 }
 
-DMITIGR_PGFE_INLINE const Connection* Prepared_statement::connection() const noexcept
+DMITIGR_PGFE_INLINE const Connection& Prepared_statement::connection() const
 {
-  return connection_;
+  if (!is_valid())
+    throw_exception("cannot get connection instance of invalid");
+  return *state_->connection_;
 }
 
-DMITIGR_PGFE_INLINE Connection* Prepared_statement::connection() noexcept
+DMITIGR_PGFE_INLINE Connection& Prepared_statement::connection()
 {
-  return const_cast<Connection*>(
+  return const_cast<Connection&>(
     static_cast<const Prepared_statement*>(this)->connection());
 }
 
 DMITIGR_PGFE_INLINE void Prepared_statement::describe_nio()
 {
-  connection_->describe_nio(name_);
+  if (!is_valid())
+    throw_exception("cannot describe invalid");
+  connection().describe_nio(name());
   assert(is_invariant_ok());
 }
 
 DMITIGR_PGFE_INLINE void Prepared_statement::describe()
 {
-  connection_->describe(name_);
+  if (!is_valid())
+    throw_exception("cannot describe invalid");
+
+  // Update shared state.
+  auto tmp = connection().describe(name());
+  // Update parameters.
+  parameters_.resize(tmp.parameters_.size());
+
+  DMITIGR_ASSERT(is_described());
   assert(is_invariant_ok());
 }
 
 DMITIGR_PGFE_INLINE bool Prepared_statement::is_described() const noexcept
 {
-  return static_cast<bool>(description_.pq_result_);
+  return static_cast<bool>(state_->description_.pq_result_);
 }
 
 DMITIGR_PGFE_INLINE std::uint_fast32_t
@@ -320,7 +340,7 @@ Prepared_statement::parameter_type_oid(const std::size_t index) const
   if (!(index < parameter_count()))
     throw_exception("cannot get parameter type OID of");
   return is_described() ?
-    description_.pq_result_.ps_param_type_oid(static_cast<int>(index)) :
+    state_->description_.pq_result_.ps_param_type_oid(static_cast<int>(index)) :
     invalid_oid;
 }
 
@@ -330,19 +350,21 @@ Prepared_statement::parameter_type_oid(const std::string_view name) const
   return parameter_type_oid(parameter_index(name));
 }
 
-DMITIGR_PGFE_INLINE const Row_info* Prepared_statement::row_info() const noexcept
+DMITIGR_PGFE_INLINE const Row_info&
+Prepared_statement::row_info() const noexcept
 {
-  return description_ ? &description_ : nullptr;
+  return state_->description_;
 }
 
-DMITIGR_PGFE_INLINE Prepared_statement::Prepared_statement(std::string name,
-  Connection* const connection, const Sql_string* const preparsed)
-  : name_(std::move(name))
-  , preparsed_(static_cast<bool>(preparsed))
+DMITIGR_PGFE_INLINE Prepared_statement::Prepared_statement(
+  std::shared_ptr<Prepared_statement::State> state,
+  const Sql_string* const preparsed,
+  const bool is_registered)
+  : is_registered_{is_registered}
 {
-  init_connection__(connection);
-
-  if (preparsed_) {
+  init_connection__(std::move(state));
+  state_->preparsed_ = static_cast<bool>(preparsed);
+  if (state_->preparsed_) {
     const std::size_t pc = preparsed->parameter_count();
     parameters_.resize(pc);
     for (std::size_t i = preparsed->positional_parameter_count(); i < pc; ++i)
@@ -353,31 +375,29 @@ DMITIGR_PGFE_INLINE Prepared_statement::Prepared_statement(std::string name,
   assert(is_invariant_ok());
 }
 
-DMITIGR_PGFE_INLINE Prepared_statement::Prepared_statement(std::string name,
-  Connection* const connection, const std::size_t parameters_count)
-  : name_(std::move(name))
-  , parameters_(parameters_count)
+DMITIGR_PGFE_INLINE Prepared_statement::Prepared_statement(
+  std::shared_ptr<Prepared_statement::State> state)
 {
-  init_connection__(connection);
+  init_connection__(std::move(state));
   assert(is_invariant_ok());
 }
 
 DMITIGR_PGFE_INLINE void
-Prepared_statement::init_connection__(Connection* const connection)
+Prepared_statement::init_connection__(std::shared_ptr<Prepared_statement::State> state)
 {
-  DMITIGR_ASSERT(connection && connection->session_start_time());
-  connection_ = connection;
-  session_start_time_ = *connection_->session_start_time();
-  result_format_ = connection_->result_format();
+  state_ = std::move(state);
+  DMITIGR_ASSERT(state_);
+  DMITIGR_ASSERT(is_valid());
+  result_format_ = connection().result_format();
 }
 
 DMITIGR_PGFE_INLINE bool Prepared_statement::is_invariant_ok() const noexcept
 {
+  const bool state_ok = static_cast<bool>(state_);
   const bool params_ok = (parameter_count() <= max_parameter_count());
   const bool preparsed_ok = is_preparsed() || !has_named_parameters();
-  const bool session_ok = (session_start_time_ == connection_->session_start_time());
   const bool parameterizable_ok = Parameterizable::is_invariant_ok();
-  return params_ok && preparsed_ok && session_ok && parameterizable_ok;
+  return state_ok && params_ok && preparsed_ok && parameterizable_ok;
 }
 
 DMITIGR_PGFE_INLINE [[noreturn]] void
@@ -391,7 +411,8 @@ Prepared_statement::throw_exception(std::string msg) const
 }
 
 DMITIGR_PGFE_INLINE Prepared_statement&
-Prepared_statement::Prepared_statement::bind(const std::size_t index, Data_ptr&& data)
+Prepared_statement::Prepared_statement::bind(const std::size_t index,
+  Data_ptr&& data)
 {
   const bool is_opaque = !is_preparsed() && !is_described();
   if (!(is_opaque || (index < parameter_count())))
@@ -433,21 +454,19 @@ DMITIGR_PGFE_INLINE void
 Prepared_statement::Prepared_statement::set_description(detail::pq::Result&& r)
 {
   DMITIGR_ASSERT(r);
-  DMITIGR_ASSERT(!is_described());
 
-  if (!preparsed_)
-    parameters_.resize(static_cast<std::size_t>(r.ps_param_count()));
+  parameters_.resize(static_cast<std::size_t>(r.ps_param_count()));
 
   /*
    * If result contains fields info, initialize Row_info.
    * Otherwise, just set description_.pq_result_.
    */
   if (r.field_count() > 0) {
-    description_ = Row_info{std::move(r)};
-    DMITIGR_ASSERT(description_);
+    state_->description_ = Row_info{std::move(r)};
+    DMITIGR_ASSERT(state_->description_);
   } else {
-    description_.pq_result_ = std::move(r);
-    DMITIGR_ASSERT(!description_);
+    state_->description_.pq_result_ = std::move(r);
+    DMITIGR_ASSERT(!state_->description_);
   }
 
   DMITIGR_ASSERT(is_described());

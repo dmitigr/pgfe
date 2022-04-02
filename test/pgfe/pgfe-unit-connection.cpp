@@ -226,18 +226,17 @@ try {
         // Unnamed
         {
           // Prepare
-          auto& ps = conn->prepare("SELECT generate_series(1,3) AS n");
+          auto ps = conn->prepare("SELECT generate_series(1,3) AS n");
+          DMITIGR_ASSERT(ps && ps.name() == "");
           DMITIGR_ASSERT(!conn->has_response());
           DMITIGR_ASSERT(!conn->has_uncompleted_request());
           DMITIGR_ASSERT(conn->is_ready_for_nio_request());
           DMITIGR_ASSERT(conn->is_ready_for_request());
           DMITIGR_ASSERT(!conn->prepared_statement());
-          DMITIGR_ASSERT(&ps == conn->prepared_statement(""));
-          DMITIGR_ASSERT(&ps == conn->prepared_statement(""));
 
           // Describe
-          auto* const dps = conn->describe("");
-          DMITIGR_ASSERT(dps == &ps);
+          auto dps = conn->describe("");
+          DMITIGR_ASSERT(dps && dps.name() == "");
           DMITIGR_ASSERT(!conn->has_response());
           DMITIGR_ASSERT(!conn->has_uncompleted_request());
           DMITIGR_ASSERT(conn->is_ready_for_nio_request());
@@ -249,16 +248,16 @@ try {
         // Named
         {
           // Prepare
-          auto& ps = conn->prepare("SELECT generate_series(1,5) AS n", "ps1");
-          DMITIGR_ASSERT(&ps == conn->prepared_statement("ps1"));
+          auto ps = conn->prepare("SELECT generate_series(1,5) AS n", "ps1");
+          DMITIGR_ASSERT(ps && ps.name() == "ps1");
           DMITIGR_ASSERT(!conn->has_response());
           DMITIGR_ASSERT(!conn->has_uncompleted_request());
           DMITIGR_ASSERT(conn->is_ready_for_nio_request());
           DMITIGR_ASSERT(conn->is_ready_for_request());
 
           // Describe
-          auto* const dps = conn->describe("ps1");
-          DMITIGR_ASSERT(dps == &ps);
+          auto dps = conn->describe("ps1");
+          DMITIGR_ASSERT(dps && dps.name() == "ps1");
           DMITIGR_ASSERT(!conn->has_response());
           DMITIGR_ASSERT(!conn->has_uncompleted_request());
           DMITIGR_ASSERT(conn->is_ready_for_nio_request());
@@ -268,11 +267,12 @@ try {
           const auto comp = conn->unprepare("ps1");
           DMITIGR_ASSERT(comp);
           DMITIGR_ASSERT(comp.operation_name() == "unprepare");
-          DMITIGR_ASSERT(!conn->prepared_statement("ps1"));
           DMITIGR_ASSERT(!conn->has_response());
           DMITIGR_ASSERT(!conn->has_uncompleted_request());
           DMITIGR_ASSERT(conn->is_ready_for_nio_request());
           DMITIGR_ASSERT(conn->is_ready_for_request());
+          DMITIGR_ASSERT(!ps);
+          DMITIGR_ASSERT(!dps);
         }
 
         // Prepared via SQL
@@ -283,12 +283,10 @@ try {
           DMITIGR_ASSERT(comp.operation_name() == "PREPARE");
 
           // Describe
-          DMITIGR_ASSERT(!conn->prepared_statement("ps2"));
-          auto* const dps = conn->describe("ps2");
-          auto* const ps = conn->prepared_statement("ps2");
-          DMITIGR_ASSERT(dps == ps);
-          DMITIGR_ASSERT(!ps->is_preparsed());
-          DMITIGR_ASSERT(ps->is_described());
+          auto dps = conn->describe("ps2");
+          DMITIGR_ASSERT(dps && dps.name() == "ps2");
+          DMITIGR_ASSERT(!dps.is_preparsed());
+          DMITIGR_ASSERT(dps.is_described());
           DMITIGR_ASSERT(!conn->has_response());
           DMITIGR_ASSERT(!conn->has_uncompleted_request());
           DMITIGR_ASSERT(conn->is_ready_for_nio_request());
@@ -300,9 +298,9 @@ try {
           DMITIGR_ASSERT(comp.operation_name() == "unprepare");
           DMITIGR_ASSERT(!conn->has_response());
           DMITIGR_ASSERT(!conn->has_uncompleted_request());
-          DMITIGR_ASSERT(!conn->prepared_statement("ps2"));
           DMITIGR_ASSERT(conn->is_ready_for_nio_request());
           DMITIGR_ASSERT(conn->is_ready_for_request());
+          DMITIGR_ASSERT(!dps);
         }
 
         // Describe not prepared statement
@@ -311,7 +309,8 @@ try {
           try {
             conn->describe("unprepared");
           } catch (const pgfe::Server_exception& e) {
-            DMITIGR_ASSERT(e.error().condition() == pgfe::Server_errc::c26_invalid_sql_statement_name);
+            DMITIGR_ASSERT(e.error().condition() ==
+              pgfe::Server_errc::c26_invalid_sql_statement_name);
             DMITIGR_ASSERT(!conn->has_response());
             DMITIGR_ASSERT(!conn->has_uncompleted_request());
             DMITIGR_ASSERT(conn->is_ready_for_nio_request());
@@ -327,7 +326,8 @@ try {
           try {
             conn->unprepare("unprepared");
           } catch (const pgfe::Server_exception& e) {
-            DMITIGR_ASSERT(e.error().condition() == pgfe::Server_errc::c26_invalid_sql_statement_name);
+            DMITIGR_ASSERT(e.error().condition() ==
+              pgfe::Server_errc::c26_invalid_sql_statement_name);
             DMITIGR_ASSERT(!conn->has_response());
             DMITIGR_ASSERT(!conn->has_uncompleted_request());
             DMITIGR_ASSERT(conn->is_ready_for_nio_request());
