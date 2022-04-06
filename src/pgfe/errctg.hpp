@@ -14,13 +14,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DMITIGR_PGFE_STD_SYSTEM_ERROR_HPP
-#define DMITIGR_PGFE_STD_SYSTEM_ERROR_HPP
+#ifndef DMITIGR_PGFE_ERRCTG_HPP
+#define DMITIGR_PGFE_ERRCTG_HPP
 
 #include "dll.hpp"
 #include "errc.hpp"
 
 #include <system_error>
+
+namespace std {
+
+/**
+ * @ingroup errors
+ *
+ * @brief The full specialization for integration with `<system_error>`.
+ */
+template<>
+struct is_error_condition_enum<dmitigr::pgfe::Client_errc> final : true_type {};
+
+/**
+ * @ingroup errors
+ *
+ * @brief The full specialization for integration with `<system_error>`.
+ */
+template<>
+struct is_error_condition_enum<dmitigr::pgfe::Server_errc> final : true_type {};
+
+} // namespace std
+
 
 namespace dmitigr::pgfe {
 
@@ -122,28 +143,8 @@ inline std::error_condition make_error_condition(Server_errc errc) noexcept
 
 } // namespace dmitigr::pgfe
 
-namespace std {
-
-/**
- * @ingroup errors
- *
- * @brief The full specialization for integration with `<system_error>`.
- */
-template<>
-struct is_error_condition_enum<dmitigr::pgfe::Client_errc> final : true_type {};
-
-/**
- * @ingroup errors
- *
- * @brief The full specialization for integration with `<system_error>`.
- */
-template<>
-struct is_error_condition_enum<dmitigr::pgfe::Server_errc> final : true_type {};
-
-} // namespace std
-
 #ifndef DMITIGR_PGFE_NOT_HEADER_ONLY
-#include "std_system_error.cpp"
+#include "errctg.cpp"
 #endif
 
-#endif  // DMITIGR_PGFE_STD_SYSTEM_ERROR_HPP
+#endif  // DMITIGR_PGFE_ERRCTG_HPP

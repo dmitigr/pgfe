@@ -15,9 +15,9 @@
 // limitations under the License.
 
 #include "contract.hpp"
+#include "errctg.hpp"
 #include "error.hpp"
 #include "exceptions.hpp"
-#include "std_system_error.hpp"
 
 namespace dmitigr::pgfe {
 

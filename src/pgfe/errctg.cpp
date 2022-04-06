@@ -14,35 +14,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+#include "errctg.hpp"
 #include "problem.hpp"
-#include "std_system_error.hpp"
+
+#include <cstring> // std::strlen
 
 namespace dmitigr::pgfe {
 
 DMITIGR_PGFE_INLINE std::string Client_error_category::message(const int ev) const
 {
-  std::string result{name()};
-  result += ' ';
-  result += std::to_string(ev);
-  if (const char* const literal = to_literal(static_cast<Client_errc>(ev))) {
-    result += ' ';
-    result += literal;
-  }
-  return result;
+  const char* const desc{to_literal_anyway(static_cast<Client_errc>(ev))};
+  constexpr const char* const sep{": "};
+  std::string result;
+  result.reserve(std::strlen(name()) + std::strlen(sep) + std::strlen(desc));
+  return result.append(name()).append(sep).append(desc);
 }
 
 DMITIGR_PGFE_INLINE std::string Server_error_category::message(const int ev) const
 {
-  std::string result{name()};
-  result += ' ';
-  result += std::to_string(ev);
-  result += ' ';
-  result += Problem::sqlstate_int_to_string(ev);
-  if (const char* const literal = to_literal(static_cast<Server_errc>(ev))) {
-    result += ' ';
-    result += literal;
-  }
-  return result;
+  const char* const desc{to_literal_anyway(static_cast<Client_errc>(ev))};
+  constexpr const char* const sep{": "};
+  const auto sqlstate = Problem::sqlstate_int_to_string(ev);
+  std::string result;
+  result.reserve(std::strlen(name()) + std::strlen(sep) + std::strlen(desc)
+    + 2 + sqlstate.size() + 1);
+  return result.append(name()).append(sep).append(desc)
+    .append(" (").append(sqlstate).append(")");
 }
 
 } // namespace dmitigr::pgfe

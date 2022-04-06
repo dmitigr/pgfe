@@ -15,9 +15,9 @@
 // limitations under the License.
 
 #include "../../src/base/assert.hpp"
-#include "../../src/pgfe/exceptions.hpp"
 #include "../../src/pgfe/conversions.hpp"
-#include "../../src/pgfe/std_system_error.hpp"
+#include "../../src/pgfe/errctg.hpp"
+#include "../../src/pgfe/exceptions.hpp"
 #include "../../src/util/diagnostic.hpp"
 
 #include <limits>

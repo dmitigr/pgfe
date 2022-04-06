@@ -33,6 +33,7 @@
 #include "conversions.hpp"
 #include "data.hpp"
 #include "errc.hpp"
+#include "errctg.hpp"
 #include "error.hpp"
 #include "exceptions.hpp"
 #include "large_object.hpp"
@@ -49,7 +50,6 @@
 #include "signal.hpp"
 #include "sql_string.hpp"
 #include "sql_vector.hpp"
-#include "std_system_error.hpp"
 #include "version.hpp"
 
 #endif  // DMITIGR_PGFE_PGFE_HPP

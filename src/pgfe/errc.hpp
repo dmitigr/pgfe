@@ -1014,6 +1014,20 @@ enum class Server_errc {
  */
 DMITIGR_PGFE_API const char* to_literal(Server_errc errc) noexcept;
 
+/**
+ * @ingroup errors
+ *
+ * @returns The literal returned by `to_literal(errc)`, or literal
+ * "unknown error" if `to_literal(errc)` returned `nullptr`.
+ */
+template<typename E>
+const char* to_literal_anyway(const E errc) noexcept
+{
+  constexpr const char* unknown{"unknown error"};
+  const char* const literal{to_literal(errc)};
+  return literal ? literal : unknown;
+}
+
 } // namespace dmitigr::pgfe
 
 #ifndef DMITIGR_PGFE_NOT_HEADER_ONLY

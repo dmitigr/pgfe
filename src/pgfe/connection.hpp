@@ -1277,7 +1277,7 @@ private:
   Response_status response_status_{}; // status last assigned by handle_input()
   Prepared_statement last_prepared_statement_;
   bool is_output_flushed_{true};
-  bool is_copy_in_progress_{};
+  std::shared_ptr<Connection*> copier_state_;
   bool is_single_row_mode_enabled_{};
 
   std::list<std::shared_ptr<Prepared_statement::State>> ps_states_;
@@ -1314,6 +1314,7 @@ private:
   }
 
   void reset_session() noexcept;
+  void reset_copier_state() noexcept;
   void set_single_row_mode_enabled();
 
   // ---------------------------------------------------------------------------

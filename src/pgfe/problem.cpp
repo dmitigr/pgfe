@@ -16,9 +16,9 @@
 
 #include "../str/numeric.hpp"
 #include "basics.hpp"
+#include "errctg.hpp"
 #include "exceptions.hpp"
 #include "problem.hpp"
-#include "std_system_error.hpp"
 
 #include <cassert>
 #include <cerrno>

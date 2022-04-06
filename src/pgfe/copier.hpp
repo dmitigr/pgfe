@@ -43,6 +43,17 @@ namespace dmitigr::pgfe {
  */
 class Copier final : public Response {
 public:
+  /**
+   * @brief The destructor.
+   *
+   * @details Returns itself back to origin Connection.
+   *
+   * @warning Doesn't calls end()!
+   *
+   * @see end().
+   */
+  DMITIGR_PGFE_API ~Copier() noexcept;
+
   /// Constructs invalid instance.
   Copier() noexcept = default;
 
@@ -110,6 +121,9 @@ public:
    *   returns `true`) and the output buffers needs to be flushed.
    * Returns `false` if the output buffers are full and needs to be flushed.
    *
+   * @warning This method must be called to return the Connection instance
+   * back to the normal state.
+   *
    * @see Connection::flush_output().
    */
   DMITIGR_PGFE_API bool end(const std::string& error_message = {}) const;
@@ -144,7 +158,7 @@ public:
 private:
   friend Connection;
 
-  Connection* connection_{};
+  std::shared_ptr<Connection*> connection_;
   detail::pq::Result pq_result_;
   mutable std::unique_ptr<char, void(*)(void*)> buffer_{nullptr, &dummy_free};
 

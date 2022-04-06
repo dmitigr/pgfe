@@ -45,6 +45,7 @@ try {
   for (const auto str : expected)
     copier.send(str);
   copier.end();
+  ASSERT(!copier);
   ASSERT(!conn->is_ready_for_request());
   conn->wait_response_throw();
   ASSERT(conn->completion().operation_name() == "COPY");
@@ -68,10 +69,12 @@ try {
     std::cout << bytes;
   }
   ASSERT(!conn->is_ready_for_request());
+  ASSERT(copier);
   conn->wait_response_throw();
   ASSERT(conn->completion().operation_name() == "COPY");
   ASSERT(conn->is_ready_for_request());
   ASSERT(!conn->is_copy_in_progress());
+  ASSERT(!copier);
 } catch (const std::exception& e) {
   std::cerr << e.what() << std::endl;
   return 1;

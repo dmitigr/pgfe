@@ -41,6 +41,7 @@ set(dmitigr_pgfe_headers
   conversions.hpp
   data.hpp
   errc.hpp
+  errctg.hpp
   error.hpp
   exceptions.hpp
   large_object.hpp
@@ -59,7 +60,6 @@ set(dmitigr_pgfe_headers
   signal.hpp
   sql_string.hpp
   sql_vector.hpp
-  std_system_error.hpp
   types_fwd.hpp
   )
 
@@ -73,6 +73,7 @@ set(dmitigr_pgfe_implementations
   connection_pool.cpp
   data.cpp
   errc.cpp
+  errctg.cpp
   error.cpp
   exceptions.cpp
   large_object.cpp
@@ -87,7 +88,6 @@ set(dmitigr_pgfe_implementations
   row_info.cpp
   sql_string.cpp
   sql_vector.cpp
-  std_system_error.cpp
   tuple.cpp
   )
 

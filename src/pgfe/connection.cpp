@@ -525,9 +525,11 @@ Connection::handle_input(const bool wait_response)
       DMITIGR_ASSERT(last_processed_request_.id_ == Request::Id::execute);
       is_single_row_mode_enabled_ = false;
     } else if (rstatus == PGRES_COPY_OUT || rstatus == PGRES_COPY_IN) {
-      is_copy_in_progress_ = true;
+      // is_copy_in_progress() now returns `true`, copier() returns Copier.
+      copier_state_ = std::make_shared<Connection*>(nullptr);
     } else if (rstatus == PGRES_FATAL_ERROR) {
-      is_copy_in_progress_ = false;
+      // is_copy_in_progress() now returns `false`.
+      reset_copier_state();
       is_single_row_mode_enabled_ = false;
     } else if (rstatus == PGRES_COMMAND_OK) {
       auto& lpr = last_processed_request_;
@@ -552,7 +554,8 @@ Connection::handle_input(const bool wait_response)
           !std::strcmp(response_.command_tag(), "DEALLOCATE"));
         unregister_ps(*lpr.prepared_statement_name_);
       }
-      is_copy_in_progress_ = false;
+      // is_copy_in_progress() now returns `false`.
+      reset_copier_state();
       is_single_row_mode_enabled_ = false;
     }
   } else if (response_status_ == Response_status::empty)
@@ -726,7 +729,7 @@ DMITIGR_PGFE_INLINE bool Connection::has_response() const noexcept
 DMITIGR_PGFE_INLINE Copier Connection::copier() noexcept
 {
   const auto s = response_.status();
-  return (s == PGRES_COPY_IN || s == PGRES_COPY_OUT) ?
+  return (s == PGRES_COPY_IN || s == PGRES_COPY_OUT) && !*copier_state_ ?
     Copier{*this, std::move(response_)} : Copier{};
 }
 
@@ -781,7 +784,7 @@ DMITIGR_PGFE_INLINE Ready_for_query Connection::ready_for_query()
 
 DMITIGR_PGFE_INLINE bool Connection::is_copy_in_progress() const noexcept
 {
-  return is_copy_in_progress_;
+  return static_cast<bool>(copier_state_);
 }
 
 DMITIGR_PGFE_INLINE bool Connection::is_ready_for_nio_request() const noexcept
@@ -1109,7 +1112,7 @@ DMITIGR_PGFE_INLINE void Connection::reset_session() noexcept
   response_status_ = {};
   requests_ = {};
   is_output_flushed_ = true;
-  is_copy_in_progress_ =  false;
+  reset_copier_state();
   is_single_row_mode_enabled_ = false;
 
   // Reset prepared statements.
@@ -1126,6 +1129,14 @@ DMITIGR_PGFE_INLINE void Connection::reset_session() noexcept
     s->connection_ = nullptr;
   }
   lo_states_.clear();
+}
+
+DMITIGR_PGFE_INLINE void Connection::reset_copier_state() noexcept
+{
+  if (copier_state_) {
+    *copier_state_ = nullptr;
+    copier_state_ = {};
+  }
 }
 
 DMITIGR_PGFE_INLINE void Connection::set_single_row_mode_enabled()
