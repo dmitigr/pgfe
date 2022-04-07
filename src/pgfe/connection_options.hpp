@@ -289,22 +289,22 @@ public:
    * `!value` or `*value` must be a valid IPv4 or IPv6 address.
    *
    * @remarks When using SSL or some authentication methods (such as Kerberos)
-   * the option `net_hostname` is mandatory even if using this option. If both
-   * `net_address` and `net_hostname` are set, the value of `net_address` is
+   * the option `hostname` is mandatory even if using this option. If both
+   * `address` and `hostname` are set, the value of `address` is
    * preferred as the PostgreSQL server address to connect.
    *
-   * @see net_hostname().
+   * @see hostname().
    */
   DMITIGR_PGFE_API Connection_options&
-  set_net_address(std::optional<std::string> value);
+  set_address(std::optional<std::string> value);
 
   /**
    * @returns The current value of the option.
    *
-   * @see net_hostname().
+   * @see hostname().
    */
   DMITIGR_PGFE_API const std::optional<std::string>&
-  net_address() const noexcept;
+  address() const noexcept;
 
   // ---------------------------------------------------------------------------
 
@@ -316,23 +316,23 @@ public:
    * @par Requires
    * `!value` or `*value` must be a valid hostname.
    *
-   * @remarks If the option `net_address` is set, hostname lookup will not
+   * @remarks If the option `address` is set, hostname lookup will not
    * occurs even if this option is also set. However, the value of this option
    * might be required for some authentication methods or SSL certificate
    * verification.
    *
-   * @see net_address().
+   * @see address().
    */
   DMITIGR_PGFE_API Connection_options&
-  set_net_hostname(std::optional<std::string> value);
+  set_hostname(std::optional<std::string> value);
 
   /**
    * @returns The current value of the option.
    *
-   * @see net_address().
+   * @see address().
    */
   DMITIGR_PGFE_API const std::optional<std::string>&
-  net_hostname() const noexcept;
+  hostname() const noexcept;
 
   /// @}
 
@@ -633,8 +633,8 @@ private:
   std::optional<std::chrono::seconds> tcp_keepalives_interval_;
   std::optional<int> tcp_keepalives_count_;
   std::optional<std::chrono::milliseconds> tcp_user_timeout_;
-  std::optional<std::string> net_address_;
-  std::optional<std::string> net_hostname_;
+  std::optional<std::string> address_;
+  std::optional<std::string> hostname_;
   std::optional<std::int_fast32_t> port_{5432};
   std::optional<std::string> username_;
   std::optional<std::string> database_;

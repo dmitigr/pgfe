@@ -17,7 +17,7 @@
 #include "connection.hpp"
 #include "exceptions.hpp"
 #include "prepared_statement.hpp"
-#include "sql_string.hpp"
+#include "statement.hpp"
 
 #include <algorithm>
 
@@ -226,13 +226,13 @@ DMITIGR_PGFE_INLINE void Prepared_statement::execute_nio()
   execute_nio__(nullptr);
 }
 
-DMITIGR_PGFE_INLINE void Prepared_statement::execute_nio(const Sql_string& statement)
+DMITIGR_PGFE_INLINE void Prepared_statement::execute_nio(const Statement& statement)
 {
   execute_nio__(&statement);
 }
 
 DMITIGR_PGFE_INLINE void
-Prepared_statement::execute_nio__(const Sql_string* const statement)
+Prepared_statement::execute_nio__(const Statement* const statement)
 {
   if (!is_valid())
     throw_exception("cannot execute invalid");
@@ -259,13 +259,11 @@ Prepared_statement::execute_nio__(const Sql_string* const statement)
     const int result_format = detail::pq::to_int(result_format_);
 
     const int send_ok = statement
-      ?
-      ::PQsendQueryParams(conn.conn(),
+      ? PQsendQueryParams(conn.conn(),
         statement->to_query_string(conn).c_str(),
         param_count, nullptr, values.data(), lengths.data(),
         formats.data(), result_format)
-      :
-      ::PQsendQueryPrepared(conn.conn(),
+      : PQsendQueryPrepared(conn.conn(),
         name().c_str(),
         param_count, values.data(), lengths.data(),
         formats.data(), result_format);
@@ -352,7 +350,7 @@ Prepared_statement::row_info() const noexcept
 
 DMITIGR_PGFE_INLINE Prepared_statement::Prepared_statement(
   std::shared_ptr<Prepared_statement::State> state,
-  const Sql_string* const preparsed,
+  const Statement* const preparsed,
   const bool is_registered)
   : is_registered_{is_registered}
 {

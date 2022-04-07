@@ -48,7 +48,7 @@
 #include "row.hpp"
 #include "row_info.hpp"
 #include "signal.hpp"
-#include "sql_string.hpp"
+#include "statement.hpp"
 #include "sql_vector.hpp"
 #include "version.hpp"
 

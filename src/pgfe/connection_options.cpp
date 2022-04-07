@@ -85,8 +85,8 @@ Connection_options::swap(Connection_options& rhs) noexcept
   swap(tcp_keepalives_interval_, rhs.tcp_keepalives_interval_);
   swap(tcp_keepalives_count_, rhs.tcp_keepalives_count_);
   swap(tcp_user_timeout_, rhs.tcp_user_timeout_);
-  swap(net_address_, rhs.net_address_);
-  swap(net_hostname_, rhs.net_hostname_);
+  swap(address_, rhs.address_);
+  swap(hostname_, rhs.hostname_);
   swap(port_, rhs.port_);
   swap(username_, rhs.username_);
   swap(database_, rhs.database_);
@@ -304,33 +304,33 @@ Connection_options::tcp_user_timeout() const noexcept
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::set_net_address(std::optional<std::string> value)
+Connection_options::set_address(std::optional<std::string> value)
 {
   if (value)
     validate(is_ip_address(*value), "Network address");
-  net_address_ = std::move(value);
+  address_ = std::move(value);
   return *this;
 }
 
 DMITIGR_PGFE_INLINE const std::optional<std::string>&
-Connection_options::net_address() const noexcept
+Connection_options::address() const noexcept
 {
-  return net_address_;
+  return address_;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
-Connection_options::set_net_hostname(std::optional<std::string> value)
+Connection_options::set_hostname(std::optional<std::string> value)
 {
   if (value)
     validate(is_hostname(*value), "Network host name");
-  net_hostname_ = std::move(value);
+  hostname_ = std::move(value);
   return *this;
 }
 
 DMITIGR_PGFE_INLINE const std::optional<std::string>&
-Connection_options::net_hostname() const noexcept
+Connection_options::hostname() const noexcept
 {
-  return net_hostname_;
+  return hostname_;
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
@@ -632,8 +632,8 @@ operator==(const Connection_options& lhs, const Connection_options& rhs) noexcep
     lhs.uds_directory_ == rhs.uds_directory_ &&
     lhs.uds_require_server_process_username_ ==
     rhs.uds_require_server_process_username_ &&
-    lhs.net_address_ == rhs.net_address_ &&
-    lhs.net_hostname_ == rhs.net_hostname_ &&
+    lhs.address_ == rhs.address_ &&
+    lhs.hostname_ == rhs.hostname_ &&
     lhs.username_ == rhs.username_ &&
     lhs.database_ == rhs.database_ &&
     lhs.password_ == rhs.password_ &&
@@ -665,9 +665,9 @@ public:
 
     switch (*cm) {
     case Communication_mode::net: {
-      if (const auto& v = o.net_hostname())
+      if (const auto& v = o.hostname())
         values_[host] = *v;
-      if (const auto& v  = o.net_address())
+      if (const auto& v  = o.address())
         values_[hostaddr] = *v;
       if (const auto v = o.port())
         values_[port] = std::to_string(*v);

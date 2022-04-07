@@ -43,7 +43,7 @@ public:
   DMITIGR_PGFE_API Notice() = default;
 
   /// The constructor.
-  explicit DMITIGR_PGFE_API Notice(const ::PGresult* const result) noexcept;
+  explicit DMITIGR_PGFE_API Notice(const PGresult* const result) noexcept;
 
   /// @see Message::is_valid().
   DMITIGR_PGFE_API bool is_valid() const noexcept override;

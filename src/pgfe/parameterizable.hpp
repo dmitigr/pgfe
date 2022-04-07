@@ -77,7 +77,7 @@ public:
 
 private:
   friend Prepared_statement;
-  friend Sql_string;
+  friend Statement;
 
   Parameterizable() = default;
 

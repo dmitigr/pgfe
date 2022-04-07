@@ -131,7 +131,7 @@ DMITIGR_PGFE_INLINE Data_view Copier::receive(const bool wait) const
   char* buffer{};
   const int size{PQgetCopyData(connection().conn(), &buffer, !wait)};
   if (buffer)
-    buffer_ = decltype(buffer_){buffer, &::PQfreemem};
+    buffer_ = decltype(buffer_){buffer, &PQfreemem};
   DMITIGR_ASSERT(!buffer_ || size > 0);
 
   if (size == -1)

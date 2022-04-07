@@ -76,9 +76,9 @@ public:
 private:
   friend Connection;
 
-  std::unique_ptr< ::PGnotify> pgnotify_;
+  std::unique_ptr<PGnotify> pgnotify_;
 
-  explicit DMITIGR_PGFE_API Notification(::PGnotify* const pgnotify);
+  explicit DMITIGR_PGFE_API Notification(PGnotify* const pgnotify);
   bool is_invariant_ok() const noexcept;
 };
 

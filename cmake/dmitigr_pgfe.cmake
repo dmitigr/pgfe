@@ -58,8 +58,8 @@ set(dmitigr_pgfe_headers
   row.hpp
   row_info.hpp
   signal.hpp
-  sql_string.hpp
   sql_vector.hpp
+  statement.hpp
   types_fwd.hpp
   )
 
@@ -86,8 +86,8 @@ set(dmitigr_pgfe_implementations
   ready_for_query.cpp
   row.cpp
   row_info.cpp
-  sql_string.cpp
   sql_vector.cpp
+  statement.cpp
   tuple.cpp
   )
 
@@ -122,7 +122,7 @@ if(DMITIGR_CPPLIPA_TESTS)
     array_dimension
     benchmark_array_client
     benchmark_array_server
-    benchmark_sql_string_replace
+    benchmark_statement_replace
     composite
     connection
     connection_deferrable
@@ -142,8 +142,8 @@ if(DMITIGR_CPPLIPA_TESTS)
     ps
     lob
     row
-    sql_string
     sql_vector
+    statement
     )
 
   set(dmitigr_pgfe_tests_target_link_libraries dmitigr_base dmitigr_os dmitigr_str

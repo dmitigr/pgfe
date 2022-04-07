@@ -685,7 +685,7 @@ public:
    *
    * @see unprepare_nio().
    */
-  DMITIGR_PGFE_API void prepare_nio(const Sql_string& statement,
+  DMITIGR_PGFE_API void prepare_nio(const Statement& statement,
     const std::string& name = {});
 
   /// Same as prepare_nio() except the statement will be send without preparsing.
@@ -705,7 +705,7 @@ public:
    *
    * @see unprepare().
    */
-  DMITIGR_PGFE_API Prepared_statement prepare(const Sql_string& statement,
+  DMITIGR_PGFE_API Prepared_statement prepare(const Statement& statement,
     const std::string& name = {});
 
   /// Same as prepare() except the statement will be send without preparsing.
@@ -801,7 +801,7 @@ public:
    * @see execute().
    */
   template<typename ... Types>
-  void execute_nio(const Sql_string& statement, Types&& ... parameters)
+  void execute_nio(const Statement& statement, Types&& ... parameters)
   {
     Prepared_statement ps{execute_ps_state_, &statement, false};
     ps.bind_many(std::forward<Types>(parameters)...).execute_nio(statement);
@@ -833,7 +833,7 @@ public:
   template<Row_processing on_exception = Row_processing::complete, typename F,
     typename ... Types>
   std::enable_if_t<detail::Response_callback_traits<F>::is_valid, Completion>
-  execute(F&& callback, const Sql_string& statement, Types&& ... parameters)
+  execute(F&& callback, const Statement& statement, Types&& ... parameters)
   {
     if (!is_ready_for_request())
       throw Client_exception{"cannot execute statement: not ready for request"};
@@ -843,7 +843,7 @@ public:
 
   /// @overload
   template<Row_processing on_exception = Row_processing::complete, typename ... Types>
-  Completion execute(const Sql_string& statement, Types&& ... parameters)
+  Completion execute(const Statement& statement, Types&& ... parameters)
   {
     return execute<on_exception>([](auto&&){}, statement,
       std::forward<Types>(parameters)...);
@@ -1236,11 +1236,11 @@ private:
 
   // Persistent data / private-modifiable data
   std::shared_ptr<Prepared_statement::State> execute_ps_state_;
-  std::unique_ptr< ::PGconn> conn_;
+  std::unique_ptr<PGconn> conn_;
   std::optional<Status> polling_status_;
   std::int_fast64_t lo_id_{};
 
-  ::PGconn* conn() const noexcept
+  PGconn* conn() const noexcept
   {
     return conn_.get();
   }
@@ -1322,7 +1322,7 @@ private:
   // Handlers
   // ---------------------------------------------------------------------------
 
-  static void notice_receiver(void* const arg, const ::PGresult* const r) noexcept;
+  static void notice_receiver(void* const arg, const PGresult* const r) noexcept;
   static void default_notice_handler(const Notice& n) noexcept;
 
   // ---------------------------------------------------------------------------
@@ -1330,7 +1330,7 @@ private:
   // ---------------------------------------------------------------------------
 
   void prepare_nio__(const char* const query, const char* const name,
-    const Sql_string* const preparsed);
+    const Statement* const preparsed);
 
   template<typename M, typename T>
   Prepared_statement prepare__(M&& prepare, T&& statement, const std::string& name)

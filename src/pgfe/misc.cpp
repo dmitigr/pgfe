@@ -27,7 +27,7 @@ DMITIGR_PGFE_INLINE void set_initialization(const External_library library)
 {
   const auto libssl = static_cast<bool>(library & External_library::libssl);
   const auto libcrypto = static_cast<bool>(library & External_library::libcrypto);
-  ::PQinitOpenSSL(libssl, libcrypto);
+  PQinitOpenSSL(libssl, libcrypto);
 }
 
 DMITIGR_PGFE_INLINE std::string unquote_identifier(const std::string_view identifier)

@@ -58,7 +58,7 @@ try {
     });
   }
 
-  static const pgfe::Sql_string ss{
+  static const pgfe::Statement ss{
     "SELECT 1::integer AS const,"
       " generate_series(:infinum::integer, :supremum::integer) AS var,"
       " 2::integer AS const"};

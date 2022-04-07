@@ -18,7 +18,7 @@
 #include "connection.hpp"
 #include "data.hpp"
 #include "exceptions.hpp"
-#include "sql_string.hpp"
+#include "statement.hpp"
 
 #include <algorithm>
 #include <cassert>
@@ -29,13 +29,13 @@
 namespace dmitigr::pgfe {
 
 DMITIGR_PGFE_INLINE
-Sql_string::Fragment::Fragment(const Type tp, const std::string& s)
+Statement::Fragment::Fragment(const Type tp, const std::string& s)
   : type(tp)
   , str(s)
 {}
 
 DMITIGR_PGFE_INLINE bool
-Sql_string::Fragment::is_named_parameter() const noexcept
+Statement::Fragment::is_named_parameter() const noexcept
 {
   using Ft = Fragment::Type;
   return type == Ft::named_parameter ||
@@ -44,29 +44,29 @@ Sql_string::Fragment::is_named_parameter() const noexcept
 }
 
 DMITIGR_PGFE_INLINE bool
-Sql_string::Fragment::is_named_parameter(const std::string_view name) const noexcept
+Statement::Fragment::is_named_parameter(const std::string_view name) const noexcept
 {
   return is_named_parameter() && str == name;
 }
 
 // =============================================================================
 
-DMITIGR_PGFE_INLINE Sql_string::Sql_string(const std::string_view text)
+DMITIGR_PGFE_INLINE Statement::Statement(const std::string_view text)
 {
   auto s = parse_sql_input(text, loc_).first;
   swap(s);
   assert(is_invariant_ok());
 }
 
-DMITIGR_PGFE_INLINE Sql_string::Sql_string(const std::string& text)
-  : Sql_string{std::string_view{text}}
+DMITIGR_PGFE_INLINE Statement::Statement(const std::string& text)
+  : Statement{std::string_view{text}}
 {}
 
-DMITIGR_PGFE_INLINE Sql_string::Sql_string(const char* const text)
-  : Sql_string{std::string_view{text, std::strlen(text)}}
+DMITIGR_PGFE_INLINE Statement::Statement(const char* const text)
+  : Statement{std::string_view{text, std::strlen(text)}}
 {}
 
-DMITIGR_PGFE_INLINE Sql_string::Sql_string(const Sql_string& rhs)
+DMITIGR_PGFE_INLINE Statement::Statement(const Statement& rhs)
   : fragments_{rhs.fragments_}
   , positional_parameters_{rhs.positional_parameters_}
   , is_extra_data_should_be_extracted_from_comments_{
@@ -76,16 +76,16 @@ DMITIGR_PGFE_INLINE Sql_string::Sql_string(const Sql_string& rhs)
   named_parameters_ = named_parameters();
 }
 
-DMITIGR_PGFE_INLINE Sql_string& Sql_string::operator=(const Sql_string& rhs)
+DMITIGR_PGFE_INLINE Statement& Statement::operator=(const Statement& rhs)
 {
   if (this != &rhs) {
-    Sql_string tmp{rhs};
+    Statement tmp{rhs};
     swap(tmp);
   }
   return *this;
 }
 
-DMITIGR_PGFE_INLINE Sql_string::Sql_string(Sql_string&& rhs) noexcept
+DMITIGR_PGFE_INLINE Statement::Statement(Statement&& rhs) noexcept
   : fragments_{std::move(rhs.fragments_)}
   , positional_parameters_{std::move(rhs.positional_parameters_)}
   , is_extra_data_should_be_extracted_from_comments_{
@@ -95,16 +95,16 @@ DMITIGR_PGFE_INLINE Sql_string::Sql_string(Sql_string&& rhs) noexcept
   named_parameters_ = named_parameters();
 }
 
-DMITIGR_PGFE_INLINE Sql_string& Sql_string::operator=(Sql_string&& rhs) noexcept
+DMITIGR_PGFE_INLINE Statement& Statement::operator=(Statement&& rhs) noexcept
 {
   if (this != &rhs) {
-    Sql_string tmp{std::move(rhs)};
+    Statement tmp{std::move(rhs)};
     swap(tmp);
   }
   return *this;
 }
 
-DMITIGR_PGFE_INLINE void Sql_string::swap(Sql_string& rhs) noexcept
+DMITIGR_PGFE_INLINE void Statement::swap(Statement& rhs) noexcept
 {
   using std::swap;
   swap(loc_, rhs.loc_);
@@ -117,56 +117,56 @@ DMITIGR_PGFE_INLINE void Sql_string::swap(Sql_string& rhs) noexcept
 }
 
 DMITIGR_PGFE_INLINE std::size_t
-Sql_string::positional_parameter_count() const noexcept
+Statement::positional_parameter_count() const noexcept
 {
   return positional_parameters_.size();
 }
 
-DMITIGR_PGFE_INLINE std::size_t Sql_string::named_parameter_count() const noexcept
+DMITIGR_PGFE_INLINE std::size_t Statement::named_parameter_count() const noexcept
 {
   return named_parameters_.size();
 }
 
-DMITIGR_PGFE_INLINE std::size_t Sql_string::parameter_count() const noexcept
+DMITIGR_PGFE_INLINE std::size_t Statement::parameter_count() const noexcept
 {
   return positional_parameter_count() + named_parameter_count();
 }
 
-DMITIGR_PGFE_INLINE bool Sql_string::has_positional_parameters() const noexcept
+DMITIGR_PGFE_INLINE bool Statement::has_positional_parameters() const noexcept
 {
   return !positional_parameters_.empty();
 }
 
-DMITIGR_PGFE_INLINE bool Sql_string::has_named_parameters() const noexcept
+DMITIGR_PGFE_INLINE bool Statement::has_named_parameters() const noexcept
 {
   return !named_parameters_.empty();
 }
 
-DMITIGR_PGFE_INLINE bool Sql_string::has_parameters() const noexcept
+DMITIGR_PGFE_INLINE bool Statement::has_parameters() const noexcept
 {
   return (has_positional_parameters() || has_named_parameters());
 }
 
 DMITIGR_PGFE_INLINE std::string_view
-Sql_string::parameter_name(const std::size_t index) const
+Statement::parameter_name(const std::size_t index) const
 {
   if (!((positional_parameter_count() <= index) && (index < parameter_count())))
-    throw Client_exception{"cannot get Sql_string parameter name"};
+    throw Client_exception{"cannot get Statement parameter name"};
   return (named_parameters_[index - positional_parameter_count()])->str;
 }
 
 DMITIGR_PGFE_INLINE std::size_t
-Sql_string::parameter_index(const std::string_view name) const noexcept
+Statement::parameter_index(const std::string_view name) const noexcept
 {
   return named_parameter_index(name);
 }
 
-DMITIGR_PGFE_INLINE bool Sql_string::is_empty() const noexcept
+DMITIGR_PGFE_INLINE bool Statement::is_empty() const noexcept
 {
   return fragments_.empty();
 }
 
-DMITIGR_PGFE_INLINE bool Sql_string::is_query_empty() const noexcept
+DMITIGR_PGFE_INLINE bool Statement::is_query_empty() const noexcept
 {
   return all_of(cbegin(fragments_), cend(fragments_),
     [this](const Fragment& f)
@@ -176,48 +176,48 @@ DMITIGR_PGFE_INLINE bool Sql_string::is_query_empty() const noexcept
 }
 
 DMITIGR_PGFE_INLINE bool
-Sql_string::is_parameter_missing(const std::size_t index) const
+Statement::is_parameter_missing(const std::size_t index) const
 {
   if (!(index < positional_parameter_count()))
-    throw Client_exception{"cannot determine if Sql_string parameter is missing"};
+    throw Client_exception{"cannot determine if Statement parameter is missing"};
   return !positional_parameters_[index];
 }
 
 DMITIGR_PGFE_INLINE bool
-Sql_string::is_parameter_literal(const std::size_t index) const
+Statement::is_parameter_literal(const std::size_t index) const
 {
   if (!((positional_parameter_count() <= index) && (index < parameter_count())))
-    throw Client_exception{"cannot determine if Sql_string parameter is literal"};
+    throw Client_exception{"cannot determine if Statement parameter is literal"};
   return named_parameter_type(index) == Fragment::Type::named_parameter_literal;
 }
 
 DMITIGR_PGFE_INLINE bool
-Sql_string::is_parameter_literal(const std::string_view name) const
+Statement::is_parameter_literal(const std::string_view name) const
 {
   return is_parameter_literal(parameter_index(name));
 }
 
 DMITIGR_PGFE_INLINE bool
-Sql_string::is_parameter_identifier(const std::size_t index) const
+Statement::is_parameter_identifier(const std::size_t index) const
 {
   if (!((positional_parameter_count() <= index) && (index < parameter_count())))
-    throw Client_exception{"cannot determine if Sql_string parameter is identifier"};
+    throw Client_exception{"cannot determine if Statement parameter is identifier"};
   return named_parameter_type(index) == Fragment::Type::named_parameter_identifier;
 }
 
 DMITIGR_PGFE_INLINE bool
-Sql_string::is_parameter_identifier(const std::string_view name) const
+Statement::is_parameter_identifier(const std::string_view name) const
 {
   return is_parameter_identifier(parameter_index(name));
 }
 
-DMITIGR_PGFE_INLINE bool Sql_string::has_missing_parameters() const noexcept
+DMITIGR_PGFE_INLINE bool Statement::has_missing_parameters() const noexcept
 {
   return any_of(cbegin(positional_parameters_), cend(positional_parameters_),
     [](const auto is_present) {return !is_present;});
 }
 
-DMITIGR_PGFE_INLINE void Sql_string::append(const Sql_string& appendix)
+DMITIGR_PGFE_INLINE void Statement::append(const Statement& appendix)
 {
   const bool was_query_empty = is_query_empty();
 
@@ -239,11 +239,11 @@ DMITIGR_PGFE_INLINE void Sql_string::append(const Sql_string& appendix)
 }
 
 DMITIGR_PGFE_INLINE void
-Sql_string::bind(const std::string_view name,
+Statement::bind(const std::string_view name,
   const std::optional<std::string>& value)
 {
   if (!has_parameter(name))
-    throw Client_exception{"cannot bind Sql_string parameter"};
+    throw Client_exception{"cannot bind Statement parameter"};
   for (auto& fragment : fragments_) {
     if (fragment.is_named_parameter(name))
       fragment.value = value;
@@ -252,10 +252,10 @@ Sql_string::bind(const std::string_view name,
 }
 
 DMITIGR_PGFE_INLINE const std::optional<std::string>&
-Sql_string::bound(const std::string_view name) const
+Statement::bound(const std::string_view name) const
 {
   if (!has_parameter(name))
-    throw Client_exception{"cannot get bound Sql_string parameter"};
+    throw Client_exception{"cannot get bound Statement parameter"};
   for (auto& fragment : fragments_) {
     if (fragment.is_named_parameter(name))
       return fragment.value;
@@ -264,11 +264,11 @@ Sql_string::bound(const std::string_view name) const
 }
 
 DMITIGR_PGFE_INLINE void
-Sql_string::replace_parameter(const std::string_view name,
-  const Sql_string& replacement)
+Statement::replace_parameter(const std::string_view name,
+  const Statement& replacement)
 {
   if (!(has_parameter(name) && (this != &replacement)))
-    throw Client_exception{"cannot replace Sql_string parameter"};
+    throw Client_exception{"cannot replace Statement parameter"};
 
   // Updating fragments
   auto old_fragments = fragments_;
@@ -293,7 +293,7 @@ Sql_string::replace_parameter(const std::string_view name,
   assert(is_invariant_ok());
 }
 
-DMITIGR_PGFE_INLINE std::string Sql_string::to_string() const
+DMITIGR_PGFE_INLINE std::string Statement::to_string() const
 {
   using Ft = Fragment::Type;
   std::string result;
@@ -338,15 +338,15 @@ DMITIGR_PGFE_INLINE std::string Sql_string::to_string() const
 }
 
 DMITIGR_PGFE_INLINE std::string
-Sql_string::to_query_string(const Connection& conn) const
+Statement::to_query_string(const Connection& conn) const
 {
   using Ft = Fragment::Type;
 
   if (has_missing_parameters())
-    throw Client_exception{"cannot convert Sql_string to query string: "
+    throw Client_exception{"cannot convert Statement to query string: "
       "has missing parameters"};
   else if (!conn.is_connected())
-    throw Client_exception{"cannot convert Sql_string to query string: "
+    throw Client_exception{"cannot convert Statement to query string: "
       "not connected"};
 
   static const auto check_value_bound = [](const auto& fragment)
@@ -407,7 +407,7 @@ Sql_string::to_query_string(const Connection& conn) const
 // ---------------------------------------------------------------------------
 
 /// Represents an API for extraction the extra data from the comments.
-struct Sql_string::Extra final {
+struct Statement::Extra final {
 public:
   /// Denotes the key type of the associated data.
   using Key = std::string;
@@ -416,10 +416,10 @@ public:
   using Value = std::unique_ptr<Data>;
 
   /// Denotes the fragment type.
-  using Fragment = Sql_string::Fragment;
+  using Fragment = Statement::Fragment;
 
   /// Denotes the fragment list type.
-  using Fragment_list = Sql_string::Fragment_list;
+  using Fragment_list = Statement::Fragment_list;
 
   /// @returns The vector of associated extra data.
   static std::vector<std::pair<Key, Value>>
@@ -790,7 +790,7 @@ private:
   }
 };
 
-DMITIGR_PGFE_INLINE const Tuple& Sql_string::extra() const
+DMITIGR_PGFE_INLINE const Tuple& Statement::extra() const
 {
   if (!extra_)
     extra_.emplace(Extra::extract(fragments_, loc_));
@@ -801,12 +801,12 @@ DMITIGR_PGFE_INLINE const Tuple& Sql_string::extra() const
   return *extra_;
 }
 
-DMITIGR_PGFE_INLINE Tuple& Sql_string::extra() noexcept
+DMITIGR_PGFE_INLINE Tuple& Statement::extra() noexcept
 {
-  return const_cast<Tuple&>(static_cast<const Sql_string*>(this)->extra());
+  return const_cast<Tuple&>(static_cast<const Statement*>(this)->extra());
 }
 
-DMITIGR_PGFE_INLINE bool Sql_string::is_invariant_ok() const noexcept
+DMITIGR_PGFE_INLINE bool Statement::is_invariant_ok() const noexcept
 {
   const bool positional_parameters_ok =
     (positional_parameter_count() > 0) == has_positional_parameters();
@@ -835,32 +835,32 @@ DMITIGR_PGFE_INLINE bool Sql_string::is_invariant_ok() const noexcept
 // ---------------------------------------------------------------------------
 
 DMITIGR_PGFE_INLINE void
-Sql_string::push_back_fragment(const Fragment::Type type, const std::string& str)
+Statement::push_back_fragment(const Fragment::Type type, const std::string& str)
 {
   fragments_.emplace_back(type, str);
   assert(is_invariant_ok());
 }
 
 DMITIGR_PGFE_INLINE void
-Sql_string::push_text(const std::string& str)
+Statement::push_text(const std::string& str)
 {
   push_back_fragment(Fragment::Type::text, str);
 }
 
 DMITIGR_PGFE_INLINE void
-Sql_string::push_one_line_comment(const std::string& str)
+Statement::push_one_line_comment(const std::string& str)
 {
   push_back_fragment(Fragment::Type::one_line_comment, str);
 }
 
 DMITIGR_PGFE_INLINE void
-Sql_string::push_multi_line_comment(const std::string& str)
+Statement::push_multi_line_comment(const std::string& str)
 {
   push_back_fragment(Fragment::Type::multi_line_comment, str);
 }
 
 DMITIGR_PGFE_INLINE void
-Sql_string::push_positional_parameter(const std::string& str)
+Statement::push_positional_parameter(const std::string& str)
 {
   push_back_fragment(Fragment::Type::positional_parameter, str);
 
@@ -878,7 +878,7 @@ Sql_string::push_positional_parameter(const std::string& str)
 }
 
 DMITIGR_PGFE_INLINE void
-Sql_string::push_named_parameter(const std::string& str, const char quote_char)
+Statement::push_named_parameter(const std::string& str, const char quote_char)
 {
   DMITIGR_ASSERT(!quote_char || is_quote_char(quote_char));
   if (parameter_count() < max_parameter_count()) {
@@ -905,7 +905,7 @@ Sql_string::push_named_parameter(const std::string& str, const char quote_char)
 // ---------------------------------------------------------------------------
 
 // Exception safety guarantee: strong.
-DMITIGR_PGFE_INLINE void Sql_string::update_cache(const Sql_string& rhs)
+DMITIGR_PGFE_INLINE void Statement::update_cache(const Statement& rhs)
 {
   // Preparing for merge positional parameters.
   const auto old_pos_params_size = positional_parameters_.size();
@@ -947,7 +947,7 @@ DMITIGR_PGFE_INLINE void Sql_string::update_cache(const Sql_string& rhs)
 // ---------------------------------------------------------------------------
 
 DMITIGR_PGFE_INLINE auto
-Sql_string::named_parameter_type(const std::size_t index) const noexcept
+Statement::named_parameter_type(const std::size_t index) const noexcept
   -> Fragment::Type
 {
   DMITIGR_ASSERT(positional_parameter_count() <= index && index < parameter_count());
@@ -956,7 +956,7 @@ Sql_string::named_parameter_type(const std::size_t index) const noexcept
 }
 
 DMITIGR_PGFE_INLINE std::size_t
-Sql_string::named_parameter_index(const std::string_view name) const noexcept
+Statement::named_parameter_index(const std::string_view name) const noexcept
 {
   const auto relative_index = [this, name]() noexcept
   {
@@ -968,7 +968,7 @@ Sql_string::named_parameter_index(const std::string_view name) const noexcept
   return positional_parameter_count() + relative_index;
 }
 
-DMITIGR_PGFE_INLINE auto Sql_string::named_parameters() const
+DMITIGR_PGFE_INLINE auto Statement::named_parameters() const
   -> std::vector<Fragment_list::const_iterator>
 {
   std::vector<Fragment_list::const_iterator> result;
@@ -989,13 +989,13 @@ DMITIGR_PGFE_INLINE auto Sql_string::named_parameters() const
 // ---------------------------------------------------------------------------
 
 DMITIGR_PGFE_INLINE bool
-Sql_string::is_space(const char c, const std::locale& loc) noexcept
+Statement::is_space(const char c, const std::locale& loc) noexcept
 {
   return isspace(c, loc);
 }
 
 DMITIGR_PGFE_INLINE bool
-Sql_string::is_blank_string(const std::string& str, const std::locale& loc) noexcept
+Statement::is_blank_string(const std::string& str, const std::locale& loc) noexcept
 {
   return all_of(cbegin(str), cend(str), [&loc](const auto& c)
   {
@@ -1004,26 +1004,26 @@ Sql_string::is_blank_string(const std::string& str, const std::locale& loc) noex
 }
 
 DMITIGR_PGFE_INLINE bool
-Sql_string::is_comment(const Fragment& f) noexcept
+Statement::is_comment(const Fragment& f) noexcept
 {
   return (f.type == Fragment::Type::one_line_comment) ||
     (f.type == Fragment::Type::multi_line_comment);
 }
 
 DMITIGR_PGFE_INLINE bool
-Sql_string::is_text(const Fragment& f) noexcept
+Statement::is_text(const Fragment& f) noexcept
 {
   return (f.type == Fragment::Type::text);
 }
 
 DMITIGR_PGFE_INLINE bool
-Sql_string::is_ident_char(const char c, const std::locale& loc) noexcept
+Statement::is_ident_char(const char c, const std::locale& loc) noexcept
 {
   return isalnum(c, loc) || c == '_' || c == '$';
 }
 
 DMITIGR_PGFE_INLINE bool
-Sql_string::is_quote_char(const char c) noexcept
+Statement::is_quote_char(const char c) noexcept
 {
   return c == '\'' || c == '\"';
 }
@@ -1099,8 +1099,8 @@ Sql_string::is_quote_char(const char c) noexcept
  * @returns Preparsed SQL string in pair with the pointer to a character
  * that follows returned SQL string.
  */
-DMITIGR_PGFE_INLINE std::pair<Sql_string, std::string_view::size_type>
-Sql_string::parse_sql_input(const std::string_view text, const std::locale& loc)
+DMITIGR_PGFE_INLINE std::pair<Statement, std::string_view::size_type>
+Statement::parse_sql_input(const std::string_view text, const std::locale& loc)
 {
   enum {
     top,
@@ -1127,7 +1127,7 @@ Sql_string::parse_sql_input(const std::string_view text, const std::locale& loc)
     multi_line_comment_star
   } state = top;
 
-  Sql_string result;
+  Statement result;
   int depth{};
   char current_char{};
   char previous_char{};

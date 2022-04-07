@@ -87,7 +87,7 @@ void test_pgfe()
   namespace pgfe = dmitigr::pgfe;
   pgfe::Connection conn{pgfe::Connection_options{}
     .set(pgfe::Communication_mode::net)
-    .set_net_address("127.0.0.1")
+    .set_address("127.0.0.1")
     .set_username("pgfe_test")
     .set_password("pgfe_test")
     .set_database("pgfe_test")

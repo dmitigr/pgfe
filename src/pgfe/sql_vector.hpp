@@ -19,7 +19,7 @@
 
 #include "dll.hpp"
 #include "exceptions.hpp"
-#include "sql_string.hpp"
+#include "statement.hpp"
 #include "types_fwd.hpp"
 
 #include <string>
@@ -34,7 +34,7 @@ namespace dmitigr::pgfe {
  *
  * @brief A container of SQL strings and operations on it.
  *
- * @see Sql_string.
+ * @see Statement.
  */
 class Sql_vector final {
 public:
@@ -67,7 +67,7 @@ public:
   explicit DMITIGR_PGFE_API Sql_vector(std::string_view input);
 
   /// @overload
-  explicit DMITIGR_PGFE_API Sql_vector(std::vector<Sql_string>&& storage);
+  explicit DMITIGR_PGFE_API Sql_vector(std::vector<Statement>&& storage);
 
   /// Swaps the instances.
   DMITIGR_PGFE_API void swap(Sql_vector& rhs) noexcept;
@@ -90,7 +90,7 @@ public:
    * @param offset A starting position of lookup in this vector.
    * @param extra_offset A starting position of lookup in the extra data.
    *
-   * @see Sql_string::extra().
+   * @see Statement::extra().
    */
   DMITIGR_PGFE_API std::size_t index_of(
     std::string_view extra_name,
@@ -105,10 +105,10 @@ public:
    * @par Requires
    * `(index < size())`.
    */
-  DMITIGR_PGFE_API const Sql_string& operator[](std::size_t index) const;
+  DMITIGR_PGFE_API const Statement& operator[](std::size_t index) const;
 
   /// @overload
-  DMITIGR_PGFE_API Sql_string& operator[](std::size_t index) noexcept;
+  DMITIGR_PGFE_API Statement& operator[](std::size_t index) noexcept;
 
   /**
    * @returns The SQL string that owns by this vector, or `nullptr` if no
@@ -117,15 +117,15 @@ public:
    * @par Parameters
    * Same as for index_of().
    *
-   * @see index_of(), Sql_string::extra().
+   * @see index_of(), Statement::extra().
    */
-  DMITIGR_PGFE_API const Sql_string* find(
+  DMITIGR_PGFE_API const Statement* find(
     std::string_view extra_name,
     std::string_view extra_value,
     std::size_t offset = 0, std::size_t extra_offset = 0) const;
 
   /// @overload
-  DMITIGR_PGFE_API Sql_string* find(
+  DMITIGR_PGFE_API Statement* find(
     std::string_view extra_name,
     std::string_view extra_value,
     std::size_t offset = 0, std::size_t extra_offset = 0);
@@ -137,7 +137,7 @@ public:
    * @param conn A server connection.
    *
    * @par Requires
-   * `index < sql_string_count() && conn.is_connected()`.
+   * `index < statement_count() && conn.is_connected()`.
    */
   DMITIGR_PGFE_API std::string::size_type
   query_absolute_position(std::size_t index, const Connection& conn) const;
@@ -145,9 +145,9 @@ public:
   /**
    * @brief Appends the SQL string to this vector.
    *
-   * @param sql_string A SQL string to append.
+   * @param statement A SQL string to append.
    */
-  DMITIGR_PGFE_API void push_back(Sql_string sql_string) noexcept;
+  DMITIGR_PGFE_API void push_back(Statement statement) noexcept;
 
   /// @overload
   template<typename ... Types>
@@ -160,12 +160,12 @@ public:
    * @brief Inserts the new SQL string to this vector.
    *
    * @param index An index of where to insert.
-   * @param sql_string A SQL string to insert at the specified `index`.
+   * @param statement A SQL string to insert at the specified `index`.
    *
    * @par Requires
    * `(index < size())`.
    */
-  DMITIGR_PGFE_API void insert(std::size_t index, Sql_string sql_string);
+  DMITIGR_PGFE_API void insert(std::size_t index, Statement statement);
 
   /**
    * @brief Removes the SQL string from the vector.
@@ -185,12 +185,12 @@ public:
    * @returns The released storage.
    *
    * @par Effects
-   * `!has_sql_strings()`.
+   * `!has_statements()`.
    */
-  DMITIGR_PGFE_API std::vector<Sql_string> release() noexcept;
+  DMITIGR_PGFE_API std::vector<Statement> release() noexcept;
 
 private:
-  mutable std::vector<Sql_string> storage_;
+  mutable std::vector<Statement> storage_;
 };
 
 /// Sql_vector is swappable.

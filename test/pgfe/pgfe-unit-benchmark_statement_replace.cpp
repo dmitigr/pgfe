@@ -14,14 +14,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "../../src/pgfe/sql_string.hpp"
+#include "../../src/pgfe/statement.hpp"
 
 #include <iostream>
 
 int main(const int argc, char* const argv[])
 try {
   namespace pgfe = dmitigr::pgfe;
-  pgfe::Sql_string s;
+  pgfe::Statement s;
   const unsigned long iteration_count{(argc >= 2) ? std::stoul(argv[1]) : 1};
   for (unsigned long i{}; i < iteration_count; ++i) {
     s = "SELECT :list_ FROM :t1_ t1 JOIN :t2_ t2 ON (t1.t2 = t2.id) WHERE :where_";

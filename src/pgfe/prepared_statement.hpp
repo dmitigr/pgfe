@@ -223,9 +223,9 @@ public:
   /**
    * @returns `true` if the information inferred by the Pgfe about
    * this prepared statement is available. (Every statement prepared from
-   * an instance of class Sql_string is preparsed.)
+   * an instance of class Statement is preparsed.)
    *
-   * @see Sql_string.
+   * @see Statement.
    */
   DMITIGR_PGFE_API bool is_preparsed() const noexcept;
 
@@ -505,7 +505,7 @@ private:
 
   /// Constructs when preparing. (Or just executing without preparement.)
   Prepared_statement(std::shared_ptr<Prepared_statement::State> state,
-    const Sql_string* preparsed, const bool is_registered);
+    const Statement* preparsed, const bool is_registered);
 
   /// Constructs when describing.
   explicit Prepared_statement(std::shared_ptr<Prepared_statement::State> state);
@@ -538,8 +538,8 @@ private:
   // ---------------------------------------------------------------------------
 
   void set_description(detail::pq::Result&& r);
-  void execute_nio(const Sql_string& statement);
-  void execute_nio__(const Sql_string* const statement);
+  void execute_nio(const Statement& statement);
+  void execute_nio__(const Statement* const statement);
 };
 
 /// Prepared_statement is swappable.

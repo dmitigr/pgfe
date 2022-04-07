@@ -134,25 +134,25 @@ int main()
 
     {
       const auto valid_value_ipv4 = "127.0.0.1";
-      co.set_net_address(valid_value_ipv4);
-      DMITIGR_ASSERT(co.net_address() == valid_value_ipv4);
+      co.set_address(valid_value_ipv4);
+      DMITIGR_ASSERT(co.address() == valid_value_ipv4);
       const auto valid_value_ipv6 = "::1";
-      co.set_net_address(valid_value_ipv6);
-      DMITIGR_ASSERT(co.net_address() == valid_value_ipv6);
+      co.set_address(valid_value_ipv6);
+      DMITIGR_ASSERT(co.address() == valid_value_ipv6);
 
       const auto invalid_value_ipv4 = "127.257.0.1";
-      DMITIGR_ASSERT(with_catch<Client_exception>([&]() { co.set_net_address(invalid_value_ipv4); }));
+      DMITIGR_ASSERT(with_catch<Client_exception>([&]() { co.set_address(invalid_value_ipv4); }));
       const auto invalid_value_ipv6 = "::zz";
-      DMITIGR_ASSERT(with_catch<Client_exception>([&]() { co.set_net_address(invalid_value_ipv6); }));
+      DMITIGR_ASSERT(with_catch<Client_exception>([&]() { co.set_address(invalid_value_ipv6); }));
     }
 
     {
       const auto valid_value = "localhost";
-      co.set_net_hostname(valid_value);
-      DMITIGR_ASSERT(co.net_hostname() == valid_value);
+      co.set_hostname(valid_value);
+      DMITIGR_ASSERT(co.hostname() == valid_value);
 
       const auto invalid_value = "local host";
-      DMITIGR_ASSERT(with_catch<Client_exception>([&]() { co.set_net_hostname(invalid_value); }));
+      DMITIGR_ASSERT(with_catch<Client_exception>([&]() { co.set_hostname(invalid_value); }));
     }
 
     {

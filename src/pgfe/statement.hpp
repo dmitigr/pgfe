@@ -14,8 +14,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DMITIGR_PGFE_SQL_STRING_HPP
-#define DMITIGR_PGFE_SQL_STRING_HPP
+#ifndef DMITIGR_PGFE_STATEMENT_HPP
+#define DMITIGR_PGFE_STATEMENT_HPP
 
 #include "basics.hpp"
 #include "dll.hpp"
@@ -63,13 +63,13 @@ namespace dmitigr::pgfe {
  *   - the SQL string with quoted named parameters:
  *     @code{sql} SELECT :'text' AS :"name" @endcode
  */
-class Sql_string final : public Parameterizable {
+class Statement final : public Parameterizable {
 public:
   /// @name Constructors
   /// @{
 
   /// Default-constructible. (Constructs an empty instance.)
-  Sql_string() = default;
+  Statement() = default;
 
   /**
    * @brief The constructor.
@@ -82,28 +82,28 @@ public:
    *
    * @see extra().
    */
-  DMITIGR_PGFE_API Sql_string(std::string_view text);
+  DMITIGR_PGFE_API Statement(std::string_view text);
 
   /// @overload
-  DMITIGR_PGFE_API Sql_string(const std::string& text);
+  DMITIGR_PGFE_API Statement(const std::string& text);
 
   /// @overload
-  DMITIGR_PGFE_API Sql_string(const char* text);
+  DMITIGR_PGFE_API Statement(const char* text);
 
   /// Copy-constructible.
-  DMITIGR_PGFE_API Sql_string(const Sql_string& rhs);
+  DMITIGR_PGFE_API Statement(const Statement& rhs);
 
   /// Copy-assignable.
-  DMITIGR_PGFE_API Sql_string& operator=(const Sql_string& rhs);
+  DMITIGR_PGFE_API Statement& operator=(const Statement& rhs);
 
   /// Move-constructible.
-  DMITIGR_PGFE_API Sql_string(Sql_string&& rhs) noexcept;
+  DMITIGR_PGFE_API Statement(Statement&& rhs) noexcept;
 
   /// Move-assignable.
-  DMITIGR_PGFE_API Sql_string& operator=(Sql_string&& rhs) noexcept;
+  DMITIGR_PGFE_API Statement& operator=(Statement&& rhs) noexcept;
 
   /// Swaps the instances.
-  DMITIGR_PGFE_API void swap(Sql_string& rhs) noexcept;
+  DMITIGR_PGFE_API void swap(Statement& rhs) noexcept;
 
   /// @}
 
@@ -213,7 +213,7 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  DMITIGR_PGFE_API void append(const Sql_string& appendix);
+  DMITIGR_PGFE_API void append(const Statement& appendix);
 
   /**
    * @brief Binds the parameter named by the `name` with the specified `value`.
@@ -259,7 +259,7 @@ public:
    * @see has_parameter(), bind().
    */
   DMITIGR_PGFE_API void
-  replace_parameter(std::string_view name, const Sql_string& replacement);
+  replace_parameter(std::string_view name, const Statement& replacement);
 
   /**
    * @returns The result of conversion of this instance to the instance of
@@ -277,7 +277,7 @@ public:
 
   /// @returns The extra data associated with this instance.
   ///
-  /// An any data can be associated with an object of type Sql_string. The
+  /// An any data can be associated with an object of type Statement. The
   /// initial associations can be specified in the *related comments*. The
   /// related comments - are comments that have no more than one newline
   /// character in between themselves and the content following them. The
@@ -371,7 +371,7 @@ public:
 private:
   friend Sql_vector;
 
-  static std::pair<Sql_string, std::string_view::size_type>
+  static std::pair<Statement, std::string_view::size_type>
   parse_sql_input(std::string_view, const std::locale& loc);
 
   struct Fragment final {
@@ -420,7 +420,7 @@ private:
   // ---------------------------------------------------------------------------
 
   // Exception safety guarantee: strong.
-  void update_cache(const Sql_string& rhs);
+  void update_cache(const Statement& rhs);
 
   // ---------------------------------------------------------------------------
   // Named parameters helpers
@@ -449,8 +449,8 @@ private:
   struct Extra;
 };
 
-/// Sql_string is swappable.
-inline void swap(Sql_string& lhs, Sql_string& rhs) noexcept
+/// Statement is swappable.
+inline void swap(Statement& lhs, Statement& rhs) noexcept
 {
   lhs.swap(rhs);
 }
@@ -458,7 +458,7 @@ inline void swap(Sql_string& lhs, Sql_string& rhs) noexcept
 } // namespace dmitigr::pgfe
 
 #ifndef DMITIGR_PGFE_NOT_HEADER_ONLY
-#include "sql_string.cpp"
+#include "statement.cpp"
 #endif
 
-#endif  // DMITIGR_PGFE_SQL_STRING_HPP
+#endif  // DMITIGR_PGFE_STATEMENT_HPP

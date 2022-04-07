@@ -184,7 +184,7 @@ inline std::unique_ptr<pgfe::Data> to_bytea__(const void* const text)
   const auto* const bytes = static_cast<const unsigned char*>(text);
   std::size_t storage_size{};
   using Uptr = std::unique_ptr<void, void(*)(void*)>;
-  if (auto storage = Uptr{::PQunescapeBytea(bytes, &storage_size), &::PQfreemem})
+  if (auto storage = Uptr{PQunescapeBytea(bytes, &storage_size), &PQfreemem})
     return pgfe::Data::make(std::move(storage), storage_size,
       pgfe::Data_format::binary);
   else

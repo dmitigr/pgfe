@@ -25,8 +25,8 @@ DMITIGR_PGFE_INLINE Notice::~Notice()
   pq_result_.release(); // freed in libpq/fe-protocol3.c:pqGetErrorNotice3()
 }
 
-DMITIGR_PGFE_INLINE Notice::Notice(const ::PGresult* const result) noexcept
-  : Problem{detail::pq::Result{const_cast< ::PGresult*>(result)}}
+DMITIGR_PGFE_INLINE Notice::Notice(const PGresult* const result) noexcept
+  : Problem{detail::pq::Result{const_cast<PGresult*>(result)}}
 {
   /*
    * In fact result is not const. So it's okay to const_cast.

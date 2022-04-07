@@ -74,7 +74,7 @@ class Response;
 class Row;
 class Row_info;
 class Signal;
-class Sql_string;
+class Statement;
 class Sql_vector;
 class Tuple;
 

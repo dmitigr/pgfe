@@ -22,7 +22,7 @@
 
 namespace dmitigr::pgfe {
 
-DMITIGR_PGFE_INLINE Notification::Notification(::PGnotify* const pgnotify)
+DMITIGR_PGFE_INLINE Notification::Notification(PGnotify* const pgnotify)
   : pgnotify_{detail::not_false(pgnotify)}
 {
   assert(is_invariant_ok());

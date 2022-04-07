@@ -21,7 +21,7 @@
 #include "exceptions.hpp"
 #include "large_object.hpp"
 #include "ready_for_query.hpp"
-#include "sql_string.hpp"
+#include "statement.hpp"
 
 #include <iostream>
 
@@ -47,7 +47,7 @@ DMITIGR_PGFE_INLINE Server_status ping(const Connection_options& options)
 {
   const detail::pq::Connection_options opts{options};
   constexpr int expand_dbname{};
-  const auto result = ::PQpingParams(opts.keywords(), opts.values(), expand_dbname);
+  const auto result = PQpingParams(opts.keywords(), opts.values(), expand_dbname);
   switch (result) {
   case PQPING_OK:
     return Server_status::ready;
@@ -159,7 +159,7 @@ DMITIGR_PGFE_INLINE const Connection_options& Connection::options() const noexce
 
 DMITIGR_PGFE_INLINE bool Connection::is_ssl_secured() const noexcept
 {
-  return conn() ? ::PQsslInUse(conn()) : false;
+  return conn() ? PQsslInUse(conn()) : false;
 }
 
 DMITIGR_PGFE_INLINE auto Connection::status() const noexcept -> Status
@@ -168,7 +168,7 @@ DMITIGR_PGFE_INLINE auto Connection::status() const noexcept -> Status
     DMITIGR_ASSERT(conn());
     return *polling_status_;
   } else if (conn()) {
-    return (::PQstatus(conn()) == CONNECTION_OK) ? Status::connected :
+    return (PQstatus(conn()) == CONNECTION_OK) ? Status::connected :
       Status::failure;
   } else
     return Status::disconnected;
@@ -189,7 +189,7 @@ DMITIGR_PGFE_INLINE std::optional<Transaction_status>
 Connection::transaction_status() const noexcept
 {
   if (is_connected()) {
-    switch (::PQtransactionStatus(conn())) {
+    switch (PQtransactionStatus(conn())) {
     case PQTRANS_IDLE:
       return Transaction_status::unstarted;
     case PQTRANS_ACTIVE:
@@ -212,7 +212,7 @@ DMITIGR_PGFE_INLINE bool Connection::is_transaction_uncommitted() const noexcept
 
 DMITIGR_PGFE_INLINE std::int_fast32_t Connection::server_pid() const noexcept
 {
-  return is_connected() ? ::PQbackendPID(conn()) : 0;
+  return is_connected() ? PQbackendPID(conn()) : 0;
 }
 
 DMITIGR_PGFE_INLINE std::optional<std::chrono::system_clock::time_point>
@@ -229,7 +229,7 @@ DMITIGR_PGFE_INLINE void Connection::connect_nio()
   } else if (s == Status::establishment_reading ||
     s == Status::establishment_writing) {
     DMITIGR_ASSERT(conn());
-    switch (::PQconnectPoll(conn())) {
+    switch (PQconnectPoll(conn())) {
     case PGRES_POLLING_READING:
       polling_status_ = Status::establishment_reading;
       DMITIGR_ASSERT(status() == Status::establishment_reading);
@@ -267,10 +267,10 @@ DMITIGR_PGFE_INLINE void Connection::connect_nio()
 
     const detail::pq::Connection_options pq_options{options_};
     constexpr int expand_dbname{};
-    conn_.reset(::PQconnectStartParams(pq_options.keywords(),
+    conn_.reset(PQconnectStartParams(pq_options.keywords(),
         pq_options.values(), expand_dbname));
     if (conn_) {
-      const auto conn_status = ::PQstatus(conn());
+      const auto conn_status = PQstatus(conn());
       if (conn_status == CONNECTION_BAD)
         throw Client_exception{error_message()};
       else
@@ -279,7 +279,7 @@ DMITIGR_PGFE_INLINE void Connection::connect_nio()
       // Caution: until now we cannot use status()!
       DMITIGR_ASSERT(status() == Status::establishment_writing);
 
-      ::PQsetNoticeReceiver(conn(), &notice_receiver, this);
+      PQsetNoticeReceiver(conn(), &notice_receiver, this);
     } else
       throw std::bad_alloc{};
   }
@@ -423,7 +423,7 @@ Connection::socket_readiness(const Socket_readiness mask) const
 
 DMITIGR_PGFE_INLINE void Connection::read_input()
 {
-  if (!::PQconsumeInput(conn()))
+  if (!PQconsumeInput(conn()))
     throw Client_exception{error_message()};
 }
 
@@ -480,11 +480,11 @@ Connection::handle_input(const bool wait_response)
   if (wait_response) {
     if (response_status_ == Response_status::unready) {
     complete_response:
-      while (auto* const r = ::PQgetResult(conn())) ::PQclear(r);
+      while (auto* const r = PQgetResult(conn())) PQclear(r);
       response_status_ = Response_status::ready;
       dismiss_request();
     } else {
-      response_.reset(::PQgetResult(conn()));
+      response_.reset(PQgetResult(conn()));
       if (response_.status() == PGRES_SINGLE_TUPLE) {
         response_status_ = Response_status::ready;
         check_state();
@@ -500,29 +500,29 @@ Connection::handle_input(const bool wait_response)
     /*
      * Checks for nonblocking result and handles notices btw.
      * @remark: notice_receiver() (which calls the notice handler) will be
-     * called indirectly from ::PQisBusy().
-     * @remark: ::PQisBusy() calls a routine (pqParseInput3() from
+     * called indirectly from PQisBusy().
+     * @remark: PQisBusy() calls a routine (pqParseInput3() from
      * fe-protocol3.c) which parses consumed input and stores notifications and
-     * notices if are available. (::PQnotifies() calls this routine as well.)
+     * notices if are available. (PQnotifies() calls this routine as well.)
      */
     static const auto is_get_result_would_block = [](PGconn* const conn)
     {
-      return ::PQisBusy(conn) == 1;
+      return PQisBusy(conn) == 1;
     };
 
     if (response_status_ == Response_status::unready) {
     try_complete_response:
       while (!is_get_result_would_block(conn())) {
-        if (auto* const r = ::PQgetResult(conn()); !r) {
+        if (auto* const r = PQgetResult(conn()); !r) {
           response_status_ = Response_status::ready;
           dismiss_request();
           break;
         } else
-          ::PQclear(r);
+          PQclear(r);
       }
     } else {
       if (!is_get_result_would_block(conn())) {
-        response_.reset(::PQgetResult(conn()));
+        response_.reset(PQgetResult(conn()));
         if (response_.status() == PGRES_SINGLE_TUPLE) {
           response_status_ = Response_status::ready;
           check_state();
@@ -585,9 +585,9 @@ Connection::handle_input(const bool wait_response)
 
  handle_notifications:
   try {
-    // Note: notifications are collected by ::PQisBusy() and ::PQgetResult().
+    // Note: notifications are collected by PQisBusy() and PQgetResult().
     if (notification_handler_) {
-      while (auto* const n = ::PQnotifies(conn()))
+      while (auto* const n = PQnotifies(conn()))
         notification_handler_(Notification{n});
     }
   } catch (const std::exception& e) {
@@ -713,7 +713,7 @@ DMITIGR_PGFE_INLINE Row Connection::row() noexcept
 
 DMITIGR_PGFE_INLINE Notification Connection::pop_notification()
 {
-  auto* const n = ::PQnotifies(conn());
+  auto* const n = PQnotifies(conn());
   return n ? Notification{n} : Notification{};
 }
 
@@ -832,7 +832,7 @@ DMITIGR_PGFE_INLINE bool Connection::is_ready_for_request() const noexcept
 }
 
 DMITIGR_PGFE_INLINE void
-Connection::prepare_nio(const Sql_string& statement, const std::string& name)
+Connection::prepare_nio(const Statement& statement, const std::string& name)
 {
   prepare_nio__(statement.to_query_string(*this).c_str(),
     name.c_str(), &statement); // can throw
@@ -845,9 +845,9 @@ Connection::prepare_nio_as_is(const std::string& statement, const std::string& n
 }
 
 DMITIGR_PGFE_INLINE Prepared_statement
-Connection::prepare(const Sql_string& statement, const std::string& name)
+Connection::prepare(const Statement& statement, const std::string& name)
 {
-  using M = void(Connection::*)(const Sql_string&, const std::string&);
+  using M = void(Connection::*)(const Statement&, const std::string&);
   return prepare__(static_cast<M>(&Connection::prepare_nio), statement, name);
 }
 
@@ -869,7 +869,7 @@ DMITIGR_PGFE_INLINE void Connection::describe_nio(const std::string& name)
   Prepared_statement ps{state};
   requests_.emplace(Request::Id::describe, std::move(ps)); // can throw
   try {
-    const int send_ok = ::PQsendDescribePrepared(conn(), name.c_str());
+    const int send_ok = PQsendDescribePrepared(conn(), name.c_str());
     if (!send_ok)
       throw Client_exception{error_message()};
   } catch (...) {
@@ -971,11 +971,11 @@ DMITIGR_PGFE_INLINE Oid Connection::create_large_object(const Oid oid)
   if (!is_ready_for_request())
     throw Client_exception{"cannot create large object: not ready for request"};
   const Oid result = (oid == invalid_oid) ?
-    ::lo_creat(conn(),
+    lo_creat(conn(),
       static_cast<int>(
         Large_object_open_mode::reading |
         Large_object_open_mode::writing)) :
-    ::lo_create(conn(), oid);
+    lo_create(conn(), oid);
   if (result == invalid_oid)
     throw Client_exception{"cannot create large object: "+error_message()};
   return result;
@@ -987,7 +987,7 @@ DMITIGR_PGFE_INLINE Large_object Connection::open_large_object(const Oid oid,
   if (!is_ready_for_request())
     throw Client_exception{"cannot open large object: not ready for request"};
 
-  const int desc{::lo_open(conn(), oid, static_cast<int>(mode))};
+  const int desc{lo_open(conn(), oid, static_cast<int>(mode))};
   if (desc < 0)
     throw Client_exception{"cannot open large object: "+error_message()};
 
@@ -1001,7 +1001,7 @@ DMITIGR_PGFE_INLINE void Connection::remove_large_object(const Oid oid)
   if (!is_ready_for_request())
     throw Client_exception{"cannot remove large object: not ready for request"};
 
-  if (::lo_unlink(conn(), oid) == -1)
+  if (lo_unlink(conn(), oid) == -1)
     throw Client_exception{"cannot remove large object: "+error_message()};
 }
 
@@ -1012,7 +1012,7 @@ Connection::import_large_object(const std::filesystem::path& filename,
   if (!is_ready_for_request())
     throw Client_exception{"cannot import large object: not ready for request"};
 
-  const Oid result = ::lo_import_with_oid(conn(), filename.string().c_str(), oid);
+  const Oid result = lo_import_with_oid(conn(), filename.string().c_str(), oid);
   if (result == invalid_oid)
     throw Client_exception{"cannot import large object: "+error_message()};
 
@@ -1026,7 +1026,7 @@ Connection::export_large_object(const Oid oid,
   if (!is_ready_for_request())
     throw Client_exception{"cannot export large object: not ready for request"};
 
-  if (::lo_export(conn(), oid, filename.string().c_str()) == -1)
+  if (lo_export(conn(), oid, filename.string().c_str()) == -1)
     throw Client_exception{"cannot export large object: "+error_message()};
 }
 
@@ -1037,8 +1037,8 @@ Connection::to_quoted_literal(const std::string_view literal) const
     throw Client_exception{"cannot quote literal: not connected"};
 
   using Uptr = std::unique_ptr<char, void(*)(void*)>;
-  if (const auto p = Uptr{::PQescapeLiteral(conn(), literal.data(),
-        literal.size()), &::PQfreemem})
+  if (const auto p = Uptr{PQescapeLiteral(conn(), literal.data(),
+        literal.size()), &PQfreemem})
     return p.get();
   else if (is_out_of_memory())
     throw std::bad_alloc{};
@@ -1053,8 +1053,8 @@ Connection::to_quoted_identifier(const std::string_view identifier) const
     throw Client_exception{"cannot quote identifier: not connected"};
 
   using Uptr = std::unique_ptr<char, void(*)(void*)>;
-  if (const auto p = Uptr{::PQescapeIdentifier(conn(), identifier.data(),
-        identifier.size()), &::PQfreemem})
+  if (const auto p = Uptr{PQescapeIdentifier(conn(), identifier.data(),
+        identifier.size()), &PQfreemem})
     return p.get();
   else if (is_out_of_memory())
     throw std::bad_alloc{};
@@ -1163,13 +1163,13 @@ DMITIGR_PGFE_INLINE void Connection::reset_copier_state() noexcept
 
 DMITIGR_PGFE_INLINE void Connection::set_single_row_mode_enabled()
 {
-  const auto set_ok = ::PQsetSingleRowMode(conn());
+  const auto set_ok = PQsetSingleRowMode(conn());
   DMITIGR_ASSERT(set_ok);
   is_single_row_mode_enabled_ = true;
 }
 
 DMITIGR_PGFE_INLINE void
-Connection::notice_receiver(void* const arg, const ::PGresult* const r) noexcept
+Connection::notice_receiver(void* const arg, const PGresult* const r) noexcept
 {
   DMITIGR_ASSERT(arg);
   DMITIGR_ASSERT(r);
@@ -1193,7 +1193,7 @@ Connection::default_notice_handler(const Notice& n) noexcept
 
 DMITIGR_PGFE_INLINE void
 Connection::prepare_nio__(const char* const query, const char* const name,
-  const Sql_string* const preparsed)
+  const Statement* const preparsed)
 {
   if (!is_ready_for_nio_request())
     throw Client_exception{"cannot prepare statement: "
@@ -1207,7 +1207,7 @@ Connection::prepare_nio__(const char* const query, const char* const name,
   try {
     constexpr int n_params{};
     constexpr const ::Oid* const param_types{};
-    const int send_ok{::PQsendPrepare(conn(), name, query, n_params, param_types)};
+    const int send_ok{PQsendPrepare(conn(), name, query, n_params, param_types)};
     if (!send_ok)
       throw Client_exception{error_message()};
   } catch (...) {
@@ -1251,7 +1251,7 @@ Connection::unregister_ps(decltype(ps_states_)::const_iterator p) noexcept
 
 DMITIGR_PGFE_INLINE int Connection::socket() const noexcept
 {
-  return ::PQsocket(conn());
+  return PQsocket(conn());
 }
 
 DMITIGR_PGFE_INLINE void Connection::throw_if_error()
@@ -1271,16 +1271,16 @@ DMITIGR_PGFE_INLINE void Connection::throw_if_error()
 DMITIGR_PGFE_INLINE std::string Connection::error_message() const
 {
   /*
-   * If nullptr passed to ::PQerrorMessage() it returns
+   * If nullptr passed to PQerrorMessage() it returns
    * something like "connection pointer is NULL\n".
    */
-  return conn() ? str::literal(::PQerrorMessage(conn())) : std::string{};
+  return conn() ? str::literal(PQerrorMessage(conn())) : std::string{};
 }
 
 DMITIGR_PGFE_INLINE bool Connection::is_out_of_memory() const noexcept
 {
   constexpr const char msg[] = "out of memory";
-  return !std::strncmp(::PQerrorMessage(conn()), msg, sizeof(msg) - 1);
+  return !std::strncmp(PQerrorMessage(conn()), msg, sizeof(msg) - 1);
 }
 
 DMITIGR_PGFE_INLINE std::pair<std::unique_ptr<void, void(*)(void*)>, std::size_t>
@@ -1292,11 +1292,11 @@ Connection::to_hex_storage(const pgfe::Data& data) const
     throw Client_exception{"cannot encode data to hex: invalid data specified"};
 
   const auto from_length = data.size();
-  const auto* from = static_cast<const unsigned char*>(data.bytes());
+  const auto* const from = static_cast<const unsigned char*>(data.bytes());
   std::size_t result_length{};
   using Uptr = std::unique_ptr<void, void(*)(void*)>;
-  if (auto storage = Uptr{::PQescapeByteaConn(conn(), from, from_length,
-        &result_length), &::PQfreemem})
+  if (auto storage = Uptr{PQescapeByteaConn(conn(), from, from_length,
+        &result_length), &PQfreemem})
     // The result_length includes the terminating zero byte of the result.
     return std::make_pair(std::move(storage), result_length - 1);
   else
@@ -1328,14 +1328,14 @@ Connection::unregister_lo(decltype(lo_states_)::const_iterator p) noexcept
 DMITIGR_PGFE_INLINE bool Connection::close(Large_object& lo) noexcept
 {
   unregister_lo(lo);
-  return ::lo_close(conn(), lo.descriptor()) == 0;
+  return lo_close(conn(), lo.descriptor()) == 0;
 }
 
 DMITIGR_PGFE_INLINE std::int_fast64_t Connection::seek(Large_object& lo,
   std::int_fast64_t offset, Large_object_seek_whence whence)
 {
-  const auto result = ::lo_lseek64(conn(), lo.descriptor(), offset,
-    static_cast<int>(whence));
+  const auto result{lo_lseek64(conn(), lo.descriptor(), offset,
+    static_cast<int>(whence))};
   if (result == -1)
     throw Client_exception{"cannot seek large object: "+error_message()};
   return result;
@@ -1343,7 +1343,7 @@ DMITIGR_PGFE_INLINE std::int_fast64_t Connection::seek(Large_object& lo,
 
 DMITIGR_PGFE_INLINE std::int_fast64_t Connection::tell(Large_object& lo)
 {
-  const auto result = ::lo_tell64(conn(), lo.descriptor());
+  const auto result{lo_tell64(conn(), lo.descriptor())};
   if (result == -1)
     throw Client_exception{"cannot tell large object: "+error_message()};
   return result;
@@ -1352,8 +1352,8 @@ DMITIGR_PGFE_INLINE std::int_fast64_t Connection::tell(Large_object& lo)
 DMITIGR_PGFE_INLINE void Connection::truncate(Large_object& lo,
   const std::int_fast64_t new_size)
 {
-  const int result = ::lo_truncate64(conn(), lo.descriptor(),
-    static_cast<pg_int64>(new_size));
+  const int result{lo_truncate64(conn(), lo.descriptor(),
+    static_cast<pg_int64>(new_size))};
   if (result == -1)
     throw Client_exception{"cannot truncate large object: "+error_message()};
 }
@@ -1361,7 +1361,7 @@ DMITIGR_PGFE_INLINE void Connection::truncate(Large_object& lo,
 DMITIGR_PGFE_INLINE int Connection::read(Large_object& lo, char* const buf,
   const std::size_t size)
 {
-  const int result = ::lo_read(conn(), lo.descriptor(), buf, size);
+  const int result{lo_read(conn(), lo.descriptor(), buf, size)};
   if (result == -1)
     throw Client_exception{"cannot read large object: "+error_message()};
   return result;
@@ -1370,7 +1370,7 @@ DMITIGR_PGFE_INLINE int Connection::read(Large_object& lo, char* const buf,
 DMITIGR_PGFE_INLINE int Connection::write(Large_object& lo, const char* const buf,
   const std::size_t size)
 {
-  const int result = ::lo_write(conn(), lo.descriptor(), buf, size);
+  const int result{lo_write(conn(), lo.descriptor(), buf, size)};
   if (result == -1)
     throw Client_exception{"cannot write large object: "+error_message()};
   return result;
