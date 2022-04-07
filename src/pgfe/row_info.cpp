@@ -26,6 +26,12 @@ DMITIGR_PGFE_INLINE Row_info::Row_info(detail::pq::Result&& pq_result)
   : pq_result_(std::move(pq_result))
 {}
 
+DMITIGR_PGFE_INLINE void Row_info::swap(Row_info& rhs) noexcept
+{
+  using std::swap;
+  swap(pq_result_, rhs.pq_result_);
+}
+
 DMITIGR_PGFE_INLINE bool Row_info::is_valid() const noexcept
 {
   return static_cast<bool>(pq_result_);

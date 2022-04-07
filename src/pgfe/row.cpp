@@ -17,7 +17,15 @@
 #include "exceptions.hpp"
 #include "row.hpp"
 
+#include <algorithm>
+
 namespace dmitigr::pgfe {
+
+DMITIGR_PGFE_INLINE void Row::swap(Row& rhs) noexcept
+{
+  using std::swap;
+  swap(info_, rhs.info_);
+}
 
 DMITIGR_PGFE_INLINE bool Row::is_valid() const noexcept
 {

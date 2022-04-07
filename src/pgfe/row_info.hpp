@@ -39,10 +39,10 @@ public:
   /// The constructor.
   explicit DMITIGR_PGFE_API Row_info(detail::pq::Result&& pq_result);
 
-  /// Non copy-constructible.
+  /// Not copy-constructible.
   Row_info(const Row_info&) = delete;
 
-  /// Non copy-assignable.
+  /// Not copy-assignable.
   Row_info& operator=(const Row_info&) = delete;
 
   /// Move-constructible.
@@ -51,13 +51,15 @@ public:
   /// Move-assignable.
   Row_info& operator=(Row_info&&) = default;
 
+  /// Swaps this with `rhs`.
+  DMITIGR_PGFE_API void swap(Row_info& rhs) noexcept;
+
   /**
    * @returns `true` if the instance is valid.
    *
    * @warning The behavior is undefined if any method other than this one, the
-   * destructor or the move-assignment operator is called on an instance for
-   * which `(is_valid() == false)`. It's okay to move an instance for which
-   * `(is_valid() == false)`.
+   * destructor or the move-assignment operator is called on an instance with
+   * `!is_valid()`. It's okay to move an instance with `!is_valid()`.
    */
   DMITIGR_PGFE_API bool is_valid() const noexcept;
 
@@ -235,6 +237,12 @@ private:
 
   detail::pq::Result pq_result_;
 };
+
+/// Row_info is swappable.
+inline void swap(Row_info& lhs, Row_info& rhs) noexcept
+{
+  lhs.swap(rhs);
+}
 
 } // namespace dmitigr::pgfe
 

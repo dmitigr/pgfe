@@ -84,10 +84,10 @@ public:
    */
   explicit DMITIGR_PGFE_API Connection(Options options = {});
 
-  /// Non copy-constructible.
+  /// Not copy-constructible.
   Connection(const Connection&) = delete;
 
-  /// Non copy-assignable.
+  /// Not copy-assignable.
   Connection& operator=(const Connection&) = delete;
 
   /// Move-constructible.
@@ -1238,11 +1238,12 @@ private:
   std::shared_ptr<Prepared_statement::State> execute_ps_state_;
   std::unique_ptr< ::PGconn> conn_;
   std::optional<Status> polling_status_;
+  std::int_fast64_t lo_id_{};
+
   ::PGconn* conn() const noexcept
   {
     return conn_.get();
   }
-  std::int_fast64_t lo_id_{};
 
   // ---------------------------------------------------------------------------
   // Session data / requests

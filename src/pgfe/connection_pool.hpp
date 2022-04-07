@@ -23,6 +23,7 @@
 #include <functional>
 #include <memory>
 #include <mutex>
+#include <utility>
 #include <vector>
 
 namespace dmitigr::pgfe {
@@ -44,14 +45,14 @@ public:
     /**
      * @brief The destructor.
      *
-     * Calls release().
+     * @detail Calls release() if `pool()`.
      */
     DMITIGR_PGFE_API ~Handle();
 
-    /// Non copy-constructible.
+    /// Not copy-constructible.
     Handle(const Handle&) = delete;
 
-    /// Non copy-assignable.
+    /// Not copy-assignable.
     Handle& operator=(const Handle&) = delete;
 
     /// Move-constructible.
@@ -107,16 +108,36 @@ public:
     Handle();
 
     /// The constructor.
-    Handle(Connection_pool* pool, std::unique_ptr<Connection>&& connection,
-      std::size_t connection_index);
+    Handle(std::shared_ptr<Connection_pool*> pool,
+      std::unique_ptr<Connection>&& connection,
+      std::size_t state_index);
 
-    Connection_pool* pool_{};
+    std::shared_ptr<Connection_pool*> pool_;
     std::unique_ptr<Connection> connection_;
-    std::size_t connection_index_{};
+    std::size_t state_index_{};
   };
+
+  /**
+   * @brief The destructor.
+   *
+   * @details Nullifies the pool() for each Handle instance.
+   */
+  DMITIGR_PGFE_API ~Connection_pool() noexcept;
 
   /// Default-constructible. (Constructs invalid instance.)
   Connection_pool() = default;
+
+  /// Not copy-constructible.
+  Connection_pool(const Connection_pool&) = delete;
+
+  /// Not copy-assignable.
+  Connection_pool& operator=(const Connection_pool&) = delete;
+
+  /// Not move-constructible.
+  DMITIGR_PGFE_API Connection_pool(Connection_pool&& rhs) = delete;
+
+  /// Not move-assignable.
+  DMITIGR_PGFE_API Connection_pool& operator=(Connection_pool&& rhs) = delete;
 
   /**
    * @brief The constructor.
@@ -190,18 +211,27 @@ public:
   DMITIGR_PGFE_API bool is_connected() const noexcept;
 
   /**
-   * @returns The connection handle `h`. If `!is_connected()` or there is no free
-   * connections in the pool at the time of call then `(h.is_valid() == false)`.
+   * @returns The valid connection handle if there is a free connection in the
+   * pool, or invalid handle otherwise.
+   *
+   * @throws Client_exception if:
+   *   -# `!is_connected()`;
+   *   -# attempt to reopen the connection possibly closed upon of calling
+   *   release() is failed.
    */
   DMITIGR_PGFE_API Handle connection();
 
   /**
-   * Returns the connection of `handle` back to the pool if `is_connected()`,
-   * or closes it otherwise.
+   * @brief Returns the connection of `handle` back to the pool.
+   *
+   * @details If the state of returned connection doesn't indicates readiness
+   * for request, it will be closed without attempt to call the release_handler().
+   * Likewise, if invoking the release_handler() turns the connection to the
+   * state not ready for request it will be closed. In both cases such a closed
+   * connection will be reopened on the next call of connection().
    *
    * @par Effects
-   *   -# `(!handle.pool() && !handle.connection())`;
-   *   -# `!handle->is_connected()` if `!this->is_connected()`.
+   * `!handle.connection()`.
    *
    * @see Handle::release().
    */
@@ -213,9 +243,13 @@ public:
 private:
   friend Handle;
 
+  using State = std::pair<
+    std::unique_ptr<Connection>,
+    std::shared_ptr<Connection_pool*>>;
+
   mutable std::mutex mutex_;
   bool is_connected_{};
-  std::vector<std::pair<std::unique_ptr<Connection>, bool>> connections_;
+  std::vector<State> states_;
   std::function<void(Connection&)> connect_handler_;
   std::function<void(Connection&)> release_handler_;
 };

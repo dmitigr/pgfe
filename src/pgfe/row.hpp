@@ -47,6 +47,9 @@ public:
     assert(is_invariant_ok());
   }
 
+  /// Swaps this with `rhs`.
+  DMITIGR_PGFE_API void swap(Row& rhs) noexcept;
+
   /// @see Message::is_valid().
   DMITIGR_PGFE_API bool is_valid() const noexcept override;
 
@@ -233,6 +236,12 @@ private:
 
   bool is_invariant_ok() const override;
 };
+
+/// Row is swappable.
+inline void swap(Row& lhs, Row& rhs) noexcept
+{
+  lhs.swap(rhs);
+}
 
 } // namespace dmitigr::pgfe
 

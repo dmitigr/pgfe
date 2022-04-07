@@ -92,8 +92,8 @@ Connection_options::swap(Connection_options& rhs) noexcept
   swap(database_, rhs.database_);
   swap(password_, rhs.password_);
   swap(password_file_, rhs.password_file_);
-  swap(kerberos_service_name_, rhs.kerberos_service_name_);
   swap(channel_binding_, rhs.channel_binding_);
+  swap(kerberos_service_name_, rhs.kerberos_service_name_);
   swap(is_ssl_enabled_, rhs.is_ssl_enabled_);
   swap(ssl_min_protocol_version_, rhs.ssl_min_protocol_version_);
   swap(ssl_max_protocol_version_, rhs.ssl_max_protocol_version_);

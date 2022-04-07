@@ -42,13 +42,13 @@ public:
   /// Constructs invalid instance.
   Notification() = default;
 
-  /// Non copy-constructible.
+  /// Not copy-constructible.
   Notification(const Notification&) = delete;
 
   /// Move-constructible.
   Notification(Notification&&) = default;
 
-  /// Non copy-assignable.
+  /// Not copy-assignable.
   Notification& operator=(const Notification&) = delete;
 
   /// Move-assignable.

@@ -61,6 +61,7 @@ DMITIGR_PGFE_INLINE void Copier::swap(Copier& rhs) noexcept
   using std::swap;
   swap(connection_, rhs.connection_);
   swap(pq_result_, rhs.pq_result_);
+  swap(buffer_, rhs.buffer_);
 }
 
 DMITIGR_PGFE_INLINE bool Copier::is_valid() const noexcept

@@ -37,13 +37,13 @@ public:
   /// Constructs invalid instance.
   Ready_for_query() noexcept = default;
 
-  /// Non copy-constructible.
+  /// Not copy-constructible.
   Ready_for_query(const Ready_for_query&) = delete;
 
   /// Move-constructible.
   DMITIGR_PGFE_API Ready_for_query(Ready_for_query&& rhs) noexcept;
 
-  /// Non copy-assignable.
+  /// Not copy-assignable.
   Ready_for_query& operator=(const Ready_for_query&) = delete;
 
   /// Move-assignable.

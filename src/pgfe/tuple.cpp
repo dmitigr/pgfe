@@ -49,7 +49,8 @@ DMITIGR_PGFE_INLINE Tuple& Tuple::operator=(const Tuple& rhs)
 
 DMITIGR_PGFE_INLINE void Tuple::swap(Tuple& rhs) noexcept
 {
-  datas_.swap(rhs.datas_);
+  using std::swap;
+  swap(datas_, rhs.datas_);
 }
 
 DMITIGR_PGFE_INLINE std::size_t Tuple::field_count() const noexcept

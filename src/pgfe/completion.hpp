@@ -35,10 +35,10 @@ public:
   /// Default-constructible. (Constructs an invalid instance.)
   DMITIGR_PGFE_API Completion();
 
-  /// Non copy-constructible.
+  /// Not copy-constructible.
   Completion(const Completion&) = delete;
 
-  /// Non copy-assignable.
+  /// Not copy-assignable.
   Completion& operator=(const Completion&) = delete;
 
   /// Move-constructible.

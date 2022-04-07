@@ -113,17 +113,17 @@ public:
   /// Constructs invalid instance.
   Large_object() = default;
 
-  /// Non copy-constructible.
+  /// Not copy-constructible.
   Large_object(const Large_object&) = delete;
 
   /// Move-constructible.
   DMITIGR_PGFE_API Large_object(Large_object&& rhs) noexcept;
 
-  /// Non copy-assignable.
+  /// Not copy-assignable.
   Large_object& operator=(const Large_object&) = delete;
 
   /**
-   * @brief Non move-assignable.
+   * @brief Not move-assignable.
    *
    * @see assign().
    */

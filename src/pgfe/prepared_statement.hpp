@@ -163,13 +163,13 @@ public:
   /// Default-constructible. (Constructs invalid instance.)
   Prepared_statement() = default;
 
-  /// Non copy-constructible.
+  /// Not copy-constructible.
   Prepared_statement(const Prepared_statement&) = delete;
 
   /// Move constructible.
   DMITIGR_PGFE_API Prepared_statement(Prepared_statement&& rhs) noexcept;
 
-  /// Non copy-assignable.
+  /// Not copy-assignable.
   Prepared_statement& operator=(const Prepared_statement&) = delete;
 
   /// Move-assignable.

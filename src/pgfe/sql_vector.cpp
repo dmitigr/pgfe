@@ -39,7 +39,8 @@ DMITIGR_PGFE_INLINE Sql_vector::Sql_vector(std::vector<Sql_string>&& storage)
 
 DMITIGR_PGFE_INLINE void Sql_vector::swap(Sql_vector& rhs) noexcept
 {
-  storage_.swap(rhs.storage_);
+  using std::swap;
+  swap(storage_, rhs.storage_);
 }
 
 DMITIGR_PGFE_INLINE std::size_t Sql_vector::size() const noexcept

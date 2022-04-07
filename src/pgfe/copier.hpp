@@ -57,13 +57,13 @@ public:
   /// Constructs invalid instance.
   Copier() noexcept = default;
 
-  /// Non copy-constructible.
+  /// Not copy-constructible.
   Copier(const Copier&) = delete;
 
   /// Move-constructible.
   DMITIGR_PGFE_API Copier(Copier&& rhs) noexcept;
 
-  /// Non copy-assignable.
+  /// Not copy-assignable.
   Copier& operator=(const Copier&) = delete;
 
   /// Move-assignable.

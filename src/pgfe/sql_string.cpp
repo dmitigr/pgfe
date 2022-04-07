@@ -107,6 +107,7 @@ DMITIGR_PGFE_INLINE Sql_string& Sql_string::operator=(Sql_string&& rhs) noexcept
 DMITIGR_PGFE_INLINE void Sql_string::swap(Sql_string& rhs) noexcept
 {
   using std::swap;
+  swap(loc_, rhs.loc_);
   swap(fragments_, rhs.fragments_);
   swap(positional_parameters_, rhs.positional_parameters_);
   swap(named_parameters_, rhs.named_parameters_);

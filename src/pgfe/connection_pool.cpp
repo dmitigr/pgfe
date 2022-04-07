@@ -70,7 +70,7 @@ DMITIGR_PGFE_INLINE bool Connection_pool::Handle::is_valid() const noexcept
 DMITIGR_PGFE_INLINE const Connection_pool*
 Connection_pool::Handle::pool() const noexcept
 {
-  return pool_;
+  return pool_ ? *pool_ : nullptr;
 }
 
 DMITIGR_PGFE_INLINE Connection_pool* Connection_pool::Handle::pool() noexcept
@@ -80,27 +80,37 @@ DMITIGR_PGFE_INLINE Connection_pool* Connection_pool::Handle::pool() noexcept
 
 DMITIGR_PGFE_INLINE void Connection_pool::Handle::release() noexcept
 {
-  if (pool_)
-    pool_->release(*this);
+  if (auto* const p = pool())
+    p->release(*this);
 }
 
 DMITIGR_PGFE_INLINE Connection_pool::Handle::Handle() = default;
 
-DMITIGR_PGFE_INLINE Connection_pool::Handle::Handle(Connection_pool* const pool,
-  std::unique_ptr<Connection>&& connection, const std::size_t connection_index)
+DMITIGR_PGFE_INLINE Connection_pool::Handle::Handle(
+  std::shared_ptr<Connection_pool*> pool,
+  std::unique_ptr<Connection>&& connection,
+  const std::size_t state_index)
   : pool_{pool}
   , connection_{std::move(connection)}
-  , connection_index_{connection_index}
+  , state_index_{state_index}
 {
   // Attention! pool_->mutex_ is locked here!
-  DMITIGR_ASSERT(pool_);
+  DMITIGR_ASSERT(pool_ && *pool_);
   DMITIGR_ASSERT(connection_);
-  DMITIGR_ASSERT(connection_index_ < pool_->connections_.size());
+  DMITIGR_ASSERT(state_index_ < (*pool_)->states_.size());
 }
 
 // -----------------------------------------------------------------------------
 // Connection_pool
 // -----------------------------------------------------------------------------
+
+DMITIGR_PGFE_INLINE Connection_pool::~Connection_pool() noexcept
+{
+  for (auto& state : states_) {
+    DMITIGR_ASSERT(state.second);
+    *state.second = nullptr;
+  }
+}
 
 DMITIGR_PGFE_INLINE Connection_pool::Connection_pool(std::size_t count,
   const Connection_options& options)
@@ -110,13 +120,14 @@ DMITIGR_PGFE_INLINE Connection_pool::Connection_pool(std::size_t count,
     conn.execute("DISCARD ALL");
   }}
 {
+  const auto self = std::make_shared<Connection_pool*>(this);
   for (; count > 0; --count)
-    connections_.emplace_back(std::make_unique<Connection>(options), false);
+    states_.emplace_back(std::make_unique<Connection>(options), self);
 }
 
 DMITIGR_PGFE_INLINE bool Connection_pool::is_valid() const noexcept
 {
-  return !connections_.empty();
+  return !states_.empty();
 }
 
 DMITIGR_PGFE_INLINE void
@@ -152,8 +163,8 @@ DMITIGR_PGFE_INLINE void Connection_pool::connect()
   if (is_connected_)
     return;
 
-  for (const auto& connection : connections_) {
-    auto& conn = connection.first;
+  for (const auto& state : states_) {
+    auto& conn = state.first;
     conn->connect();
     if (connect_handler_)
       connect_handler_(*conn);
@@ -169,9 +180,9 @@ DMITIGR_PGFE_INLINE void Connection_pool::disconnect() noexcept
   if (!is_connected_)
     return;
 
-  for (const auto& connection : connections_) {
-    if (!connection.second)
-      connection.first->disconnect();
+  for (const auto& state : states_) {
+    if (auto& conn = state.first)
+      conn->disconnect();
   }
 
   is_connected_ = false;
@@ -186,20 +197,23 @@ DMITIGR_PGFE_INLINE bool Connection_pool::is_connected() const noexcept
 DMITIGR_PGFE_INLINE auto Connection_pool::connection() -> Handle
 {
   const std::lock_guard lg{mutex_};
+
   if (!is_connected_)
-    return {};
-  const auto b = begin(connections_);
-  const auto e = end(connections_);
-  const auto i = find_if(b, e, [](const auto& pair) {return !pair.second;});
+    throw Client_exception{"cannot obtain connection from disconnected "
+      "connection pool"};
+
+  const auto b = begin(states_);
+  const auto e = end(states_);
+  const auto i = find_if(b, e, [](const auto& pair)
+  {
+    return static_cast<bool>(pair.first);
+  });
   if (i != e) {
-    i->second = true;
     auto& conn = i->first;
+    auto& self = i->second;
     conn->connect();
-    if (conn->is_ready_for_request())
-      return {this, std::move(conn), static_cast<std::size_t>(i - b)};
-    else
-      throw Client_exception{"cannot use connection from connection pool "
-        "handle: connection isn't ready for request"};
+    DMITIGR_ASSERT(conn->is_ready_for_request());
+    return {self, std::move(conn), static_cast<std::size_t>(i - b)};
   } else
     return {};
 }
@@ -213,10 +227,13 @@ DMITIGR_PGFE_INLINE void Connection_pool::release(Handle& handle) noexcept
 
   DMITIGR_ASSERT(handle.connection_);
   auto& conn = *handle.connection_;
-  const auto index = handle.connection_index_;
-  DMITIGR_ASSERT(index < connections_.size());
+  const auto index = handle.state_index_;
+  DMITIGR_ASSERT(index < states_.size());
 
-  if (release_handler_) {
+  if (!conn.is_ready_for_request()) {
+    // Disconnect and don't call the release handler.
+    conn.disconnect();
+  } else if (release_handler_) {
     try {
       release_handler_(conn); // kinda of DISCARD ALL
     } catch (const std::exception& e) {
@@ -226,21 +243,23 @@ DMITIGR_PGFE_INLINE void Connection_pool::release(Handle& handle) noexcept
     }
   }
 
-  if (!is_connected_)
+  /*
+   * Disconnect if not ready for request after invoking the release handler,
+   * or if the whole connection pool is closed.
+   */
+  if (!conn.is_ready_for_request() || !is_connected_)
     conn.disconnect();
 
-  connections_[index].first = std::move(handle.connection_);
-  connections_[index].second = false;
-  handle.pool_ = {};
+  states_[index].first = std::move(handle.connection_);
   handle.connection_ = {};
-  handle.connection_index_ = {};
+  handle.state_index_ = {};
   DMITIGR_ASSERT(!handle.is_valid());
 }
 
 DMITIGR_PGFE_INLINE std::size_t Connection_pool::size() const noexcept
 {
   const std::lock_guard lg{mutex_};
-  return connections_.size();
+  return states_.size();
 }
 
 } // namespace dmitigr::pgfe

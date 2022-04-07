@@ -118,16 +118,38 @@ DMITIGR_PGFE_INLINE void Connection::swap(Connection& rhs) noexcept
   swap(notice_handler_, rhs.notice_handler_);
   swap(notification_handler_, rhs.notification_handler_);
   swap(default_result_format_, rhs.default_result_format_);
+  //
+  swap(execute_ps_state_, rhs.execute_ps_state_);
+  swap(execute_ps_state_->connection_, rhs.execute_ps_state_->connection_);
+  //
   swap(conn_, rhs.conn_);
   swap(polling_status_, rhs.polling_status_);
+  swap(lo_id_, rhs.lo_id_);
   swap(session_start_time_, rhs.session_start_time_);
   swap(response_, rhs.response_);
   swap(response_status_, rhs.response_status_);
-  swap(last_processed_request_, rhs.last_processed_request_);
   swap(last_prepared_statement_, rhs.last_prepared_statement_);
+  swap(is_output_flushed_, rhs.is_output_flushed_);
+  //
+  swap(copier_state_, rhs.copier_state_);
+  swap(*copier_state_, *rhs.copier_state_);
+  //
+  swap(is_single_row_mode_enabled_, rhs.is_single_row_mode_enabled_);
+  //
   swap(ps_states_, rhs.ps_states_);
+  for (auto& state : ps_states_)
+    state->connection_ = this;
+  for (auto& state : rhs.ps_states_)
+    state->connection_ = &rhs;
+  //
   swap(lo_states_, rhs.lo_states_);
+  for (auto& state : lo_states_)
+    state->connection_ = this;
+  for (auto& state : rhs.lo_states_)
+    state->connection_ = &rhs;
+  //
   swap(requests_, rhs.requests_);
+  swap(last_processed_request_, rhs.last_processed_request_);
 }
 
 DMITIGR_PGFE_INLINE const Connection_options& Connection::options() const noexcept

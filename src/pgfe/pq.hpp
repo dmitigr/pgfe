@@ -109,10 +109,10 @@ public:
     set_attributes(attributes, sizeof(attributes) / sizeof(::PGresAttDesc));
   }
 
-  /// Non copy-constructible.
+  /// Not copy-constructible.
   Result(const Result&) = delete;
 
-  /// Non copy-assignable.
+  /// Not copy-assignable.
   Result& operator=(const Result&) = delete;
 
   /// Move-constructible.
