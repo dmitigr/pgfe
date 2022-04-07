@@ -369,7 +369,7 @@ public:
   DMITIGR_PGFE_API const Tuple& extra() const;
 
 private:
-  friend Sql_vector;
+  friend Statement_vector;
 
   static std::pair<Statement, std::string_view::size_type>
   parse_sql_input(std::string_view, const std::locale& loc);

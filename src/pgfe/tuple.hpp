@@ -212,7 +212,7 @@ public:
     return datas_.begin();
   }
 
-  /// @returns The constant iterator that points to the first.
+  /// @returns The constant iterator that points to the first field.
   auto begin() const noexcept
   {
     return datas_.begin();

@@ -58,8 +58,8 @@ set(dmitigr_pgfe_headers
   row.hpp
   row_info.hpp
   signal.hpp
-  sql_vector.hpp
   statement.hpp
+  statement_vector.hpp
   types_fwd.hpp
   )
 
@@ -86,8 +86,8 @@ set(dmitigr_pgfe_implementations
   ready_for_query.cpp
   row.cpp
   row_info.cpp
-  sql_vector.cpp
   statement.cpp
+  statement_vector.cpp
   tuple.cpp
   )
 
@@ -142,8 +142,8 @@ if(DMITIGR_CPPLIPA_TESTS)
     ps
     lob
     row
-    sql_vector
     statement
+    statement_vector
     )
 
   set(dmitigr_pgfe_tests_target_link_libraries dmitigr_base dmitigr_os dmitigr_str
@@ -152,7 +152,7 @@ if(DMITIGR_CPPLIPA_TESTS)
   set(prefix ${dmitigr_cpplipa_SOURCE_DIR}/test/pgfe)
   add_custom_target(dmitigr_pgfe_copy_test_resources ALL
     COMMAND cmake -E copy_if_different
-    "${prefix}/pgfe-unit-sql_vector.sql"
+    "${prefix}/pgfe-unit-statement_vector.sql"
     "${dmitigr_cpplipa_resource_destination_dir}"
     )
   add_dependencies(dmitigr_pgfe_copy_test_resources

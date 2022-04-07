@@ -229,7 +229,7 @@ void foo(Connection& conn)
 
 Extended query protocol used by Pgfe is based on prepared statements. In Pgfe
 prepared statements can be parameterized with either positional or named
-parameters. The class `Sql_string` provides functionality for constructing SQL
+parameters. The class `Statement` provides functionality for constructing SQL
 statements, providing support for named parameters, as well as functionality for
 direct parameters replacement with any SQL statement to generate complex SQL
 expressions dynamically.
@@ -504,7 +504,7 @@ up from the internal storage it may cause memory exhaustion!**
 
 The standard classes like [`std::string`][std_string] or [`std::ostringstream`][std_ostringstream]
 can be used to make SQL strings dynamically. However, in some cases it is more
-convenient to use the class `Sql_string` for this purpose. Consider the following
+convenient to use the class `Statement` for this purpose. Consider the following
 statement:
 
 ```sql
@@ -513,13 +513,13 @@ select :expr::int, ':expr';
 
 This SQL string has one named parameter `expr` and one string constant
 `':expr'`. It's possible to replace the named parameters of the SQL string with
-another SQL string by using `Sql_string::replace_parameter()`, for example:
+another SQL string by using `Statement::replace_parameter()`, for example:
 
 ```cpp
 // Example 14. Extending the SQL statement.
 void foo()
 {
-  Sql_string sql{"select :expr::int, ':expr'"};
+  Statement sql{"select :expr::int, ':expr'"};
   sql.replace_parameter("expr", "sin(:expr1::int), cos(:expr2::int)");
 }
 ```
@@ -552,7 +552,7 @@ select :n::int + 1, ';'; -- note, the semicolons in quotes are allowed!
 select :n::int - 1
 ```
 
-These SQL strings can be easily accessed by using class `Sql_vector`:
+These SQL strings can be easily accessed by using class `Statement_vector`:
 
 ```cpp
 // Example 15. Parsing file with SQL statements.
@@ -562,7 +562,7 @@ std::string read_file(const std::filesystem::path& path); // defined somewhere
 void foo()
 {
   const auto input = read_file("bunch.sql");
-  Sql_vector bunch{input};
+  Statement_vector bunch{input};
   auto* minus_one = bunch.find("id", "minus-one"); // select :n::int - 1
   auto*  plus_one = bunch.find("id",  "plus-one"); // select :n::int + 1, ';'
   // ...

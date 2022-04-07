@@ -14,17 +14,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DMITIGR_PGFE_SQL_VECTOR_HPP
-#define DMITIGR_PGFE_SQL_VECTOR_HPP
+#ifndef DMITIGR_PGFE_STATEMENT_VECTOR_HPP
+#define DMITIGR_PGFE_STATEMENT_VECTOR_HPP
 
 #include "dll.hpp"
-#include "exceptions.hpp"
 #include "statement.hpp"
 #include "types_fwd.hpp"
 
 #include <string>
 #include <string_view>
-#include <type_traits>
 #include <vector>
 
 namespace dmitigr::pgfe {
@@ -32,21 +30,21 @@ namespace dmitigr::pgfe {
 /**
  * @ingroup utilities
  *
- * @brief A container of SQL strings and operations on it.
+ * @brief A container of Statements.
  *
  * @see Statement.
  */
-class Sql_vector final {
+class Statement_vector final {
 public:
   /// Default-constructible. (Constructs an empty instance.)
-  Sql_vector() = default;
+  Statement_vector() = default;
 
   /**
-   * @brief Parses the input to make the SQL vector at once.
+   * @brief Parses the input to make the Statement vector at once.
    *
    * For example, consider the following input:
    *   @code{sql}
-   *   -- Comment 1 (comment of the empty query string)
+   *   -- Comment 1 (comment of the empty statement)
    *   ;
    *
    *   -- Comment 2 (unrelated comment)
@@ -56,34 +54,34 @@ public:
    *
    *   -- Comment 4 (just a footer)
    * @endcode
-   * In this case the result vector will consists of three SQL strings:
-   *   -# the string with only comment 1;
-   *   -# the string with comments 2 and 3;
-   *   -# the `SELECT 1` statement.
+   * In this case the result vector will consists of 3 statements:
+   *   -# empty statement with only Comment 1;
+   *   -# the `SELECT 1` statement with Comment 2 and Comment 3;
+   *   -# empty statement with Comment 4.
    *
    * @param input Any part of SQL statement, such as a content of a file with
    * multiple SQL commands and comments.
    */
-  explicit DMITIGR_PGFE_API Sql_vector(std::string_view input);
+  explicit DMITIGR_PGFE_API Statement_vector(std::string_view input);
 
   /// @overload
-  explicit DMITIGR_PGFE_API Sql_vector(std::vector<Statement>&& storage);
+  explicit DMITIGR_PGFE_API Statement_vector(std::vector<Statement> statements);
 
   /// Swaps the instances.
-  DMITIGR_PGFE_API void swap(Sql_vector& rhs) noexcept;
+  DMITIGR_PGFE_API void swap(Statement_vector& rhs) noexcept;
 
-  /// @returns The count of SQL strings this vector contains.
+  /// @returns The count of statements this vector contains.
   DMITIGR_PGFE_API std::size_t size() const noexcept;
 
-  /// @returns The count of non-empty SQL query strings this vector contains.
+  /// @returns The count of non-empty statements this vector contains.
   DMITIGR_PGFE_API std::size_t non_empty_count() const noexcept;
 
-  /// @returns `true` if this SQL vector is empty.
+  /// @returns `true` if this vector is empty.
   DMITIGR_PGFE_API bool is_empty() const noexcept;
 
   /**
-   * @returns The index of the SQL string that owns by this vector, or `size()`
-   * if no SQL strings that meets the given criterias exists in this vector.
+   * @returns The index of the statement that owns by this vector, or `size()`
+   * if no statement that meets the given criterias exists in this vector.
    *
    * @param extra_name A name of the extra data field.
    * @param extra_value A value of the extra data field.
@@ -92,15 +90,15 @@ public:
    *
    * @see Statement::extra().
    */
-  DMITIGR_PGFE_API std::size_t index_of(
+  DMITIGR_PGFE_API std::size_t statement_index(
     std::string_view extra_name,
     std::string_view extra_value,
     std::size_t offset = 0, std::size_t extra_offset = 0) const noexcept;
 
   /**
-   * @returns The SQL string that owns by this vector.
+   * @returns The statement that owns by this vector.
    *
-   * @param index An index of SQL string to return.
+   * @param index An index of statement to return.
    *
    * @par Requires
    * `(index < size())`.
@@ -109,26 +107,6 @@ public:
 
   /// @overload
   DMITIGR_PGFE_API Statement& operator[](std::size_t index) noexcept;
-
-  /**
-   * @returns The SQL string that owns by this vector, or `nullptr` if no
-   * SQL strings that meets the given criterias exists in this vector.
-   *
-   * @par Parameters
-   * Same as for index_of().
-   *
-   * @see index_of(), Statement::extra().
-   */
-  DMITIGR_PGFE_API const Statement* find(
-    std::string_view extra_name,
-    std::string_view extra_value,
-    std::size_t offset = 0, std::size_t extra_offset = 0) const;
-
-  /// @overload
-  DMITIGR_PGFE_API Statement* find(
-    std::string_view extra_name,
-    std::string_view extra_value,
-    std::size_t offset = 0, std::size_t extra_offset = 0);
 
   /**
    * @returns The absolute position of the query of the speficied SQL string.
@@ -142,38 +120,24 @@ public:
   DMITIGR_PGFE_API std::string::size_type
   query_absolute_position(std::size_t index, const Connection& conn) const;
 
-  /**
-   * @brief Appends the SQL string to this vector.
-   *
-   * @param statement A SQL string to append.
-   */
-  DMITIGR_PGFE_API void push_back(Statement statement) noexcept;
-
-  /// @overload
-  template<typename ... Types>
-  void emplace_back(Types&& ... args)
-  {
-    storage_.emplace_back(std::forward<Types>(args)...);
-  }
+  /// Appends the `statement` to this vector.
+  DMITIGR_PGFE_API void append(Statement statement) noexcept;
 
   /**
-   * @brief Inserts the new SQL string to this vector.
-   *
-   * @param index An index of where to insert.
-   * @param statement A SQL string to insert at the specified `index`.
+   * @brief Inserts the `statement` to this vector.
    *
    * @par Requires
-   * `(index < size())`.
+   * `index < size()`.
    */
   DMITIGR_PGFE_API void insert(std::size_t index, Statement statement);
 
   /**
-   * @brief Removes the SQL string from the vector.
+   * @brief Removes the statement from the vector.
    *
    * @par Requires
-   * `(index < size())`.
+   * `index < size()`.
    */
-  DMITIGR_PGFE_API void erase(std::size_t index);
+  DMITIGR_PGFE_API void remove(std::size_t index);
 
   /**
    * @returns The result of conversion of this instance to the instance of
@@ -181,20 +145,18 @@ public:
    */
   DMITIGR_PGFE_API std::string to_string() const;
 
-  /**
-   * @returns The released storage.
-   *
-   * @par Effects
-   * `!has_statements()`.
-   */
-  DMITIGR_PGFE_API std::vector<Statement> release() noexcept;
+  /// @returns The underlying vector of statements.
+  DMITIGR_PGFE_API const std::vector<Statement>& vector() const noexcept;
+
+  /// @overload
+  DMITIGR_PGFE_API std::vector<Statement>& vector() noexcept;
 
 private:
-  mutable std::vector<Statement> storage_;
+  std::vector<Statement> statements_;
 };
 
-/// Sql_vector is swappable.
-inline void swap(Sql_vector& lhs, Sql_vector& rhs) noexcept
+/// Statement_vector is swappable.
+inline void swap(Statement_vector& lhs, Statement_vector& rhs) noexcept
 {
   lhs.swap(rhs);
 }
@@ -202,7 +164,7 @@ inline void swap(Sql_vector& lhs, Sql_vector& rhs) noexcept
 } // namespace dmitigr::pgfe
 
 #ifndef DMITIGR_PGFE_NOT_HEADER_ONLY
-#include "sql_vector.cpp"
+#include "statement_vector.cpp"
 #endif
 
-#endif  // DMITIGR_PGFE_SQL_VECTOR_HPP
+#endif  // DMITIGR_PGFE_STATEMENT_VECTOR_HPP

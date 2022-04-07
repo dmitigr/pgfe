@@ -49,7 +49,7 @@
 #include "row_info.hpp"
 #include "signal.hpp"
 #include "statement.hpp"
-#include "sql_vector.hpp"
+#include "statement_vector.hpp"
 #include "version.hpp"
 
 #endif  // DMITIGR_PGFE_PGFE_HPP

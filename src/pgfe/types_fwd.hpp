@@ -75,7 +75,7 @@ class Row;
 class Row_info;
 class Signal;
 class Statement;
-class Sql_vector;
+class Statement_vector;
 class Tuple;
 
 class Client_exception;
