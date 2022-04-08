@@ -356,11 +356,14 @@ enum class Response_status {
   /// No response available. (No more requests.)
   empty = 0,
 
+  /// Response is available but not preprocessed yet.
+  ready_not_preprocessed = 100,
+
   /// Response is available.
-  ready = 100,
+  ready = 200,
 
   /// Response is not ready, socket polling is required.
-  unready = 200
+  unready = 300
 };
 
 // =============================================================================

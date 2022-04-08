@@ -440,7 +440,7 @@ Connection::handle_input(const bool wait_response)
 
   const auto check_state = [this]() noexcept
   {
-    DMITIGR_ASSERT(response_status_ == Response_status::ready);
+    DMITIGR_ASSERT(response_status_ == Response_status::ready_not_preprocessed);
     DMITIGR_ASSERT(response_.status() == PGRES_SINGLE_TUPLE);
     DMITIGR_ASSERT(!requests_.empty());
     DMITIGR_ASSERT(requests_.front().id_ == Request::Id::execute);
@@ -480,19 +480,21 @@ Connection::handle_input(const bool wait_response)
   if (wait_response) {
     if (response_status_ == Response_status::unready) {
     complete_response:
-      while (auto* const r = PQgetResult(conn())) PQclear(r);
-      response_status_ = Response_status::ready;
+      while (auto* const r = PQgetResult(conn()))
+        PQclear(r);
+      response_status_ = Response_status::ready_not_preprocessed;
       dismiss_request();
-    } else {
+    } else if (!response_ || (response_status_ == Response_status::ready &&
+        is_completion_status(response_.status()))) {
       response_.reset(PQgetResult(conn()));
       if (response_.status() == PGRES_SINGLE_TUPLE) {
-        response_status_ = Response_status::ready;
+        response_status_ = Response_status::ready_not_preprocessed;
         check_state();
         goto handle_notifications;
       } else if (is_completion_status(response_.status()))
         goto complete_response;
       else if (response_)
-        response_status_ = Response_status::ready;
+        response_status_ = Response_status::ready_not_preprocessed;
       else
         response_status_ = Response_status::empty;
     }
@@ -505,7 +507,7 @@ Connection::handle_input(const bool wait_response)
      * fe-protocol3.c) which parses consumed input and stores notifications and
      * notices if are available. (PQnotifies() calls this routine as well.)
      */
-    static const auto is_get_result_would_block = [](PGconn* const conn)
+    static const auto is_get_result_would_block = [](PGconn* const conn) noexcept
     {
       return PQisBusy(conn) == 1;
     };
@@ -514,32 +516,33 @@ Connection::handle_input(const bool wait_response)
     try_complete_response:
       while (!is_get_result_would_block(conn())) {
         if (auto* const r = PQgetResult(conn()); !r) {
-          response_status_ = Response_status::ready;
+          response_status_ = Response_status::ready_not_preprocessed;
           dismiss_request();
           break;
         } else
           PQclear(r);
       }
-    } else {
+    } else if (!response_ || (response_status_ == Response_status::ready &&
+        is_completion_status(response_.status()))) {
       if (!is_get_result_would_block(conn())) {
         response_.reset(PQgetResult(conn()));
         if (response_.status() == PGRES_SINGLE_TUPLE) {
-          response_status_ = Response_status::ready;
+          response_status_ = Response_status::ready_not_preprocessed;
           check_state();
           goto handle_notifications;
         } else if (is_completion_status(response_.status())) {
           response_status_ = Response_status::unready;
           goto try_complete_response;
         } else if (response_)
-          response_status_ = Response_status::ready;
+          response_status_ = Response_status::ready_not_preprocessed;
         else
           response_status_ = Response_status::empty;
       }
     }
   }
 
-  // Preprocessing the response_.
-  if (response_status_ == Response_status::ready) {
+  // Preprocessing the response_. (This is done only once for response_!)
+  if (response_status_ == Response_status::ready_not_preprocessed) {
     const auto rstatus = response_.status();
     DMITIGR_ASSERT(rstatus != PGRES_NONFATAL_ERROR);
     DMITIGR_ASSERT(rstatus != PGRES_SINGLE_TUPLE);
@@ -548,7 +551,7 @@ Connection::handle_input(const bool wait_response)
       is_single_row_mode_enabled_ = false;
     } else if (rstatus == PGRES_COPY_OUT || rstatus == PGRES_COPY_IN) {
       // is_copy_in_progress() now returns `true`, copier() returns Copier.
-      copier_state_ = std::make_shared<Connection*>(nullptr);
+      copier_state_ = std::make_shared<Connection*>(nullptr); // can throw
     } else if (rstatus == PGRES_FATAL_ERROR) {
       // is_copy_in_progress() now returns `false`.
       reset_copier_state();
@@ -563,13 +566,20 @@ Connection::handle_input(const bool wait_response)
         DMITIGR_ASSERT(ps);
         const auto [p, e] = registered_ps(ps.name());
         DMITIGR_ASSERT(p == e);
-        register_ps(std::move(ps));
+        register_ps(std::move(ps)); // can throw (ps will not be affected)
         DMITIGR_ASSERT(last_prepared_statement_);
       } else if (lpr.id_ == Request::Id::describe) {
         auto& ps = lpr.prepared_statement_;
         DMITIGR_ASSERT(ps);
-        ps.set_description(std::move(response_));
-        register_ps(std::move(ps));
+        auto response = release_response();
+        try {
+          ps.set_description(std::move(response)); // can throw
+        } catch (...) {
+          // response is not yet moved in this case, so it can be reset back.
+          reset_response(std::move(response));
+          throw;
+        }
+        register_ps(std::move(ps)); // can throw (ps will not be affected)
         DMITIGR_ASSERT(last_prepared_statement_);
       } else if (lpr.id_ == Request::Id::unprepare) {
         DMITIGR_ASSERT(lpr.prepared_statement_name_ &&
@@ -580,6 +590,7 @@ Connection::handle_input(const bool wait_response)
       reset_copier_state();
       is_single_row_mode_enabled_ = false;
     }
+    response_status_ = Response_status::ready;
   } else if (response_status_ == Response_status::empty)
     dismiss_request(); // just in case
 
@@ -702,13 +713,13 @@ DMITIGR_PGFE_INLINE auto Connection::error_handler() noexcept
 DMITIGR_PGFE_INLINE Error Connection::error() noexcept
 {
   return (response_.status() == PGRES_FATAL_ERROR) ?
-    Error{std::move(response_)} : Error{};
+    Error{release_response()} : Error{};
 }
 
 DMITIGR_PGFE_INLINE Row Connection::row() noexcept
 {
   return (response_.status() == PGRES_SINGLE_TUPLE)
-    ? Row{std::move(response_)} : Row{};
+    ? Row{release_response()} : Row{};
 }
 
 DMITIGR_PGFE_INLINE Notification Connection::pop_notification()
@@ -752,7 +763,7 @@ DMITIGR_PGFE_INLINE Copier Connection::copier() noexcept
 {
   const auto s = response_.status();
   return (s == PGRES_COPY_IN || s == PGRES_COPY_OUT) && !*copier_state_ ?
-    Copier{*this, std::move(response_)} : Copier{};
+    Copier{*this, release_response()} : Copier{};
 }
 
 DMITIGR_PGFE_INLINE Completion Connection::completion() noexcept
@@ -801,7 +812,7 @@ Connection::prepared_statement() noexcept
 DMITIGR_PGFE_INLINE Ready_for_query Connection::ready_for_query()
 {
   return (response_.status() == PGRES_PIPELINE_SYNC)
-    ? Ready_for_query{std::move(response_)} : Ready_for_query{};
+    ? Ready_for_query{release_response()} : Ready_for_query{};
 }
 
 DMITIGR_PGFE_INLINE bool Connection::is_copy_in_progress() const noexcept
@@ -1127,6 +1138,19 @@ DMITIGR_PGFE_INLINE bool Connection::is_invariant_ok() const noexcept
     readiness_ok;
 }
 
+DMITIGR_PGFE_INLINE detail::pq::Result Connection::release_response() noexcept
+{
+  response_status_ = Response_status::empty;
+  return std::move(response_);
+}
+
+DMITIGR_PGFE_INLINE void
+Connection::reset_response(detail::pq::Result&& response) noexcept
+{
+  if (response_ = std::move(response))
+    response_status_ = Response_status::ready;
+}
+
 DMITIGR_PGFE_INLINE void Connection::reset_session() noexcept
 {
   session_start_time_.reset();
@@ -1230,7 +1254,7 @@ DMITIGR_PGFE_INLINE void
 Connection::register_ps(Prepared_statement&& ps)
 {
   if (const auto [p, e] = registered_ps(ps.name()); p == e)
-    ps_states_.push_back(ps.state_);
+    ps_states_.push_back(ps.state_); // can throw
   last_prepared_statement_ = std::move(ps);
   DMITIGR_ASSERT(last_prepared_statement_);
 }

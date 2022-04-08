@@ -26,7 +26,7 @@ DMITIGR_PGFE_INLINE Copier::~Copier() noexcept
   if (is_valid()) {
     auto& conn = **connection_;
     *connection_ = nullptr;
-    conn.response_ = std::move(pq_result_);
+    conn.reset_response(std::move(pq_result_));
     DMITIGR_ASSERT(!is_valid());
   }
 }

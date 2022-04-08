@@ -253,6 +253,9 @@ public:
    * handle_input() is Response_status::unready and the socket is in
    * read-ready state.
    *
+   * @par Exception safety guarantee
+   * Strong.
+   *
    * @see handle_input(), socket_readiness().
    */
   DMITIGR_PGFE_API void read_input();
@@ -274,7 +277,7 @@ public:
    * *Possible* signals and/or response are available.
    *
    * @par Exception safety guarantee
-   * Basic.
+   * Strong.
    *
    * @see read_input().
    */
@@ -1314,6 +1317,8 @@ private:
     states.erase(p);             // remove the copy of state
   }
 
+  detail::pq::Result release_response() noexcept;
+  void reset_response(detail::pq::Result&& response) noexcept;
   void reset_session() noexcept;
   void reset_copier_state() noexcept;
   void set_single_row_mode_enabled();
