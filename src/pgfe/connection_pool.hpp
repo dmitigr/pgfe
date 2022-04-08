@@ -47,7 +47,7 @@ public:
      *
      * @detail Calls release() if `pool()`.
      */
-    DMITIGR_PGFE_API ~Handle();
+    DMITIGR_PGFE_API ~Handle() noexcept;
 
     /// Not copy-constructible.
     Handle(const Handle&) = delete;
@@ -56,10 +56,10 @@ public:
     Handle& operator=(const Handle&) = delete;
 
     /// Move-constructible.
-    Handle(Handle&& rhs) = default;
+    Handle(Handle&& rhs) noexcept = default;
 
     /// Move-assignable.
-    Handle& operator=(Handle&& rhs) = default;
+    Handle& operator=(Handle&& rhs) noexcept = default;
 
     /**
      * @returns The Connection.
@@ -105,7 +105,7 @@ public:
     friend Connection_pool;
 
     /// Default-constructible. (Constructs invalid instance.)
-    Handle();
+    Handle() noexcept = default;
 
     /// The constructor.
     Handle(std::shared_ptr<Connection_pool*> pool,
@@ -125,7 +125,7 @@ public:
   DMITIGR_PGFE_API ~Connection_pool() noexcept;
 
   /// Default-constructible. (Constructs invalid instance.)
-  Connection_pool() = default;
+  Connection_pool() noexcept = default;
 
   /// Not copy-constructible.
   Connection_pool(const Connection_pool&) = delete;

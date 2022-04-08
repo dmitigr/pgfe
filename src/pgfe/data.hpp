@@ -34,9 +34,9 @@ namespace dmitigr::pgfe {
  *
  * @brief A data.
  *
- * The data in such a representation can be sended to a PostgreSQL server (as
- * the parameter value of the Prepared_statement), or received from the
- * PostgreSQL server (in particular, as the data of the row field or as the
+ * @details The data in such a representation can be sended to a PostgreSQL
+ * server (as the parameter value of the Prepared_statement), or received from
+ * the PostgreSQL server (in particular, as the data of the row field or as the
  * asynchronous notification payload).
  */
 class Data {
@@ -45,7 +45,7 @@ public:
   using Format = Data_format;
 
   /// The destructor.
-  virtual ~Data() = default;
+  virtual ~Data() noexcept = default;
 
   /// @returns `true` if the instance is valid.
   DMITIGR_PGFE_API bool is_valid() const noexcept;

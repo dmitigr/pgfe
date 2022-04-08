@@ -47,7 +47,7 @@ public:
   using Element = std::pair<std::string, std::unique_ptr<Data>>;
 
   /// Default-constructible
-  Tuple() = default;
+  Tuple() noexcept = default;
 
   /// The constructor.
   DMITIGR_PGFE_API Tuple(std::vector<Element>&& datas) noexcept;
@@ -59,10 +59,10 @@ public:
   DMITIGR_PGFE_API Tuple& operator=(const Tuple& rhs);
 
   /// Move-constructible.
-  Tuple(Tuple&& rhs) = default;
+  Tuple(Tuple&& rhs) noexcept = default;
 
   /// Move-assignable.
-  Tuple& operator=(Tuple&& rhs) = default;
+  Tuple& operator=(Tuple&& rhs) noexcept = default;
 
   /// Swaps the instances.
   DMITIGR_PGFE_API void swap(Tuple& rhs) noexcept;
@@ -78,7 +78,7 @@ public:
 
   /// @see Compositional::field_index().
   DMITIGR_PGFE_API std::size_t field_index(std::string_view name,
-    std::size_t offset = 0) const override;
+    std::size_t offset = 0) const noexcept override;
 
   /**
    * @returns The field data of this tuple.

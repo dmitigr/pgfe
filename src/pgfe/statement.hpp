@@ -69,7 +69,7 @@ public:
   /// @{
 
   /// Default-constructible. (Constructs an empty instance.)
-  Statement() = default;
+  Statement() noexcept = default;
 
   /**
    * @brief The constructor.
@@ -321,7 +321,8 @@ public:
   ///
   /// Examples:
   ///
-  /// Example 1. The misaligned content of the association specified in the multi-line comment
+  /// Example 1. The misaligned content of the association specified in the
+  /// multi-line comment
   ///
   /// @code{sql}
   /// /*
@@ -336,7 +337,8 @@ public:
   ///
   /// The content of the `text1` association is "one\n  * two\nthree".
   ///
-  /// Example 2. The aligned content of the association specified in the multi-line comment
+  /// Example 2. The aligned content of the association specified in the
+  /// multi-line comment
   ///
   /// @code{sql}
   /// /*
@@ -351,7 +353,8 @@ public:
   ///
   /// The content of the `text2` association is "one\ntwo\nthree".
   ///
-  /// Example 3. The content of the association specified in the sequence of one-line comments
+  /// Example 3. The content of the association specified in the sequence of
+  /// one-line comments
   ///
   /// @code{sql}
   /// -- $text3$
@@ -363,10 +366,10 @@ public:
   /// @endcode
   ///
   /// The content of the `text3` association is "one\n two\n three".
-  DMITIGR_PGFE_API Tuple& extra() noexcept;
+  DMITIGR_PGFE_API const Tuple& extra() const noexcept;
 
   /// @overload
-  DMITIGR_PGFE_API const Tuple& extra() const;
+  DMITIGR_PGFE_API Tuple& extra() noexcept;
 
 private:
   friend Statement_vector;

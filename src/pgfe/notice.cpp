@@ -20,7 +20,7 @@
 
 namespace dmitigr::pgfe {
 
-DMITIGR_PGFE_INLINE Notice::~Notice()
+DMITIGR_PGFE_INLINE Notice::~Notice() noexcept
 {
   pq_result_.release(); // freed in libpq/fe-protocol3.c:pqGetErrorNotice3()
 }

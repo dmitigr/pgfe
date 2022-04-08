@@ -123,7 +123,7 @@ public:
   DMITIGR_PGFE_API bool is_connected() const noexcept;
 
   /// @returns `true` if the connection is open and no operation in progress.
-  DMITIGR_PGFE_API bool is_connected_and_idle() const;
+  DMITIGR_PGFE_API bool is_connected_and_idle() const noexcept;
 
   /**
    * @returns The transaction status.
@@ -301,7 +301,7 @@ public:
    *
    * @see set_nio_output_enabled().
    */
-  DMITIGR_PGFE_API bool is_nio_output_enabled() const;
+  DMITIGR_PGFE_API bool is_nio_output_enabled() const noexcept;
 
   /**
    * @brief Flushes any queued output data to the server.
@@ -322,7 +322,7 @@ public:
    *
    * @see flush_output().
    */
-  DMITIGR_PGFE_API bool is_output_flushed() const;
+  DMITIGR_PGFE_API bool is_output_flushed() const noexcept;
 
   /// @}
 
@@ -350,7 +350,7 @@ public:
    *
    * @see notice_handler().
    */
-  DMITIGR_PGFE_API void set_notice_handler(Notice_handler handler) noexcept;
+  DMITIGR_PGFE_API void set_notice_handler(Notice_handler handler);
 
   /// @returns The current notice handler.
   DMITIGR_PGFE_API const Notice_handler& notice_handler() const noexcept;
@@ -369,7 +369,7 @@ public:
    * Strong.
    */
   DMITIGR_PGFE_API void
-  set_notification_handler(Notification_handler handler) noexcept;
+  set_notification_handler(Notification_handler handler);
 
   /// @returns The current notification handler.
   DMITIGR_PGFE_API const Notification_handler&
@@ -442,7 +442,7 @@ public:
    *
    * @see Error_handler, error_handler().
    */
-  DMITIGR_PGFE_API void set_error_handler(Error_handler handler) noexcept;
+  DMITIGR_PGFE_API void set_error_handler(Error_handler handler);
 
   /// @returns The current error handler.
   DMITIGR_PGFE_API const Error_handler& error_handler() noexcept;
@@ -616,7 +616,7 @@ public:
    *
    * @see send_sync(), wait_response().
    */
-  DMITIGR_PGFE_API Ready_for_query ready_for_query();
+  DMITIGR_PGFE_API Ready_for_query ready_for_query() noexcept;
 
   ///@}
 
@@ -644,7 +644,7 @@ public:
    *
    * @see set_pipeline_enabled().
    */
-  DMITIGR_PGFE_API std::size_t request_queue_size() const;
+  DMITIGR_PGFE_API std::size_t request_queue_size() const noexcept;
 
   /// @returns `true` if there is uncompleted request.
   DMITIGR_PGFE_API bool has_uncompleted_request() const noexcept;
@@ -1027,7 +1027,7 @@ public:
   DMITIGR_PGFE_API void set_pipeline_enabled(bool value);
 
   /// @returns The status of pipeline.
-  DMITIGR_PGFE_API Pipeline_status pipeline_status() const;
+  DMITIGR_PGFE_API Pipeline_status pipeline_status() const noexcept;
 
   /**
    * @brief Sends a Sync message to the server.
@@ -1056,7 +1056,7 @@ public:
    * @par Exception safety guarantee
    * Strong.
    */
-  DMITIGR_PGFE_API void set_result_format(const Data_format format) noexcept;
+  DMITIGR_PGFE_API void set_result_format(const Data_format format);
 
   /// @returns The default data format of a statement execution result.
   DMITIGR_PGFE_API Data_format result_format() const noexcept;
@@ -1261,14 +1261,14 @@ private:
       sync
     };
 
-    Request() = default;
-    explicit Request(const Id id);
-    Request(const Id id, Prepared_statement prepared_statement);
-    Request(const Id id, std::string prepared_statement_name);
+    Request() noexcept = default;
+    explicit Request(Id id) noexcept;
+    Request(Id id, Prepared_statement prepared_statement) noexcept;
+    Request(Id id, std::string prepared_statement_name) noexcept;
     Request(const Request&) = delete;
     Request& operator=(const Request&) = delete;
-    Request(Request&&) = default;
-    Request& operator=(Request&&) = default;
+    Request(Request&&) noexcept = default;
+    Request& operator=(Request&&) noexcept = default;
 
     Id id_{};
     Prepared_statement prepared_statement_;
@@ -1441,13 +1441,13 @@ private:
   }
 
   template<typename T = void>
-  static constexpr bool is_routine_arguments_ok__()
+  static constexpr bool is_routine_arguments_ok__() noexcept
   {
     return true;
   }
 
   template<typename T1, typename T2, typename ... Types>
-  static constexpr bool is_routine_arguments_ok__()
+  static constexpr bool is_routine_arguments_ok__() noexcept
   {
     using U1 = std::decay_t<T1>;
     using U2 = std::decay_t<T2>;

@@ -27,15 +27,9 @@ namespace dmitigr::pgfe {
 // Handle
 // -----------------------------------------------------------------------------
 
-DMITIGR_PGFE_INLINE Connection_pool::Handle::~Handle()
+DMITIGR_PGFE_INLINE Connection_pool::Handle::~Handle() noexcept
 {
-  try {
-    release();
-  } catch (const std::exception& e) {
-    std::clog << "closing connection pool handle: error: " << e.what() << '\n';
-  } catch (...) {
-    std::clog << "closing connection pool handle: unknown error\n";
-  }
+  release();
 }
 
 DMITIGR_PGFE_INLINE const Connection& Connection_pool::Handle::operator*() const
@@ -83,8 +77,6 @@ DMITIGR_PGFE_INLINE void Connection_pool::Handle::release() noexcept
   if (auto* const p = pool())
     p->release(*this);
 }
-
-DMITIGR_PGFE_INLINE Connection_pool::Handle::Handle() = default;
 
 DMITIGR_PGFE_INLINE Connection_pool::Handle::Handle(
   std::shared_ptr<Connection_pool*> pool,

@@ -37,7 +37,7 @@ namespace dmitigr::pgfe {
 class Statement_vector final {
 public:
   /// Default-constructible. (Constructs an empty instance.)
-  Statement_vector() = default;
+  Statement_vector() noexcept = default;
 
   /**
    * @brief Parses the input to make the Statement vector at once.
@@ -106,7 +106,7 @@ public:
   DMITIGR_PGFE_API const Statement& operator[](std::size_t index) const;
 
   /// @overload
-  DMITIGR_PGFE_API Statement& operator[](std::size_t index) noexcept;
+  DMITIGR_PGFE_API Statement& operator[](std::size_t index);
 
   /**
    * @returns The absolute position of the query of the speficied SQL string.
@@ -115,7 +115,7 @@ public:
    * @param conn A server connection.
    *
    * @par Requires
-   * `index < statement_count() && conn.is_connected()`.
+   * `(index < statement_count() && conn.is_connected())`.
    */
   DMITIGR_PGFE_API std::string::size_type
   query_absolute_position(std::size_t index, const Connection& conn) const;

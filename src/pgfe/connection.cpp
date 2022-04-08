@@ -66,18 +66,18 @@ DMITIGR_PGFE_INLINE Server_status ping(const Connection_options& options)
 
 // =============================================================================
 
-DMITIGR_PGFE_INLINE Connection::Request::Request(const Id id)
+DMITIGR_PGFE_INLINE Connection::Request::Request(const Id id) noexcept
   : id_{id}
 {}
 
 DMITIGR_PGFE_INLINE Connection::Request::Request(const Id id,
-  Prepared_statement prepared_statement)
+  Prepared_statement prepared_statement) noexcept
   : id_{id}
   , prepared_statement_{std::move(prepared_statement)}
 {}
 
 DMITIGR_PGFE_INLINE Connection::Request::Request(const Id id,
-  std::string prepared_statement_name)
+  std::string prepared_statement_name) noexcept
   : id_{id}
   , prepared_statement_name_{std::move(prepared_statement_name)}
 {}
@@ -179,7 +179,7 @@ DMITIGR_PGFE_INLINE bool Connection::is_connected() const noexcept
   return status() == Status::connected;
 }
 
-DMITIGR_PGFE_INLINE bool Connection::is_connected_and_idle() const
+DMITIGR_PGFE_INLINE bool Connection::is_connected_and_idle() const noexcept
 {
   const auto ts = transaction_status();
   return ts && ts != Transaction_status::active;
@@ -617,7 +617,7 @@ DMITIGR_PGFE_INLINE void Connection::set_nio_output_enabled(const bool value)
     throw Client_exception{"cannot set nonblocking output mode on connection"};
 }
 
-DMITIGR_PGFE_INLINE bool Connection::is_nio_output_enabled() const
+DMITIGR_PGFE_INLINE bool Connection::is_nio_output_enabled() const noexcept
 {
   return PQisnonblocking(conn());
 }
@@ -647,7 +647,7 @@ DMITIGR_PGFE_INLINE bool Connection::flush_output(const bool wait)
   throw Client_exception{"cannot flush queued output data to the server"};
 }
 
-DMITIGR_PGFE_INLINE bool Connection::is_output_flushed() const
+DMITIGR_PGFE_INLINE bool Connection::is_output_flushed() const noexcept
 {
   return is_output_flushed_;
 }
@@ -698,7 +698,7 @@ Connection::wait_response_throw(const std::optional<std::chrono::milliseconds> t
 }
 
 DMITIGR_PGFE_INLINE void
-Connection::set_error_handler(Error_handler handler) noexcept
+Connection::set_error_handler(Error_handler handler)
 {
   error_handler_ = std::move(handler);
   assert(is_invariant_ok());
@@ -729,7 +729,7 @@ DMITIGR_PGFE_INLINE Notification Connection::pop_notification()
 }
 
 DMITIGR_PGFE_INLINE void
-Connection::set_notice_handler(Notice_handler handler) noexcept
+Connection::set_notice_handler(Notice_handler handler)
 {
   notice_handler_ = std::move(handler);
   assert(is_invariant_ok());
@@ -742,7 +742,7 @@ DMITIGR_PGFE_INLINE auto Connection::notice_handler() const noexcept
 }
 
 DMITIGR_PGFE_INLINE void
-Connection::set_notification_handler(Notification_handler handler) noexcept
+Connection::set_notification_handler(Notification_handler handler)
 {
   notification_handler_ = std::move(handler);
   assert(is_invariant_ok());
@@ -809,7 +809,7 @@ Connection::prepared_statement() noexcept
   return std::move(last_prepared_statement_);
 }
 
-DMITIGR_PGFE_INLINE Ready_for_query Connection::ready_for_query()
+DMITIGR_PGFE_INLINE Ready_for_query Connection::ready_for_query() noexcept
 {
   return (response_.status() == PGRES_PIPELINE_SYNC)
     ? Ready_for_query{release_response()} : Ready_for_query{};
@@ -826,7 +826,7 @@ DMITIGR_PGFE_INLINE bool Connection::is_ready_for_nio_request() const noexcept
     is_ready_for_request() : is_connected();
 }
 
-DMITIGR_PGFE_INLINE std::size_t Connection::request_queue_size() const
+DMITIGR_PGFE_INLINE std::size_t Connection::request_queue_size() const noexcept
 {
   return requests_.size();
 }
@@ -937,7 +937,7 @@ DMITIGR_PGFE_INLINE void Connection::set_pipeline_enabled(const bool value)
   }
 }
 
-DMITIGR_PGFE_INLINE Pipeline_status Connection::pipeline_status() const
+DMITIGR_PGFE_INLINE Pipeline_status Connection::pipeline_status() const noexcept
 {
   switch (PQpipelineStatus(conn())) {
   case PQ_PIPELINE_OFF:
@@ -966,7 +966,7 @@ DMITIGR_PGFE_INLINE void Connection::send_flush()
 }
 
 DMITIGR_PGFE_INLINE void
-Connection::set_result_format(const Data_format format) noexcept
+Connection::set_result_format(const Data_format format)
 {
   default_result_format_ = format;
   assert(is_invariant_ok());

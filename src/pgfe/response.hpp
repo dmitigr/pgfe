@@ -37,7 +37,7 @@ class Response : public Message {
   friend Ready_for_query;
   friend Row;
 
-  Response() = default;
+  Response() noexcept = default;
 };
 
 // -----------------------------------------------------------------------------

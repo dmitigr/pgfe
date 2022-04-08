@@ -40,19 +40,19 @@ namespace dmitigr::pgfe {
 class Notification final : public Signal {
 public:
   /// Constructs invalid instance.
-  Notification() = default;
+  Notification() noexcept = default;
 
   /// Not copy-constructible.
   Notification(const Notification&) = delete;
 
   /// Move-constructible.
-  Notification(Notification&&) = default;
+  Notification(Notification&&) noexcept = default;
 
   /// Not copy-assignable.
   Notification& operator=(const Notification&) = delete;
 
   /// Move-assignable.
-  Notification& operator=(Notification&&) = default;
+  Notification& operator=(Notification&&) noexcept = default;
 
   /// @see Message::is_valid().
   DMITIGR_PGFE_API bool is_valid() const noexcept override;

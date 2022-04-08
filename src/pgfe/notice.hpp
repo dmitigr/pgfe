@@ -37,7 +37,7 @@ namespace dmitigr::pgfe {
 class Notice final : public Signal, public Problem {
 public:
   /// The destructor.
-  DMITIGR_PGFE_API ~Notice() override;
+  DMITIGR_PGFE_API ~Notice() noexcept override;
 
   /// Default-constructible. (Constructs invalid instance.)
   DMITIGR_PGFE_API Notice() = default;

@@ -790,7 +790,7 @@ private:
   }
 };
 
-DMITIGR_PGFE_INLINE const Tuple& Statement::extra() const
+DMITIGR_PGFE_INLINE const Tuple& Statement::extra() const noexcept
 {
   if (!extra_)
     extra_.emplace(Extra::extract(fragments_, loc_));

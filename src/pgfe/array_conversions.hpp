@@ -62,7 +62,7 @@ struct Cont_of_opts final {
 /**
  * @brief Forces treating `std::string` as a non-container type.
  *
- * Without this specialization, `std::string` treated as
+ * @details Without this specialization, `std::string` treated as
  * `std::basic_string<Optional<char>, ...>`.
  *
  * @remarks This is a workaround for GCC since the partial specialization by
@@ -76,8 +76,8 @@ struct Cont_of_opts<std::string> final {
 /**
  * @brief Forces treating `std::basic_string<>` as a non-container type.
  *
- * Without this specialization, `std::basic_string<CharT, ...>` treated as
- * `std::basic_string<Optional<CharT>, ...>`.
+ * @details Without this specialization, `std::basic_string<CharT, ...>` treated
+ * as `std::basic_string<Optional<CharT>, ...>`.
  *
  * @remarks This specialization doesn't works with GCC (tested with version 8),
  * and doesn't needs to MSVC. It's exists just in case, probably, for other
@@ -135,8 +135,8 @@ using Cont_of_vals_t = typename Cont_of_vals<T>::Type;
 /**
  * @returns The container of values converted from the container of optionals.
  *
- * @throws An instance of type Improper_value_type_of_container if there are
- * element `e` presents in `container` for which `(bool(e) == false)`.
+ * @throws Client_exception with code Client_errc::improper_value_type_of_container
+ * if element `e` for which `(bool(e) == false)` presents in `container`.
  */
 template<typename T,
   template<class> class Optional,
@@ -196,8 +196,8 @@ struct Array_data_conversions_opts<Container<Optional<T>,
   static Type to_type(const Data& data, Types&& ... args)
   {
     if (!(data.format() == Data_format::text))
-      throw Client_exception{"cannot convert array to native type:"
-        " unsupported input data format"};
+      throw Client_exception{"cannot convert array to native type: "
+        "unsupported input data format"};
     return to_container<Type>(static_cast<const char*>(data.bytes()), ',',
       std::forward<Types>(args)...);
   }
@@ -206,8 +206,8 @@ struct Array_data_conversions_opts<Container<Optional<T>,
   static Type to_type(std::unique_ptr<Data>&& data, Types&& ... args)
   {
     if (!data)
-      throw Client_exception{"cannot convert array to native type:"
-        " null data given"};
+      throw Client_exception{"cannot convert array to native type: "
+        "null data given"};
     return to_type(*data, std::forward<Types>(args)...);
   }
 
@@ -274,8 +274,8 @@ struct Array_data_conversions_vals<Container<T, Allocator<T>>> final {
   static Type to_type(std::unique_ptr<Data>&& data, Types&& ... args)
   {
     if (!data)
-      throw Client_exception{"cannot convert array to native type:"
-        " null data given"};
+      throw Client_exception{"cannot convert array to native type: "
+        "null data given"};
     return to_container_of_values(
       Array_data_conversions_opts<Cont>::to_type(std::move(data),
         std::forward<Types>(args)...));
@@ -301,9 +301,10 @@ private:
  * @brief Fills the container with values extracted from the PostgreSQL array
  * literal.
  *
- * This functor is for filling the deepest (sub-)container of STL-container (of
- * container ...) with a values extracted from the PostgreSQL array literals.
- * I.e., it's a filler of a STL-container of the highest dimensionality.
+ * @details This functor is for filling the deepest (sub-)container of
+ * STL-container (of container ...) with a values extracted from the PostgreSQL
+ * array literals. I.e., it's a filler of a STL-container of the highest
+ * dimensionality.
  *
  * @par Requires
  * See the requirements of the API. Also, `T` mustn't be container.
@@ -697,7 +698,8 @@ const char* fill_container(Container<Optional<T>, Allocator<Optional<T>>>& resul
     }
   } else {
     Filler_of_deepest_container<T, Optional, Container, Allocator> handler(result);
-    return parse_array_literal(literal, delimiter, handler, std::forward<Types>(args)...);
+    return parse_array_literal(literal, delimiter, handler,
+      std::forward<Types>(args)...);
   }
 }
 
@@ -805,6 +807,10 @@ auto to_container_of_optionals(Container<T, Allocator<T>>&& container)
  * @brief The partial specialization of Conversions for nullable arrays (i.e.
  * containers with optional values).
  *
+ * @details The support of the following data formats is implemented:
+ *   - for input data - Data_format::text;
+ *   - for output data - Data_format::text.
+ *
  * @par Requirements
  * @parblock
  * Requirements to the type T of elements of array:
@@ -824,10 +830,6 @@ auto to_container_of_optionals(Container<T, Allocator<T>>&& container)
  * @tparam Optional The optional template class, such as `std::optional`.
  * @tparam Container The container template class, such as `std::vector`.
  * @tparam Allocator The allocator template class, such as `std::allocator`.
- *
- * The support of the following data formats is implemented:
- *   - for input data  - Data_format::text;
- *   - for output data - Data_format::text.
  */
 template<typename T,
   template<class> class Optional,
@@ -846,6 +848,10 @@ struct Conversions<Container<Optional<T>, Allocator<Optional<T>>>> final
  *
  * @brief The partial specialization of Conversions for non-nullable arrays.
  *
+ * @details The support of the following data formats is implemented:
+ *   - for input data  - Data_format::text;
+ *   - for output data - Data_format::text.
+ *
  * @par Requirements
  * @parblock
  * Requirements to the type T of elements of array:
@@ -857,12 +863,9 @@ struct Conversions<Container<Optional<T>, Allocator<Optional<T>>>> final
  * @tparam Container The container template class, such as `std::vector`.
  * @tparam Allocator The allocator template class, such as `std::allocator`.
  *
- * @throws Client_exception with code Client_errc::Improper_value_type_of_container
- * when converting the PostgreSQL array representations with at least one `NULL` element.
- *
- * The support of the following data formats is implemented:
- *   - for input data  - Data_format::text;
- *   - for output data - Data_format::text.
+ * @throws Client_exception with code Client_errc::improper_value_type_of_container
+ * when converting the PostgreSQL array representations with at least one `NULL`
+ * element.
  */
 template<typename T,
   template<class, class> class Container,
@@ -876,8 +879,8 @@ struct Conversions<Container<T, Allocator<T>>>
 /**
  * @brief The partial specialization of Conversions for non-nullable arrays.
  *
- * This is a workaround for GCC. When using multidimensional STL-containers GCC
- * (at least version 8.1) incorrectly choises the specialization of
+ * @details This is a workaround for GCC. When using multidimensional STL-containers
+ * GCC (at least version 8.1) incorrectly choises the specialization of
  * `Conversions<Container<Optional<T>, Allocator<Optional<T>>>>` by deducing
  * `Optional` as an STL container, instead of choising
  * `Conversions<Container<T>, Allocator<T>>` and thus, the nested vector in

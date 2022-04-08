@@ -37,11 +37,11 @@ namespace dmitigr::pgfe {
 class Row final : public Response, public Composite {
 public:
   /// Default-constructible. (Constructs invalid instance.)
-  Row() = default;
+  Row() noexcept = default;
 
   /// The constructor.
   template<typename ... Types>
-  explicit Row(Types&& ... args)
+  explicit Row(Types&& ... args) noexcept
     : info_{std::forward<Types>(args)...}
   {
     assert(is_invariant_ok());

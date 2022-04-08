@@ -73,10 +73,11 @@ Tuple::field_name(const std::size_t index) const
 
 DMITIGR_PGFE_INLINE std::size_t
 Tuple::field_index(const std::string_view name,
-  const std::size_t offset) const
+  const std::size_t offset) const noexcept
 {
-  if (!(offset < field_count()))
-    throw Client_exception{"cannot get tuple field index: invalid offset"};
+  const std::size_t fc{field_count()};
+  if (!(offset < fc))
+    return fc;
   const auto b = datas_.cbegin();
   const auto e = datas_.cend();
   using Diff = decltype(b)::difference_type;

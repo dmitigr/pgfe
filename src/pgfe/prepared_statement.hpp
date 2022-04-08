@@ -161,7 +161,7 @@ public:
   ~Prepared_statement() noexcept;
 
   /// Default-constructible. (Constructs invalid instance.)
-  Prepared_statement() = default;
+  Prepared_statement() noexcept = default;
 
   /// Not copy-constructible.
   Prepared_statement(const Prepared_statement&) = delete;
@@ -351,7 +351,7 @@ public:
    *
    * @see Connection::set_result_format().
    */
-  DMITIGR_PGFE_API void set_result_format(const Data_format format) noexcept;
+  DMITIGR_PGFE_API void set_result_format(const Data_format format);
 
   /**
    * @returns The data format for all fields of response rows.

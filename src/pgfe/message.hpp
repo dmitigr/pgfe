@@ -29,7 +29,7 @@ namespace dmitigr::pgfe {
 class Message {
 public:
   /// The destructor.
-  virtual ~Message() = default;
+  virtual ~Message() noexcept = default;
 
   /**
    * @returns `true` if the instance is valid.

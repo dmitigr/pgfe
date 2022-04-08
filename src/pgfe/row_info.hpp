@@ -34,10 +34,7 @@ namespace dmitigr::pgfe {
 class Row_info final : public Compositional {
 public:
   /// Default-constructible. (Constructs invalid instance.)
-  Row_info() = default;
-
-  /// The constructor.
-  explicit DMITIGR_PGFE_API Row_info(detail::pq::Result&& pq_result);
+  Row_info() noexcept = default;
 
   /// Not copy-constructible.
   Row_info(const Row_info&) = delete;
@@ -46,10 +43,10 @@ public:
   Row_info& operator=(const Row_info&) = delete;
 
   /// Move-constructible.
-  Row_info(Row_info&&) = default;
+  Row_info(Row_info&&) noexcept = default;
 
   /// Move-assignable.
-  Row_info& operator=(Row_info&&) = default;
+  Row_info& operator=(Row_info&&) noexcept = default;
 
   /// Swaps this with `rhs`.
   DMITIGR_PGFE_API void swap(Row_info& rhs) noexcept;
@@ -81,7 +78,7 @@ public:
 
   /// @see Compositional::field_index().
   DMITIGR_PGFE_API std::size_t field_index(const std::string_view name,
-    std::size_t offset = 0) const override;
+    std::size_t offset = 0) const noexcept override;
 
   /**
    * @returns The OID of the table if a field at `index` can be identified as a
@@ -234,6 +231,9 @@ private:
   friend Connection;
   friend Prepared_statement;
   friend Row;
+
+  /// The constructor.
+  explicit DMITIGR_PGFE_API Row_info(detail::pq::Result&& pq_result) noexcept;
 
   detail::pq::Result pq_result_;
 };

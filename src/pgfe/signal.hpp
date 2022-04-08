@@ -30,7 +30,7 @@ class Signal : public Message {
   friend Notice;
   friend Notification;
 
-  Signal() = default;
+  Signal() noexcept = default;
 };
 
 } // namespace dmitigr::pgfe

@@ -52,12 +52,9 @@ public:
    * @returns The field index if presents, or `field_count()` otherwise.
    *
    * @param offset For cases when several fields are named equally.
-   *
-   * @par Requires
-   * `(offset < field_count())`.
    */
   virtual std::size_t field_index(std::string_view name,
-    std::size_t offset = 0) const = 0;
+    std::size_t offset = 0) const noexcept = 0;
 
 private:
   friend Composite;

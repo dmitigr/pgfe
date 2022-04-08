@@ -31,7 +31,7 @@ namespace std {
 
 /// The default deleter for PGnotify.
 template<> struct default_delete<PGnotify> final {
-  void operator()(PGnotify* const ptr) const
+  void operator()(PGnotify* const ptr) const noexcept
   {
     PQfreemem(ptr);
   }
@@ -39,7 +39,7 @@ template<> struct default_delete<PGnotify> final {
 
 /// The default deleter for `PGresult`.
 template<> struct default_delete<PGresult> final {
-  void operator()(PGresult* const ptr) const
+  void operator()(PGresult* const ptr) const noexcept
   {
     PQclear(ptr);
   }
@@ -47,7 +47,7 @@ template<> struct default_delete<PGresult> final {
 
 /// The default deleter for `PGconn`.
 template<> struct default_delete<PGconn> final {
-  void operator()(PGconn* const ptr) const
+  void operator()(PGconn* const ptr) const noexcept
   {
     PQfinish(ptr);
   }
@@ -80,7 +80,7 @@ public:
   using Status = ::ExecStatusType;
 
   /// The default constructor. (Constructs invalid instance.)
-  Result() = default;
+  Result() noexcept = default;
 
   /// The constructor.
   explicit Result(PGresult* const pgresult) noexcept
@@ -93,7 +93,7 @@ public:
    *
    * @remarks Constructs the empty single tuple result.
    */
-  explicit Result(const Data_format fmt)
+  explicit Result(const Data_format fmt) noexcept
     : pgresult_{PQmakeEmptyPGresult(nullptr, PGRES_SINGLE_TUPLE)}
   {
     char empty_literal[] = {'\0'};
@@ -463,7 +463,8 @@ public:
    *
    * @returns `true` on success.
    */
-  bool set_attributes(PGresAttDesc* const attributes, const int attribute_count)
+  bool set_attributes(PGresAttDesc* const attributes,
+    const int attribute_count) noexcept
   {
     return PQsetResultAttrs(const_cast<PGresult*>(native_handle()),
       attribute_count, attributes);

@@ -99,7 +99,7 @@ Statement_vector::operator[](const std::size_t index) const
 }
 
 DMITIGR_PGFE_INLINE Statement&
-Statement_vector::operator[](const std::size_t index) noexcept
+Statement_vector::operator[](const std::size_t index)
 {
   return const_cast<Statement&>(static_cast<const Statement_vector&>(*this)[index]);
 }

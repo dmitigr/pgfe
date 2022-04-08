@@ -209,7 +209,7 @@ Prepared_statement::bound(const std::string_view name) const
 }
 
 DMITIGR_PGFE_INLINE void
-Prepared_statement::set_result_format(const Data_format format) noexcept
+Prepared_statement::set_result_format(const Data_format format)
 {
   result_format_ = format;
   assert(is_invariant_ok());
