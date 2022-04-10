@@ -1374,9 +1374,9 @@ private:
   // Large Object private API
   // ---------------------------------------------------------------------------
 
-  auto registered_lo(const int desc) const noexcept
+  auto registered_lo(const std::int_fast64_t id) const noexcept
   {
-    return registered(lo_states_, desc);
+    return registered(lo_states_, id);
   }
   void register_lo(const Large_object& lo);
   void unregister_lo(Large_object& lo) noexcept;

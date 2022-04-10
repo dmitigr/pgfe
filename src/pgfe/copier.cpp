@@ -96,7 +96,7 @@ DMITIGR_PGFE_INLINE bool Copier::send(const std::string_view data) const
 {
   check_send();
 
-  const int r{PQputCopyData(connection().conn(), data.data(), data.size())};
+  const int r{PQputCopyData(connection().conn(), data.data(), static_cast<int>(data.size()))};
   if (r == 0 || r == 1)
     return r;
   else if (r == -1)

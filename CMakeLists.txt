@@ -518,6 +518,10 @@ if(DMITIGR_CPPLIPA_TESTS)
     target_link_libraries(${exe} PRIVATE ${dmlib}
       ${${dmlib}_tests_target_link_libraries}
       ${${dmlib}_test_${test}_target_link_libraries})
+    target_compile_definitions(${exe} PRIVATE
+      ${${dmlib}_tests_target_compile_definitions})
+    target_compile_options(${exe} PRIVATE
+      "${${dmlib}_tests_target_compile_options}")
     dmitigr_cpplipa_target_compile_options(${exe})
     if(is_unit_test)
       add_test(NAME ${exe} COMMAND ${exe})

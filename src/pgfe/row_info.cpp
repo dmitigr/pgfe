@@ -63,7 +63,7 @@ Row_info::field_index(const std::string_view name,
   if (!(offset < fc))
     return fc;
   for (std::size_t i{offset}; i < fc; ++i) {
-    const std::string_view nm{pq_result_.field_name(i)};
+    const std::string_view nm{pq_result_.field_name(static_cast<int>(i))};
     if (nm == name)
       return i;
   }

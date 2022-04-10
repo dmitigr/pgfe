@@ -23,6 +23,7 @@
 #ifndef DMITIGR_OS_WINDOWS_HPP
 #define DMITIGR_OS_WINDOWS_HPP
 
+#include <cstdio>
 #include <utility>
 
 /*
