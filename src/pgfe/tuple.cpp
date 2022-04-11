@@ -21,16 +21,16 @@
 
 namespace dmitigr::pgfe {
 
-DMITIGR_PGFE_INLINE Tuple::Tuple(std::vector<Element>&& datas) noexcept
-  : datas_{std::move(datas)}
+DMITIGR_PGFE_INLINE Tuple::Tuple(std::vector<Element>&& elements) noexcept
+  : elements_{std::move(elements)}
 {
   assert(is_invariant_ok());
 }
 
 DMITIGR_PGFE_INLINE Tuple::Tuple(const Tuple& rhs)
-  : datas_{rhs.datas_.size()}
+  : elements_{rhs.elements_.size()}
 {
-  transform(rhs.datas_.cbegin(), rhs.datas_.cend(), datas_.begin(),
+  transform(rhs.elements_.cbegin(), rhs.elements_.cend(), elements_.begin(),
     [](const auto& pair)
     {
       return std::make_pair(pair.first, pair.second->to_data());
@@ -50,17 +50,17 @@ DMITIGR_PGFE_INLINE Tuple& Tuple::operator=(const Tuple& rhs)
 DMITIGR_PGFE_INLINE void Tuple::swap(Tuple& rhs) noexcept
 {
   using std::swap;
-  swap(datas_, rhs.datas_);
+  swap(elements_, rhs.elements_);
 }
 
 DMITIGR_PGFE_INLINE std::size_t Tuple::field_count() const noexcept
 {
-  return datas_.size();
+  return elements_.size();
 }
 
 DMITIGR_PGFE_INLINE bool Tuple::is_empty() const noexcept
 {
-  return datas_.empty();
+  return elements_.empty();
 }
 
 DMITIGR_PGFE_INLINE std::string_view
@@ -68,7 +68,7 @@ Tuple::field_name(const std::size_t index) const
 {
   if (!(index < field_count()))
     throw Client_exception{"cannot get field name of tuple"};
-  return datas_[index].first;
+  return elements_[index].first;
 }
 
 DMITIGR_PGFE_INLINE std::size_t
@@ -78,8 +78,8 @@ Tuple::field_index(const std::string_view name,
   const std::size_t fc{field_count()};
   if (!(offset < fc))
     return fc;
-  const auto b = datas_.cbegin();
-  const auto e = datas_.cend();
+  const auto b = elements_.cbegin();
+  const auto e = elements_.cend();
   using Diff = decltype(b)::difference_type;
   const auto i = find_if(b + static_cast<Diff>(offset), e,
     [&name](const auto& pair) {return pair.first == name;});
@@ -90,7 +90,7 @@ DMITIGR_PGFE_INLINE Data_view Tuple::data(const std::size_t index) const
 {
   if (!(index < field_count()))
     throw Client_exception{"cannot get data of tuple"};
-  const auto& result = datas_[index].second;
+  const auto& result = elements_[index].second;
   return result ? Data_view{*result} : Data_view{};
 }
 
@@ -100,11 +100,11 @@ DMITIGR_PGFE_INLINE Data_view Tuple::data(const std::string_view name,
   return data(field_index(name, offset));
 }
 
-DMITIGR_PGFE_INLINE void Tuple::append(Tuple&& rhs)
+DMITIGR_PGFE_INLINE void Tuple::append(Tuple rhs)
 {
-  datas_.insert(datas_.cend(),
-    std::make_move_iterator(rhs.datas_.begin()),
-    std::make_move_iterator(rhs.datas_.end()));
+  elements_.insert(elements_.cend(),
+    std::make_move_iterator(rhs.elements_.begin()),
+    std::make_move_iterator(rhs.elements_.end()));
   assert(is_invariant_ok());
 }
 
@@ -112,9 +112,9 @@ DMITIGR_PGFE_INLINE void Tuple::remove(const std::size_t index)
 {
   if (!(index < field_count()))
     throw Client_exception{"cannot remove field from tuple"};
-  const auto b = datas_.cbegin();
+  const auto b = elements_.cbegin();
   using Diff = decltype(b)::difference_type;
-  datas_.erase(b + static_cast<Diff>(index));
+  elements_.erase(b + static_cast<Diff>(index));
   assert(is_invariant_ok());
 }
 
@@ -122,11 +122,24 @@ DMITIGR_PGFE_INLINE void Tuple::remove(const std::string_view name,
   const std::size_t offset)
 {
   if (const auto index = field_index(name, offset); index != field_count()) {
-    const auto b = datas_.cbegin();
+    const auto b = elements_.cbegin();
     using Diff = decltype(b)::difference_type;
-    datas_.erase(b + static_cast<Diff>(index));
+    elements_.erase(b + static_cast<Diff>(index));
   }
   assert(is_invariant_ok());
+}
+
+DMITIGR_PGFE_INLINE auto
+Tuple::vector() const noexcept -> const std::vector<Element>&
+{
+  return elements_;
+}
+
+DMITIGR_PGFE_INLINE auto
+Tuple::vector() noexcept -> std::vector<Element>&
+{
+  return const_cast<std::vector<Element>&>(
+    static_cast<const Tuple*>(this)->vector());
 }
 
 } // namespace dmitigr::pgfe

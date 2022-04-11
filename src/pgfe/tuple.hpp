@@ -50,7 +50,7 @@ public:
   Tuple() noexcept = default;
 
   /// The constructor.
-  DMITIGR_PGFE_API Tuple(std::vector<Element>&& datas) noexcept;
+  DMITIGR_PGFE_API Tuple(std::vector<Element>&& elements) noexcept;
 
   /// Copy-constructible.
   DMITIGR_PGFE_API Tuple(const Tuple& rhs);
@@ -113,7 +113,7 @@ public:
   {
     if (!(index < field_count()))
       throw Client_exception{"cannot set data of tuple"};
-    datas_[index].second = to_data(std::forward<T>(value));
+    elements_[index].second = to_data(std::forward<T>(value));
   }
 
   /// @overload
@@ -135,12 +135,12 @@ public:
   template<typename T>
   void append(std::string name, T&& value)
   {
-    datas_.emplace_back(std::move(name), to_data(std::forward<T>(value)));
+    elements_.emplace_back(std::move(name), to_data(std::forward<T>(value)));
     assert(is_invariant_ok());
   }
 
   /// Appends `rhs` to the end of the instance.
-  DMITIGR_PGFE_API void append(Tuple&& rhs);
+  DMITIGR_PGFE_API void append(Tuple rhs);
 
   /**
    * @brief Inserts new field to this tuple.
@@ -160,9 +160,9 @@ public:
   {
     if (!(index < field_count()))
       throw Client_exception{"cannot insert field to tuple"};
-    const auto b = datas_.begin();
+    const auto b = elements_.begin();
     using Diff = decltype(b)::difference_type;
-    datas_.insert(b + static_cast<Diff>(index),
+    elements_.insert(b + static_cast<Diff>(index),
       std::make_pair(std::move(name), to_data(std::forward<T>(value))));
     assert(is_invariant_ok());
   }
@@ -206,44 +206,14 @@ public:
    */
   DMITIGR_PGFE_API void remove(std::string_view name, std::size_t offset = 0);
 
-  /// @returns The iterator that points to the first field.
-  auto begin() noexcept
-  {
-    return datas_.begin();
-  }
+  /// @returns The underlying vector of elements.
+  DMITIGR_PGFE_API const std::vector<Element>& vector() const noexcept;
 
-  /// @returns The constant iterator that points to the first field.
-  auto begin() const noexcept
-  {
-    return datas_.begin();
-  }
-
-  /// @returns The constant iterator that points to the first field.
-  auto cbegin() const noexcept
-  {
-    return datas_.cbegin();
-  }
-
-  /// @returns The iterator that points to the one-past-the-last field.
-  auto end() noexcept
-  {
-    return datas_.end();
-  }
-
-  /// @returns The constant iterator that points to the one-past-the-last field.
-  auto end() const noexcept
-  {
-    return datas_.end();
-  }
-
-  /// @returns The constant iterator that points to the one-past-the-last field.
-  auto cend() const noexcept
-  {
-    return datas_.cend();
-  }
+  /// @overload
+  DMITIGR_PGFE_API std::vector<Element>& vector() noexcept;
 
 private:
-  std::vector<Element> datas_;
+  std::vector<Element> elements_;
 };
 
 /// Tuple is swappable.
