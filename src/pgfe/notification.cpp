@@ -14,7 +14,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "contract.hpp"
+#include "../base/assert.hpp"
 #include "data.hpp"
 #include "notification.hpp"
 
@@ -22,9 +22,10 @@
 
 namespace dmitigr::pgfe {
 
-DMITIGR_PGFE_INLINE Notification::Notification(PGnotify* const pgnotify)
-  : pgnotify_{detail::not_false(pgnotify)}
+DMITIGR_PGFE_INLINE Notification::Notification(PGnotify* const pgnotify) noexcept
+  : pgnotify_{pgnotify}
 {
+  DMITIGR_ASSERT(pgnotify_);
   assert(is_invariant_ok());
 }
 

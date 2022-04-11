@@ -46,7 +46,7 @@
 
 namespace dmitigr::pgfe {
 
-/// Convenience function to use as row handler.
+/// Convenient function to use as row handler.
 constexpr void ignore_row(Row&&) noexcept {}
 
 /**
@@ -54,7 +54,7 @@ constexpr void ignore_row(Row&&) noexcept {}
  *
  * @returns The status of a PostgreSQL server.
  *
- * @throws An instance of class Client_exception if there is some client problem.
+ * @throws Client_exception on error.
  */
 DMITIGR_PGFE_API Server_status ping(const Connection_options& options);
 
@@ -165,7 +165,7 @@ public:
    * @brief Establishing the connection to a PostgreSQL server without blocking
    * on I/O.
    *
-   * This function should be called repeatedly. Until status() becomes
+   * @details This function should be called repeatedly. Until status() becomes
    * `Status::connected` or `Status::failure` loop thus: if status() returned
    * `Status::establishment_reading`, wait until the socket is ready to read,
    * then call connect_nio() again; if status() returned
@@ -249,8 +249,8 @@ public:
   /**
    * @brief If input is available from the server, read it.
    *
-   * This function should be called every time when the value returned by
-   * handle_input() is Response_status::unready and the socket is in
+   * @details This function should be called every time when the value returned
+   * by handle_input() is Response_status::unready and the socket is in
    * read-ready state.
    *
    * @par Exception safety guarantee
@@ -263,7 +263,8 @@ public:
   /**
    * @brief Attempts to handle the input from the server.
    *
-   * For every parsed notice or notification calls the corresponding handler.
+   * @details For every parsed notice or notification calls the corresponding
+   * handler.
    *
    * @returns The response status.
    *
@@ -287,7 +288,7 @@ public:
    * @brief Sets nonblocking output mode on connection.
    *
    * @details When this mode is enabled the calling thread will not block
-   * waiting to send output to the server.
+   * while waiting for the output to be sent to the server.
    *
    * @par Requires
    * `is_connected()`.
@@ -340,8 +341,8 @@ public:
   /**
    * @brief Sets the handler for notices.
    *
-   * By default, the notice handler just prints notices to the standard error
-   * and never throws.
+   * @details By default, the notice handler just prints notices to the standard
+   * error and never throws.
    *
    * @param handler A handler to set.
    *
@@ -361,9 +362,9 @@ public:
   /**
    * @brief Sets the handler for notifications.
    *
-   * By default, a notification handler isn't set.
-   *
    * @param handler A handler to set.
+   *
+   * @remarks By default, a notification handler isn't set.
    *
    * @par Exception safety guarantee
    * Strong.
@@ -396,8 +397,8 @@ public:
    * @par Requires
    * `(!timeout || timeout->count() >= -1)`.
    *
-   * @throws An instance of type Timed_out if the expression `has_response()`
-   * will not evaluates to `true` within the specified `timeout`.
+   * @throws Client_exception with code Client_errc::timed_out if the expression
+   * `has_response()` will not evaluates to `true` within the specified `timeout`.
    *
    * @par Exception safety guarantee
    * Basic.
@@ -424,11 +425,11 @@ public:
   /**
    * @brief An alias of error handler.
    *
-   * Being set, this handler is called when the server responded with an error.
-   * If calling of this handler doesn't throw an exception and returns `false`
-   * the instance of type Server_exception will be thrown eventually. If this
-   * handler returns `true` then the error is considered handled and no further
-   * action is taken.
+   * @details Being set, this handler is called when the server responded with
+   * an error. If calling of this handler doesn't throw an exception and returns
+   * `false` the instance of type Server_exception will be thrown eventually. If
+   * this handler returns `true` then the error is considered handled and no
+   * further action is taken.
    */
   using Error_handler = std::function<bool(std::shared_ptr<Error>)>;
 
@@ -496,13 +497,13 @@ public:
    *
    * @param callback A function to be called for each retrieved row. The callback:
    *   -# can be defined with a parameter of type `Row&&`. An exception will be
-   *   thrown on error in this case.
-   *   -# can be defined with two parameters of type `Row&&` and `Error&&`.
+   *   thrown on error in this case;
+   *   -# can be defined with two parameters of type `Row&&` and `Error&&`;
    *   In case of error an instance of type Error will be passed as the second
    *   argument of the callback instead of throwing exception and method will
    *   return an invalid instance of type Completion after the callback returns.
    *   In case of success, an invalid instance of type Error will be passed as the
-   *   second argument of the callback.
+   *   second argument of the callback;
    *   -# can return a value of type Row_processing to indicate further behavior.
    *
    * @see execute(), invoke(), call(), Row_processing.
@@ -594,14 +595,12 @@ public:
   }
 
   /**
-   * @returns The pointer to a last prepared statement if the last operation was
-   * prepare.
+   * @returns The prepared statement in response on descibe or prepare request.
    *
-   * @remarks The object pointed by the returned value is owned by this instance.
-   * @remarks The statements prepared by using the SQL command `PREPARE` must be
-   * described first in order to be accessible by this method.
+   * @remarks The statements prepared by using the SQL command `PREPARE` must
+   * be described first in order to be accessible by this method.
    *
-   * @see prepare_nio(), describe_nio().
+   * @see describe(), prepare_nio().
    */
   DMITIGR_PGFE_API Prepared_statement prepared_statement() noexcept;
 
@@ -625,7 +624,7 @@ public:
   /// @name Requests
   /// @{
 
-  /// @returns `true` if `COPY` command in progress.
+  /// @returns `true` if `COPY` operation in progress.
   DMITIGR_PGFE_API bool is_copy_in_progress() const noexcept;
 
   /**
@@ -646,7 +645,11 @@ public:
    */
   DMITIGR_PGFE_API std::size_t request_queue_size() const noexcept;
 
-  /// @returns `true` if there is uncompleted request.
+  /**
+   * @returns `true` if there is uncompleted request.
+   *
+   * @see request_queue_size().
+   */
   DMITIGR_PGFE_API bool has_uncompleted_request() const noexcept;
 
   /**
@@ -660,18 +663,18 @@ public:
   /**
    * @brief Submits a request to a server to prepare the statement.
    *
-   * @par Responses
-   * Prepared_statement
-   *
    * @param statement A preparsed SQL string.
    * @param name A name of statement to be prepared.
+   *
+   * @par Responses
+   * Prepared_statement
    *
    * @par Effects
    * - `has_uncompleted_request()` - just after the successful request submission;
    * - `prepared_statement()` - just after the successful response.
    *
    * @par Requires
-   * `(is_ready_for_nio_request() && !statement.has_missing_parameters())`.
+   * `is_ready_for_nio_request() && !statement.has_missing_parameters()`.
    *
    * @par Exception safety guarantee
    * Strong.
@@ -699,7 +702,7 @@ public:
    * @returns The prepared statement.
    *
    * @par Requires
-   * `(is_ready_for_request() && !statement.has_missing_parameters())`.
+   * `is_ready_for_request() && !statement.has_missing_parameters()`.
    *
    * @par Exception safety guarantee
    * Basic.
@@ -718,10 +721,10 @@ public:
   /**
    * @brief Requests the server to describe the prepared statement.
    *
+   * @param name A name of prepared statement.
+   *
    * @par Responses
    * Prepared_statement
-   *
-   * @param name A name of prepared statement.
    *
    * @par Effects
    * - `has_uncompleted_request()` - just after the successful request submission;
@@ -753,10 +756,10 @@ public:
   /**
    * @brief Requests the server to deallocate the prepared statement.
    *
+   * @param name A name of prepared statement.
+   *
    * @par Responses
    * Completion
-   *
-   * @param name A name of prepared statement.
    *
    * @par Effects
    * - `has_uncompleted_request()` - just after the successful request;
@@ -767,8 +770,6 @@ public:
    *
    * @par Exception safety guarantee
    * Strong.
-   *
-   * @remarks The named prepared statements only can be deallocated currently.
    *
    * @see unprepare().
    */
@@ -814,17 +815,17 @@ public:
    * @brief Requests the server to prepare and execute the unnamed statement
    * from the preparsed SQL string, and waits for a response.
    *
+   * @param callback Same as for process_responses().
+   * @param statement A *preparsed* statement to execute.
+   * @param parameters Parameters to bind with a parameterized statement.
+   *
    * @returns The released instance.
    *
    * @par Responses
    * Similar to Prepared_statement::execute().
    *
-   * @param callback Same as for process_responses().
-   * @param statement A *preparsed* statement to execute.
-   * @param parameters Parameters to bind with a parameterized statement.
-   *
    * @par Requires
-   * `(is_ready_for_request() && !statement.has_missing_parameters())`.
+   * `is_ready_for_request() && !statement.has_missing_parameters()`.
    *
    * @par Exception safety guarantee
    * Basic.
@@ -856,14 +857,12 @@ public:
    * @brief Requests the server to invoke the specified function and waits for
    * a response.
    *
-   * If `function` returns table with multiple columns or has multiple output
-   * parameters they are can be accessed as usual by using Row::data().
+   * @details If `function` returns table with multiple columns or has multiple
+   * output parameters they are can be accessed as usual by using Row::data().
+   * If `function` have named parameters it can be called using either positional,
+   * named or mixed notation. When using positional notation all arguments
+   * specified traditionally in order, for example:
    *
-   * If `function` have named parameters it can be called using either
-   * positional, named or mixed notation.
-   *
-   * When using positional notation all arguments specified traditionally in
-   * order, for example:
    * @code
    * conn.invoke("generate_series", 1, 3);
    * @endcode
@@ -897,7 +896,7 @@ public:
    * @param arguments Function arguments.
    *
    * @par Requires
-   * `(is_ready_for_request() && !function.empty())`.
+   * `is_ready_for_request() && !function.empty()`.
    *
    * @par Exception safety guarantee
    * Basic.
@@ -930,9 +929,12 @@ public:
   }
 
   /**
-   * @brief Similar to invoke() but even if `function` returns table with
-   * multiple columns or has multiple output parameters the result row is
-   * always consists of exactly one field.
+   * @brief Requests the server to invoke the specified function and waits for
+   * a response.
+   *
+   * @details This method is similar to invoke() but even if `function` returns
+   * table with multiple columns or has multiple output parameters the result
+   * row is always consists of exactly one field.
    *
    * @returns The Completion instance.
    *
@@ -967,7 +969,8 @@ public:
    * @brief Requests the server to invoke the specified procedure and waits for
    * a response.
    *
-   * This method is similar to invoke(), but for procedures rather than functions.
+   * @details This method is similar to invoke(), but for procedures rather than
+   * functions.
    *
    * @returns The Completion instance.
    *
@@ -1044,7 +1047,7 @@ public:
    *
    * @remarks At present, this method is only useful to flush the server's
    * point in a pipeline and to cause the server to flush its output buffer
-   * without establishing a synchronization point (as with send_sync().)
+   * without establishing a synchronization point (as with send_sync()).
    *
    * @see send_sync(), set_pipeline_enabled().
    */
@@ -1277,8 +1280,8 @@ private:
 
   std::optional<std::chrono::system_clock::time_point> session_start_time_;
 
-  detail::pq::Result response_; // allowed to not match to response_status_
-  Response_status response_status_{}; // status last assigned by handle_input()
+  detail::pq::Result response_; // synchronized with response_status_ ...
+  Response_status response_status_{}; // ... by handle_input()
   Prepared_statement last_prepared_statement_;
   bool is_output_flushed_{true};
   std::shared_ptr<Connection*> copier_state_;
@@ -1311,17 +1314,22 @@ private:
   template<class C>
   void unregister(C& states, typename C::const_iterator p) const noexcept
   {
-    DMITIGR_ASSERT(p != end(states));
-    DMITIGR_ASSERT((*p)->connection_ == this);
-    (*p)->connection_ = nullptr; // invalidate instance(-s)
-    states.erase(p);             // remove the copy of state
+    /*
+     * `p == end(states)` on attempt to unregister the statement prepared with
+     * SQL PREPARE but deallocated with unprepare().
+     */
+    if (p != end(states)) {
+      DMITIGR_ASSERT((*p)->connection_ == this);
+      (*p)->connection_ = nullptr; // invalidate instance(-s)
+      states.erase(p);             // remove the copy of state
+    }
   }
 
   detail::pq::Result release_response() noexcept;
   void reset_response(detail::pq::Result&& response) noexcept;
   void reset_session() noexcept;
   void reset_copier_state() noexcept;
-  void set_single_row_mode_enabled();
+  void set_single_row_mode_enabled() noexcept;
 
   // ---------------------------------------------------------------------------
   // Handlers

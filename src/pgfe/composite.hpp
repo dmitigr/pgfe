@@ -69,7 +69,7 @@ private:
 
   using Compositional::is_invariant_ok;
 
-  Composite() = default;
+  Composite() noexcept = default;
 };
 
 /**

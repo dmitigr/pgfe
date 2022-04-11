@@ -29,8 +29,8 @@ namespace dmitigr::pgfe {
  * @brief An unprompted (asynchronous) information about an activity
  * from a PostgreSQL server.
  *
- * In particular, notice might represents the information about the database
- * administrator's commands.
+ * @details In particular, notice might represents the information about the
+ * database administrator's commands.
  *
  * @remarks It should not be confused with the Notification signal.
  */
@@ -40,7 +40,7 @@ public:
   DMITIGR_PGFE_API ~Notice() noexcept override;
 
   /// Default-constructible. (Constructs invalid instance.)
-  DMITIGR_PGFE_API Notice() = default;
+  DMITIGR_PGFE_API Notice() noexcept = default;
 
   /// The constructor.
   explicit DMITIGR_PGFE_API Notice(const PGresult* const result) noexcept;

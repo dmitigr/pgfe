@@ -381,19 +381,19 @@ public:
     return PQftype(native_handle(), position);
   }
 
-  /// @returns -1 to denote *no information available*.
+  /// @returns `-1` to denote *no information available*.
   int field_type_modifier(const int position) const noexcept
   {
     return PQfmod(native_handle(), position);
   }
 
-  /// @returns -1 to denote *variable-size*.
+  /// @returns `-1` to denote *variable-size*.
   int field_type_size(const int position) const noexcept
   {
     return PQfsize(native_handle(), position);
   }
 
-  /// @returns `true` if the field is null.
+  /// @returns `true` if the value of field is SQL NULL.
   bool is_data_null(const int row_number, const int field_number) const noexcept
   {
     return PQgetisnull(native_handle(), row_number, field_number);
@@ -407,9 +407,10 @@ public:
 
   /**
    * @returns The data value of the specified field. An empty string is returned
-   * if the field value is null.
+   * if the field value is SQL NULL.
    *
-   * @remarks To distinguish null values from empty-string values use is_data_null().
+   * @remarks To distinguish SQL NULL values from empty-string values use
+   * is_data_null().
    *
    * @see is_data_null().
    */

@@ -86,7 +86,7 @@ public:
    * @param index See Compositional.
    *
    * @par Requires
-   * `(index < field_count())`.
+   * `index < field_count()`.
    */
   DMITIGR_PGFE_API Data_view data(std::size_t index) const override;
 
@@ -106,7 +106,7 @@ public:
    * @brief Overwrites the field of this tuple with the value of type T.
    *
    * @par Requires
-   * `(index < field_count())`.
+   * `index < field_count()`.
    */
   template<typename T>
   void set(const std::size_t index, T&& value)
@@ -153,7 +153,7 @@ public:
    * Strong.
    *
    * @par Requires
-   * `(index < field_count())`.
+   * `index < field_count()`.
    */
   template<typename T>
   void insert(const std::size_t index, std::string name, T&& value)
@@ -188,7 +188,7 @@ public:
    * @brief Removes field from this tuple.
    *
    * @par Requires
-   * `(index < field_count())`.
+   * `index < field_count()`.
    *
    * @par Exception safety guarantee
    * Strong.

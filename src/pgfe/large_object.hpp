@@ -32,16 +32,15 @@ namespace pgfe {
  *
  * @brief An open mode of large object.
  *
- * @remarks It's possible to read large object in either `writing` and
+ * @details It's possible to read large object in either `writing` and
  * `reading | writing` modes, but in `reading` mode it's not possible to write
- * large object.
- * Reading the large object opened with `reading` will reflect the contents at
- * the time of the transaction snapshot that was actual upon opening the large
- * object, regardless of later writes by this or other transactions. (This is
- * similar to `REPEATABLE READ` transaction mode.)
- * Reading the large object opened with `writing` will reflect all writes of
- * other committed transactions as well as writes of the current transaction.
- * (This is similar to `READ COMMITTED` transaction mode.)
+ * large object. Reading the large object opened with `reading` will reflect the
+ * contents at the time of the transaction snapshot that was actual upon opening
+ * the large object, regardless of later writes by this or other transactions.
+ * (This is similar to `REPEATABLE READ` transaction mode.) Reading the large
+ * object opened with `writing` will reflect all writes of other committed
+ * transactions as well as writes of the current transaction. (This is similar
+ * to `READ COMMITTED` transaction mode.)
  */
 enum class Large_object_open_mode {
   /// Large object is closed.
@@ -111,7 +110,7 @@ public:
   DMITIGR_PGFE_API ~Large_object() noexcept;
 
   /// Constructs invalid instance.
-  Large_object() = default;
+  Large_object() noexcept = default;
 
   /// Not copy-constructible.
   Large_object(const Large_object&) = delete;
@@ -212,7 +211,7 @@ public:
    * @throw Client_exception on error.
    *
    * @par Requires
-   * `(buf && size <= std::numeric_limits<int>::max())`.
+   * `buf && (size <= std::numeric_limits<int>::max())`.
    *
    * @remarks The behavior is undefined if the actual size of `buf` is less
    * than `size`.
@@ -228,7 +227,7 @@ public:
    * @throw Client_exception on error.
    *
    * @par Requires
-   * `(buf && size <= std::numeric_limits<int>::max())`.
+   * `buf && (size <= std::numeric_limits<int>::max())`.
    *
    * @remarks The behavior is undefined if the actual size of `buf` is less
    * than `size`.

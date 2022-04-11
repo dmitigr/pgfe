@@ -56,14 +56,14 @@ DMITIGR_PGFE_INLINE Data_view Named_argument::data() const noexcept
   return data_ ? Data_view{*data_} : Data_view{};
 }
 
-DMITIGR_PGFE_INLINE bool Named_argument::is_data_owner() const noexcept
+DMITIGR_PGFE_INLINE bool Named_argument::owns_data() const noexcept
 {
   return data_.get_deleter().condition();
 }
 
 DMITIGR_PGFE_INLINE std::unique_ptr<Data> Named_argument::release() noexcept
 {
-  if (!is_data_owner()) {
+  if (!owns_data()) {
     data_.reset();
     return nullptr;
   } else
@@ -368,14 +368,15 @@ DMITIGR_PGFE_INLINE Prepared_statement::Prepared_statement(
 }
 
 DMITIGR_PGFE_INLINE Prepared_statement::Prepared_statement(
-  std::shared_ptr<Prepared_statement::State> state)
+  std::shared_ptr<Prepared_statement::State> state) noexcept
 {
   init_connection__(std::move(state));
   assert(is_invariant_ok());
 }
 
 DMITIGR_PGFE_INLINE void
-Prepared_statement::init_connection__(std::shared_ptr<Prepared_statement::State> state)
+Prepared_statement::init_connection__(
+  std::shared_ptr<Prepared_statement::State> state) noexcept
 {
   state_ = std::move(state);
   DMITIGR_ASSERT(state_);
@@ -426,7 +427,7 @@ DMITIGR_PGFE_INLINE Prepared_statement&
 Prepared_statement::Prepared_statement::bind__(const std::size_t,
   Named_argument&& na)
 {
-  if (na.is_data_owner())
+  if (na.owns_data())
     return bind(na.name(), na.release());
   else
     return bind(na.name(), na.data());
@@ -436,7 +437,7 @@ DMITIGR_PGFE_INLINE Prepared_statement&
 Prepared_statement::Prepared_statement::bind__(const std::size_t,
   const Named_argument& na)
 {
-  if (na.is_data_owner())
+  if (na.owns_data())
     return bind(na.name(), na.data().to_data());
   else
     return bind(na.name(), na.data());

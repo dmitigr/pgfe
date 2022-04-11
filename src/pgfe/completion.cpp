@@ -24,7 +24,7 @@
 
 namespace dmitigr::pgfe {
 
-DMITIGR_PGFE_INLINE Completion::Completion()
+DMITIGR_PGFE_INLINE Completion::Completion() noexcept
 {
   DMITIGR_ASSERT(!is_valid());
 }

@@ -45,7 +45,7 @@ public:
     /**
      * @brief The destructor.
      *
-     * @detail Calls release() if `pool()`.
+     * @detail Calls release().
      */
     DMITIGR_PGFE_API ~Handle() noexcept;
 
@@ -98,7 +98,7 @@ public:
     /// @overload
     DMITIGR_PGFE_API Connection_pool* pool() noexcept;
 
-    /// @see Connection_pool::release().
+    /// Calls pool()->release(*this) if `pool()`.
     DMITIGR_PGFE_API void release() noexcept;
 
   private:
@@ -161,7 +161,7 @@ public:
    * @brief Sets the handler which will be called just after connecting to the
    * PostgreSQL server.
    *
-   * @details For example, it could be used to execute a query like
+   * @remarks For example, it could be used to execute a query like
    * `SET application_name to 'foo'`.
    *
    * @see connect_handler().
@@ -177,10 +177,10 @@ public:
   connect_handler() const noexcept;
 
   /**
-   * @brief Sets the handler which will be called just after returning a connection
-   * to the pool.
+   * @brief Sets the handler which will be called just after returning a
+   * connection to the pool.
    *
-   * By default, it executes the `DISCARD ALL` statement.
+   * @remarks By default, it executes the `DISCARD ALL` statement.
    *
    * @see release_handler().
    */
@@ -195,12 +195,12 @@ public:
    * @brief Opens the connections to the server.
    *
    * @par Effects
-   * `(is_connected() == is_valid())` on success.
+   * `is_connected() == is_valid()` on success.
    */
   DMITIGR_PGFE_API void connect();
 
   /**
-   * Closes the connections to the server.
+   * @brief Closes the connections to the server.
    *
    * @remarks Connections which are busy will not be affected by calling this
    * method.

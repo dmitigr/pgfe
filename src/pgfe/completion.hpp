@@ -33,7 +33,7 @@ namespace dmitigr::pgfe {
 class Completion final : public Response {
 public:
   /// Default-constructible. (Constructs an invalid instance.)
-  DMITIGR_PGFE_API Completion();
+  DMITIGR_PGFE_API Completion() noexcept;
 
   /// Not copy-constructible.
   Completion(const Completion&) = delete;
@@ -82,7 +82,7 @@ private:
   std::string operation_name_;
 
   /**
-   * The constructor.
+   * @brief The constructor.
    *
    * @par Requires
    * `tag.data()`.

@@ -87,7 +87,7 @@ public:
    * @param index See Compositional.
    *
    * @par Requires
-   * `(index < size())`.
+   * `index < size()`.
    */
   DMITIGR_PGFE_API std::uint_fast32_t table_oid(std::size_t index) const;
 
@@ -112,7 +112,7 @@ public:
    * @param index See Compositional.
    *
    * @par Requires
-   * `(index < size())`.
+   * `index < size()`.
    *
    * @remarks System columns, such as "oid", have arbitrary negative numbers.
    */
@@ -138,7 +138,7 @@ public:
    * @param index See Compositional.
    *
    * @par Requires
-   * `(index < size())`.
+   * `index < size()`.
    */
   DMITIGR_PGFE_API std::uint_fast32_t type_oid(std::size_t index) const;
 
@@ -157,15 +157,16 @@ public:
   type_oid(const std::string_view name, std::size_t offset = 0) const;
 
   /**
-   * @returns
-   *   - the number of bytes in the internal representation of the field's data type;
-   *   - -1 to indicate "varlena" type;
-   *   - -2 to indicate null-terminated C string.
+   * @returns Either of
+   *   -# the number of bytes in the internal representation of the field's
+   *   data type;
+   *   -# `-1` to indicate "varlena" type;
+   *   -# `-2` to indicate zero-terminated C string.
    *
    * @param index See Compositional.
    *
    * @par Requires
-   * `(index < size())`.
+   * `index < size()`.
    */
   DMITIGR_PGFE_API std::int_fast32_t type_size(std::size_t index) const;
 
@@ -182,14 +183,14 @@ public:
   type_size(const std::string_view name, std::size_t offset = 0) const;
 
   /**
-   * @returns
-   *   - the type modifier of the field's data;
-   *   - -1 to indicate "no information available".
+   * @returns Either of
+   *   -# the type modifier of the field's data;
+   *   -# `-1` to indicate "no information available".
    *
    * @param index See Compositional.
    *
    * @par Requires
-   * `(index < size())`.
+   * `index < size()`.
    */
   DMITIGR_PGFE_API std::int_fast32_t type_modifier(std::size_t index) const;
 
@@ -211,7 +212,7 @@ public:
    * @param index See Compositional.
    *
    * @par Requires
-   * `(index < size())`.
+   * `index < size()`.
    */
   DMITIGR_PGFE_API Data_format data_format(std::size_t index) const;
 

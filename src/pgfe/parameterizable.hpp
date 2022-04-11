@@ -79,7 +79,7 @@ private:
   friend Prepared_statement;
   friend Statement;
 
-  Parameterizable() = default;
+  Parameterizable() noexcept = default;
 
   virtual bool is_invariant_ok() const noexcept;
 };

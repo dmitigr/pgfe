@@ -32,7 +32,7 @@ namespace dmitigr::pgfe {
 class Compositional {
 public:
   /// The destructor.
-  virtual ~Compositional() = default;
+  virtual ~Compositional() noexcept = default;
 
   /// @returns The number of fields.
   virtual std::size_t field_count() const noexcept = 0;
@@ -60,9 +60,9 @@ private:
   friend Composite;
   friend Row_info;
 
-  Compositional() = default;
+  Compositional() noexcept = default;
 
-  virtual bool is_invariant_ok() const;
+  virtual bool is_invariant_ok() const noexcept;
 };
 
 } // namespace dmitigr::pgfe

@@ -42,7 +42,6 @@ struct is_error_condition_enum<dmitigr::pgfe::Server_errc> final : true_type {};
 
 } // namespace std
 
-
 namespace dmitigr::pgfe {
 
 /**

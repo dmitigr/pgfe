@@ -18,7 +18,7 @@
 
 namespace dmitigr::pgfe {
 
-DMITIGR_PGFE_INLINE bool Compositional::is_invariant_ok() const
+DMITIGR_PGFE_INLINE bool Compositional::is_invariant_ok() const noexcept
 {
   const bool fields_ok = is_empty() || field_count() > 0;
   const bool field_names_ok = [this]

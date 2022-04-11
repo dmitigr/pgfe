@@ -80,7 +80,7 @@ DMITIGR_PGFE_INLINE Data_view Row::data(const std::string_view name,
   return data(field_index(name, offset));
 }
 
-DMITIGR_PGFE_INLINE bool Row::is_invariant_ok() const
+DMITIGR_PGFE_INLINE bool Row::is_invariant_ok() const noexcept
 {
   const bool info_ok = info_.pq_result_.status() == PGRES_SINGLE_TUPLE;
   return info_ok && Composite::is_invariant_ok();

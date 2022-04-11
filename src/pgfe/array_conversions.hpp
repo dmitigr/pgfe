@@ -840,8 +840,7 @@ struct Conversions<Container<Optional<T>, Allocator<Optional<T>>>> final
       detail::Array_string_conversions_opts<Container<Optional<T>,
                                               Allocator<Optional<T>>>>,
       detail::Array_data_conversions_opts<Container<Optional<T>,
-                                            Allocator<Optional<T>>>>>
-{};
+                                            Allocator<Optional<T>>>>> {};
 
 /**
  * @ingroup conversions
@@ -873,8 +872,7 @@ template<typename T,
 struct Conversions<Container<T, Allocator<T>>>
   : Basic_conversions<Container<T, Allocator<T>>,
       detail::Array_string_conversions_vals<Container<T, Allocator<T>>>,
-      detail::Array_data_conversions_vals<Container<T, Allocator<T>>>>
-{};
+      detail::Array_data_conversions_vals<Container<T, Allocator<T>>>> {};
 
 /**
  * @brief The partial specialization of Conversions for non-nullable arrays.

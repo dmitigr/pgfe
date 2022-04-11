@@ -93,7 +93,8 @@ public:
   DMITIGR_PGFE_API std::size_t statement_index(
     std::string_view extra_name,
     std::string_view extra_value,
-    std::size_t offset = 0, std::size_t extra_offset = 0) const noexcept;
+    std::size_t offset = 0,
+    std::size_t extra_offset = 0) const noexcept;
 
   /**
    * @returns The statement that owns by this vector.
@@ -101,7 +102,7 @@ public:
    * @param index An index of statement to return.
    *
    * @par Requires
-   * `(index < size())`.
+   * `index < size()`.
    */
   DMITIGR_PGFE_API const Statement& operator[](std::size_t index) const;
 
@@ -115,7 +116,7 @@ public:
    * @param conn A server connection.
    *
    * @par Requires
-   * `(index < statement_count() && conn.is_connected())`.
+   * `(index < statement_count()) && conn.is_connected()`.
    */
   DMITIGR_PGFE_API std::string::size_type
   query_absolute_position(std::size_t index, const Connection& conn) const;

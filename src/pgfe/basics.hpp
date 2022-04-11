@@ -22,7 +22,6 @@
 #include <string_view>
 
 namespace dmitigr {
-
 namespace pgfe {
 
 /// An alias for Oid.

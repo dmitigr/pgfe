@@ -77,12 +77,12 @@ public:
   DMITIGR_PGFE_API const Row_info& info() const noexcept;
 
   /**
-   * @returns The field data of this row, or invalid instance if NULL.
+   * @returns The field data of this row, or invalid instance if SQL NULL.
    *
    * @param index See Compositional.
    *
    * @par Requires
-   * `(index < field_count())`.
+   * `index < field_count()`.
    */
   DMITIGR_PGFE_API Data_view data(const std::size_t index = 0) const override;
 
@@ -234,7 +234,7 @@ public:
 private:
   Row_info info_; // has pq_result_
 
-  bool is_invariant_ok() const override;
+  bool is_invariant_ok() const noexcept override;
 };
 
 /// Row is swappable.

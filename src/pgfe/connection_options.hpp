@@ -35,8 +35,8 @@ namespace dmitigr::pgfe {
  *
  * @details Options specific to either UDS or network has no effect if the
  * communication mode isn't set correspondingly. SSL options has no effect
- * if `!is_ssl_enabled() || !*is_ssl_enabled`. Keepalives options has no effect
- * if `!is_tcp_keepalives_enabled() || !*is_tcp_keepalives_enabled()`.
+ * if `!is_ssl_enabled() || !*is_ssl_enabled`. Keepalives options has no
+ * effect if `!is_tcp_keepalives_enabled() || !*is_tcp_keepalives_enabled()`.
  *
  * @par Exception safety guarantee
  * Strong.
@@ -46,7 +46,7 @@ namespace dmitigr::pgfe {
 class Connection_options final {
 public:
   /// Constructs empty connection options.
-  Connection_options() = default;
+  Connection_options() noexcept = default;
 
   /// Swaps this instance with `rhs`.
   DMITIGR_PGFE_API void swap(Connection_options& rhs) noexcept;
@@ -290,8 +290,8 @@ public:
    *
    * @remarks When using SSL or some authentication methods (such as Kerberos)
    * the option `hostname` is mandatory even if using this option. If both
-   * `address` and `hostname` are set, the value of `address` is
-   * preferred as the PostgreSQL server address to connect.
+   * `address` and `hostname` are set, the value of `address` is preferred as
+   * the PostgreSQL server address to connect.
    *
    * @see hostname().
    */
@@ -316,10 +316,9 @@ public:
    * @par Requires
    * `!value` or `*value` must be a valid hostname.
    *
-   * @remarks If the option `address` is set, hostname lookup will not
-   * occurs even if this option is also set. However, the value of this option
-   * might be required for some authentication methods or SSL certificate
-   * verification.
+   * @remarks If the option `address` is set, hostname lookup will not occurs
+   * even if this option is also set. However, the value of this option might be
+   * required for some authentication methods or SSL certificate verification.
    *
    * @see address().
    */
@@ -558,7 +557,8 @@ public:
    * authority (CA).
    *
    * @details If this option is set, a verification that the PostgreSQL server
-   * certificate is issued by a trusted certificate authority (CA) will be performed.
+   * certificate is issued by a trusted certificate authority (CA) will be
+   * performed.
    *
    * @par Requires
    * `!value || !value->empty()`.

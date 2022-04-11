@@ -49,7 +49,7 @@ public:
    * @brief Constructs the named argument bound to SQL NULL.
    *
    * @par Effects
-   * `!is_data_owner()`.
+   * `!owns_data()`.
    */
   explicit DMITIGR_PGFE_API Named_argument(std::string name) noexcept;
 
@@ -57,7 +57,7 @@ public:
    * @brief Constructs the named argument bound to `data`.
    *
    * @par Effects
-   * `!is_data_owner()`.
+   * `!owns_data()`.
    *
    * @remarks No deep copy of `data` performed.
    */
@@ -67,7 +67,7 @@ public:
    * @brief Constructs the named argument bound to `data`.
    *
    * @par Effects
-   * `is_data_owner()`.
+   * `owns_data()`.
    */
   DMITIGR_PGFE_API Named_argument(std::string name,
     std::unique_ptr<Data>&& data) noexcept;
@@ -88,8 +88,8 @@ public:
   /// @returns The bound data.
   DMITIGR_PGFE_API Data_view data() const noexcept;
 
-  /// @returns `true` if the bound data is owned by this instance.
-  DMITIGR_PGFE_API bool is_data_owner() const noexcept;
+  /// @returns `true` if this instance owns the `data()`.
+  DMITIGR_PGFE_API bool owns_data() const noexcept;
 
   /**
    * @brief Releases the ownership of the bound data.
@@ -121,29 +121,25 @@ using a = Named_argument;
  *
  * @brief A client-side pointer to a remote prepared statement.
  *
- * Each prepared statement has its name. There is a special prepared statement
- * with empty name - so called *unnamed prepared statement*. Although unnamed
- * prepared statements behave largely the same as named prepared statements,
- * operations on them are optimized for a single cycle of use and deallocation,
- * whereas operations on named prepared statements are optimized for multiple
- * use.
+ * @details Each prepared statement has its name. There is a special prepared
+ * statement with empty name - so called *unnamed prepared statement*. Although
+ * unnamed prepared statements behave largely the same as named prepared
+ * statements, operations on them are optimized for a single cycle of use and
+ * deallocation, whereas operations on named prepared statements are optimized
+ * for multiple use.
  *
- * Prepared statements can be allocated by using:
+ * Statements can be prepared by using:
  *   -# a method of Connection;
  *   -# a <a href="https://www.postgresql.org/docs/current/static/sql-prepare.html">PREPARE</a> SQL command.
  *
- * In the first case the prepared statement **must** be deallocated via
- * Connection::unprepare() or Connection::unprepare_nio().
- * The behaviour is undefined if such a prepared statement is deallocated by using
- * <a href="https://www.postgresql.org/docs/current/static/sql-deallocate.html">DEALLOCATE</a>
- * SQL command.
- *
- * In the second case the prepared statement **can** be deallocated via
- * <a href="https://www.postgresql.org/docs/current/static/sql-deallocate.html">DEALLOCATE</a>
- * SQL command.
+ * In the first case the prepared statement **should** be unprepared via
+ * Connection::unprepare() or Connection::unprepare_nio(). The behaviour is
+ * undefined if such a prepared statement is deallocated via
+ * <a href="https://www.postgresql.org/docs/current/static/sql-deallocate.html">DEALLOCATE</a> SQL command.
+ * In the second case the prepared statement **can** be deallocated via DEALLOCATE
+ * SQL command!
  *
  * There are some special cases of the prepared statement deallocations:
- *
  *   - all prepared statements are deallocated automatically at the end of a session;
  *   - unnamed prepared statements are dellocated automatically whenever the
  *     query for performing or statement for preparing is submitted to the server.
@@ -447,7 +443,7 @@ public:
    * if `!is_described()`.
    *
    * @par Requires
-   * `(index < parameter_count())`.
+   * `index < parameter_count()`.
    */
   DMITIGR_PGFE_API std::uint_fast32_t parameter_type_oid(std::size_t index) const;
 
@@ -455,7 +451,7 @@ public:
    * @overload
    *
    * @par Requries
-   * `(parameter_index(name) < parameter_count())`.
+   * `parameter_index(name) < parameter_count()`.
    *
    * @see bound().
    */
@@ -508,9 +504,9 @@ private:
     const Statement* preparsed, const bool is_registered);
 
   /// Constructs when describing.
-  explicit Prepared_statement(std::shared_ptr<Prepared_statement::State> state);
+  explicit Prepared_statement(std::shared_ptr<Prepared_statement::State> state) noexcept;
 
-  void init_connection__(std::shared_ptr<Prepared_statement::State> state);
+  void init_connection__(std::shared_ptr<Prepared_statement::State> state) noexcept;
   bool is_invariant_ok() const noexcept override;
   [[noreturn]] void throw_exception(std::string msg) const;
 

@@ -145,11 +145,11 @@ protected:
 };
 
 /**
- * @returns
- *   - negative value if the first differing byte in `lhs` is less than the
+ * @returns Either of
+ *   -# negative value if the first differing byte in `lhs` is less than the
  *   corresponding byte in `rhs`;
- *   - zero if all bytes of `lhs` and `rhs` are equal;
- *   - positive value if the first differing byte in `lhs` is greater than the
+ *   -# zero if all bytes of `lhs` and `rhs` are equal;
+ *   -# positive value if the first differing byte in `lhs` is greater than the
  *   corresponding byte in `rhs`.
  */
 DMITIGR_PGFE_API int cmp(const Data& lhs, const Data& rhs) noexcept;

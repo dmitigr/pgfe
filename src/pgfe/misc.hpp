@@ -27,12 +27,14 @@ namespace dmitigr::pgfe {
 /**
  * @ingroup main
  *
- * @brief Sets the obligation of the initialization of the external libraries
- * when needed.
+ * @brief Controls the initialization of the external libraries.
  *
- * @remarks This function must be called with the value of
- * `(library & External_library::libssl) == false` if the OpenSSL library is
- * initialized yet before first connection to a PostgreSQL server.
+ * @details If the application uses and initializes the library represented by
+ * External_library, this function must be called with zeroes for the appropriate
+ * libraries *before* first establishing a database Connection. For example, if
+ * the OpenSSL library is initialized by the application then this function must
+ * be called with the value of `library` for which the expression
+ * `(library & External_library::libssl) == 0` evaluates to `true`.
  */
 DMITIGR_PGFE_API void set_initialization(External_library library);
 
@@ -40,6 +42,8 @@ DMITIGR_PGFE_API void set_initialization(External_library library);
 DMITIGR_PGFE_API std::string unquote_identifier(std::string_view identifier);
 
 /**
+ * @ingroup main
+ *
  * @brief PostgreSQL array dimension determiner.
  *
  * @details The function doesn't traverse the specified literal completely!

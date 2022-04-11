@@ -32,8 +32,10 @@ Ready_for_query::Ready_for_query(Ready_for_query&& rhs) noexcept
 DMITIGR_PGFE_INLINE Ready_for_query&
 Ready_for_query::operator=(Ready_for_query&& rhs) noexcept
 {
-  Ready_for_query tmp{std::move(rhs)};
-  swap(tmp);
+  if (this != &rhs) {
+    Ready_for_query tmp{std::move(rhs)};
+    swap(tmp);
+  }
   return *this;
 }
 

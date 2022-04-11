@@ -1185,7 +1185,7 @@ DMITIGR_PGFE_INLINE void Connection::reset_copier_state() noexcept
   }
 }
 
-DMITIGR_PGFE_INLINE void Connection::set_single_row_mode_enabled()
+DMITIGR_PGFE_INLINE void Connection::set_single_row_mode_enabled() noexcept
 {
   const auto set_ok = PQsetSingleRowMode(conn());
   DMITIGR_ASSERT(set_ok);
@@ -1344,9 +1344,10 @@ DMITIGR_PGFE_INLINE void Connection::unregister_lo(Large_object& lo) noexcept
 }
 
 DMITIGR_PGFE_INLINE void
-Connection::unregister_lo(decltype(lo_states_)::const_iterator p) noexcept
+Connection::unregister_lo(decltype(lo_states_)::const_iterator l) noexcept
 {
-  unregister(lo_states_, p);
+  DMITIGR_ASSERT(l != end(lo_states_));
+  unregister(lo_states_, l);
 }
 
 DMITIGR_PGFE_INLINE bool Connection::close(Large_object& lo) noexcept

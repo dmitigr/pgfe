@@ -149,7 +149,7 @@ public:
    * has two missing parameters at indexes `0` and `1`.
    *
    * @par Requires
-   * `(index < positional_parameter_count())`.
+   * `index < positional_parameter_count()`.
    *
    * @remarks Missing parameters can only be eliminated by using methods append()
    * or replace_parameter(). Thus, by replacing the parameter `p` with `$2, $1`
@@ -247,7 +247,7 @@ public:
    * `replacement`.
    *
    * @par Requires
-   * `(has_parameter(name) && &replacement != this)`.
+   * `has_parameter(name) && (&replacement != this)`.
    *
    * @par Effects
    * This instance contains the given `replacement` instead of the parameter
