@@ -33,7 +33,7 @@
 namespace dmitigr::pgfe {
 
 /**
- * @ingroup main
+ * @ingroup utilities
  *
  * @brief A tuple.
  *
@@ -93,17 +93,16 @@ public:
   /**
    * @overload
    *
-   * @param name See Compositional.
-   * @param offset See Compositional.
-   *
    * @par Requires
    * `has_field(name, offset)`.
+   *
+   * @see has_field(), Compositional::field_index().
    */
   DMITIGR_PGFE_API Data_view data(std::string_view name,
     std::size_t offset = 0) const override;
 
   /**
-   * @brief Overwrites the field of this tuple with the value of type T.
+   * @brief Overwrites the field of this tuple with the value of type `T`.
    *
    * @par Requires
    * `index < field_count()`.
@@ -126,8 +125,8 @@ public:
   /**
    * @brief Appends the field to this tuple.
    *
-   * @param name See Compositional.
-   * @param value A value to set.
+   * @param name A name of a new field.
+   * @param value A value of a new field.
    *
    * @par Exception safety guarantee
    * Strong.
@@ -198,11 +197,10 @@ public:
   /**
    * @overload
    *
-   * @param name See Compositional.
-   * @param offset See Compositional.
-   *
    * @par Effects
    * `!has_field(name, offset)`.
+   *
+   * @see has_field(), Compositional::field_index().
    */
   DMITIGR_PGFE_API void remove(std::string_view name, std::size_t offset = 0);
 
@@ -216,7 +214,11 @@ private:
   std::vector<Element> elements_;
 };
 
-/// Tuple is swappable.
+/**
+ * @ingroup utilities
+ *
+ * @brief Tuple is swappable.
+ */
 inline void swap(Tuple& lhs, Tuple& rhs) noexcept
 {
   lhs.swap(rhs);

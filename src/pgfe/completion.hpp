@@ -38,11 +38,11 @@ public:
   /// Not copy-constructible.
   Completion(const Completion&) = delete;
 
-  /// Not copy-assignable.
-  Completion& operator=(const Completion&) = delete;
-
   /// Move-constructible.
   DMITIGR_PGFE_API Completion(Completion&& rhs) noexcept;
+
+  /// Not copy-assignable.
+  Completion& operator=(const Completion&) = delete;
 
   /// Move-assignable.
   DMITIGR_PGFE_API Completion& operator=(Completion&& rhs) noexcept;
@@ -55,14 +55,14 @@ public:
 
   /**
    * @returns The operation name which may be:
-   *   -# an empty string that denotes a response to an empty query request;
-   *   -# the string "invalid response" that denotes an ununderstood response;
-   *   -# a word in uppercase that identifies the completed SQL command;
-   *   -# a word in lowercase that identifies the completed operation.
+   *   - an empty string that denotes a response to an empty query request;
+   *   - the string "invalid response" that denotes an ununderstood response;
+   *   - a word in uppercase that identifies the completed SQL command;
+   *   - a word in lowercase that identifies the completed operation.
    *
-   * @remarks The operation name is not always matches a SQL command name. For
-   * example, the operation name for `END` command is "COMMIT", the
-   * operation name for `CREATE TABLE AS` command is "SELECT" etc.
+   * @remarks The operation name is not always matches the SQL command name. For
+   * example, the operation name for `END` command is "COMMIT", the operation
+   * name for `CREATE TABLE AS` command is "SELECT" etc.
    */
   DMITIGR_PGFE_API const std::string& operation_name() const noexcept;
 
@@ -92,7 +92,11 @@ private:
   bool is_invariant_ok() const noexcept;
 };
 
-/// Completion is swappable.
+/**
+ * @ingroup main
+ *
+ * @brief Completion is swappable.
+ */
 inline void swap(Completion& lhs, Completion& rhs) noexcept
 {
   lhs.swap(rhs);

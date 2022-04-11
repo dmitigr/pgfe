@@ -31,9 +31,10 @@ constexpr std::int_fast32_t version() noexcept
   // Actual values are set in CMakeLists.txt.
   constexpr std::int_least32_t major = @dmitigr_lib_version_major@;
   constexpr std::int_least32_t minor = @dmitigr_lib_version_minor@;
+  constexpr std::int_least32_t patch = @dmitigr_lib_version_patch@;
 
-  // 11.234 -> 11 * 1000 + 234 = 11234
-  return major*1000 + minor;
+  // 111.222.333 -> 111222333
+  return major*1000000 + minor*1000 + patch;
 }
 
 } // namespace dmitigr::@dmitigr_lib_name@

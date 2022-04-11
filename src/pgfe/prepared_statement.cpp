@@ -404,8 +404,7 @@ Prepared_statement::throw_exception(std::string msg) const
 }
 
 DMITIGR_PGFE_INLINE Prepared_statement&
-Prepared_statement::Prepared_statement::bind(const std::size_t index,
-  Data_ptr&& data)
+Prepared_statement::bind(const std::size_t index, Data_ptr&& data)
 {
   const bool is_opaque = !is_preparsed() && !is_described();
   if (!(is_opaque || (index < parameter_count())))
@@ -424,8 +423,7 @@ Prepared_statement::Prepared_statement::bind(const std::size_t index,
 }
 
 DMITIGR_PGFE_INLINE Prepared_statement&
-Prepared_statement::Prepared_statement::bind__(const std::size_t,
-  Named_argument&& na)
+Prepared_statement::bind__(const std::size_t, Named_argument&& na)
 {
   if (na.owns_data())
     return bind(na.name(), na.release());
@@ -434,8 +432,7 @@ Prepared_statement::Prepared_statement::bind__(const std::size_t,
 }
 
 DMITIGR_PGFE_INLINE Prepared_statement&
-Prepared_statement::Prepared_statement::bind__(const std::size_t,
-  const Named_argument& na)
+Prepared_statement::bind__(const std::size_t, const Named_argument& na)
 {
   if (na.owns_data())
     return bind(na.name(), na.data().to_data());
@@ -444,7 +441,7 @@ Prepared_statement::Prepared_statement::bind__(const std::size_t,
 }
 
 DMITIGR_PGFE_INLINE void
-Prepared_statement::Prepared_statement::set_description(detail::pq::Result&& r)
+Prepared_statement::set_description(detail::pq::Result&& r)
 {
   DMITIGR_ASSERT(r);
 

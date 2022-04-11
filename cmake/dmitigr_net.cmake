@@ -18,7 +18,7 @@
 # Info
 # ------------------------------------------------------------------------------
 
-dmitigr_cpplipa_set_library_info(net 0 1 "Networking")
+dmitigr_cpplipa_set_library_info(net 0 0 0 "Networking")
 
 # ------------------------------------------------------------------------------
 # Sources

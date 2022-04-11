@@ -33,9 +33,9 @@ namespace dmitigr::pgfe {
  *
  * @brief An unprompted (asynchronous) notification from a PostgreSQL server.
  *
- * @remarks It should not be confused with the Notice signal.
- *
  * @see The <a href="https://www.postgresql.org/docs/current/static/sql-notify.html">NOTIFY</a> SQL command.
+ *
+ * @see Notice.
  */
 class Notification final : public Signal {
 public:
@@ -79,6 +79,7 @@ private:
   std::unique_ptr<PGnotify> pgnotify_;
 
   explicit DMITIGR_PGFE_API Notification(PGnotify* const pgnotify) noexcept;
+
   bool is_invariant_ok() const noexcept;
 };
 

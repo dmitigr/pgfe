@@ -101,9 +101,7 @@ public:
    * PostgreSQL's Bytea data type to a plain binary data.
    *
    * @par Requires
-   * `(format() == Data_format::text && bytes()[size()] == 0)`.
-   *
-   * @relates Data
+   * `(format() == Data_format::text) && (bytes()[size()] == 0)`.
    */
   DMITIGR_PGFE_API std::unique_ptr<Data> to_bytea() const;
 
@@ -131,7 +129,7 @@ public:
   /// @returns The data size in bytes.
   virtual std::size_t size() const noexcept = 0;
 
-  /// @returns `(size() == 0)`.
+  /// @returns `!size()`.
   virtual bool is_empty() const noexcept = 0;
 
   /// @returns The pointer to a *unmodifiable* memory area.
@@ -145,16 +143,20 @@ protected:
 };
 
 /**
- * @returns Either of
- *   -# negative value if the first differing byte in `lhs` is less than the
+ * @ingroup main
+ *
+ * @returns Either of:
+ *   - negative value if the first differing byte in `lhs` is less than the
  *   corresponding byte in `rhs`;
- *   -# zero if all bytes of `lhs` and `rhs` are equal;
- *   -# positive value if the first differing byte in `lhs` is greater than the
+ *   - zero if all bytes of `lhs` and `rhs` are equal;
+ *   - positive value if the first differing byte in `lhs` is greater than the
  *   corresponding byte in `rhs`.
  */
 DMITIGR_PGFE_API int cmp(const Data& lhs, const Data& rhs) noexcept;
 
 /**
+ * @ingroup main
+ *
  * @returns `cmp(lhs, rhs) < 0`.
  *
  * @see cmp(const Data&, const Data&).
@@ -165,6 +167,8 @@ inline bool operator<(const Data& lhs, const Data& rhs) noexcept
 }
 
 /**
+ * @ingroup main
+ *
  * @returns `cmp(lhs, rhs) <= 0`.
  *
  * @see cmp(const Data&, const Data&).
@@ -175,6 +179,8 @@ inline bool operator<=(const Data& lhs, const Data& rhs) noexcept
 }
 
 /**
+ * @ingroup main
+ *
  * @returns `cmp(lhs, rhs) == 0`.
  *
  * @see cmp(const Data&, const Data&).
@@ -185,6 +191,8 @@ inline bool operator==(const Data& lhs, const Data& rhs) noexcept
 }
 
 /**
+ * @ingroup main
+ *
  * @returns `cmp(lhs, rhs) != 0`.
  *
  * @see cmp(const Data&, const Data&).
@@ -195,6 +203,8 @@ inline bool operator!=(const Data& lhs, const Data& rhs) noexcept
 }
 
 /**
+ * @ingroup main
+ *
  * @returns `cmp(lhs, rhs) > 0`.
  *
  * @see cmp(const Data&, const Data&).
@@ -205,6 +215,8 @@ inline bool operator>(const Data& lhs, const Data& rhs) noexcept
 }
 
 /**
+ * @ingroup main
+ *
  * @returns `cmp(lhs, rhs) >= 0`.
  *
  * @see cmp(const Data&, const Data&).
@@ -293,7 +305,11 @@ private:
   std::string_view data_{"", 0};
 };
 
-/// Data_view is swappable.
+/**
+ * @ingroup main
+ *
+ * @brief Data_view is swappable.
+ */
 inline void swap(Data_view& lhs, Data_view& rhs) noexcept
 {
   lhs.swap(rhs);

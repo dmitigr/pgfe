@@ -64,7 +64,7 @@ endif()
 
 # Set default CMAKE_BUILD_TYPE.
 if(NOT DEFINED CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE Debug CACHE STRING
+  set(CMAKE_BUILD_TYPE Release CACHE STRING
     "Build type: Debug Release RelWithDebInfo MinSizeRel" FORCE)
 endif()
 

@@ -18,7 +18,7 @@
 # Info
 # ------------------------------------------------------------------------------
 
-dmitigr_cpplipa_set_library_info(os 0 1 "OS basics")
+dmitigr_cpplipa_set_library_info(os 0 0 0 "OS basics")
 
 # ------------------------------------------------------------------------------
 # Sources

@@ -466,9 +466,9 @@ namespace dmitigr::pgfe {
  *
  * @brief The basic implementation of the conversion algorithms for numerics.
  *
- * Support of the following data formats is implemented:
- *   - for input data  - Data_format::text, Data_format::binary;
- *   - for output data - Data_format::text.
+ * @details Support of the following data formats is implemented for:
+ *   - input data  - Data_format::text, Data_format::binary;
+ *   - output data - Data_format::text.
  *
  * @par Requires
  * When converting to the native type `Type`, the size of the input data in
@@ -557,8 +557,7 @@ struct Conversions<short int> final : Numeric_conversions<short int> {};
  * @brief Full specialization of Conversions for `int`.
  */
 template<>
-struct Conversions<int> final : Numeric_conversions<int>
-{};
+struct Conversions<int> final : Numeric_conversions<int> {};
 
 /**
  * @ingroup conversions
@@ -605,9 +604,9 @@ struct Conversions<long double> final : Numeric_conversions<long double> {};
  *
  * @brief Full specialization of Conversions for `char`.
  *
- * Support of the following data formats is implemented:
- *   - for input data  - Data_format::text, Data_format::binary;
- *   - for output data - Data_format::text.
+ * @details Support of the following data formats is implemented for:
+ *   - input data  - Data_format::text, Data_format::binary;
+ *   - output data - Data_format::text.
  *
  * @par Requires
  * The size of the input data must be exactly `1`.
@@ -621,13 +620,12 @@ struct Conversions<char> final : Basic_conversions<char,
  *
  * @brief Full specialization of Conversions for `bool`.
  *
- * Support of the following data formats is implemented:
- *   - for input data  - Data_format::text, Data_format::binary;
- *   - for output data - Data_format::text.
+ * @details Support of the following data formats is implemented for:
+ *   - input data  - Data_format::text, Data_format::binary;
+ *   - output data - Data_format::text.
  *
  * @par Requires
- * The size of the input data in the Data_format::binary format must be
- * exactly `1`.
+ * The size of the input data of Data_format::binary format must be exactly `1`.
  */
 template<>
 struct Conversions<bool> final : Basic_conversions<bool,

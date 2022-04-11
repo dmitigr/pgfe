@@ -27,26 +27,28 @@ namespace dmitigr::pgfe {
  * @brief Represents a client error code.
  */
 enum class Client_errc {
-  /** Denotes success (no error). */
+  /// Denotes success (no error).
   success = 0,
 
-  /** Denotes an insufficient array dimensionality. */
+  /// Denotes an insufficient array dimensionality.
   insufficient_array_dimensionality = 100,
 
-  /** Denotes an excessive array dimensionality. */
+  /// Denotes an excessive array dimensionality.
   excessive_array_dimensionality = 200,
 
-  /** Denotes a malformed array literal. */
+  /// Denotes a malformed array literal.
   malformed_array_literal = 300,
 
-  /** Denotes an usage of container with improper type of elements. */
+  /// Denotes an usage of container with improper type of elements.
   improper_value_type_of_container = 400,
 
-  /** Denotes a timed out operation. */
+  /// Denotes a timed out operation.
   timed_out = 500
 };
 
 /**
+ * @ingroup errors
+ *
  * @returns The literal representation of the `errc`, or `nullptr`
  * if `errc` does not corresponds to any value defined by Client_errc.
  */
@@ -1009,6 +1011,8 @@ enum class Server_errc {
 };
 
 /**
+ * @ingroup errors
+ *
  * @returns The literal representation of the `errc`, or `nullptr`
  * if `errc` does not corresponds to any value defined by Server_errc.
  */

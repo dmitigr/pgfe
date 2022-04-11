@@ -18,7 +18,7 @@
 # Info
 # ------------------------------------------------------------------------------
 
-dmitigr_cpplipa_set_library_info(str 0 1 "Standard string extensions")
+dmitigr_cpplipa_set_library_info(str 0 0 0 "Standard string extensions")
 
 # ------------------------------------------------------------------------------
 # Sources

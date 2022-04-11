@@ -29,11 +29,12 @@ namespace dmitigr::pgfe {
 constexpr std::int_fast32_t version() noexcept
 {
   // Actual values are set in CMakeLists.txt.
-  constexpr std::int_least32_t major = 1;
+  constexpr std::int_least32_t major = 2;
   constexpr std::int_least32_t minor = 0;
+  constexpr std::int_least32_t patch = 0;
 
-  // 11.234 -> 11 * 1000 + 234 = 11234
-  return major*1000 + minor;
+  // 111.222.333 -> 111222333
+  return major*1000000 + minor*1000 + patch;
 }
 
 } // namespace dmitigr::pgfe

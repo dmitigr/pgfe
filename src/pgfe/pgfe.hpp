@@ -19,9 +19,8 @@
 
 #include "array_aliases.hpp"
 #include "array_conversions.hpp"
-#include "basic_conversions.hpp"
 #include "basics.hpp"
-#include "copier.hpp"
+#include "basic_conversions.hpp"
 #include "completion.hpp"
 #include "composite.hpp"
 #include "compositional.hpp"
@@ -29,8 +28,9 @@
 #include "connection_options.hpp"
 #include "connection_pool.hpp"
 #include "contract.hpp"
-#include "conversions_api.hpp"
 #include "conversions.hpp"
+#include "conversions_api.hpp"
+#include "copier.hpp"
 #include "data.hpp"
 #include "errc.hpp"
 #include "errctg.hpp"
@@ -42,6 +42,7 @@
 #include "notice.hpp"
 #include "notification.hpp"
 #include "parameterizable.hpp"
+#include "prepared_statement.hpp"
 #include "problem.hpp"
 #include "ready_for_query.hpp"
 #include "response.hpp"
@@ -50,6 +51,8 @@
 #include "signal.hpp"
 #include "statement.hpp"
 #include "statement_vector.hpp"
+#include "tuple.hpp"
+#include "types_fwd.hpp"
 #include "version.hpp"
 
 #endif  // DMITIGR_PGFE_PGFE_HPP

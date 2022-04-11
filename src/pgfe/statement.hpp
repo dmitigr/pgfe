@@ -196,7 +196,7 @@ public:
 
   /**
    * @returns `true` if this SQL string has a positional parameter with the
-   * index `i` such that `(is_parameter_missing(i) == false)`.
+   * index `i` such that `!is_parameter_missing(i)`.
    *
    * @see is_parameter_missing().
    */
@@ -206,9 +206,9 @@ public:
    * @brief Appends the specified SQL string.
    *
    * @par Effects
-   * This instance contains the given `appendix`. If `(is_query_empty() == true)`
-   * before calling this method, then extra data of `appendix` is appended to the
-   * extra data of this instance.
+   * This instance contains the given `appendix`. If `is_query_empty()` before
+   * calling this method, then extra data of `appendix` is appended to the extra
+   * data of this instance.
    *
    * @par Exception safety guarantee
    * Strong.
@@ -277,8 +277,8 @@ public:
 
   /// @returns The extra data associated with this instance.
   ///
-  /// An any data can be associated with an object of type Statement. The
-  /// initial associations can be specified in the *related comments*. The
+  /// @details An any data can be associated with an object of type Statement.
+  /// The initial associations can be specified in the *related comments*. The
   /// related comments - are comments that have no more than one newline
   /// character in between themselves and the content following them. The
   /// content following the related comments should be neither named parameter
@@ -308,16 +308,17 @@ public:
   /// are: alphanumerics, the underscore character and the dash.
   /// Please, note, that the content in between the named tags might consist to
   /// multiple lines. There are rules of the content formatting in such cases:
-  ///   1. The leading and trailing newline characters are always ignored and other
-  ///   newline characters are always preserved;
-  ///   2. If the content begins with non newline character, then the content is
+  ///   -# The leading and trailing newline characters are always ignored and
+  ///   other newline characters are always preserved;
+  ///   -# If the content begins with non newline character, then the content is
   ///   associated exactly as provided, i.e. all indentations are preserved;
-  ///   3. If the content begins with a newline character then the following lines
-  ///   will be left-aligned relative the *most left non space character*. In case
-  ///   of the sequence of one-line comments, the most left non space character are
-  ///   always follows the one-line comment marker ("--"). In case of the multi-line
-  ///   comment, the most left non space character can be a character that follows the
-  ///   asterisk with a space ("* "), or just the most left character.
+  ///   -# If the content begins with a newline character then the following
+  ///   lines will be left-aligned relative the *most left non space character*.
+  ///   In case of the sequence of one-line comments, the most left non space
+  ///   character are always follows the one-line comment marker ("--"). In case
+  ///   of the multi-line comment, the most left non space character can be a
+  ///   character that follows the asterisk with a space ("* "), or just the
+  ///   most left character.
   ///
   /// Examples:
   ///
@@ -377,6 +378,7 @@ private:
   static std::pair<Statement, std::string_view::size_type>
   parse_sql_input(std::string_view, const std::locale& loc);
 
+  /// A fragment.
   struct Fragment final {
     enum class Type {
       text,
@@ -452,7 +454,11 @@ private:
   struct Extra;
 };
 
-/// Statement is swappable.
+/**
+ * @ingroup utilities
+ *
+ * @brief Statement is swappable.
+ */
 inline void swap(Statement& lhs, Statement& rhs) noexcept
 {
   lhs.swap(rhs);

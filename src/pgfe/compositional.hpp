@@ -37,20 +37,21 @@ public:
   /// @returns The number of fields.
   virtual std::size_t field_count() const noexcept = 0;
 
-  /// @returns `(field_count() > 0)`
+  /// @returns `field_count() > 0`.
   virtual bool is_empty() const noexcept = 0;
 
   /**
    * @returns The name of the field.
    *
    * @par Requires
-   * `(index < field_count())`.
+   * `index < field_count()`.
    */
   virtual std::string_view field_name(std::size_t index) const = 0;
 
   /**
    * @returns The field index if presents, or `field_count()` otherwise.
    *
+   * @param name The name of the field.
    * @param offset For cases when several fields are named equally.
    */
   virtual std::size_t field_index(std::string_view name,

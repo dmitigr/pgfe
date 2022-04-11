@@ -94,8 +94,10 @@ public:
   /**
    * @brief Releases the ownership of the bound data.
    *
-   * @returns The instance of Data if it's owned by this instance, or
-   * `nullptr` otherwise.
+   * @par Effects
+   * `!owns_data()`.
+   *
+   * @returns The instance of Data if `owns_data()`.
    */
   DMITIGR_PGFE_API std::unique_ptr<Data> release() noexcept;
 
@@ -218,8 +220,8 @@ public:
 
   /**
    * @returns `true` if the information inferred by the Pgfe about
-   * this prepared statement is available. (Every statement prepared from
-   * an instance of class Statement is preparsed.)
+   * this prepared statement is available. (Every statement, prepared from
+   * an instance of class Statement, is preparsed.)
    *
    * @see Statement.
    */
@@ -232,7 +234,7 @@ public:
    * @returns The value bound to parameter.
    *
    * @par Requires
-   * `(index < parameter_count())`.
+   * `index < parameter_count()`.
    */
   DMITIGR_PGFE_API Data_view bound(const std::size_t index) const;
 
@@ -240,7 +242,7 @@ public:
    * @overload
    *
    * @par Requries
-   * `(parameter_index(name) < parameter_count())`.
+   * `parameter_index(name) < parameter_count()`.
    */
   DMITIGR_PGFE_API Data_view bound(const std::string_view name) const;
 
@@ -251,14 +253,15 @@ public:
    * the parameter of the specified index with the value of type `T`.
    *
    * @tparam T A `value` type which can be one of the following:
-   *   -# `std::unique_ptr<Data>` to bind the specified `value`. (The `value`
-   *   will be owned by this instance.)
-   *   -# a type for which the specialization Conversions<T> is defined to bind
-   *   the specified `value` of type `T`. (The conversion result of type Data will
-   *   be owned by this instance;)
-   *   -# a type convertible to `const Data&` to bind the specified `value`. (The
+   *   - `std::unique_ptr<Data>` to bind the specified `value`. (The `value`
+   *   will be owned by this instance;)
+   *   - a type for which the specialization of Conversions is defined to bind
+   *   the specified `value` of type `T`. (The conversion result of type Data
+   *   will be owned by this instance;)
+   *   - a type convertible to `const Data&` to bind the specified `value`. (The
    *   `value` will not be owned by this instance;)
-   *   -# `std::nullptr_t` to bind the SQL NULL.
+   *   - `std::nullptr_t` to bind the SQL NULL.
+   * @param index A parameter index.
    * @param value A value to bind.
    *
    * @par Requires
@@ -267,13 +270,13 @@ public:
    *
    * @par Effects
    * If `!is_preparsed() && !is_described() && parameter_count() >= index` then
-   * `(parameter_count() == index + 1)`.
+   * `parameter_count() == index + 1`.
    *
    * @par Exception safety guarantee
    * Strong.
    *
    * @par Requires
-   * `T` must be convertible to `Data` via Conversions<T>.
+   * `T` must be convertible to `Data` via Conversions.
    *
    * @see bound().
    */
@@ -298,7 +301,7 @@ public:
    * @overload
    *
    * @par Requries
-   * `(parameter_index(name) < parameter_count())`.
+   * `parameter_index(name) < parameter_count()`.
    */
   template<typename T>
   Prepared_statement& bind(const std::string_view name, T&& value)
@@ -309,17 +312,16 @@ public:
   /**
    * @brief Binds parameters by indexes in range [0, sizeof ... (values)).
    *
-   * In other words:
+   * @details In other words:
    * @code binds(value1, value2, value3) @endcode
    * equivalently to
    * @code (bind(0, value1), bind(1, value1), bind(2, value2)) @endcode
    *
    * @par Requires
-   * -# Each value of `values` must be Data-convertible.
-   * -# `((!is_preparsed() && !is_described()
-   *       &&
-   *       sizeof ... (Types) < maximum_parameter_count()) ||
-   *       (sizeof ... (Types) < parameter_count()))`
+   *   -# Each value of `values` must be Data-convertible;
+   *   -# `sizeof...(Types) < maximum_parameter_count()` if
+   *   `!is_preparsed() && !is_described()`, or
+   *   `sizeof...(Types) < parameter_count()` otherwise.
    *
    * @par Exception safety guarantee
    * Basic.
@@ -360,11 +362,6 @@ public:
    * @brief Submits a request to a PostgreSQL server to execute this prepared
    * statement.
    *
-   * @par Responses
-   *   - if the query provokes an error: Error;
-   *   - if the query produces rows: the set of Row;
-   *   - if the query does not provokes an error: Completion.
-   *
    * @par Effects
    * `has_uncompleted_request()`.
    *
@@ -380,9 +377,7 @@ public:
    * @brief Similar to execute_nio() but also waits the Response.
    *
    * @param callback Same as for Connection::process_responses().
-   *
-   * @par Responses
-   * Similar to Connection::execute_nio().
+   * @param parameters A parameters to bind.
    *
    * @par Requires
    * `connection()->is_ready_for_request()`.
@@ -459,11 +454,10 @@ public:
   parameter_type_oid(const std::string_view name) const;
 
   /**
-   * @returns
-   *   -# invalid instance if `!is_described()`;
-   *   -# invalid instance if the execution will not provoke producing the rows;
-   *   -# otherwise, valid instance that describes the rows which a server would
-   *   produce.
+   * @returns Either of:
+   *   - invalid instance if `!is_described()`;
+   *   - invalid instance if the execution will not provoke producing the rows;
+   *   - valid instance that describes the rows which the server would produce.
    */
   DMITIGR_PGFE_API const Row_info& row_info() const noexcept;
 
@@ -475,11 +469,13 @@ private:
   using Data_deletion_required = util::Conditional_delete<const Data>;
   using Data_ptr = std::unique_ptr<const Data, Data_deletion_required>;
 
+  /// A parameter.
   struct Parameter final {
     Data_ptr data;
     std::string name;
   };
 
+  /// A state.
   struct State final {
     State(std::string id, Connection* const connection)
       : id_{std::move(id)}
@@ -504,7 +500,8 @@ private:
     const Statement* preparsed, const bool is_registered);
 
   /// Constructs when describing.
-  explicit Prepared_statement(std::shared_ptr<Prepared_statement::State> state) noexcept;
+  explicit
+  Prepared_statement(std::shared_ptr<Prepared_statement::State> state) noexcept;
 
   void init_connection__(std::shared_ptr<Prepared_statement::State> state) noexcept;
   bool is_invariant_ok() const noexcept override;
@@ -512,9 +509,9 @@ private:
 
   // ---------------------------------------------------------------------------
 
-  Prepared_statement& bind(const std::size_t index, Data_ptr&& data);
-  Prepared_statement& bind__(const std::size_t, Named_argument&& na);
-  Prepared_statement& bind__(const std::size_t, const Named_argument& na);
+  Prepared_statement& bind(std::size_t index, Data_ptr&& data);
+  Prepared_statement& bind__(std::size_t, Named_argument&& na);
+  Prepared_statement& bind__(std::size_t, const Named_argument& na);
 
   template<typename T>
   Prepared_statement& bind__(const std::size_t index, T&& value)
@@ -538,7 +535,11 @@ private:
   void execute_nio__(const Statement* const statement);
 };
 
-/// Prepared_statement is swappable.
+/**
+ * @ingroup main
+ *
+ * @brief Prepared_statement is swappable.
+ */
 inline void swap(Prepared_statement& lhs, Prepared_statement& rhs) noexcept
 {
   lhs.swap(rhs);

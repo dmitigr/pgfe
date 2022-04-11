@@ -27,7 +27,7 @@ namespace std {
 /**
  * @ingroup errors
  *
- * @brief The full specialization for integration with `<system_error>`.
+ * @brief The full specialization for the integration with `<system_error>`.
  */
 template<>
 struct is_error_condition_enum<dmitigr::pgfe::Client_errc> final : true_type {};
@@ -35,7 +35,7 @@ struct is_error_condition_enum<dmitigr::pgfe::Client_errc> final : true_type {};
 /**
  * @ingroup errors
  *
- * @brief The full specialization for integration with `<system_error>`.
+ * @brief The full specialization for the integration with `<system_error>`.
  */
 template<>
 struct is_error_condition_enum<dmitigr::pgfe::Server_errc> final : true_type {};

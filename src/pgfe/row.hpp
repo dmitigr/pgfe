@@ -237,7 +237,11 @@ private:
   bool is_invariant_ok() const noexcept override;
 };
 
-/// Row is swappable.
+/**
+ * @ingroup main
+ *
+ * @brief Row is swappable.
+ */
 inline void swap(Row& lhs, Row& rhs) noexcept
 {
   lhs.swap(rhs);

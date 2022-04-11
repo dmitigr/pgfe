@@ -39,11 +39,11 @@ public:
   /// Not copy-constructible.
   Row_info(const Row_info&) = delete;
 
-  /// Not copy-assignable.
-  Row_info& operator=(const Row_info&) = delete;
-
   /// Move-constructible.
   Row_info(Row_info&&) noexcept = default;
+
+  /// Not copy-assignable.
+  Row_info& operator=(const Row_info&) = delete;
 
   /// Move-assignable.
   Row_info& operator=(Row_info&&) noexcept = default;
@@ -84,8 +84,6 @@ public:
    * @returns The OID of the table if a field at `index` can be identified as a
    * column of a specific table, or `0` otherwise.
    *
-   * @param index See Compositional.
-   *
    * @par Requires
    * `index < size()`.
    */
@@ -94,13 +92,10 @@ public:
   /**
    * @overload
    *
-   * @param name See Compositional.
-   * @param offset See Compositional.
-   *
    * @par Requires
    * `has_field(name, offset)`.
    *
-   * @see has_field().
+   * @see has_field(), Compositional::field_index().
    */
   DMITIGR_PGFE_API std::uint_fast32_t
   table_oid(const std::string_view name, std::size_t offset = 0) const;
@@ -108,8 +103,6 @@ public:
   /**
    * @returns The attribute number of a column if the field at `index` can be
    * identified as the column of a specific table, or `0` otherwise.
-   *
-   * @param index See Compositional.
    *
    * @par Requires
    * `index < size()`.
@@ -121,21 +114,16 @@ public:
   /**
    * @overload
    *
-   * @param name See Compositional.
-   * @param offset See Compositional.
-   *
    * @par Requires
    * `has_field(name, offset)`.
    *
-   * @see has_field().
+   * @see has_field(), Compositional::field_index().
    */
   DMITIGR_PGFE_API std::int_fast32_t
   table_column_number(const std::string_view name, std::size_t offset = 0) const;
 
   /**
    * @returns The OID of the field's data type.
-   *
-   * @param index See Compositional.
    *
    * @par Requires
    * `index < size()`.
@@ -145,25 +133,20 @@ public:
   /**
    * @overload
    *
-   * @param name See Compositional.
-   * @param offset See Compositional.
-   *
    * @par Requires
    * `has_field(name, offset)`.
    *
-   * @see has_field().
+   * @see has_field(), Compositional::field_index().
    */
   DMITIGR_PGFE_API std::uint_fast32_t
   type_oid(const std::string_view name, std::size_t offset = 0) const;
 
   /**
-   * @returns Either of
-   *   -# the number of bytes in the internal representation of the field's
+   * @returns Either of:
+   *   - the number of bytes in the internal representation of the field's
    *   data type;
-   *   -# `-1` to indicate "varlena" type;
-   *   -# `-2` to indicate zero-terminated C string.
-   *
-   * @param index See Compositional.
+   *   - `-1` to indicate "varlena" type;
+   *   - `-2` to indicate zero-terminated C string.
    *
    * @par Requires
    * `index < size()`.
@@ -173,21 +156,18 @@ public:
   /**
    * @overload
    *
-   * @param name See Compositional.
-   * @param offset See Compositional.
-   *
    * @par Requires
    * `has_field(name, offset)`.
+   *
+   * @see has_field(), Compositional::field_index().
    */
   DMITIGR_PGFE_API std::int_fast32_t
   type_size(const std::string_view name, std::size_t offset = 0) const;
 
   /**
-   * @returns Either of
-   *   -# the type modifier of the field's data;
-   *   -# `-1` to indicate "no information available".
-   *
-   * @param index See Compositional.
+   * @returns Either of:
+   *   - the type modifier of the field's data;
+   *   - `-1` to indicate "no information available".
    *
    * @par Requires
    * `index < size()`.
@@ -197,19 +177,16 @@ public:
   /**
    * @overload
    *
-   * @param name See Compositional.
-   * @param offset See Compositional.
-   *
    * @par Requires
    * `has_field(name, offset)`.
+   *
+   * @see has_field(), Compositional::field_index().
    */
   DMITIGR_PGFE_API std::int_fast32_t
   type_modifier(const std::string_view name, std::size_t offset = 0) const;
 
   /**
    * @returns The field data format.
-   *
-   * @param index See Compositional.
    *
    * @par Requires
    * `index < size()`.
@@ -219,11 +196,10 @@ public:
   /**
    * @overload
    *
-   * @param name See Compositional.
-   * @param offset See Compositional.
-   *
    * @par Requires
    * `has_field(name, offset)`.
+   *
+   * @see has_field(), Compositional::field_index().
    */
   DMITIGR_PGFE_API Data_format
   data_format(const std::string_view name, std::size_t offset = 0) const;
@@ -239,7 +215,11 @@ private:
   detail::pq::Result pq_result_;
 };
 
-/// Row_info is swappable.
+/**
+ * @ingroup main
+ *
+ * @brief Row_info is swappable.
+ */
 inline void swap(Row_info& lhs, Row_info& rhs) noexcept
 {
   lhs.swap(rhs);

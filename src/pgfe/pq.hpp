@@ -29,7 +29,7 @@
 
 namespace std {
 
-/// The default deleter for PGnotify.
+/// The default deleter for `PGnotify`.
 template<> struct default_delete<PGnotify> final {
   void operator()(PGnotify* const ptr) const noexcept
   {
@@ -112,9 +112,6 @@ public:
   /// Not copy-constructible.
   Result(const Result&) = delete;
 
-  /// Not copy-assignable.
-  Result& operator=(const Result&) = delete;
-
   /// Move-constructible.
   Result(Result&& rhs) noexcept
     : status_{rhs.status_}
@@ -122,6 +119,9 @@ public:
   {
     rhs.status_ = static_cast<Status>(-1);
   }
+
+  /// Not copy-assignable.
+  Result& operator=(const Result&) = delete;
 
   /// Move-assignable.
   Result& operator=(Result&& rhs) noexcept
@@ -314,7 +314,7 @@ public:
   /**
    * @returns The number of rows.
    *
-   * @remarks `PGresult` objects are limited to no more than INT_MAX rows, so
+   * @remarks `PGresult` objects are limited to no more than `INT_MAX` rows, so
    * an int result is sufficient.
    */
   int row_count() const noexcept
@@ -334,14 +334,14 @@ public:
     return PQfname(native_handle(), index);
   }
 
-  /// @returns -1 if the given name does not match any field.
+  /// @returns `-1` if the given name does not match any field.
   int field_index(const char* const name) const noexcept
   {
     return PQfnumber(native_handle(), name);
   }
 
   /**
-   * @returns 0 if the `position` is out of range, or if the
+   * @returns `0` if the `position` is out of range, or if the
    * corresponding column is not a simple reference to a table column.
    */
   ::Oid field_table_oid(const int position) const noexcept
@@ -350,7 +350,7 @@ public:
   }
 
   /**
-   * @returns 0 if the `position` is out of range, or if the specified position
+   * @returns `0` if the `position` is out of range, or if the specified position
    * is not a simple reference to a table column. Otherwise, the returning value
    * is positive.
    */
@@ -362,7 +362,7 @@ public:
   /**
    * @returns The overall data format.
    *
-   * @remarks To use only in connection with COPY!
+   * @remarks To use only in connection with `COPY`!
    */
   Data_format overall_field_format() const noexcept
   {

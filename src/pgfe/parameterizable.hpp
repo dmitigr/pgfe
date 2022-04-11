@@ -49,16 +49,16 @@ public:
   /// @returns The number of named parameters.
   virtual std::size_t named_parameter_count() const noexcept = 0;
 
-  /// @returns `(positional_parameter_count() + named_parameter_count())`.
+  /// @returns `positional_parameter_count() + named_parameter_count()`.
   virtual std::size_t parameter_count() const noexcept = 0;
 
-  /// @returns `(positional_parameter_count() > 0)`.
+  /// @returns `positional_parameter_count() > 0`.
   virtual bool has_positional_parameters() const noexcept = 0;
 
-  /// @returns `(named_parameter_count() > 0)`.
+  /// @returns `named_parameter_count() > 0`.
   virtual bool has_named_parameters() const noexcept = 0;
 
-  /// @returns `(parameter_count() > 0)`.
+  /// @returns `parameter_count() > 0`.
   virtual bool has_parameters() const noexcept = 0;
 
   /**

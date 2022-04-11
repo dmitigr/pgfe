@@ -396,7 +396,7 @@ try {
         DMITIGR_ASSERT(is_thrown);
         DMITIGR_ASSERT(i == 1);
         DMITIGR_ASSERT(!conn->is_ready_for_request());
-        conn->process_responses(pgfe::ignore_row);
+        conn->process_responses([](auto&&){});
         DMITIGR_ASSERT(conn->is_ready_for_request());
       }
 

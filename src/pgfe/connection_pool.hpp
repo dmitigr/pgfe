@@ -45,18 +45,18 @@ public:
     /**
      * @brief The destructor.
      *
-     * @detail Calls release().
+     * @details Calls release().
      */
     DMITIGR_PGFE_API ~Handle() noexcept;
 
     /// Not copy-constructible.
     Handle(const Handle&) = delete;
 
-    /// Not copy-assignable.
-    Handle& operator=(const Handle&) = delete;
-
     /// Move-constructible.
     Handle(Handle&& rhs) noexcept = default;
+
+    /// Not copy-assignable.
+    Handle& operator=(const Handle&) = delete;
 
     /// Move-assignable.
     Handle& operator=(Handle&& rhs) noexcept = default;
@@ -130,11 +130,11 @@ public:
   /// Not copy-constructible.
   Connection_pool(const Connection_pool&) = delete;
 
-  /// Not copy-assignable.
-  Connection_pool& operator=(const Connection_pool&) = delete;
-
   /// Not move-constructible.
   DMITIGR_PGFE_API Connection_pool(Connection_pool&& rhs) = delete;
+
+  /// Not copy-assignable.
+  Connection_pool& operator=(const Connection_pool&) = delete;
 
   /// Not move-assignable.
   DMITIGR_PGFE_API Connection_pool& operator=(Connection_pool&& rhs) = delete;
@@ -215,8 +215,8 @@ public:
    * pool, or invalid handle otherwise.
    *
    * @throws Client_exception if:
-   *   -# `!is_connected()`;
-   *   -# attempt to reopen the connection possibly closed upon of calling
+   *   - `!is_connected()`;
+   *   - attempt to reopen the connection possibly closed upon of calling
    *   release() is failed.
    */
   DMITIGR_PGFE_API Handle connection();

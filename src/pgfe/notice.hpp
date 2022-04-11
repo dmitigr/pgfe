@@ -32,23 +32,25 @@ namespace dmitigr::pgfe {
  * @details In particular, notice might represents the information about the
  * database administrator's commands.
  *
- * @remarks It should not be confused with the Notification signal.
+ * @see Error, Notification.
  */
 class Notice final : public Signal, public Problem {
 public:
   /// The destructor.
   DMITIGR_PGFE_API ~Notice() noexcept override;
 
-  /// Default-constructible. (Constructs invalid instance.)
-  DMITIGR_PGFE_API Notice() noexcept = default;
-
-  /// The constructor.
-  explicit DMITIGR_PGFE_API Notice(const PGresult* const result) noexcept;
-
   /// @see Message::is_valid().
   DMITIGR_PGFE_API bool is_valid() const noexcept override;
 
 private:
+  friend Connection;
+
+  /// Default-constructible. (Constructs invalid instance.)
+  Notice() noexcept = default;
+
+  /// The constructor.
+  explicit Notice(const PGresult* const result) noexcept;
+
   bool is_invariant_ok() const noexcept override;
 };
 

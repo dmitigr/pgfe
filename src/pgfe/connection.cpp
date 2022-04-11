@@ -815,15 +815,21 @@ DMITIGR_PGFE_INLINE Ready_for_query Connection::ready_for_query() noexcept
     ? Ready_for_query{release_response()} : Ready_for_query{};
 }
 
-DMITIGR_PGFE_INLINE bool Connection::is_copy_in_progress() const noexcept
+DMITIGR_PGFE_INLINE bool Connection::is_ready_for_request() const noexcept
 {
-  return static_cast<bool>(copier_state_);
+  return (pipeline_status() == Pipeline_status::disabled) &&
+    is_connected_and_idle();
 }
 
 DMITIGR_PGFE_INLINE bool Connection::is_ready_for_nio_request() const noexcept
 {
   return (pipeline_status() == Pipeline_status::disabled) ?
     is_ready_for_request() : is_connected();
+}
+
+DMITIGR_PGFE_INLINE bool Connection::is_copy_in_progress() const noexcept
+{
+  return static_cast<bool>(copier_state_);
 }
 
 DMITIGR_PGFE_INLINE std::size_t Connection::request_queue_size() const noexcept
@@ -834,12 +840,6 @@ DMITIGR_PGFE_INLINE std::size_t Connection::request_queue_size() const noexcept
 DMITIGR_PGFE_INLINE bool Connection::has_uncompleted_request() const noexcept
 {
   return !requests_.empty();
-}
-
-DMITIGR_PGFE_INLINE bool Connection::is_ready_for_request() const noexcept
-{
-  return (pipeline_status() == Pipeline_status::disabled) &&
-    is_connected_and_idle();
 }
 
 DMITIGR_PGFE_INLINE void

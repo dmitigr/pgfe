@@ -24,11 +24,21 @@
 namespace dmitigr {
 namespace pgfe {
 
-/// An alias for Oid.
+/**
+ * @ingroup main
+ *
+ * @brief An alias for Oid.
+ */
 using Oid = unsigned int;
 
-/// Denotes invalid Oid.
+/**
+ * @ingroup main
+ *
+ * @brief Denotes invalid Oid.
+ */
 constexpr Oid invalid_oid{};
+
+// =============================================================================
 
 /**
  * @ingroup main
@@ -49,6 +59,8 @@ enum class Socket_readiness {
   exceptions = 8
 };
 
+// =============================================================================
+
 /**
  * @ingroup main
  *
@@ -64,6 +76,8 @@ enum class External_library {
 
 } // namespace pgfe
 
+// =============================================================================
+
 namespace util {
 template<>
 struct Is_bitmask_enum<pgfe::Socket_readiness> final : std::true_type {};
@@ -71,9 +85,7 @@ template<>
 struct Is_bitmask_enum<pgfe::External_library> final : std::true_type {};
 } // namespace util
 
-} // namespace dmitigr
-
-namespace dmitigr::pgfe {
+namespace pgfe {
 
 /**
  * @addtogroup main
@@ -84,6 +96,8 @@ DMITIGR_DEFINE_ENUM_BITMASK_OPERATORS(Socket_readiness)
 DMITIGR_DEFINE_ENUM_BITMASK_OPERATORS(External_library)
 
 /// @}
+
+// =============================================================================
 
 /**
  * @ingroup main
@@ -97,6 +111,8 @@ enum class Communication_mode {
   /// Network is used for communication.
   net = 100
 };
+
+// =============================================================================
 
 /**
  * @ingroup main
@@ -113,6 +129,8 @@ enum class Channel_binding {
   /// Required.
   required = 200
 };
+
+// =============================================================================
 
 /**
  * @ingroup main
@@ -132,6 +150,8 @@ enum class Ssl_protocol_version {
   /// TLS of version 1.3.
   tls1_3 = 300
 };
+
+// =============================================================================
 
 /**
  * @ingroup main
@@ -289,28 +309,28 @@ enum class Data_direction {
  * @brief A problem info severity.
  */
 enum class Problem_severity {
-  /// The "log" problem severity (may be only in dmitigr::pgfe::Notice).
+  /// The "log" problem severity (implies Notice).
   log = 0,
 
-  /// The "info" problem severity (may be only in dmitigr::pgfe::Notice).
+  /// The "info" problem severity (implies Notice).
   info = 100,
 
-  /// The "debug" problem severity (may be only in dmitigr::pgfe::Notice).
+  /// The "debug" problem severity (implies Notice).
   debug = 200,
 
-  /// The "notice" problem severity (may be only in dmitigr::pgfe::Notice).
+  /// The "notice" problem severity (implies Notice).
   notice = 300,
 
-  /// The "warning" problem severity (may be only in dmitigr::pgfe::Notice).
+  /// The "warning" problem severity (implies Notice).
   warning = 400,
 
-  /// The "error" problem severity (may be only in dmitigr::pgfe::Error).
+  /// The "error" problem severity (implies Error).
   error = 500,
 
-  /// The "fatal" problem severity (may be only in dmitigr::pgfe::Error).
+  /// The "fatal" problem severity (implies Error).
   fatal = 600,
 
-  /// The "panic" problem severity (may be only in dmitigr::pgfe::Error).
+  /// The "panic" problem severity (implies Error).
   panic = 700
 };
 
@@ -322,7 +342,7 @@ enum class Problem_severity {
  * @returns The result of conversion of `str` to a value of type Problem_severity,
  * or `-1` if `str` doesn't represents a problem severity.
  */
-inline auto to_problem_severity(const std::string_view str) noexcept
+constexpr Problem_severity to_problem_severity(const std::string_view str) noexcept
 {
   if (str == "LOG")
     return Problem_severity::log;
@@ -383,6 +403,7 @@ enum class Row_processing {
   complete = 200
 };
 
-} // namespace dmitigr::pgfe
+} // namespace pgfe
+} // namespace dmitigr
 
 #endif // DMITIGR_PGFE_BASICS_HPP

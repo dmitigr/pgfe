@@ -25,9 +25,9 @@
 namespace dmitigr::pgfe {
 
 /**
- * @ingroup main
+ * @ingroup utilities
  *
- * @brief Controls the initialization of the external libraries.
+ * @brief Controls the lazy initialization of the external libraries.
  *
  * @details If the application uses and initializes the library represented by
  * External_library, this function must be called with zeroes for the appropriate
@@ -36,13 +36,13 @@ namespace dmitigr::pgfe {
  * be called with the value of `library` for which the expression
  * `(library & External_library::libssl) == 0` evaluates to `true`.
  */
-DMITIGR_PGFE_API void set_initialization(External_library library);
+DMITIGR_PGFE_API void set_lazy_initialization(External_library library);
 
 /// @returns The case-folded and double-quote processed SQL identifier.
 DMITIGR_PGFE_API std::string unquote_identifier(std::string_view identifier);
 
 /**
- * @ingroup main
+ * @ingroup utilities
  *
  * @brief PostgreSQL array dimension determiner.
  *

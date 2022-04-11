@@ -807,9 +807,9 @@ auto to_container_of_optionals(Container<T, Allocator<T>>&& container)
  * @brief The partial specialization of Conversions for nullable arrays (i.e.
  * containers with optional values).
  *
- * @details The support of the following data formats is implemented:
- *   - for input data - Data_format::text;
- *   - for output data - Data_format::text.
+ * @details The support of the following data formats is implemented for:
+ *   - input data - Data_format::text;
+ *   - output data - Data_format::text.
  *
  * @par Requirements
  * @parblock
@@ -847,9 +847,9 @@ struct Conversions<Container<Optional<T>, Allocator<Optional<T>>>> final
  *
  * @brief The partial specialization of Conversions for non-nullable arrays.
  *
- * @details The support of the following data formats is implemented:
- *   - for input data  - Data_format::text;
- *   - for output data - Data_format::text.
+ * @details The support of the following data formats is implemented for:
+ *   - input data  - Data_format::text;
+ *   - output data - Data_format::text.
  *
  * @par Requirements
  * @parblock
@@ -863,7 +863,7 @@ struct Conversions<Container<Optional<T>, Allocator<Optional<T>>>> final
  * @tparam Allocator The allocator template class, such as `std::allocator`.
  *
  * @throws Client_exception with code Client_errc::improper_value_type_of_container
- * when converting the PostgreSQL array representations with at least one `NULL`
+ * when converting the PostgreSQL array representations with at least one NULL
  * element.
  */
 template<typename T,

@@ -23,7 +23,7 @@ try {
   auto [output_file, conn] = pgfe::test::arraybench::prepare(argc, argv);
   conn->execute([&output_file](auto&& row)
   {
-    using Array = pgfe::Array_optional<std::string>;
+    using Array = pgfe::Array_optional1<std::string>;
     for (const auto& elem : pgfe::to<Array>(row[0])) {
       if (elem)
         output_file << *elem;

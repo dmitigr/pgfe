@@ -112,9 +112,11 @@ endfunction()
 
 # ------------------------------------------------------------------------------
 
-macro(dmitigr_cpplipa_set_library_info lib version_major version_minor description)
-  if((${version_major} LESS 0) OR (${version_minor} LESS 0))
-    message(FATAL_ERROR "Invalid major or minor version of ${lib} specified")
+macro(dmitigr_cpplipa_set_library_info lib
+    version_major version_minor version_patch description)
+  if((${version_major} LESS 0)
+      OR (${version_minor} LESS 0) OR (${version_patch} LESS 0))
+    message(FATAL_ERROR "Invalid version of ${lib} specified")
   endif()
 
   set(dmitigr_${lib}_name "${lib}")
@@ -127,6 +129,7 @@ macro(dmitigr_cpplipa_set_library_info lib version_major version_minor descripti
 
   set(dmitigr_${lib}_version_major "${version_major}")
   set(dmitigr_${lib}_version_minor "${version_minor}")
+  set(dmitigr_${lib}_version_patch "${version_patch}")
   math(EXPR dmitigr_${lib}_version_major_hi "(${version_major} >> 16) & 0x0000ffff" OUTPUT_FORMAT DECIMAL)
   math(EXPR dmitigr_${lib}_version_major_lo "(${version_major}) & 0x0000ffff" OUTPUT_FORMAT DECIMAL)
   math(EXPR dmitigr_${lib}_version_minor_hi "(${version_minor} >> 16) & 0x0000ffff" OUTPUT_FORMAT DECIMAL)
@@ -145,6 +148,7 @@ macro(dmitigr_cpplipa_set_library_info_lib_variables lib)
   set(dmitigr_lib_Name ${dmitigr_${lib}_Name})
   set(dmitigr_lib_version_major ${dmitigr_${lib}_version_major})
   set(dmitigr_lib_version_minor ${dmitigr_${lib}_version_minor})
+  set(dmitigr_lib_version_patch ${dmitigr_${lib}_version_patch})
   set(dmitigr_lib_version_major_hi ${dmitigr_${lib}_version_major_hi})
   set(dmitigr_lib_version_major_lo ${dmitigr_${lib}_version_major_lo})
   set(dmitigr_lib_version_minor_hi ${dmitigr_${lib}_version_minor_hi})

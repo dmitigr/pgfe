@@ -42,7 +42,7 @@ public:
   /**
    * @brief Parses the input to make the Statement vector at once.
    *
-   * For example, consider the following input:
+   * @details For example, consider the following input:
    *   @code{sql}
    *   -- Comment 1 (comment of the empty statement)
    *   ;
@@ -156,7 +156,11 @@ private:
   std::vector<Statement> statements_;
 };
 
-/// Statement_vector is swappable.
+/**
+ * @ingroup utilities
+ *
+ * @brief Statement_vector is swappable.
+ */
 inline void swap(Statement_vector& lhs, Statement_vector& rhs) noexcept
 {
   lhs.swap(rhs);

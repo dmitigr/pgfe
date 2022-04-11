@@ -18,7 +18,7 @@
 # Info
 # ------------------------------------------------------------------------------
 
-dmitigr_cpplipa_set_library_info(util 0 0 "Utilities")
+dmitigr_cpplipa_set_library_info(util 0 0 0 "Utilities")
 
 # ------------------------------------------------------------------------------
 # Sources

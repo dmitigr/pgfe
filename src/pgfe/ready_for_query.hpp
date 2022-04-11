@@ -64,7 +64,11 @@ private:
   explicit Ready_for_query(detail::pq::Result&& pq_result) noexcept;
 };
 
-/// Ready_for_query is swappable.
+/**
+ * @ingroup main
+ *
+ * @brief Ready_for_query is swappable.
+ */
 inline void swap(Ready_for_query& lhs, Ready_for_query& rhs) noexcept
 {
   lhs.swap(rhs);

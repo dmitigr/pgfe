@@ -457,6 +457,7 @@ private:
    *
    * @param input An input string with comments.
    * @param comment_type A type of comments in the `input`.
+   * @param loc The locale.
    */
   static std::vector<std::pair<Key, Value>> extract(const std::string_view input,
     const Comment_type comment_type, const std::locale& loc)

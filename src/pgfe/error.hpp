@@ -24,7 +24,7 @@
 namespace dmitigr::pgfe {
 
 /**
- * @ingroup main
+ * @ingroup main errors
  *
  * @brief A error message from a PostgreSQL server.
  */

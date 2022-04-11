@@ -46,9 +46,6 @@
 
 namespace dmitigr::pgfe {
 
-/// Convenient function to use as row handler.
-constexpr void ignore_row(Row&&) noexcept {}
-
 /**
  * @ingroup main
  *
@@ -87,11 +84,11 @@ public:
   /// Not copy-constructible.
   Connection(const Connection&) = delete;
 
-  /// Not copy-assignable.
-  Connection& operator=(const Connection&) = delete;
-
   /// Move-constructible.
   DMITIGR_PGFE_API Connection(Connection&& rhs) noexcept;
+
+  /// Not copy-assignable.
+  Connection& operator=(const Connection&) = delete;
 
   /// Move-assignable.
   DMITIGR_PGFE_API Connection& operator=(Connection&& rhs) noexcept;
@@ -116,7 +113,7 @@ public:
   DMITIGR_PGFE_API Status status() const noexcept;
 
   /**
-   * @returns `(status() == Status::connected)`.
+   * @returns `status() == Status::connected`.
    *
    * @see status().
    */
@@ -134,7 +131,7 @@ public:
   transaction_status() const noexcept;
 
   /**
-   * @returns `(transaction_status() == Transaction_status::uncommitted)`.
+   * @returns `transaction_status() == Transaction_status::uncommitted`.
    *
    * @see transaction_status().
    */
@@ -179,7 +176,7 @@ public:
    * @par Exception safety guarantee
    * Basic.
    *
-   * @remarks If called when `(status() == Status::failure)`, it will discard all
+   * @remarks If called when `status() == Status::failure`, it will discard all
    * the unhandled messages!
    *
    * @see connect(), status(), socket_readiness().
@@ -196,10 +193,10 @@ public:
    * `options().communication_mode() && (!timeout || timeout->count() >= -1)`.
    *
    * @par Effects
-   * `(status() == Status::failure || status() == Status::connected)`.
+   * `(status() == Status::failure) || (status() == Status::connected)`.
    *
    * @throws An instance of type Timed_out if the expression
-   * `(status() == Status::connected)` will not evaluates to `true` within the
+   * `status() == Status::connected` will not evaluates to `true` within the
    * specified `timeout`.
    *
    * @par Exception safety guarantee
@@ -214,7 +211,7 @@ public:
    * @brief Attempts to disconnect from a server.
    *
    * @par Effects
-   * `(status() == Status::disconnected)`.
+   * `status() == Status::disconnected`.
    */
   DMITIGR_PGFE_API void disconnect() noexcept;
 
@@ -229,8 +226,8 @@ public:
    * value of `std::nullopt` *eternity*.
    *
    * @par Requires
-   * `((!timeout || timeout->count() >= -1) &&
-   *    (status() != Status::failure) && (status() != Status::disconnected))`.
+   * `(!timeout || timeout->count() >= -1) &&
+   *    (status() != Status::failure) && (status() != Status::disconnected)`.
    */
   DMITIGR_PGFE_API Socket_readiness wait_socket_readiness(Socket_readiness mask,
     std::optional<std::chrono::milliseconds> timeout = std::nullopt) const;
@@ -332,7 +329,7 @@ public:
   /// @name Signals
   /// @{
 
-  /// @returns The valid released instance if available.
+  /// @returns The valid instance if available.
   DMITIGR_PGFE_API Notification pop_notification();
 
   /// An alias of a notice handler.
@@ -395,7 +392,7 @@ public:
    * the value of `std::nullopt` means *eternity*.
    *
    * @par Requires
-   * `(!timeout || timeout->count() >= -1)`.
+   * `!timeout || (timeout->count() >= -1)`.
    *
    * @throws Client_exception with code Client_errc::timed_out if the expression
    * `has_response()` will not evaluates to `true` within the specified `timeout`.
@@ -413,8 +410,8 @@ public:
     std::chrono::milliseconds{-1});
 
   /**
-   * @brief Similar to wait_response(), but throws Server_exception
-   * if `(error() != std::nullopt)` after awaiting.
+   * @brief Similar to wait_response(), but throws Server_exception if `error()`
+   * after awaiting.
    *
    * @see wait_response().
    */
@@ -449,7 +446,10 @@ public:
   DMITIGR_PGFE_API const Error_handler& error_handler() noexcept;
 
   /**
-   * @returns The released instance if available.
+   * @returns The Error as response on request if available.
+   *
+   * @par Effects
+   * `!error()`.
    *
    * @par Exception safety guarantee
    * Strong.
@@ -459,7 +459,10 @@ public:
   DMITIGR_PGFE_API Error error() noexcept;
 
   /**
-   * @returns The released instance if available.
+   * @returns The Row as response on request if available.
+   *
+   * @par Effects
+   * `!row()`.
    *
    * @par Exception safety guarantee
    * Strong.
@@ -469,7 +472,10 @@ public:
   DMITIGR_PGFE_API Row row() noexcept;
 
   /**
-   * @returns The released instance if available.
+   * @returns The Copier as response on request if available.
+   *
+   * @par Effects
+   * `!copier()`.
    *
    * @par Exception safety guarantee
    * Strong.
@@ -479,7 +485,10 @@ public:
   DMITIGR_PGFE_API Copier copier() noexcept;
 
   /**
-   * @returns The released instance if available.
+   * @returns The Completion as response on request if available.
+   *
+   * @par Effects
+   * `!completion()`.
    *
    * @par Exception safety guarantee
    * Strong.
@@ -496,15 +505,15 @@ public:
    * @tparam on_exception What to do when the callback throws an exception.
    *
    * @param callback A function to be called for each retrieved row. The callback:
-   *   -# can be defined with a parameter of type `Row&&`. An exception will be
+   *   - can be defined with a parameter of type `Row&&`. An exception will be
    *   thrown on error in this case;
-   *   -# can be defined with two parameters of type `Row&&` and `Error&&`;
+   *   - can be defined with two parameters of type `Row&&` and `Error&&`;
    *   In case of error an instance of type Error will be passed as the second
    *   argument of the callback instead of throwing exception and method will
    *   return an invalid instance of type Completion after the callback returns.
    *   In case of success, an invalid instance of type Error will be passed as the
    *   second argument of the callback;
-   *   -# can return a value of type Row_processing to indicate further behavior.
+   *   - can return a value of type Row_processing to indicate further behavior.
    *
    * @see execute(), invoke(), call(), Row_processing.
    */
@@ -595,7 +604,10 @@ public:
   }
 
   /**
-   * @returns The prepared statement in response on descibe or prepare request.
+   * @returns The Prepared_statement as response on descibe or prepare request.
+   *
+   * @par Effects
+   * `!prepared_statement()`.
    *
    * @remarks The statements prepared by using the SQL command `PREPARE` must
    * be described first in order to be accessible by this method.
@@ -605,7 +617,7 @@ public:
   DMITIGR_PGFE_API Prepared_statement prepared_statement() noexcept;
 
   /**
-   * @returns The released instance if available.
+   * @returns The Ready_for_query as response on send_sync() message.
    *
    * @par Exception safety guarantee
    * Strong.
@@ -624,8 +636,13 @@ public:
   /// @name Requests
   /// @{
 
-  /// @returns `true` if `COPY` operation in progress.
-  DMITIGR_PGFE_API bool is_copy_in_progress() const noexcept;
+  /**
+   * @returns `true` if the connection is ready for requesting a server,
+   * i.e. if the connection is open and no command in progress.
+   *
+   * @see is_ready_for_nio_request().
+   */
+  DMITIGR_PGFE_API bool is_ready_for_request() const noexcept;
 
   /**
    * @returns `true` if the connection is ready for requesting a server in a
@@ -634,6 +651,9 @@ public:
    * @see is_ready_for_request().
    */
   DMITIGR_PGFE_API bool is_ready_for_nio_request() const noexcept;
+
+  /// @returns `true` if `COPY` operation in progress.
+  DMITIGR_PGFE_API bool is_copy_in_progress() const noexcept;
 
   /**
    * @returns The request queue size.
@@ -653,21 +673,10 @@ public:
   DMITIGR_PGFE_API bool has_uncompleted_request() const noexcept;
 
   /**
-   * @returns `true` if the connection is ready for requesting a server,
-   * i.e. if the connection is open and no command in progress.
-   *
-   * @see is_ready_for_nio_request().
-   */
-  DMITIGR_PGFE_API bool is_ready_for_request() const noexcept;
-
-  /**
    * @brief Submits a request to a server to prepare the statement.
    *
    * @param statement A preparsed SQL string.
    * @param name A name of statement to be prepared.
-   *
-   * @par Responses
-   * Prepared_statement
    *
    * @par Effects
    * - `has_uncompleted_request()` - just after the successful request submission;
@@ -699,7 +708,7 @@ public:
     const std::string& name = {});
 
   /**
-   * @returns The prepared statement.
+   * @returns The Prepared_statement as response on prepare request.
    *
    * @par Requires
    * `is_ready_for_request() && !statement.has_missing_parameters()`.
@@ -723,9 +732,6 @@ public:
    *
    * @param name A name of prepared statement.
    *
-   * @par Responses
-   * Prepared_statement
-   *
    * @par Effects
    * - `has_uncompleted_request()` - just after the successful request submission;
    * - `prepared_statement()` - just after the successful response.
@@ -741,7 +747,7 @@ public:
   DMITIGR_PGFE_API void describe_nio(const std::string& name);
 
   /**
-   * @returns The prepared statement if exists on server.
+   * @returns The Prepared_statement as response on describe request.
    *
    * @par Requires
    * `is_ready_for_request()`.
@@ -758,15 +764,12 @@ public:
    *
    * @param name A name of prepared statement.
    *
-   * @par Responses
-   * Completion
-   *
    * @par Effects
    * - `has_uncompleted_request()` - just after the successful request;
    * - `completion()` - just after the successful response.
    *
    * @par Requires
-   * `(is_ready_for_nio_request() && !name.empty())`.
+   * `is_ready_for_nio_request() && !name.empty()`.
    *
    * @par Exception safety guarantee
    * Strong.
@@ -776,7 +779,7 @@ public:
   DMITIGR_PGFE_API void unprepare_nio(const std::string& name);
 
   /**
-   * @returns The valid released instance if available.
+   * @returns The Completion as response on unprepare request.
    *
    * @par Requires
    * `is_ready_for_request()`.
@@ -789,9 +792,6 @@ public:
   /**
    * @brief Requests the server to prepare and execute the unnamed statement
    * from the preparsed SQL string without waiting for a response.
-   *
-   * @par Responses
-   * Similar to Prepared_statement::execute().
    *
    * @par Effects
    * `has_uncompleted_request()`.
@@ -819,10 +819,7 @@ public:
    * @param statement A *preparsed* statement to execute.
    * @param parameters Parameters to bind with a parameterized statement.
    *
-   * @returns The released instance.
-   *
-   * @par Responses
-   * Similar to Prepared_statement::execute().
+   * @returns The Completion as response on a request.
    *
    * @par Requires
    * `is_ready_for_request() && !statement.has_missing_parameters()`.
@@ -849,7 +846,7 @@ public:
   template<Row_processing on_exception = Row_processing::complete, typename ... Types>
   Completion execute(const Statement& statement, Types&& ... parameters)
   {
-    return execute<on_exception>([](auto&&){}, statement,
+    return execute<on_exception>(ignore_row, statement,
       std::forward<Types>(parameters)...);
   }
 
@@ -924,7 +921,7 @@ public:
   template<Row_processing on_exception = Row_processing::complete, typename ... Types>
   Completion invoke(std::string_view function, Types&& ... arguments)
   {
-    return invoke<on_exception>([](auto&&){}, function,
+    return invoke<on_exception>(ignore_row, function,
       std::forward<Types>(arguments)...);
   }
 
@@ -961,7 +958,7 @@ public:
     typename ... Types>
   Completion invoke_unexpanded(std::string_view function, Types&& ... arguments)
   {
-    return invoke_unexpanded<on_exception>([](auto&&){}, function,
+    return invoke_unexpanded<on_exception>(ignore_row, function,
       std::forward<Types>(arguments)...);
   }
 
@@ -996,12 +993,12 @@ public:
     typename ... Types>
   Completion call(std::string_view procedure, Types&& ... arguments)
   {
-    return call<on_exception>([](auto&&){},
+    return call<on_exception>(ignore_row,
       procedure, std::forward<Types>(arguments)...);
   }
 
   /**
-   * @briefs Enables or disables the pipeline on this instance.
+   * @brief Enables or disables the pipeline on this instance.
    *
    * @details When pipeline is enabled, only asynchronous operations are
    * permitted. After enabling the pipeline, the application queues requests
@@ -1193,12 +1190,12 @@ public:
    * @brief Encodes the binary data into the textual representation to be used
    * in a SQL query.
    *
-   * @param binary_data A binary Data to escape.
+   * @param data A binary Data to escape.
    *
    * @returns The encoded data in the hex format.
    *
    * @par Requires
-   * `(is_connected() && data && (data.format() == Data_format::binary))`.
+   * `is_connected() && data && (data.format() == Data_format::binary)`.
    *
    * @remarks Using of parameterized prepared statement should be considered as
    * the better alternative comparing to including the encoded binary data into
@@ -1255,6 +1252,7 @@ private:
   // Session data / requests
   // ---------------------------------------------------------------------------
 
+  /// A request.
   struct Request final {
     enum class Id {
       execute = 1,
@@ -1341,6 +1339,9 @@ private:
   // ---------------------------------------------------------------------------
   // Prepared statement helpers
   // ---------------------------------------------------------------------------
+
+  static constexpr void ignore_row(Row&&) noexcept
+  {}
 
   void prepare_nio__(const char* const query, const char* const name,
     const Statement* const preparsed);
@@ -1482,7 +1483,11 @@ Prepared_statement::execute(F&& callback, Types&& ... parameters)
   return connection().process_responses<on_exception>(std::forward<F>(callback));
 }
 
-/// Connection is swappable.
+/**
+ * @ingroup main
+ *
+ * @brief Connection is swappable.
+ */
 inline void swap(Connection& lhs, Connection& rhs) noexcept
 {
   lhs.swap(rhs);

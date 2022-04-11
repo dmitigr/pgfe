@@ -28,7 +28,7 @@ namespace dmitigr {
 namespace pgfe {
 
 /**
- * @ingroup lob
+ * @ingroup main
  *
  * @brief An open mode of large object.
  *
@@ -54,7 +54,7 @@ enum class Large_object_open_mode {
 };
 
 /**
- * @ingroup lob
+ * @ingroup main
  *
  * @brief Seek direction.
  */
@@ -78,7 +78,7 @@ struct Is_bitmask_enum<pgfe::Large_object_open_mode> final : std::true_type {};
 
 namespace pgfe {
 
-/// @addtogroup lob
+/// @addtogroup main
 /// @{
 
 DMITIGR_DEFINE_ENUM_BITMASK_OPERATORS(Large_object_open_mode)
@@ -86,7 +86,7 @@ DMITIGR_DEFINE_ENUM_BITMASK_OPERATORS(Large_object_open_mode)
 /// @}
 
 /**
- * @ingroup lob
+ * @ingroup main
  *
  * @brief A client-side pointer to a large object.
  *
@@ -103,7 +103,7 @@ public:
   /**
    * @brief The destructor.
    *
-   * @details Do nothing!
+   * @details Does nothing!
    *
    * @see close().
    */
@@ -198,7 +198,7 @@ public:
    * @throw Client_exception on error.
    *
    * @par Requires
-   * `(new_size >= 0)`.
+   * `new_size >= 0`.
    */
   DMITIGR_PGFE_API void truncate(std::int_fast64_t new_size);
 
@@ -248,6 +248,7 @@ public:
 private:
   friend Connection;
 
+  /// A state.
   struct State final {
     State(const std::int_fast64_t id,
       const int desc, Connection* const connection)
@@ -266,7 +267,11 @@ private:
   int descriptor() const noexcept;
 };
 
-/// Large_object is swappable.
+/**
+ * @ingroup main
+ *
+ * @brief Large_object is swappable.
+ */
 inline void swap(Large_object& lhs, Large_object& rhs) noexcept
 {
   lhs.swap(rhs);

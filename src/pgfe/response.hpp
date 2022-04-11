@@ -30,6 +30,7 @@ namespace dmitigr::pgfe {
  * @brief A synchronous (requested) message from a PostgreSQL server.
  */
 class Response : public Message {
+private:
   friend Copier;
   friend Completion;
   friend Error;
@@ -45,11 +46,13 @@ class Response : public Message {
 // -----------------------------------------------------------------------------
 
 namespace detail {
+/// Response callback traits.
 template<typename F, typename = void>
 struct Response_callback_traits final {
   constexpr static bool is_valid = false;
 };
 
+/// Response callback traits partial specialization.
 template<typename F>
 struct Response_callback_traits<F,
   std::enable_if_t<std::is_invocable_v<F, Row&&>>> final {
@@ -62,6 +65,7 @@ struct Response_callback_traits<F,
   constexpr static bool has_error_parameter = false;
 };
 
+/// Response callback traits partial specialization.
 template<typename F>
 struct Response_callback_traits<F,
   std::enable_if_t<std::is_invocable_v<F, Row&&, Error&&>>> final {

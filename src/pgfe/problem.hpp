@@ -36,8 +36,14 @@ public:
   /// The destructor.
   virtual ~Problem() noexcept = default;
 
+  /// Not copy-constructible.
+  Problem(const Problem&) = delete;
+
   /// Move-constructible.
   Problem(Problem&&) noexcept = default;
+
+  /// Not copy-assignable.
+  Problem& operator=(const Problem&) = delete;
 
   /// Move-assignable.
   Problem& operator=(Problem&&) noexcept = default;
@@ -172,7 +178,7 @@ public:
    * @returns The textual representation of the SQLSTATE.
    *
    * @par Requires
-   * The `sqlstate` must be in range `[0, 60466175]`.
+   * `sqlstate` in range `[0, 60466175]`.
    */
   static DMITIGR_PGFE_API std::string sqlstate_int_to_string(int sqlstate);
 

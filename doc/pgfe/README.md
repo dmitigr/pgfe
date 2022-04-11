@@ -1,12 +1,8 @@
 # [PostgreSQL] C++ driver
 
-`dmitigr::pgfe` (PostGres FrontEnd, hereinafter referred to as Pgfe) - is a
-[PostgreSQL] C++ driver. The development is focused on easines and robustness of
-use with performance in mind.
-
-## Upcoming release 2.0
-
-I'm currently working on Pgfe 2.0. The current stage is beta!
+`dmitigr::pgfe` (PostGres FrontEnd) - is the advanced and feature rich
+[PostgreSQL] driver written in C++. The development is focused on easines and
+robustness of use with the performance in mind.
 
 ## Hello, World
 
@@ -69,21 +65,21 @@ int main() try {
 
 ## Features
 
-  - fast (negligible overhead compared to libpq);
-  - can be used as header-only library;
-  - work with database connections (in both blocking and non-blocking IO manner);
-  - execute prepared statements (named parameters are supported);
-  - conveniently call functions and procedures;
-  - conveniently handle errors by either via exceptions or error conditions;
-  - conveniently work with [large objects][lob], [COPY][copy] and [pipeline];
-  - enum entry for each predefined [SQLSTATE][errcodes];
-  - easily convert the data from the client side representation to the server
-    side representation and vice versa (conversions of multidimensional
-    [PostgreSQL] arrays to/from any combinations of STL containers are supported
-    out of the box!);
-  - dynamically construct SQL queries;
-  - separate SQL and C++ code (e.g., by placing SQL code into a text file);
-  - simple and thread-safe connection pool.
+  - fast and robust;
+  - can be easily used as header-only library;
+  - works with database connections in both blocking and non-blocking IO manner;
+  - supports prepared statements with both positional and named parameters;
+  - provides first-class support for calling functions and procedures;
+  - supports advanced features of PostgreSQL, such as [pipeline], [COPY][copy]
+  and [large objects][lob];
+  - supports advanced error handling via exceptions and error conditions:
+  provides enum entry for each predefined [SQLSTATE][errcodes];
+  - provides advanced support for the client/server data conversion: even
+  multidimensional [PostgreSQL] arrays to/from any combinations of STL
+  containers can be performed with easy;
+  - provides a support of dynamic construction of SQL queries;
+  - allows to separate SQL queries and C++ code on the client side;
+  - provides simple, robust and thread-safe connection pool.
 
 ## Usage
 
@@ -113,12 +109,12 @@ g++ -std=c++17 -I/usr/local/pgsql/include -L/usr/local/pgsql/lib -lpq -ohello he
 
 Create build directory, configure, build and install (note, if libpq is in a
 non-standard location, then the path to it can be specified by using
-`-DLIBPQ_PREFIX` as shown below):
+`-DPq_ROOT` as shown below):
 
 ```
 cd pgfe
 mkdir build && cd build
-cmake -DLIBPQ_PREFIX=/usr/local/pgsql .. # -DLIBPQ_PREFIX is optional
+cmake -DPq_ROOT=/usr/local/pgsql .. # -DPq_ROOT is optional
 cmake --build .
 sudo cmake --install .
 ```
@@ -203,11 +199,10 @@ auto make_connection(const Connection_options& opts = {})
 
 ### Executing SQL commands
 
-Only extended query protocol is used under the hood to execute SQL commands. SQL
-commands can be executed and processed either synchronously or in non-blocking IO
-maner, i.e. without need of waiting a server response(-s), and thus, without thread
-blocking. In the latter case the methods of the class `Connection` with the suffix
-`_nio` shall be used.
+Only extended query protocol is used under the hood of Pgfe. SQL commands can be
+executed and processed either synchronously or in non-blocking IO maner, i.e.
+without need of waiting for server response(-s). In the latter case the methods
+of the class `Connection` with the suffix `_nio` shall be used.
 
 With Pgfe it's easy to execute single commands:
 
@@ -228,14 +223,13 @@ void foo(Connection& conn)
 ```
 
 Extended query protocol used by Pgfe is based on prepared statements. In Pgfe
-prepared statements can be parameterized with either positional or named
+prepared statements can be parameterized with both positional and named
 parameters. The class `Statement` provides functionality for constructing SQL
 statements, providing support for named parameters, as well as functionality for
 direct parameters replacement with any SQL statement to generate complex SQL
 expressions dynamically.
 
-When using "extended query" protocol in its simplest form unnamed statements are
-prepared implicitly:
+In most cases unnamed statements prepared implicitly:
 
 ```cpp
 // Example 4. Preparing unnamed statements (`BEGIN`, `SELECT`, `ROLLBACK`) implicitly.
@@ -260,6 +254,7 @@ void foo(Connection& conn)
 {
   // Please note, the sequence of the specified named parameters doesn't matter,
   // and that "end" parameter is specified before "begin" parameter.
+  using dmitigr::pgfe::a;
   conn.execute([](auto&& row)
   {
     std::printf("Range [%i, %i]\n", to<int>(row["b"]), to<int>(row["e"]));
@@ -337,26 +332,27 @@ void foo(Connection& conn)
 
 ### Data conversions
 
-Pgfe provides the support of conversions only for *fundamental and standard C++
-types* out of the box. Conversions for special PostgreSQL types such as
+By default, Pgfe provides the support of the data conversions for *fundamental
+and standard C++ types* only. Conversions for special PostgreSQL types such as
 [Date/Time Types][datatype-datetime] aren't provided out of the box, since many
 implementations of these types are possible at the client side. Instead it's up
-to the user to decide what implementation to use. (If such conversions are needed
-at all.) For example, the template structure `Conversions` can be easily
-specialized to convert the data between PostgreSQL [Date/Time Types][datatype-datetime]
-and types from the [Boost.Date_Time][boost_datetime] library.
+to the application developers to decide what implementation to use. (If such
+conversions are needed at all.) For example, the template structure `Conversions`
+can be easily specialized to convert the data between PostgreSQL
+[Date/Time Types][datatype-datetime] and types from the
+[Boost.Date_Time][boost_datetime] library.
 
 The abstract class `Data` is designed to provide the interface for:
 
   - the values of prepared statements' parameters;
   - the data retrieved from a [PostgreSQL] server.
 
-The template structure `Conversions` are used by:
+The template structure `Conversions` is used by:
 
-  - method `Prepared_statement::bind(std::size_t, T&&)` to perfrom data conversions
-  from objects or type `T` to objects of type `Data`;
-  - function `to()` to perform data conversions from objects of type `Data` to objects
-  of the specified type `T`.
+  - method `Prepared_statement::bind(std::size_t, T&&)` to perfrom data
+  conversions from objects or type `T` to objects of type `Data`;
+  - function `to()` to perform data conversions from objects of type `Data`
+  to objects of the specified type `T`.
 
 Pgfe provides the partial specialization of the template structure `Conversions` to
 convert from/to [PostgreSQL] arrays (*including multidimensional arrays!*)
@@ -380,10 +376,12 @@ one `NULL` element a `Client_exception` will be thrown. Summarizing:
 
   - the types `Container<Optional<T>>`, `Container<Optional<Container<Optional<T>>>>`,
     `...` can be used to represent N-dimensional arrays of `T` which *may* contain `NULL`
-    values;
+    values. (Pgfe provides the templated using definitions Array_optional1, ...,
+    Array_optional6 for convenience;)
 
   - the types `Container<T>`, `Container<Container<T>>`, `...` can be used to represent
-    N-dimensional arrays of `T` which *may not* contain `NULL` values.
+    N-dimensional arrays of `T` which *may not* contain `NULL` values. (Pgfe provides
+    the templated using definitions Array1, ..., Array6 for convenience.)
 
 User-defined data conversions could be implemented by either:
 
@@ -396,16 +394,16 @@ User-defined data conversions could be implemented by either:
 
 Server responses can be retrieved:
 
-  - implicitly in blocking IO manner by using methods such as `Connection::perform()`,
-    `Connection::prepare()`, `Connection::execute()` etc. Some of these methods has
-    overloads for passing the callback which is called by Pgfe every time the row
-    is retrieved from the server;
-  - explicitly in blocking IO manner by using methods such as `Connection::wait_response()`
-    and `Connection::wait_response_throw()` etc after the using methods with the
-    suffix "_nio";
-  - explicitly in non-blocking IO maner by using the methods such as `Connection::read_input()`,
-    `Connection::handle_input()`, `Connection::socket_readiness()` etc after the
-    using methods with suffix "_nio".
+  - implicitly in blocking IO manner by using methods such as `Connection::prepare()`,
+  `Connection::execute()` etc. Some of these methods has overloads for passing
+  the callback which is called by Pgfe every time the row is retrieved from the
+  server;
+  - explicitly in blocking IO manner by using methods such as
+  `Connection::wait_response()` and `Connection::wait_response_throw()` etc after
+  the using methods with the suffix "_nio";
+  - explicitly in non-blocking IO maner by using the methods such as
+  `Connection::read_input()`, `Connection::handle_input()`,
+  `Connection::socket_readiness()` etc after the using methods with suffix "_nio".
 
 To *initiate* retrieving the *first* response in non-blocking IO manner methods
 of the class `Connection` with the suffix `_nio` must be used. Otherwise, Pgfe
@@ -416,25 +414,29 @@ of type `Error`, which contains all the error details.
 Server responses are represented by the classes inherited from `Response`:
 
   - errors are represented by the class `Error`. Each server error is identifiable
-    by a [SQLSTATE][errcodes] condition. In Pgfe *each* such a condition is represented
-    by the member of the enumeration `Server_errc`, integrated to the framework for
-    reporting errors provided by the standard library in [`<system_error>`][system_error].
-    Therefore, working with [SQLSTATEs][errcodes] is as simple and safe as
-    with [`std::error_condition`][std_error_condition] and enumerated types, for example:
+    by a [SQLSTATE][errcodes] condition. In Pgfe *each* such a condition is
+    represented by the member of the enumeration `Server_errc`, integrated to the
+    framework for reporting errors provided by the standard library in
+    [`<system_error>`][system_error]. Therefore, working with [SQLSTATEs][errcodes]
+    is as simple and safe as with [`std::error_condition`][std_error_condition]
+    and enumerated types (see Example 10);
+  - rows are represented by the class `Row`, for example (see Example 11);
+  - prepared statements are represented by the class `Prepared_statement` (see
+  Example 12).
+  - operation success indicators are represented by the class `Completion` (see
+  Example 13).
 
 ```cpp
 // Example 10. Catching the syntax error.
 void foo(Connection& conn)
 {
   try {
-    conn.perform("provoke syntax error");
+    conn.execute("provoke syntax error");
   } catch (const Server_exception& e) {
     assert(e.error().condition() == Server_errc::c42_syntax_error);
   }
 }
 ```
-
-  - rows are represented by the class `Row`, for example:
 
 ```cpp
 // Example 11. Processing the rows.
@@ -449,15 +451,12 @@ void foo(Connection& conn)
 }
 ```
 
-  - prepared statements are represented by the class `Prepared_statement`, for
-    example:
-
 ```cpp
 // Example 12. Working with named prepared statement.
 void foo(Connection& conn)
 {
   // Prepare the named statement
-  auto& int_gen = conn.prepare("select generate_series($1::int, $2::int)", "int_gen");
+  auto int_gen = conn.prepare("select generate_series($1::int, $2::int)", "int_gen");
 
   // Defining the row processor
   auto process = [](auto&& row)
@@ -474,14 +473,11 @@ void foo(Connection& conn)
 }
 ```
 
-  - operation success indicators are represented by the class `Completion`, for
-    example:
-
 ```cpp
 // Example 13. Using completion info.
 void foo(Connection& conn)
 {
-  auto completion = conn.perform("begin");
+  auto completion = conn.execute("begin");
   std::printf("%s\n", completion.operation_name()); // prints "BEGIN"
 }
 ```
@@ -502,18 +498,18 @@ up from the internal storage it may cause memory exhaustion!**
 
 ### Dynamic SQL
 
-The standard classes like [`std::string`][std_string] or [`std::ostringstream`][std_ostringstream]
-can be used to make SQL strings dynamically. However, in some cases it is more
-convenient to use the class `Statement` for this purpose. Consider the following
-statement:
+The standard classes like [`std::string`][std_string] or
+[`std::ostringstream`][std_ostringstream] can be used to make SQL strings
+dynamically. However, in some cases it is more convenient to use the class
+`Statement` for this purpose. Consider the following statement:
 
 ```sql
 select :expr::int, ':expr';
 ```
 
-This SQL string has one named parameter `expr` and one string constant
-`':expr'`. It's possible to replace the named parameters of the SQL string with
-another SQL string by using `Statement::replace_parameter()`, for example:
+This SQL string has one named parameter `expr` and one string constant `':expr'`.
+It's possible to replace the named parameters of the SQL string with another SQL
+string by using `Statement::replace_parameter()`, for example:
 
 ```cpp
 // Example 14. Extending the SQL statement.
@@ -561,17 +557,17 @@ std::string read_file(const std::filesystem::path& path); // defined somewhere
 
 void foo()
 {
-  const auto input = read_file("bunch.sql");
+  auto input = read_file("bunch.sql");
   Statement_vector bunch{input};
-  auto* minus_one = bunch.find("id", "minus-one"); // select :n::int - 1
-  auto*  plus_one = bunch.find("id",  "plus-one"); // select :n::int + 1, ';'
+  auto minus_pos = bunch.statement_index("id", "minus-one"); // select :n::int - 1
+  auto plus_pos = bunch.statement_index("id",  "plus-one"); // select :n::int + 1, ';'
   // ...
 }
 ```
 
 ### Connection pool
 
-Pgfe provides a simple connection pool implemented in class `Connection_pool`:
+Pgfe provides a simple connection pool implemented as class `Connection_pool`:
 
 ```cpp
 // Example 16. Using the connection pool.
@@ -585,10 +581,10 @@ int main()
   {
     auto conn1 = pool.connection(); // 1st attempt to get the connection from pool
     assert(conn1);  // ok
-    conn1.perform("select 1");
+    conn1.execute("select 1");
     auto conn2 = pool.connection(); // 2nd attempt to get the connection from pool
     assert(conn2);  // ok
-    conn2.perform("select 2");
+    conn2.execute("select 2");
     auto conn3 = pool.connection(); // 3rd attempt to get the connection from pool
     assert(!conn3); // the pool is exhausted
   } // connections are returned back to the pool here
@@ -625,7 +621,7 @@ to Pgfe.
 
 Please, pay attention to the following:
 
-  - by default, `CMAKE_BUILD_TYPE` is set to `Debug`;
+  - by default, `CMAKE_BUILD_TYPE` is set to `Release`;
   - by using `Pq_ROOT` it's possible to specify a prefix for both binary and
   headers of the [libpq]. For example, if [PostgreSQL] installed relocatably
   into `/usr/local/pgsql`, the value of `Pq_ROOT` should be set accordingly;

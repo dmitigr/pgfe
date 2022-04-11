@@ -29,6 +29,13 @@ DMITIGR_PGFE_INLINE Completion::Completion() noexcept
   DMITIGR_ASSERT(!is_valid());
 }
 
+DMITIGR_PGFE_INLINE Completion::Completion(Completion&& rhs) noexcept
+  : affected_row_count_{rhs.affected_row_count_}
+  , operation_name_{std::move(rhs.operation_name_)}
+{
+  rhs.affected_row_count_ = -2;
+}
+
 DMITIGR_PGFE_INLINE Completion::Completion(const std::string_view tag)
   : affected_row_count_{-1} // mark instance as valid
 {
@@ -70,18 +77,6 @@ DMITIGR_PGFE_INLINE Completion::Completion(const std::string_view tag)
   assert(is_invariant_ok());
 }
 
-DMITIGR_PGFE_INLINE bool Completion::is_invariant_ok() const noexcept
-{
-  return (affected_row_count_ < 0) || !operation_name_.empty();
-}
-
-DMITIGR_PGFE_INLINE Completion::Completion(Completion&& rhs) noexcept
-  : affected_row_count_{rhs.affected_row_count_}
-  , operation_name_{std::move(rhs.operation_name_)}
-{
-  rhs.affected_row_count_ = -2;
-}
-
 DMITIGR_PGFE_INLINE Completion& Completion::operator=(Completion&& rhs) noexcept
 {
   if (this != &rhs) {
@@ -115,6 +110,11 @@ Completion::affected_row_count() const noexcept
   return (affected_row_count_ >= 0) ?
     std::make_optional<decltype(affected_row_count_)>(affected_row_count_) :
     std::nullopt;
+}
+
+DMITIGR_PGFE_INLINE bool Completion::is_invariant_ok() const noexcept
+{
+  return (affected_row_count_ < 0) || !operation_name_.empty();
 }
 
 } // namespace dmitigr::pgfe

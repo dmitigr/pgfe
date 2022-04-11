@@ -31,7 +31,7 @@ namespace dmitigr::pgfe {
  *
  * @brief A support of the COPY command of PostgreSQL.
  *
- * @details The overall process is that the client first issues the SQL COPY
+ * @details The overall process is that the client first issues the SQL `COPY`
  * command by using Connection instance and getting the instance of this class.
  * The client should then use the functions of this class to send or receive
  * data rows. When the data transfer is complete, the client must wait the next
@@ -46,11 +46,14 @@ public:
   /**
    * @brief The destructor.
    *
-   * @details Returns itself back to origin Connection.
+   * @details If `is_valid()` then returns itself back to origin Connection.
+   *
+   * @par Effects
+   * If `is_valid()` then `Connection::copier()` returns a valid instance.
    *
    * @warning Doesn't calls end()!
    *
-   * @see end().
+   * @see end(), Connection::copier().
    */
   DMITIGR_PGFE_API ~Copier() noexcept;
 
@@ -115,10 +118,10 @@ public:
    * `data_direction() == Data_direction::to_server`.
    *
    * @returns `true` if either:
-   *   -# the indication was sent (Connection::is_nio_output_enabled()
+   *   - the indication was sent (Connection::is_nio_output_enabled()
    *   returns `false`);
-   *   -# the indication was queued (Connection::is_nio_output_enabled()
-   *   returns `true`) and the output buffers needs to be flushed.
+   *   - the indication was queued (Connection::is_nio_output_enabled()
+   *   returns `true`) and the output buffers needs to be flushed;
    * Returns `false` if the output buffers are full and needs to be flushed.
    *
    * @warning This method must be called to return the Connection instance
@@ -134,11 +137,11 @@ public:
    * @par Requires
    * `data_direction() == Data_direction::from_server`.
    *
-   * @returns Returns:
-   *   -# invalid instance if the `COPY` command is done;
-   *   -# the empty instance to indicate that the COPY is undone, but no row is
+   * @returns Either:
+   *   - invalid instance if the `COPY` command is done;
+   *   - the empty instance to indicate that the `COPY` is undone, but no row is
    *   yet available (this is only possible when `wait` is `false`);
-   *   -# the non-empty instance received from the server.
+   *   - the non-empty instance received from the server.
    *
    *  @remarks The format of returned data is equals to `data_format(0)`.
    */
@@ -166,12 +169,16 @@ private:
   explicit DMITIGR_PGFE_API Copier(Connection& connection,
     detail::pq::Result&& pq_result) noexcept;
 
-  static inline void dummy_free(void*)noexcept{};
+  static inline void dummy_free(void*) noexcept {};
   void check_send() const;
   void check_receive() const;
 };
 
-/// Copier is swappable.
+/**
+ * @ingroup main
+ *
+ * @brief Copier is swappable.
+ */
 inline void swap(Copier& lhs, Copier& rhs) noexcept
 {
   lhs.swap(rhs);

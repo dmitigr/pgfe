@@ -26,100 +26,135 @@ namespace dmitigr::pgfe {
 // Aliases of non-nullable arrays
 // -----------------------------------------------------------------------------
 
-/// 1-dimensional array of non-nullable elements.
+/**
+ * @ingroup conversions
+ *
+ * @brief 1-dimensional array of non-nullable elements.
+ */
 template<typename T,
   template<class, class> class C = std::vector,
   template<class> class A = std::allocator>
-using Array = C<T, A<T>>;
+using Array1 = C<T, A<T>>;
 
-/// 1-dimensional array of non-nullable elements.
+/**
+ * @ingroup conversions
+ *
+ * @brief 2-dimensional array of non-nullable elements.
+ */
 template<typename T,
   template<class, class> class C = std::vector,
   template<class> class A = std::allocator>
-using Array1 = Array<T, C, A>;
+using Array2 = Array1<Array1<T, C, A>, C, A>;
 
-/// 2-dimensional array of non-nullable elements.
+/**
+ * @ingroup conversions
+ *
+ * @brief 3-dimensional array of non-nullable elements.
+ */
 template<typename T,
   template<class, class> class C = std::vector,
   template<class> class A = std::allocator>
-using Array2 = Array<Array1<T, C, A>, C, A>;
+using Array3 = Array1<Array2<T, C, A>, C, A>;
 
-/// 3-dimensional array of non-nullable elements.
+/**
+ * @ingroup conversions
+ *
+ * @brief 4-dimensional array of non-nullable elements.
+ */
 template<typename T,
   template<class, class> class C = std::vector,
   template<class> class A = std::allocator>
-using Array3 = Array<Array2<T, C, A>, C, A>;
+using Array4 = Array1<Array3<T, C, A>, C, A>;
 
-/// 4-dimensional array of non-nullable elements.
+/**
+ * @ingroup conversions
+ *
+ * @brief 5-dimensional array of non-nullable elements.
+ */
 template<typename T,
   template<class, class> class C = std::vector,
   template<class> class A = std::allocator>
-using Array4 = Array<Array3<T, C, A>, C, A>;
+using Array5 = Array1<Array4<T, C, A>, C, A>;
 
-/// 5-dimensional array of non-nullable elements.
+/**
+ * @ingroup conversions
+ *
+ * @brief 6-dimensional array of non-nullable elements.
+ */
 template<typename T,
   template<class, class> class C = std::vector,
   template<class> class A = std::allocator>
-using Array5 = Array<Array4<T, C, A>, C, A>;
-
-/// 6-dimensional array of non-nullable elements.
-template<typename T,
-  template<class, class> class C = std::vector,
-  template<class> class A = std::allocator>
-using Array6 = Array<Array5<T, C, A>, C, A>;
+using Array6 = Array1<Array5<T, C, A>, C, A>;
 
 // -----------------------------------------------------------------------------
 // Aliases of nullable arrays
 // -----------------------------------------------------------------------------
 
-/// 1-dimensional array of nullable elements.
+/**
+ * @ingroup conversions
+ *
+ * @brief 1-dimensional array of nullable elements.
+ */
 template<typename T,
   template<class> class O = std::optional,
   template<class, class> class C = std::vector,
   template<class> class A = std::allocator>
-using Array_optional = C<O<T>, A<O<T>>>;
+using Array_optional1 = C<O<T>, A<O<T>>>;
 
-/// 1-dimensional array of nullable elements.
+/**
+ * @ingroup conversions
+ *
+ * @brief 2-dimensional array of nullable elements.
+ */
 template<typename T,
   template<class> class O = std::optional,
   template<class, class> class C = std::vector,
   template<class> class A = std::allocator>
-using Array_optional1 = Array_optional<T, O, C, A>;
+using Array_optional2 = Array_optional1<Array_optional1<T, O, C, A>, O, C, A>;
 
-/// 2-dimensional array of nullable elements.
+/**
+ * @ingroup conversions
+ *
+ * @brief 3-dimensional array of nullable elements.
+ */
 template<typename T,
   template<class> class O = std::optional,
   template<class, class> class C = std::vector,
   template<class> class A = std::allocator>
-using Array_optional2 = Array_optional<Array_optional1<T, O, C, A>, O, C, A>;
+using Array_optional3 = Array_optional1<Array_optional2<T, O, C, A>, O, C, A>;
 
-/// 3-dimensional array of nullable elements.
+/**
+ * @ingroup conversions
+ *
+ * @brief 4-dimensional array of nullable elements.
+ */
 template<typename T,
   template<class> class O = std::optional,
   template<class, class> class C = std::vector,
   template<class> class A = std::allocator>
-using Array_optional3 = Array_optional<Array_optional2<T, O, C, A>, O, C, A>;
+using Array_optional4 = Array_optional1<Array_optional3<T, O, C, A>, O, C, A>;
 
-/// 4-dimensional array of nullable elements.
+/**
+ * @ingroup conversions
+ *
+ * @brief 5-dimensional array of nullable elements.
+ */
 template<typename T,
   template<class> class O = std::optional,
   template<class, class> class C = std::vector,
   template<class> class A = std::allocator>
-using Array_optional4 = Array_optional<Array_optional3<T, O, C, A>, O, C, A>;
+using Array_optional5 = Array_optional1<Array_optional4<T, O, C, A>, O, C, A>;
 
-/// 5-dimensional array of nullable elements.
+/**
+ * @ingroup conversions
+ *
+ * @brief 6-dimensional array of nullable elements.
+ */
 template<typename T,
   template<class> class O = std::optional,
   template<class, class> class C = std::vector,
   template<class> class A = std::allocator>
-using Array_optional5 = Array_optional<Array_optional4<T, O, C, A>, O, C, A>;
-
-/// 6-dimensional array of nullable elements.
-template<typename T,
-  template<class> class O = std::optional,
-  template<class, class> class C = std::vector,
-  template<class> class A = std::allocator>
-using Array_optional6 = Array_optional<Array_optional5<T, O, C, A>, O, C, A>;
+using Array_optional6 = Array_optional1<Array_optional5<T, O, C, A>, O, C, A>;
 
 } // namespace dmitigr::pgfe
 

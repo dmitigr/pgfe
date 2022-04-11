@@ -35,7 +35,7 @@ namespace dmitigr::pgfe {
  *
  * @details Options specific to either UDS or network has no effect if the
  * communication mode isn't set correspondingly. SSL options has no effect
- * if `!is_ssl_enabled() || !*is_ssl_enabled`. Keepalives options has no
+ * if `!is_ssl_enabled() || !*is_ssl_enabled()`. Keepalives options has no
  * effect if `!is_tcp_keepalives_enabled() || !*is_tcp_keepalives_enabled()`.
  *
  * @par Exception safety guarantee
@@ -90,7 +90,7 @@ public:
    * @param value A value of timeout. `std::nullopt` means *eternity*.
    *
    * @par Requires
-   * `!value || value->count() >= 0`.
+   * `!value || (value->count() >= 0)`.
    *
    * @see Connection::connect().
    */
@@ -113,7 +113,7 @@ public:
    * @param value A value of timeout. `std::nullopt` means *eternity*.
    *
    * @par Requires
-   * `!value || value->count() >= 0`.
+   * `!value || (value->count() >= 0)`.
    *
    * @see Connection::wait_response().
    */
@@ -210,7 +210,7 @@ public:
    * @brief Sets the duration after which to start the keepalives.
    *
    * @par Requires
-   * `!value || value->count() >= 0`.
+   * `!value || (value->count() >= 0)`.
    *
    * @remarks This option is system dependent and has no effect on systems where
    * the `TCP_KEEPIDLE` socket option (or its equivalent) is unavailable.
@@ -228,7 +228,7 @@ public:
    * @brief Sets the duration between the keepalives.
    *
    * @par Requires
-   * `!value || value->count() >= 0`.
+   * `!value || (value->count() >= 0)`.
    *
    * @remarks This option is system dependent and has no effect on systems where
    * the `TCP_KEEPINTVL` socket option (or its equivalent) is unavailable.
@@ -246,7 +246,7 @@ public:
    * @brief Sets the number of keepalives before connection lost.
    *
    * @par Requires
-   * `!value || *value >= 0`.
+   * `!value || (*value >= 0)`.
    *
    * @remarks This option is system dependent and has no effect on systems where
    * the `TCP_KEEPCNT` socket option (or its equivalent) is unavailable.
@@ -265,7 +265,7 @@ public:
    * before a connection is forcibly closed.
    *
    * @par Requires
-   * `!value || value->count() >= 0`.
+   * `!value || (value->count() >= 0)`.
    *
    * @remarks This option is system dependent and has no effect on systems where
    * the `TCP_USER_TIMEOUT` socket option (or its equivalent) is unavailable.
@@ -534,8 +534,8 @@ public:
    * @brief Sets the password for the ssl_private_key_file().
    *
    * @details This parameter has no effect:
-   *   -# if the key file is not encrypted;
-   *   -# on key files specified by OpenSSL engines. (Unless the OpenSSL engine
+   *   - if the key file is not encrypted;
+   *   - on key files specified by OpenSSL engines. (Unless the OpenSSL engine
    *   uses callback which prompts for passwords.)
    *
    * @par Requires
@@ -606,9 +606,7 @@ public:
 
   // ---------------------------------------------------------------------------
 
-  /**
-   * @brief Sets the TLS extension "Server Name Indication" (SNI).
-   */
+  /// Sets the TLS extension "Server Name Indication" (SNI).
   DMITIGR_PGFE_API Connection_options&
   set_ssl_server_name_indication_enabled(std::optional<bool> value);
 
@@ -655,17 +653,29 @@ private:
   std::optional<bool> ssl_server_name_indication_enabled_;
 };
 
-/// Connection_options is swappable.
+/**
+ * @ingroup main
+ *
+ * @brief Connection_options is swappable.
+ */
 inline void swap(Connection_options& lhs, Connection_options& rhs) noexcept
 {
   lhs.swap(rhs);
 }
 
-/// @returns `true` if `lhs` is equals to `rhs`.
+/**
+ * @ingroup main
+ *
+ * @returns `true` if `lhs` is equals to `rhs`.
+ */
 DMITIGR_PGFE_API bool operator==(const Connection_options& lhs,
   const Connection_options& rhs) noexcept;
 
-/// @returns `true` if `lhs` is not equals to `rhs`.
+/**
+ * @ingroup main
+ *
+ * @returns `true` if `lhs` is not equals to `rhs`.
+ */
 inline bool operator!=(const Connection_options& lhs,
   const Connection_options& rhs) noexcept
 {

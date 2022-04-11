@@ -18,7 +18,7 @@
 # Info
 # ------------------------------------------------------------------------------
 
-dmitigr_cpplipa_set_library_info(base 0 0 "Base stuff")
+dmitigr_cpplipa_set_library_info(base 0 0 0 "Base stuff")
 
 # ------------------------------------------------------------------------------
 # Sources

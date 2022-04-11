@@ -36,7 +36,7 @@ public:
    * @param index See Compositional.
    *
    * @par Requires
-   * `(index < field_count())`.
+   * `index < field_count()`.
    */
   virtual Data_view data(std::size_t index) const = 0;
 
@@ -73,6 +73,8 @@ private:
 };
 
 /**
+ * @ingroup main
+ *
  * @returns
  *   - negative value if the first differing field in `lhs` is less than the
  *   corresponding field in `rhs`;
@@ -83,6 +85,8 @@ private:
 DMITIGR_PGFE_API int cmp(const Composite& lhs, const Composite& rhs) noexcept;
 
 /**
+ * @ingroup main
+ *
  * @returns `cmp(lhs, rhs) < 0`.
  *
  * @see cmp(const Composite&, const Composite&).
@@ -93,6 +97,8 @@ inline bool operator<(const Composite& lhs, const Composite& rhs) noexcept
 }
 
 /**
+ * @ingroup main
+ *
  * @returns `cmp(lhs, rhs) <= 0`.
  *
  * @see cmp(const Composite&, const Composite&).
@@ -103,6 +109,8 @@ inline bool operator<=(const Composite& lhs, const Composite& rhs) noexcept
 }
 
 /**
+ * @ingroup main
+ *
  * @returns `cmp(lhs, rhs) == 0`.
  *
  * @see cmp(const Composite&, const Composite&).
@@ -113,6 +121,8 @@ inline bool operator==(const Composite& lhs, const Composite& rhs) noexcept
 }
 
 /**
+ * @ingroup main
+ *
  * @returns `cmp(lhs, rhs) != 0`.
  *
  * @see cmp(const Composite&, const Composite&).
@@ -123,6 +133,8 @@ inline bool operator!=(const Composite& lhs, const Composite& rhs) noexcept
 }
 
 /**
+ * @ingroup main
+ *
  * @returns `cmp(lhs, rhs) > 0`.
  *
  * @see cmp(const Composite&, const Composite&).
@@ -133,6 +145,8 @@ inline bool operator>(const Composite& lhs, const Composite& rhs) noexcept
 }
 
 /**
+ * @ingroup main
+ *
  * @returns `cmp(lhs, rhs) >= 0`.
  *
  * @see cmp(const Composite&, const Composite&).

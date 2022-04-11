@@ -27,6 +27,8 @@
 namespace dmitigr::pgfe {
 
 /**
+ * @ingroup conversions
+ *
  * @brief The centralized "namespace" for conversion algorithms implementations.
  *
  * @details Generic implementations of the conversion algorithms is based on the
@@ -126,7 +128,7 @@ inline T to(const Data& data, Types&& ... args)
  * @overload
  *
  * @par Requires
- * `(data != nullptr)`.
+ * `data`.
  */
 template<typename T, typename ... Types>
 inline T to(std::unique_ptr<Data>&& data, Types&& ... args)
@@ -139,15 +141,15 @@ inline T to(std::unique_ptr<Data>&& data, Types&& ... args)
 /**
  * @ingroup conversions
  *
- * @brief Converts the value of type Row to the value of type `T` by using
- * the specialization of struct template Conversions.
+ * @brief Converts the value of type Row to the value of type `T` by using the
+ * specialization of Conversions.
  *
  * @tparam T A destination data type of the conversion.
  * @param row An object to convert.
  * @param args Optional arguments to be passed to the conversion routines.
  *
  * @par Requires
- * `(row)`.
+ * `row`.
  */
 template<typename T, typename ... Types>
 inline T to(const Row& row, Types&& ... args)
@@ -161,7 +163,7 @@ inline T to(const Row& row, Types&& ... args)
  * @overload
  *
  * @par Requires
- * `(row)`.
+ * `row`.
  */
 template<typename T, typename ... Types>
 inline T to(Row&& row, Types&& ... args)
@@ -174,8 +176,8 @@ inline T to(Row&& row, Types&& ... args)
 /**
  * @ingroup conversions
  *
- * @brief Converts the value of type `T` to the value of type Data by using
- * the specialization of the struct template Conversions.
+ * @brief Converts the value of type `T` to the value of type Data by using the
+ * specialization of Conversions.
  *
  * @tparam T A destination data type of the conversion.
  * @param value A value of the type T to convert.

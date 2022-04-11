@@ -35,9 +35,8 @@ public:
    * @returns `true` if the instance is valid.
    *
    * @warning The behavior is undefined if any method other than this one, the
-   * destructor or the move-assignment operator is called on an instance for
-   * which `(is_valid() == false)`. It's okay to move an instance for which
-   * `(is_valid() == false)`.
+   * destructor or the move-assignment operator is called on an instance which
+   * is `!is_valid()`. It's okay to move an instance which is `!is_valid()`.
    */
   virtual bool is_valid() const noexcept = 0;
 
@@ -51,7 +50,7 @@ private:
   friend Response;
   friend Signal;
 
-  Message() = default;
+  Message() noexcept = default;
 };
 
 } // namespace dmitigr::pgfe
