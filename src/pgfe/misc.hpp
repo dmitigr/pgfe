@@ -52,7 +52,8 @@ DMITIGR_PGFE_API std::string unquote_identifier(std::string_view identifier);
  *
  * @returns The determined array dimension.
  *
- * @throws Client_exception if malformed array literal detected.
+ * @throws Client_exception with code Client_errc::malformed_literal if
+ * malformed array literal detected.
  */
 DMITIGR_PGFE_API int array_dimension(std::string_view literal,
   const char delimiter = ',');

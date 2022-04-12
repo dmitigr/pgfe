@@ -54,17 +54,17 @@ public:
   DMITIGR_PGFE_API bool is_valid() const noexcept override;
 
   /**
-   * @returns The operation name which may be:
+   * @returns The operation tag which may be:
    *   - an empty string that denotes a response to an empty query request;
-   *   - the string "invalid response" that denotes an ununderstood response;
+   *   - the string "invalid" that denotes an invalid response;
    *   - a word in uppercase that identifies the completed SQL command;
    *   - a word in lowercase that identifies the completed operation.
    *
-   * @remarks The operation name is not always matches the SQL command name. For
-   * example, the operation name for `END` command is "COMMIT", the operation
-   * name for `CREATE TABLE AS` command is "SELECT" etc.
+   * @remarks The operation tag is not always matches the SQL command name. For
+   * example, the operation tag for `END` command is "COMMIT", the operation
+   * tag for `CREATE TABLE AS` command is "SELECT" etc.
    */
-  DMITIGR_PGFE_API const std::string& operation_name() const noexcept;
+  DMITIGR_PGFE_API const std::string& tag() const noexcept;
 
   /**
    * @returns The number of rows affected by a completed SQL command.
@@ -73,22 +73,15 @@ public:
    * `INSERT`, `DELETE`, `UPDATE`, `SELECT` or `CREATE TABLE AS`, `MOVE`,
    * `FETCH`, `COPY`.
    */
-  DMITIGR_PGFE_API std::optional<long> affected_row_count() const noexcept;
+  DMITIGR_PGFE_API std::optional<long> row_count() const noexcept;
 
 private:
   friend Connection;
 
-  long affected_row_count_{-2}; // -1 - no value, -2 - invalid instance
-  std::string operation_name_;
+  long row_count_{-2}; // -1 - no value, -2 - invalid instance
+  std::string tag_;
 
-  /**
-   * @brief The constructor.
-   *
-   * @par Requires
-   * `tag.data()`.
-   */
   explicit Completion(const std::string_view tag);
-
   bool is_invariant_ok() const noexcept;
 };
 

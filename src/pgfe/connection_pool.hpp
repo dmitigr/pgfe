@@ -104,6 +104,10 @@ public:
   private:
     friend Connection_pool;
 
+    std::shared_ptr<Connection_pool*> pool_;
+    std::unique_ptr<Connection> connection_;
+    std::size_t state_index_{};
+
     /// Default-constructible. (Constructs invalid instance.)
     Handle() noexcept = default;
 
@@ -111,10 +115,6 @@ public:
     Handle(std::shared_ptr<Connection_pool*> pool,
       std::unique_ptr<Connection>&& connection,
       std::size_t state_index);
-
-    std::shared_ptr<Connection_pool*> pool_;
-    std::unique_ptr<Connection> connection_;
-    std::size_t state_index_{};
   };
 
   /**
@@ -158,8 +158,8 @@ public:
   }
 
   /**
-   * @brief Sets the handler which will be called just after connecting to the
-   * PostgreSQL server.
+   * @brief Sets the handler which will be called for each connection in the
+   * pool just after connecting to the PostgreSQL server.
    *
    * @remarks For example, it could be used to execute a query like
    * `SET application_name to 'foo'`.
@@ -187,7 +187,11 @@ public:
   DMITIGR_PGFE_API void
   set_release_handler(std::function<void(Connection&)> handler);
 
-  /// @returns The current release handler.
+  /**
+   * @returns The current release handler.
+   *
+   * @see set_release_handler().
+   */
   DMITIGR_PGFE_API const std::function<void(Connection&)>&
   release_handler() const noexcept;
 
@@ -196,6 +200,8 @@ public:
    *
    * @par Effects
    * `is_connected() == is_valid()` on success.
+   *
+   * @see connect_handler().
    */
   DMITIGR_PGFE_API void connect();
 

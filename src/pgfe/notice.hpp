@@ -48,9 +48,7 @@ private:
   /// Default-constructible. (Constructs invalid instance.)
   Notice() noexcept = default;
 
-  /// The constructor.
   explicit Notice(const PGresult* const result) noexcept;
-
   bool is_invariant_ok() const noexcept override;
 };
 

@@ -53,16 +53,16 @@ try {
     ASSERT(conn->request_queue_size() == 5);
     // Process responses.
     conn->wait_response();
-    ASSERT(conn->completion().operation_name() == "CREATE TABLE");
+    ASSERT(conn->completion().tag() == "CREATE TABLE");
     //
     conn->wait_response();
-    ASSERT(conn->completion().operation_name() == "INSERT");
+    ASSERT(conn->completion().tag() == "INSERT");
     //
     conn->wait_response();
-    ASSERT(conn->completion().operation_name() == "INSERT");
+    ASSERT(conn->completion().tag() == "INSERT");
     //
     conn->wait_response();
-    ASSERT(conn->completion().operation_name() == "INSERT");
+    ASSERT(conn->completion().tag() == "INSERT");
     // Wait synchronization point.
     conn->wait_response();
     ASSERT(conn->ready_for_query());
@@ -106,7 +106,7 @@ try {
       conn->wait_response();
       auto completion = conn->completion();
       ASSERT(completion);
-      ASSERT(completion.operation_name() == "SELECT");
+      ASSERT(completion.tag() == "SELECT");
     }
     // Wait synchronization point.
     conn->wait_response();
@@ -144,7 +144,7 @@ try {
     conn->wait_response();
     auto completion = conn->completion();
     ASSERT(completion);
-    ASSERT(completion.operation_name() == "SELECT");
+    ASSERT(completion.tag() == "SELECT");
     //
     conn->wait_response();
     auto err = conn->error();
@@ -181,7 +181,7 @@ try {
     conn->wait_response();
     auto completion = conn->completion();
     ASSERT(completion);
-    ASSERT(completion.operation_name() == "SELECT");
+    ASSERT(completion.tag() == "SELECT");
   }
 
   conn->set_pipeline_enabled(false);

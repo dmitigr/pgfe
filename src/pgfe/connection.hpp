@@ -825,7 +825,7 @@ public:
    * `is_ready_for_request() && !statement.has_missing_parameters()`.
    *
    * @par Exception safety guarantee
-   * Basic.
+   * Strong.
    *
    * @remarks See remarks of prepare().
    *
@@ -839,7 +839,8 @@ public:
     if (!is_ready_for_request())
       throw Client_exception{"cannot execute statement: not ready for request"};
     execute_nio(statement, std::forward<Types>(parameters)...);
-    return process_responses<on_exception>(std::forward<F>(callback));
+    return completion_or_throw(
+      process_responses<on_exception>(std::forward<F>(callback)));
   }
 
   /// @overload
@@ -902,7 +903,7 @@ public:
    * number of parameters. A SQL query with explicit type casts should be
    * executed is such a case. See remarks of prepare_nio().
    *
-   * @see invoke_unexpanded(), call(), execute(), process_responses().
+   * @see invoke_unexpanded(), call(), execute().
    */
   template<Row_processing on_exception = Row_processing::complete, typename F,
     typename ... Types>
@@ -1373,6 +1374,7 @@ private:
 
   int socket() const noexcept;
   void throw_if_error();
+  static Completion&& completion_or_throw(Completion&& comp);
   std::string error_message() const;
   bool is_out_of_memory() const noexcept;
 
@@ -1480,7 +1482,8 @@ Prepared_statement::execute(F&& callback, Types&& ... parameters)
 
   bind_many(std::forward<Types>(parameters)...).execute_nio();
   assert(is_invariant_ok());
-  return connection().process_responses<on_exception>(std::forward<F>(callback));
+  return Connection::completion_or_throw(
+    connection().process_responses<on_exception>(std::forward<F>(callback)));
 }
 
 /**

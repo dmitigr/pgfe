@@ -30,8 +30,8 @@
 
 VS_VERSION_INFO VERSIONINFO
 
-FILEVERSION     0,1,0,0
-PRODUCTVERSION  0,1,0,0
+FILEVERSION     0,2,0,0
+PRODUCTVERSION  0,2,0,0
 FILEFLAGSMASK   VS_FFI_FILEFLAGSMASK
 FILEFLAGS       (DMITIGR_PGFE_VERSION_DEBUG)
 FILEOS          VOS__WINDOWS32
@@ -44,13 +44,13 @@ BEGIN
     BEGIN
       VALUE "CompanyName",      "Dmitry Igrishin\0"
       VALUE "FileDescription",  "Client API for PostgreSQL\0"
-      VALUE "FileVersion",      "1.0\0"
+      VALUE "FileVersion",      "2.0.0\0"
       VALUE "InternalName",     "dmitigr_pgfe\0"
       VALUE "LegalCopyright",   "Copyright (C) Dmitry Igrishin\0"
       VALUE "LegalTrademarks",  "\0"
       VALUE "OriginalFilename", DMITIGR_PGFE_VERSION_ORIGINAL_FILENAME
       VALUE "ProductName",      "Dmitigr Pgfe\0"
-      VALUE "ProductVersion",   "1.0\0"
+      VALUE "ProductVersion",   "2.0.0\0"
     END
   END
   BLOCK "VarFileInfo"

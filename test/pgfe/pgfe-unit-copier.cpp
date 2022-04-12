@@ -48,7 +48,7 @@ try {
   ASSERT(!copier);
   ASSERT(!conn->is_ready_for_request());
   conn->wait_response_throw();
-  ASSERT(conn->completion().operation_name() == "COPY");
+  ASSERT(conn->completion().tag() == "COPY");
   ASSERT(conn->is_ready_for_request());
   ASSERT(!conn->is_copy_in_progress());
 
@@ -71,7 +71,9 @@ try {
   ASSERT(!conn->is_ready_for_request());
   ASSERT(copier);
   conn->wait_response_throw();
-  ASSERT(conn->completion().operation_name() == "COPY");
+  const auto com = conn->completion();
+  ASSERT(com.tag() == "COPY");
+  ASSERT(com.row_count() == 3);
   ASSERT(conn->is_ready_for_request());
   ASSERT(!conn->is_copy_in_progress());
   ASSERT(!copier);

@@ -30,20 +30,23 @@ enum class Client_errc {
   /// Denotes success (no error).
   success = 0,
 
-  /// Denotes an insufficient array dimensionality.
-  insufficient_array_dimensionality = 100,
+  /// Denotes an insufficient dimensionality.
+  insufficient_dimensionality = 100,
 
-  /// Denotes an excessive array dimensionality.
-  excessive_array_dimensionality = 200,
+  /// Denotes an excessive dimensionality.
+  excessive_dimensionality = 200,
 
-  /// Denotes a malformed array literal.
-  malformed_array_literal = 300,
+  /// Denotes a malformed literal.
+  malformed_literal = 300,
 
-  /// Denotes an usage of container with improper type of elements.
-  improper_value_type_of_container = 400,
+  /// Denotes an usage of something with improper value type.
+  improper_value_type = 400,
 
   /// Denotes a timed out operation.
-  timed_out = 500
+  timed_out = 500,
+
+  /// Denotes the server's response that was not understood.
+  invalid_response = 600
 };
 
 /**

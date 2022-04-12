@@ -146,8 +146,8 @@ try {
         // Getting the completion
         auto comp = conn->completion();
         DMITIGR_ASSERT(comp);
-        DMITIGR_ASSERT(comp.operation_name() == cmd);
-        DMITIGR_ASSERT(!comp.affected_row_count());
+        DMITIGR_ASSERT(comp.tag() == cmd);
+        DMITIGR_ASSERT(!comp.row_count());
         // Checking that completion disappeared
         DMITIGR_ASSERT(!conn->has_response());
         DMITIGR_ASSERT(!conn->completion());
@@ -260,7 +260,7 @@ try {
           // Unprepare
           const auto comp = conn->unprepare("ps1");
           DMITIGR_ASSERT(comp);
-          DMITIGR_ASSERT(comp.operation_name() == "unprepare");
+          DMITIGR_ASSERT(comp.tag() == "unprepare");
           DMITIGR_ASSERT(!conn->has_response());
           DMITIGR_ASSERT(!conn->has_uncompleted_request());
           DMITIGR_ASSERT(conn->is_ready_for_nio_request());
@@ -274,7 +274,7 @@ try {
           // Prepare
           auto comp = conn->execute("PREPARE ps2 AS SELECT generate_series(1,7)");
           DMITIGR_ASSERT(comp);
-          DMITIGR_ASSERT(comp.operation_name() == "PREPARE");
+          DMITIGR_ASSERT(comp.tag() == "PREPARE");
 
           // Describe
           auto dps = conn->describe("ps2");
@@ -289,7 +289,7 @@ try {
           // Unprepare
           comp = conn->unprepare("ps2");
           DMITIGR_ASSERT(comp);
-          DMITIGR_ASSERT(comp.operation_name() == "unprepare");
+          DMITIGR_ASSERT(comp.tag() == "unprepare");
           DMITIGR_ASSERT(!conn->has_response());
           DMITIGR_ASSERT(!conn->has_uncompleted_request());
           DMITIGR_ASSERT(conn->is_ready_for_nio_request());
@@ -340,7 +340,7 @@ try {
           ++i;
         }, "SELECT generate_series(1,3) AS num");
         DMITIGR_ASSERT(comp);
-        DMITIGR_ASSERT(comp.operation_name() == "SELECT");
+        DMITIGR_ASSERT(comp.tag() == "SELECT");
       }
 
       // Execute with throw (default, on exception complete)

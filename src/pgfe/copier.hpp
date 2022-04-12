@@ -139,8 +139,8 @@ public:
    *
    * @returns Either:
    *   - invalid instance if the `COPY` command is done;
-   *   - the empty instance to indicate that the `COPY` is undone, but no row is
-   *   yet available (this is only possible when `wait` is `false`);
+   *   - the empty instance to indicate that the `COPY` is undone, but no row
+   *   is yet available (this is only possible when `wait` is `false`);
    *   - the non-empty instance received from the server.
    *
    *  @remarks The format of returned data is equals to `data_format(0)`.
@@ -169,7 +169,7 @@ private:
   explicit DMITIGR_PGFE_API Copier(Connection& connection,
     detail::pq::Result&& pq_result) noexcept;
 
-  static inline void dummy_free(void*) noexcept {};
+  static void dummy_free(void*) noexcept {};
   void check_send() const;
   void check_receive() const;
 };

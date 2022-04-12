@@ -51,7 +51,7 @@ Container to_container(const char* literal, char delimiter = ',', Types&& ... ar
 // =============================================================================
 
 /**
- * The compile-time converter from a "container of values" type
+ * @brief The compile-time converter from a "container of values" type
  * to a "container of optionals" type.
  */
 template<typename T>
@@ -106,7 +106,7 @@ using Cont_of_opts_t = typename Cont_of_opts<T>::Type;
 // -------------------------------------
 
 /**
- * The compile-time converter from a "container of optionals"
+ * @brief The compile-time converter from a "container of optionals"
  * to a "container of values".
  */
 template<typename T>
@@ -135,8 +135,8 @@ using Cont_of_vals_t = typename Cont_of_vals<T>::Type;
 /**
  * @returns The container of values converted from the container of optionals.
  *
- * @throws Client_exception with code Client_errc::improper_value_type_of_container
- * if element `e` for which `(bool(e) == false)` presents in `container`.
+ * @throws Client_exception with code Client_errc::improper_value_type
+ * if element `e` for which `!e` presents in `container`.
  */
 template<typename T,
   template<class> class Optional,
@@ -322,7 +322,7 @@ private:
     template<class> class Opt,
     template<class, class> class Cont,
     template<class> class Alloc>
-  struct Is_container<Cont<Opt<U>, Alloc<Opt<U>>>> final : std::true_type{};
+  struct Is_container<Cont<Opt<U>, Alloc<Opt<U>>>> final : std::true_type {};
 
 public:
   using Value_type     = T;
@@ -352,7 +352,7 @@ public:
     } else {
       (void)value;   // dummy usage
       (void)is_null; // dummy usage
-      throw Client_exception{Client_errc::excessive_array_dimensionality};
+      throw Client_exception{Client_errc::excessive_dimensionality};
     }
   }
 
@@ -370,7 +370,7 @@ template<typename T, typename ... Types>
 const char* fill_container(T& /*result*/, const char* /*literal*/,
   const char /*delimiter*/, Types&& ... /*args*/)
 {
-  throw Client_exception{Client_errc::insufficient_array_dimensionality};
+  throw Client_exception{Client_errc::insufficient_dimensionality};
 }
 
 /// Used by to_array_literal()
@@ -527,7 +527,7 @@ const char* parse_array_literal(const char* literal, const char delimiter,
       } else if (std::isspace(c, loc)) {
         // Skip space.
       } else
-        throw Client_exception{Client_errc::malformed_array_literal};
+        throw Client_exception{Client_errc::malformed_literal};
 
       goto preparing_to_the_next_iteration;
     }
@@ -539,13 +539,13 @@ const char* parse_array_literal(const char* literal, const char delimiter,
         // Skip space.
       } else if (c == delimiter) {
         if (previous_nonspace_char == delimiter || previous_nonspace_char == '{')
-          throw Client_exception{Client_errc::malformed_array_literal};
+          throw Client_exception{Client_errc::malformed_literal};
       } else if (c == '{') {
         handler(dimension);
         ++dimension;
       } else if (c == '}') {
         if (previous_nonspace_char == delimiter)
-          throw Client_exception{Client_errc::malformed_array_literal};
+          throw Client_exception{Client_errc::malformed_literal};
 
         --dimension;
         if (dimension == 0) {
@@ -587,7 +587,7 @@ const char* parse_array_literal(const char* literal, const char delimiter,
   element_extracted:
     {
       if (element.empty())
-        throw Client_exception{Client_errc::malformed_array_literal};
+        throw Client_exception{Client_errc::malformed_literal};
 
       const bool is_element_null =
         ((state == in_unquoted_element && element.size() == 4)
@@ -622,7 +622,7 @@ const char* parse_array_literal(const char* literal, const char delimiter,
   } // while
 
   if (dimension != 0)
-    throw Client_exception{Client_errc::malformed_array_literal};
+    throw Client_exception{Client_errc::malformed_literal};
 
   return literal;
 }
@@ -656,7 +656,7 @@ const char* fill_container(Container<Optional<T>, Allocator<Optional<T>>>& resul
 
   literal = next_non_space_pointer(literal);
   if (*literal != '{')
-    throw Client_exception{Client_errc::malformed_array_literal};
+    throw Client_exception{Client_errc::malformed_literal};
 
   const char* subliteral = next_non_space_pointer(literal + 1);
   if (*subliteral == '{') {
@@ -689,7 +689,7 @@ const char* fill_container(Container<Optional<T>, Allocator<Optional<T>>>& resul
          */
         subliteral = next_non_space_pointer(subliteral + 1);
         if (*subliteral != '{')
-          throw Client_exception{Client_errc::malformed_array_literal};
+          throw Client_exception{Client_errc::malformed_literal};
       } else if (*subliteral == '}') {
         // The end of the dimension: subliteral is "},{{3,4}}}"
         ++subliteral;
@@ -754,9 +754,10 @@ Container to_container(const char* const literal, const char delimiter,
 }
 
 /**
- * @returns A container of non-null values converted from PostgreSQL array literal.
+ * @returns A container of non-null values converted from PostgreSQL array
+ * literal.
  *
- * @throws Client_exception with code Client_errc::improper_value_type_of_container.
+ * @throws Client_exception with the code Client_errc::improper_value_type.
  */
 template<typename T,
   template<class> class Optional,
@@ -775,7 +776,7 @@ auto to_container_of_values(Container<Optional<T>,
       if (elem)
         return to_container_of_values(std::move(*elem));
       else
-        throw Client_exception{Client_errc::improper_value_type_of_container};
+        throw Client_exception{Client_errc::improper_value_type};
     });
   return result;
 }
@@ -862,9 +863,8 @@ struct Conversions<Container<Optional<T>, Allocator<Optional<T>>>> final
  * @tparam Container The container template class, such as `std::vector`.
  * @tparam Allocator The allocator template class, such as `std::allocator`.
  *
- * @throws Client_exception with code Client_errc::improper_value_type_of_container
- * when converting the PostgreSQL array representations with at least one NULL
- * element.
+ * @throws Client_exception with code Client_errc::improper_value_type when
+ * converting the PostgreSQL array representations with at least one NULL element.
  */
 template<typename T,
   template<class, class> class Container,

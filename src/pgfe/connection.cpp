@@ -769,34 +769,26 @@ DMITIGR_PGFE_INLINE Copier Connection::copier() noexcept
 DMITIGR_PGFE_INLINE Completion Connection::completion() noexcept
 {
   switch (response_.status()) {
-  case PGRES_TUPLES_OK: {
-    Completion result{response_.command_tag()};
-    response_.reset();
-    return result;
-  }
+  case PGRES_TUPLES_OK:
+    return Completion{release_response().command_tag()};
   case PGRES_COMMAND_OK:
     switch (last_processed_request_.id_) {
-    case Request::Id::execute: {
-      Completion result{response_.command_tag()};
-      response_.reset();
-      return result;
-    }
+    case Request::Id::execute:
+      return Completion{release_response().command_tag()};
     case Request::Id::prepare:
       [[fallthrough]];
     case Request::Id::describe:
       return {};
-    case Request::Id::unprepare: {
-      Completion result{"unprepare"};
-      response_.reset();
-      return result;
-    }
+    case Request::Id::unprepare:
+      release_response();
+      return Completion{"unprepare"};
     default:
       DMITIGR_ASSERT(false);
     }
   case PGRES_EMPTY_QUERY:
     return Completion{""};
   case PGRES_BAD_RESPONSE:
-    return Completion{"invalid response"};
+    return Completion{"invalid"};
   default:
     return {};
   }
@@ -1245,8 +1237,10 @@ Connection::prepare_nio__(const char* const query, const char* const name,
 DMITIGR_PGFE_INLINE Prepared_statement Connection::wait_prepared_statement__()
 {
   wait_response_throw();
-  auto com = completion();
-  DMITIGR_ASSERT(!com); // no completion for prepare/describe
+  if (auto comp = completion()) {
+    DMITIGR_ASSERT(comp.tag() == "invalid");
+    throw Client_exception{Client_errc::invalid_response};
+  }
   return prepared_statement();
 }
 
@@ -1290,6 +1284,14 @@ DMITIGR_PGFE_INLINE void Connection::throw_if_error()
     // Throw an exception with an error code.
     throw Server_exception{std::move(ei)};
   }
+}
+
+DMITIGR_PGFE_INLINE Completion&& Connection::completion_or_throw(Completion&& comp)
+{
+  if (comp.tag() == "invalid")
+    throw Client_exception{Client_errc::invalid_response};
+  else
+    return std::move(comp);
 }
 
 DMITIGR_PGFE_INLINE std::string Connection::error_message() const

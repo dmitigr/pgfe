@@ -27,7 +27,7 @@ namespace dmitigr::pgfe {
 /**
  * @ingroup main
  *
- * @brief An interface of compositional types.
+ * @brief A compositional type.
  */
 class Compositional {
 public:
@@ -62,7 +62,6 @@ private:
   friend Row_info;
 
   Compositional() noexcept = default;
-
   virtual bool is_invariant_ok() const noexcept;
 };
 

@@ -375,9 +375,6 @@ public:
 private:
   friend Statement_vector;
 
-  static std::pair<Statement, std::string_view::size_type>
-  parse_sql_input(std::string_view, const std::locale& loc);
-
   /// A fragment.
   struct Fragment final {
     enum class Type {
@@ -406,6 +403,9 @@ private:
   std::vector<Fragment_list::const_iterator> named_parameters_; // cache
   mutable bool is_extra_data_should_be_extracted_from_comments_{true};
   mutable std::optional<Tuple> extra_; // cache
+
+  static std::pair<Statement, std::string_view::size_type>
+  parse_sql_input(std::string_view, const std::locale& loc);
 
   bool is_invariant_ok() const noexcept override;
 

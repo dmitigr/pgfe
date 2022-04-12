@@ -23,16 +23,18 @@ DMITIGR_PGFE_INLINE const char* to_literal(const Client_errc errc) noexcept
   switch (errc) {
   case Client_errc::success:
     return "success";
-  case Client_errc::insufficient_array_dimensionality:
-    return "insufficient_array_dimensionality";
-  case Client_errc::excessive_array_dimensionality:
-    return "excessive_array_dimensionality";
-  case Client_errc::malformed_array_literal:
-    return "malformed_array_literal";
-  case Client_errc::improper_value_type_of_container:
-    return "improper_value_type_of_container";
+  case Client_errc::insufficient_dimensionality:
+    return "insufficient_dimensionality";
+  case Client_errc::excessive_dimensionality:
+    return "excessive_dimensionality";
+  case Client_errc::malformed_literal:
+    return "malformed_literal";
+  case Client_errc::improper_value_type:
+    return "improper_value_type";
   case Client_errc::timed_out:
     return "timed_out";
+  case Client_errc::invalid_response:
+    return "invalid_response";
   }
   return nullptr;
 }

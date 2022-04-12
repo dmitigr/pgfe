@@ -240,7 +240,7 @@ int main()
       try {
         const auto converted = pgfe::to<Arr>(*data);
       } catch (const pgfe::Client_exception& e) {
-        test_ok = (e.condition() == pgfe::Client_errc::insufficient_array_dimensionality);
+        test_ok = (e.condition() == pgfe::Client_errc::insufficient_dimensionality);
       }
       DMITIGR_ASSERT(test_ok);
     }
@@ -256,7 +256,7 @@ int main()
       try {
         const auto converted = pgfe::to<Arr2>(*data);
       } catch (const pgfe::Client_exception& e) {
-        test_ok = (e.condition() == pgfe::Client_errc::excessive_array_dimensionality);
+        test_ok = (e.condition() == pgfe::Client_errc::excessive_dimensionality);
       }
       DMITIGR_ASSERT(test_ok);
     }
@@ -359,31 +359,32 @@ int main()
             const auto native = pgfe::to<Arr>(pgfe::Data::make(malformed_literal));
           } catch (const pgfe::Client_exception& e) {
             cond = e.condition();
-            if (cond != pgfe::Client_errc::malformed_array_literal) {
-              std::cerr << "Expected pgfe::Client_errc::malformed_array_literal, but got "
+            if (cond != pgfe::Client_errc::malformed_literal) {
+              std::cerr << "Expected pgfe::Client_errc::malformed_literal, but got "
                         << cond.value() << "." << std::endl;
               throw;
             }
           }
-          DMITIGR_ASSERT(cond == pgfe::Client_errc::malformed_array_literal);
+          DMITIGR_ASSERT(cond == pgfe::Client_errc::malformed_literal);
         }
       }
 
       {
-        auto malformed_literals2 = {"{{1}", "{{1", "{{1,}", "{{1,}}", "{{1},}", "{{,1}}", "{,{1}}"};
+        auto malformed_literals2 = {"{{1}", "{{1", "{{1,}", "{{1,}}",
+          "{{1},}", "{{,1}}", "{,{1}}"};
         for (const auto* malformed_literal : malformed_literals2) {
           std::error_condition cond;
           try {
             const auto native = pgfe::to<Arr2>(pgfe::Data::make(malformed_literal));
           } catch (const pgfe::Client_exception& e) {
             cond = e.condition();
-            if (cond != pgfe::Client_errc::malformed_array_literal) {
-              std::cerr << "Expected pgfe::Client_errc::malformed_array_literal, but got "
+            if (cond != pgfe::Client_errc::malformed_literal) {
+              std::cerr << "Expected pgfe::Client_errc::malformed_literal, but got "
                         << cond.value() << "." << std::endl;
               throw;
             }
           }
-          DMITIGR_ASSERT(cond == pgfe::Client_errc::malformed_array_literal);
+          DMITIGR_ASSERT(cond == pgfe::Client_errc::malformed_literal);
         }
       }
     }

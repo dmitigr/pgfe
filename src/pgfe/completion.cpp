@@ -30,14 +30,14 @@ DMITIGR_PGFE_INLINE Completion::Completion() noexcept
 }
 
 DMITIGR_PGFE_INLINE Completion::Completion(Completion&& rhs) noexcept
-  : affected_row_count_{rhs.affected_row_count_}
-  , operation_name_{std::move(rhs.operation_name_)}
+  : row_count_{rhs.row_count_}
+  , tag_{std::move(rhs.tag_)}
 {
-  rhs.affected_row_count_ = -2;
+  rhs.row_count_ = -2;
 }
 
 DMITIGR_PGFE_INLINE Completion::Completion(const std::string_view tag)
-  : affected_row_count_{-1} // mark instance as valid
+  : row_count_{-1} // mark instance as valid
 {
   DMITIGR_ASSERT(tag.data());
 
@@ -63,15 +63,15 @@ DMITIGR_PGFE_INLINE Completion::Completion(const std::string_view tag)
       if (p == word.c_str())
         // The word is not a number.
         break;
-      else if (affected_row_count_ < 0)
-        affected_row_count_ = number;
+      else if (row_count_ < 0)
+        row_count_ = number;
 
       end_word_pos = space_before_word_pos - 1;
       space_before_word_pos = tag.find_last_of(space, end_word_pos);
     }
-    operation_name_ = tag.substr(0, end_word_pos + 1);
+    tag_ = tag.substr(0, end_word_pos + 1);
   } else
-    operation_name_ = tag;
+    tag_ = tag;
 
   DMITIGR_ASSERT(is_valid());
   assert(is_invariant_ok());
@@ -89,32 +89,28 @@ DMITIGR_PGFE_INLINE Completion& Completion::operator=(Completion&& rhs) noexcept
 DMITIGR_PGFE_INLINE void Completion::swap(Completion& rhs) noexcept
 {
   using std::swap;
-  swap(affected_row_count_, rhs.affected_row_count_);
-  swap(operation_name_, rhs.operation_name_);
+  swap(row_count_, rhs.row_count_);
+  swap(tag_, rhs.tag_);
 }
 
 DMITIGR_PGFE_INLINE bool Completion::is_valid() const noexcept
 {
-  return (affected_row_count_ > -2);
+  return row_count_ > -2;
 }
 
-DMITIGR_PGFE_INLINE const std::string&
-Completion::operation_name() const noexcept
+DMITIGR_PGFE_INLINE const std::string& Completion::tag() const noexcept
 {
-  return operation_name_;
+  return tag_;
 }
 
-DMITIGR_PGFE_INLINE std::optional<long>
-Completion::affected_row_count() const noexcept
+DMITIGR_PGFE_INLINE std::optional<long> Completion::row_count() const noexcept
 {
-  return (affected_row_count_ >= 0) ?
-    std::make_optional<decltype(affected_row_count_)>(affected_row_count_) :
-    std::nullopt;
+  return row_count_ >= 0 ? std::optional<long>(row_count_) : std::nullopt;
 }
 
 DMITIGR_PGFE_INLINE bool Completion::is_invariant_ok() const noexcept
 {
-  return (affected_row_count_ < 0) || !operation_name_.empty();
+  return (row_count_ < 0) || !tag_.empty();
 }
 
 } // namespace dmitigr::pgfe

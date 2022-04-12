@@ -67,9 +67,8 @@ private:
   friend Row;
   friend Tuple;
 
-  using Compositional::is_invariant_ok;
-
   Composite() noexcept = default;
+  using Compositional::is_invariant_ok;
 };
 
 /**

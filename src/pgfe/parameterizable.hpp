@@ -80,7 +80,6 @@ private:
   friend Statement;
 
   Parameterizable() noexcept = default;
-
   virtual bool is_invariant_ok() const noexcept;
 };
 

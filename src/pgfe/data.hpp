@@ -93,7 +93,7 @@ public:
     std::string_view bytes,
     Data_format format = Data_format::text);
 
-  /// @returns The copy of this instance.
+  /// @returns The deep-copy of this instance.
   virtual std::unique_ptr<Data> to_data() const = 0;
 
   /**

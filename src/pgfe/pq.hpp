@@ -158,7 +158,7 @@ public:
     return pgresult_.get();
   }
 
-  /// Swaps this instance with `rhs`.
+  /// Swaps this with `rhs`.
   void swap(Result& rhs) noexcept
   {
     using std::swap;

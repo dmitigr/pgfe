@@ -209,10 +209,9 @@ private:
   friend Prepared_statement;
   friend Row;
 
-  /// The constructor.
-  explicit DMITIGR_PGFE_API Row_info(detail::pq::Result&& pq_result) noexcept;
-
   detail::pq::Result pq_result_;
+
+  explicit DMITIGR_PGFE_API Row_info(detail::pq::Result&& pq_result) noexcept;
 };
 
 /**

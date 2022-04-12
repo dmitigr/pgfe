@@ -31,15 +31,23 @@ namespace dmitigr::pgfe {
 // Enumerations
 // -----------------------------------------------------------------------------
 
+enum class Channel_binding;
 enum class Communication_mode;
 enum class Connection_status;
+enum class Data_direction;
 enum class Data_format;
 enum class External_library;
 enum class Password_encryption;
+enum class Pipeline_status;
 enum class Problem_severity;
+enum class Response_status;
+enum class Row_processing;
 enum class Socket_readiness;
-enum class Ssl_mode;
+enum class Server_status;
+enum class Session_mode;
 enum class Ssl_certificate_authority_policy;
+enum class Ssl_mode;
+enum class Ssl_protocol_version;
 enum class Transaction_status;
 
 enum class Client_errc;
@@ -52,13 +60,13 @@ enum class Large_object_seek_whence;
 // Classes
 // -----------------------------------------------------------------------------
 
-class Copier;
 class Completion;
 class Composite;
 class Compositional;
 class Connection;
 class Connection_options;
 class Connection_pool;
+class Copier;
 class Data;
 class Data_view;
 class Error;
@@ -68,6 +76,7 @@ class Notice;
 class Notification;
 class Parameterizable;
 class Prepared_statement;
+class Named_argument;
 class Problem;
 class Ready_for_query;
 class Response;
@@ -78,28 +87,31 @@ class Statement;
 class Statement_vector;
 class Tuple;
 
+class Exception;
 class Client_exception;
+class Client_error_category;
 class Server_exception;
+class Server_error_category;
 
 template<typename> struct Conversions;
-template<typename> class Entity_vector;
 
 /// The implementation details.
 namespace detail {
 
 template<typename> struct Generic_string_conversions;
-template<typename T, class StringConversions = Generic_string_conversions<T>> struct Generic_data_conversions;
 template<typename> struct Numeric_string_conversions;
-template<typename T, class StringConversions = Numeric_string_conversions<T>> struct Numeric_data_conversions;
+
+template<typename T, class StringConversions = Generic_string_conversions<T>>
+struct Generic_data_conversions;
+template<typename T, class StringConversions = Numeric_string_conversions<T>>
+struct Numeric_data_conversions;
 
 /// The abstraction layer over libpq.
 namespace pq {
 class Connection_options;
 class Result;
 } // namespace pq
-
 } // namespace detail
-
 } // namespace dmitigr::pgfe
 
 #endif  // DMITIGR_PGFE_TYPES_FWD_HPP

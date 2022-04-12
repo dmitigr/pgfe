@@ -1,6 +1,6 @@
 # [PostgreSQL] C++ driver
 
-`dmitigr::pgfe` (PostGres FrontEnd) - is the advanced and feature rich
+`dmitigr::pgfe` (PostGres FrontEnd) - is an advanced and feature rich
 [PostgreSQL] driver written in C++. The development is focused on easines and
 robustness of use with the performance in mind.
 
@@ -66,7 +66,7 @@ int main() try {
 ## Features
 
   - fast and robust;
-  - can be easily used as header-only library;
+  - can be used as either header-only, static or shared library;
   - works with database connections in both blocking and non-blocking IO manner;
   - supports prepared statements with both positional and named parameters;
   - provides first-class support for calling functions and procedures;

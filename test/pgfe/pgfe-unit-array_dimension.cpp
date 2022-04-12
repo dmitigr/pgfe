@@ -41,13 +41,13 @@ int main()
     DMITIGR_ASSERT(array_dimension("{{ {3") == 3);
 
     using pgfe::Client_exception;
-    constexpr auto malformed_array_literal = pgfe::Client_errc::malformed_array_literal;
+    constexpr auto malformed_literal = pgfe::Client_errc::malformed_literal;
     for (const char* const literal : {"1", "{,", "{{,}}", "{ { ,2}}"})
       try {
         array_dimension(literal);
         DMITIGR_ASSERT(false);
       } catch (const Client_exception& e) {
-        DMITIGR_ASSERT(e.condition() == malformed_array_literal);
+        DMITIGR_ASSERT(e.condition() == malformed_literal);
       }
   } catch (const std::exception& e) {
     std::cerr << e.what() << std::endl;

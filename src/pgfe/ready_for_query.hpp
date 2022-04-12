@@ -60,7 +60,6 @@ private:
 
   detail::pq::Result pq_result_;
 
-  /// The constructor.
   explicit Ready_for_query(detail::pq::Result&& pq_result) noexcept;
 };
 
