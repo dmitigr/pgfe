@@ -54,5 +54,6 @@
 #include "tuple.hpp"
 #include "types_fwd.hpp"
 #include "version.hpp"
+#include "lib_version.hpp"
 
 #endif  // DMITIGR_PGFE_PGFE_HPP

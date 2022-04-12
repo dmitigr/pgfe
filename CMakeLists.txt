@@ -305,7 +305,7 @@ foreach(lib ${dmitigr_cpplipa_libraries})
       configure_file(${lib_root}/${file}.in
         ${CMAKE_CURRENT_SOURCE_DIR}/${lib_root}/${lib}/${file} @ONLY
         NEWLINE_STYLE UNIX)
-      list(APPEND ${dmlib}_preprocessed_headers ${file})
+      list(APPEND ${dmlib}_headers ${file})
     endforeach()
 
     set(${dmlib}_header_only ${DMITIGR_CPPLIPA_HEADER_ONLY})
@@ -344,13 +344,24 @@ foreach(lib ${dmitigr_cpplipa_libraries})
       configure_file(${lib_root}/version.hpp.in
         ${CMAKE_CURRENT_SOURCE_DIR}/${lib_root}/${lib}/version.hpp @ONLY
         NEWLINE_STYLE UNIX)
-      list(APPEND ${dmlib}_preprocessed_headers version.hpp)
+      list(APPEND ${dmlib}_headers version.hpp)
 
-      if(WIN32 AND NOT ${${dmlib}_header_only})
-        configure_file(${lib_root}/version.rc.in
-          ${CMAKE_CURRENT_SOURCE_DIR}/${lib_root}/${lib}/version.rc @ONLY
+      if(NOT ${${dmlib}_header_only})
+        configure_file(${lib_root}/lib_version.cpp.in
+          ${CMAKE_CURRENT_SOURCE_DIR}/${lib_root}/${lib}/lib_version.cpp @ONLY
           NEWLINE_STYLE UNIX)
-        list(APPEND ${dmlib}_build_only_sources version.rc)
+        list(APPEND ${dmlib}_implementations lib_version.cpp)
+        configure_file(${lib_root}/lib_version.hpp.in
+          ${CMAKE_CURRENT_SOURCE_DIR}/${lib_root}/${lib}/lib_version.hpp @ONLY
+          NEWLINE_STYLE UNIX)
+        list(APPEND ${dmlib}_headers lib_version.hpp)
+
+        if(WIN32)
+          configure_file(${lib_root}/version.rc.in
+            ${CMAKE_CURRENT_SOURCE_DIR}/${lib_root}/${lib}/version.rc @ONLY
+            NEWLINE_STYLE UNIX)
+          list(APPEND ${dmlib}_build_only_sources version.rc)
+        endif()
       endif()
     endif()
   else()
@@ -448,7 +459,6 @@ foreach(lib ${dmitigr_cpplipa_libraries})
   # ------------------------------------
 
   if(DMITIGR_CPPLIPA_INSTALL)
-    dmitigr_install_lib_includes(${dmlib}_preprocessed_headers)
     dmitigr_install_lib_includes(${dmlib}_headers)
     if(${${dmlib}_header_only})
       dmitigr_install_lib_includes(${dmlib}_implementations)
