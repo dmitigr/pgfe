@@ -1,8 +1,8 @@
 # [PostgreSQL] C++ driver
 
-`dmitigr::pgfe` (PostGres FrontEnd) - is an advanced and feature rich
-[PostgreSQL] driver written in C++. The development is focused on easines and
-robustness of use with the performance in mind.
+`dmitigr::pgfe` (*PostGres FrontEnd*) - is an advanced, feature rich and
+cross-platform [PostgreSQL] driver written in C++. The development is focused
+on easines and robustness of use with the performance in mind.
 
 ## Hello, World
 
@@ -80,6 +80,13 @@ int main() try {
   - provides a support of dynamic construction of SQL queries;
   - allows to separate SQL queries and C++ code on the client side;
   - provides simple, robust and thread-safe connection pool.
+
+## Requirements
+
+  - C++17 compiler (tested on GCC and MSVC);
+  - [libpq] library;
+  - [CMake] 3.16+ (optional, if build is required);
+  - [Doxygen] 1.9+ (optional, if the documentation generation is required).
 
 ## Usage
 
