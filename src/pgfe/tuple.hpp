@@ -38,8 +38,6 @@ namespace dmitigr::pgfe {
  * @brief A tuple.
  *
  * @details A collection of elements in a fixed order.
- *
- * @remarks Fields removing will not invalidate pointers returned by data().
  */
 class Tuple final : public Composite {
 public:

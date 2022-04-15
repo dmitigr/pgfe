@@ -22,7 +22,7 @@ set(dmitigr_cpplipa_libraries_all
   # Level 0 (base level)
   base
   # Level 1
-  concur dt fs hsh math os que rajson rnd str ttpl util uv
+  algo concur dt fs hsh math os que rajson rnd str ttpl util uv
   # Level 2
   mulf net prg sqlixx url
   # Level 3
@@ -41,6 +41,7 @@ set(dmitigr_cpplipa_libraries_all
 set(dmitigr_cpplipa_3rdparty_uwebsockets_deps 3rdparty_usockets)
 
 # Level 1
+set(dmitigr_cpplipa_algo_deps base)
 set(dmitigr_cpplipa_concur_deps base)
 set(dmitigr_cpplipa_dt_deps base)
 set(dmitigr_cpplipa_fs_deps)
@@ -61,7 +62,7 @@ set(dmitigr_cpplipa_prg_deps base fs os rajson str)
 set(dmitigr_cpplipa_sqlixx_deps base fs)
 set(dmitigr_cpplipa_url_deps base str)
 # Level 3
-set(dmitigr_cpplipa_jrpc_deps base math rajson str)
+set(dmitigr_cpplipa_jrpc_deps base algo math rajson str)
 set(dmitigr_cpplipa_ws_deps base fs net 3rdparty_uwebsockets)
 set(dmitigr_cpplipa_wscl_deps base net 3rdparty_uwsc)
 # Level 4
