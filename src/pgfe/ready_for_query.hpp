@@ -35,7 +35,7 @@ namespace dmitigr::pgfe {
 class Ready_for_query final : public Response {
 public:
   /// Constructs invalid instance.
-  Ready_for_query() noexcept = default;
+  Ready_for_query() = default;
 
   /// Not copy-constructible.
   Ready_for_query(const Ready_for_query&) = delete;

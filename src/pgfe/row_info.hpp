@@ -34,19 +34,19 @@ namespace dmitigr::pgfe {
 class Row_info final : public Compositional {
 public:
   /// Default-constructible. (Constructs invalid instance.)
-  Row_info() noexcept = default;
+  Row_info() = default;
 
   /// Not copy-constructible.
   Row_info(const Row_info&) = delete;
 
   /// Move-constructible.
-  Row_info(Row_info&&) noexcept = default;
+  Row_info(Row_info&&) = default;
 
   /// Not copy-assignable.
   Row_info& operator=(const Row_info&) = delete;
 
   /// Move-assignable.
-  Row_info& operator=(Row_info&&) noexcept = default;
+  Row_info& operator=(Row_info&&) = default;
 
   /// Swaps this with `rhs`.
   DMITIGR_PGFE_API void swap(Row_info& rhs) noexcept;

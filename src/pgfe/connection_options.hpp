@@ -46,7 +46,7 @@ namespace dmitigr::pgfe {
 class Connection_options final {
 public:
   /// Constructs empty connection options.
-  Connection_options() noexcept = default;
+  Connection_options() = default;
 
   /// Swaps this instance with `rhs`.
   DMITIGR_PGFE_API void swap(Connection_options& rhs) noexcept;

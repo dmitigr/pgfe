@@ -38,7 +38,7 @@ private:
   friend Ready_for_query;
   friend Row;
 
-  Response() noexcept = default;
+  Response() = default;
 };
 
 // -----------------------------------------------------------------------------

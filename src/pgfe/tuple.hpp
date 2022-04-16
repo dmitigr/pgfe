@@ -45,7 +45,7 @@ public:
   using Element = std::pair<std::string, std::unique_ptr<Data>>;
 
   /// Default-constructible
-  Tuple() noexcept = default;
+  Tuple() = default;
 
   /// The constructor.
   DMITIGR_PGFE_API Tuple(std::vector<Element>&& elements) noexcept;
@@ -57,10 +57,10 @@ public:
   DMITIGR_PGFE_API Tuple& operator=(const Tuple& rhs);
 
   /// Move-constructible.
-  Tuple(Tuple&& rhs) noexcept = default;
+  Tuple(Tuple&& rhs) = default;
 
   /// Move-assignable.
-  Tuple& operator=(Tuple&& rhs) noexcept = default;
+  Tuple& operator=(Tuple&& rhs) = default;
 
   /// Swaps the instances.
   DMITIGR_PGFE_API void swap(Tuple& rhs) noexcept;

@@ -41,7 +41,7 @@ public:
   }
 
   /// The destructor.
-  virtual ~Parameterizable() noexcept = default;
+  virtual ~Parameterizable() = default;
 
   /// @returns The number of positional parameters.
   virtual std::size_t positional_parameter_count() const noexcept = 0;
@@ -79,7 +79,7 @@ private:
   friend Prepared_statement;
   friend Statement;
 
-  Parameterizable() noexcept = default;
+  Parameterizable() = default;
   virtual bool is_invariant_ok() const noexcept;
 };
 

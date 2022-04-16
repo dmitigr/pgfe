@@ -37,7 +37,7 @@ namespace dmitigr::pgfe {
 class Row final : public Response, public Composite {
 public:
   /// Default-constructible. (Constructs invalid instance.)
-  Row() noexcept = default;
+  Row() = default;
 
   /// The constructor.
   template<typename ... Types>
@@ -113,7 +113,7 @@ public:
     using pointer = value_type*;
 
     /// Constructs an invalid iterator.
-    Basic_iterator() noexcept = default;
+    Basic_iterator() = default;
 
     /// Dereferences the iterator.
     reference operator*() noexcept

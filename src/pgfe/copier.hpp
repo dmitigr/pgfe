@@ -58,7 +58,7 @@ public:
   DMITIGR_PGFE_API ~Copier() noexcept;
 
   /// Constructs invalid instance.
-  Copier() noexcept = default;
+  Copier() = default;
 
   /// Not copy-constructible.
   Copier(const Copier&) = delete;

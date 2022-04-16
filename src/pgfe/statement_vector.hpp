@@ -37,7 +37,7 @@ namespace dmitigr::pgfe {
 class Statement_vector final {
 public:
   /// Default-constructible. (Constructs an empty instance.)
-  Statement_vector() noexcept = default;
+  Statement_vector() = default;
 
   /**
    * @brief Parses the input to make the Statement vector at once.

@@ -31,7 +31,7 @@ namespace dmitigr::pgfe {
 class Error final : public Response, public Problem {
 public:
   /// Default-constructible. (Constructs invalid instance.)
-  Error() noexcept = default;
+  Error() = default;
 
   /// The constructor.
   explicit DMITIGR_PGFE_API Error(detail::pq::Result&& result) noexcept;

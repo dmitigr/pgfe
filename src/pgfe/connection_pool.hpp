@@ -53,13 +53,13 @@ public:
     Handle(const Handle&) = delete;
 
     /// Move-constructible.
-    Handle(Handle&& rhs) noexcept = default;
+    Handle(Handle&& rhs) = default;
 
     /// Not copy-assignable.
     Handle& operator=(const Handle&) = delete;
 
     /// Move-assignable.
-    Handle& operator=(Handle&& rhs) noexcept = default;
+    Handle& operator=(Handle&& rhs) = default;
 
     /**
      * @returns The Connection.
@@ -109,7 +109,7 @@ public:
     std::size_t state_index_{};
 
     /// Default-constructible. (Constructs invalid instance.)
-    Handle() noexcept = default;
+    Handle() = default;
 
     /// The constructor.
     Handle(std::shared_ptr<Connection_pool*> pool,
@@ -125,7 +125,7 @@ public:
   DMITIGR_PGFE_API ~Connection_pool() noexcept;
 
   /// Default-constructible. (Constructs invalid instance.)
-  Connection_pool() noexcept = default;
+  Connection_pool() = default;
 
   /// Not copy-constructible.
   Connection_pool(const Connection_pool&) = delete;

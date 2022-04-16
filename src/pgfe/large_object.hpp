@@ -110,7 +110,7 @@ public:
   DMITIGR_PGFE_API ~Large_object() noexcept;
 
   /// Constructs invalid instance.
-  Large_object() noexcept = default;
+  Large_object() = default;
 
   /// Not copy-constructible.
   Large_object(const Large_object&) = delete;

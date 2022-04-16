@@ -1017,11 +1017,16 @@ public:
    * results of subsequent commands with either wait_response() or
    * wait_response_throw() until the Ready_for_query response is received.
    *
+   * @par Requires
+   * libpq from PostgreSQL 14 or more recent version.
+   *
    * @par Effects
    *   - if `value`, then `!is_ready_for_request()` and
    *   `is_ready_for_nio_request()` and `pipeline_status() == Pipeline_status::enabled`;
    *   - if `!value`, then `is_ready_for_request()` and
    *   `is_ready_for_nio_request()` and `pipeline_status() == Pipeline_status::disabled`.
+   *
+   * @throws Client_exception on error.
    *
    * @see pipeline_status(), send_sync(), send_flush().
    */
@@ -1033,6 +1038,9 @@ public:
   /**
    * @brief Sends a Sync message to the server.
    *
+   * @par Requires
+   * libpq from PostgreSQL 14 or more recent version.
+   *
    * @remarks At present, this method is only useful to mark a synchronization
    * point in a pipeline and to cause the server to flush its output buffer.
    *
@@ -1042,6 +1050,9 @@ public:
 
   /**
    * @brief Sends a Flush message to the server.
+   *
+   * @par Requires
+   * libpq from PostgreSQL 14 or more recent version.
    *
    * @remarks At present, this method is only useful to flush the server's
    * point in a pipeline and to cause the server to flush its output buffer
@@ -1263,14 +1274,14 @@ private:
       sync
     };
 
-    Request() noexcept = default;
+    Request() = default;
     explicit Request(Id id) noexcept;
     Request(Id id, Prepared_statement prepared_statement) noexcept;
     Request(Id id, std::string prepared_statement_name) noexcept;
     Request(const Request&) = delete;
     Request& operator=(const Request&) = delete;
-    Request(Request&&) noexcept = default;
-    Request& operator=(Request&&) noexcept = default;
+    Request(Request&&) = default;
+    Request& operator=(Request&&) = default;
 
     Id id_{};
     Prepared_statement prepared_statement_;

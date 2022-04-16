@@ -69,7 +69,7 @@ public:
   /// @{
 
   /// Default-constructible. (Constructs an empty instance.)
-  Statement() noexcept = default;
+  Statement() = default;
 
   /**
    * @brief The constructor.

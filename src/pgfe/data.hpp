@@ -45,7 +45,7 @@ public:
   using Format = Data_format;
 
   /// The destructor.
-  virtual ~Data() noexcept = default;
+  virtual ~Data() = default;
 
   /// @returns `true` if the instance is valid.
   DMITIGR_PGFE_API bool is_valid() const noexcept;
@@ -243,7 +243,7 @@ public:
    * @par Effects
    * `!is_valid()`. `bytes()` returns empty string literal.
    */
-  Data_view() noexcept = default;
+  Data_view() = default;
 
   /**
    * @brief Constructs the data view of the text format.
@@ -271,13 +271,13 @@ public:
   DMITIGR_PGFE_API Data_view(const Data& data) noexcept;
 
   /// Copy-constructible.
-  Data_view(const Data_view&) noexcept = default;
+  Data_view(const Data_view&) = default;
 
   /// Move-constructible.
   DMITIGR_PGFE_API Data_view(Data_view&& rhs) noexcept;
 
   /// Copy-assignable.
-  Data_view& operator=(const Data_view&) noexcept = default;
+  Data_view& operator=(const Data_view&) = default;
 
   /// Move-assignable.
   DMITIGR_PGFE_API Data_view& operator=(Data_view&& rhs) noexcept;

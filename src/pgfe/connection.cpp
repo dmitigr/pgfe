@@ -457,8 +457,10 @@ Connection::handle_input(const bool wait_response)
   static const auto is_completion_status = [](const auto status) noexcept
   {
     return status == PGRES_FATAL_ERROR ||
+#ifdef LIBPQ_HAS_PIPELINING
       status == PGRES_PIPELINE_ABORTED ||
       status == PGRES_PIPELINE_SYNC ||
+#endif
       status == PGRES_COMMAND_OK ||
       status == PGRES_TUPLES_OK ||
       status == PGRES_EMPTY_QUERY ||
@@ -803,8 +805,12 @@ Connection::prepared_statement() noexcept
 
 DMITIGR_PGFE_INLINE Ready_for_query Connection::ready_for_query() noexcept
 {
+#ifdef LIBPQ_HAS_PIPELINING
   return (response_.status() == PGRES_PIPELINE_SYNC)
     ? Ready_for_query{release_response()} : Ready_for_query{};
+#else
+  return Ready_for_query{};
+#endif
 }
 
 DMITIGR_PGFE_INLINE bool Connection::is_ready_for_request() const noexcept
@@ -920,6 +926,7 @@ DMITIGR_PGFE_INLINE Completion Connection::unprepare(const std::string& name)
 
 DMITIGR_PGFE_INLINE void Connection::set_pipeline_enabled(const bool value)
 {
+#ifdef LIBPQ_HAS_PIPELINING
   if (value) {
     if (!PQenterPipelineMode(conn()))
       throw Client_exception{"cannot enable pipeline on connection"};
@@ -927,10 +934,16 @@ DMITIGR_PGFE_INLINE void Connection::set_pipeline_enabled(const bool value)
     if (!PQexitPipelineMode(conn()))
       throw Client_exception{error_message()};
   }
+#else
+  throw Client_exception{std::string{"cannot "}
+    .append(value ? "enable" : "disable")
+    .append(" pipeline: feature is not available")};
+#endif
 }
 
 DMITIGR_PGFE_INLINE Pipeline_status Connection::pipeline_status() const noexcept
 {
+#ifdef LIBPQ_HAS_PIPELINING
   switch (PQpipelineStatus(conn())) {
   case PQ_PIPELINE_OFF:
     return Pipeline_status::disabled;
@@ -942,19 +955,30 @@ DMITIGR_PGFE_INLINE Pipeline_status Connection::pipeline_status() const noexcept
     break;
   }
   DMITIGR_ASSERT(false);
+#else
+  return Pipeline_status::disabled;
+#endif
 }
 
 DMITIGR_PGFE_INLINE void Connection::send_sync()
 {
+#ifdef LIBPQ_HAS_PIPELINING
   if (!PQpipelineSync(conn()))
     throw Client_exception{"cannot send sync message to the server"};
   requests_.emplace(Request::Id::sync);
+#else
+  throw Client_exception{"cannot send sync message: feature is not available"};
+#endif
 }
 
 DMITIGR_PGFE_INLINE void Connection::send_flush()
 {
+#ifdef LIBPQ_HAS_PIPELINING
   if (!PQsendFlushRequest(conn()))
     throw Client_exception{"cannot send flush message to the server"};
+#else
+  throw Client_exception{"cannot send flush message: feature is not available"};
+#endif
 }
 
 DMITIGR_PGFE_INLINE void
@@ -1139,7 +1163,7 @@ DMITIGR_PGFE_INLINE detail::pq::Result Connection::release_response() noexcept
 DMITIGR_PGFE_INLINE void
 Connection::reset_response(detail::pq::Result&& response) noexcept
 {
-  if (response_ = std::move(response))
+  if ( (response_ = std::move(response)))
     response_status_ = Response_status::ready;
 }
 

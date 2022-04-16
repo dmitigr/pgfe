@@ -34,19 +34,19 @@ namespace dmitigr::pgfe {
 class Problem {
 public:
   /// The destructor.
-  virtual ~Problem() noexcept = default;
+  virtual ~Problem() = default;
 
   /// Not copy-constructible.
   Problem(const Problem&) = delete;
 
   /// Move-constructible.
-  Problem(Problem&&) noexcept = default;
+  Problem(Problem&&) = default;
 
   /// Not copy-assignable.
   Problem& operator=(const Problem&) = delete;
 
   /// Move-assignable.
-  Problem& operator=(Problem&&) noexcept = default;
+  Problem& operator=(Problem&&) = default;
 
   /// @returns The error condition that corresponds to SQLSTATE sqlstate().
   DMITIGR_PGFE_API std::error_condition condition() const noexcept;

@@ -80,7 +80,7 @@ public:
   using Status = ::ExecStatusType;
 
   /// The default constructor. (Constructs invalid instance.)
-  Result() noexcept = default;
+  Result() = default;
 
   /// The constructor.
   explicit Result(PGresult* const pgresult) noexcept

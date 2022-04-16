@@ -46,7 +46,7 @@ private:
   friend Connection;
 
   /// Default-constructible. (Constructs invalid instance.)
-  Notice() noexcept = default;
+  Notice() = default;
 
   explicit Notice(const PGresult* const result) noexcept;
   bool is_invariant_ok() const noexcept override;

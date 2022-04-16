@@ -32,23 +32,15 @@ inline std::string error_message(const int code)
   if (const int e = ::strerror_s(buf, code))
     throw Sys_exception{e, "cannot get an OS error message"};
   else
-    return std::string{buf};
+    return buf;
 #else
   char buf[1024];
-#if (_POSIX_C_SOURCE >= 200112L) && !_GNU_SOURCE
+#if ((_POSIX_C_SOURCE >= 200112L) && !_GNU_SOURCE) || __APPLE__
   const int e = ::strerror_r(code, buf, sizeof(buf));
-  if (e < 0)
-    throw Sys_exception{e, "cannot get an OS error message"};
-  else if (e > 0)
-    return "unknown error";
-  else
-    return std::string{buf};
+  return !e ? buf : "unknown error";
 #elif _GNU_SOURCE
   const char* const msg = ::strerror_r(code, buf, sizeof(buf));
-  if (msg)
-    return msg;
-  else
-    return "unknown error";
+  return msg ? msg : "unknown error";
 #else
 #error Supported version of strerror_r() is not available.
 #endif

@@ -31,7 +31,7 @@ private:
   friend Notice;
   friend Notification;
 
-  Signal() noexcept = default;
+  Signal() = default;
 };
 
 } // namespace dmitigr::pgfe
