@@ -21,7 +21,7 @@ try {
   namespace pgfe = dmitigr::pgfe;
 
   auto [output_file, conn] = pgfe::test::arraybench::prepare(argc, argv);
-  conn->execute([&output_file](auto&& row)
+  conn->execute([output_file = std::move(output_file)](auto&& row)mutable
   {
     using Array = pgfe::Array_optional1<std::string>;
     for (const auto& elem : pgfe::to<Array>(row[0])) {

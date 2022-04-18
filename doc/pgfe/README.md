@@ -1,4 +1,4 @@
-# [PostgreSQL] C++ driver
+# [PostgreSQL] C++ driver (PostgreSQL client API)
 
 `dmitigr::pgfe` (*PostGres FrontEnd*) - is an advanced, feature rich and
 cross-platform [PostgreSQL] driver written in C++. The development is focused

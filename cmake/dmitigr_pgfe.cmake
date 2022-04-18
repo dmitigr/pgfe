@@ -18,7 +18,7 @@
 # Info
 # ------------------------------------------------------------------------------
 
-dmitigr_cpplipa_set_library_info(pgfe 2 0 0 "Client API for PostgreSQL")
+dmitigr_cpplipa_set_library_info(pgfe 2 0 1 "PostgreSQL client API")
 
 # ------------------------------------------------------------------------------
 # Sources

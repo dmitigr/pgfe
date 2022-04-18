@@ -21,7 +21,7 @@ try {
   namespace pgfe = dmitigr::pgfe;
 
   auto [output_file, conn] = pgfe::test::arraybench::prepare(argc, argv);
-  conn->execute([&output_file](auto&& row)
+  conn->execute([output_file = std::move(output_file)](auto&& row)mutable
   {
     const auto fc = row.field_count();
     DMITIGR_ASSERT(fc == 5);
