@@ -17,8 +17,8 @@
 #ifndef DMITIGR_NET_SOCKET_HPP
 #define DMITIGR_NET_SOCKET_HPP
 
+#include "../base/enum_bitmask.hpp"
 #include "../os/last_error.hpp"
-#include "../util/enum_bitmask.hpp"
 #include "address.hpp"
 #include "exceptions.hpp"
 
@@ -63,12 +63,12 @@ enum class Socket_readiness {
 
 } // namespace dmitigr::net
 
-namespace dmitigr::util {
+namespace dmitigr {
 
 /// Full specialization for net::Socket_readiness.
 template<> struct Is_bitmask_enum<net::Socket_readiness> : std::true_type {};
 
-} // namespace dmitigr::util
+} // namespace dmitigr
 
 namespace dmitigr::net {
 

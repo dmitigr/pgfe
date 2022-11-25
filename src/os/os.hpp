@@ -17,12 +17,12 @@
 #ifndef DMITIGR_OS_OS_HPP
 #define DMITIGR_OS_OS_HPP
 
+#include "types_fwd.hpp"
 #include "environment.hpp"
 #include "error.hpp"
 #include "exceptions.hpp"
 #include "last_error.hpp"
 #include "pid.hpp"
-#include "types_fwd.hpp"
 #include "version.hpp"
 #ifdef _WIN32
 #include "windows.hpp"

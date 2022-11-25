@@ -16,7 +16,7 @@
 
 cmake_minimum_required(VERSION 3.16)
 cmake_policy(VERSION 3.16)
-project(dmitigr_cpplipa)
+project(dmitigr_libs)
 
 if (NOT (UNIX OR WIN32))
   message(FATAL_ERROR "Unsupported platform")
@@ -24,25 +24,25 @@ endif()
 
 list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 include(dmitigr)
-include(dmitigr_cpplipa)
+include(dmitigr_libs)
 
 # ------------------------------------------------------------------------------
 # Build options
 # ------------------------------------------------------------------------------
 
-set(DMITIGR_CPPLIPA_CLANG_USE_LIBCPP On CACHE BOOL
+set(DMITIGR_LIBS_CLANG_USE_LIBCPP On CACHE BOOL
   "Use libc++ with Clang?")
-set(DMITIGR_CPPLIPA_HEADER_ONLY Off CACHE BOOL
+set(DMITIGR_LIBS_HEADER_ONLY Off CACHE BOOL
   "Whole header-only?")
-set(DMITIGR_CPPLIPA_DOXYGEN Off CACHE BOOL
+set(DMITIGR_LIBS_DOXYGEN Off CACHE BOOL
   "Build configurations for Doxygen?")
-set(DMITIGR_CPPLIPA_TESTS Off CACHE BOOL
+set(DMITIGR_LIBS_TESTS Off CACHE BOOL
   "Build tests?")
-set(DMITIGR_CPPLIPA_OPENSSL Off CACHE BOOL
+set(DMITIGR_LIBS_OPENSSL Off CACHE BOOL
   "Link to OpenSSL where possible?")
-set(DMITIGR_CPPLIPA_ZLIB Off CACHE BOOL
+set(DMITIGR_LIBS_ZLIB Off CACHE BOOL
   "Link to Zlib where possible?")
-set(DMITIGR_CPPLIPA_AIO "uv" CACHE STRING
+set(DMITIGR_LIBS_AIO "uv" CACHE STRING
   "What AIO to use? (\"uv\" - is the only option now.)")
 set(BUILD_SHARED_LIBS Off CACHE BOOL
   "Build shared libraries?")
@@ -51,7 +51,7 @@ set(CMAKE_VERBOSE_MAKEFILE On CACHE BOOL
 
 # Enable linking with libc++ if requested.
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-  if (DMITIGR_CPPLIPA_CLANG_USE_LIBCPP)
+  if (DMITIGR_LIBS_CLANG_USE_LIBCPP)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -stdlib=libc++")
   endif()
 endif()
@@ -62,57 +62,57 @@ if(NOT DEFINED CMAKE_BUILD_TYPE OR NOT CMAKE_BUILD_TYPE)
     "Build type: Debug Release RelWithDebInfo MinSizeRel" FORCE)
 endif()
 
-if (NOT DMITIGR_CPPLIPA_HEADER_ONLY)
+if (NOT DMITIGR_LIBS_HEADER_ONLY)
   if(BUILD_SHARED_LIBS)
     message("Shared libraries are requested (${CMAKE_BUILD_TYPE})")
   else()
     message("Static libraries are requested (${CMAKE_BUILD_TYPE})")
   endif()
 elseif(BUILD_SHARED_LIBS)
-  message(FATAL_ERROR "DMITIGR_CPPLIPA_HEADER_ONLY and BUILD_SHARED_LIBS are mutually exclusive")
+  message(FATAL_ERROR "DMITIGR_LIBS_HEADER_ONLY and BUILD_SHARED_LIBS are mutually exclusive")
 else()
   message("Only 3rdparties without header-only option will be built")
 endif()
 
-if(DMITIGR_CPPLIPA_DOXYGEN)
+if(DMITIGR_LIBS_DOXYGEN)
   message("Doxygen configurations are requested")
 endif()
 
-if(DMITIGR_CPPLIPA_TESTS)
+if(DMITIGR_LIBS_TESTS)
   message("Tests are requested (${CMAKE_BUILD_TYPE})")
 endif()
 
-string(REGEX MATCH "(uv)$" aio "${DMITIGR_CPPLIPA_AIO}")
+string(REGEX MATCH "(uv)$" aio "${DMITIGR_LIBS_AIO}")
 if(NOT aio)
-  message(FATAL_ERROR "Invalid AIO -- \"${DMITIGR_CPPLIPA_AIO}\"")
+  message(FATAL_ERROR "Invalid AIO -- \"${DMITIGR_LIBS_AIO}\"")
 endif()
 
 # ------------------------------------------------------------------------------
 
-set(DMITIGR_CPPLIPA_INSTALL On CACHE BOOL
+set(DMITIGR_LIBS_INSTALL On CACHE BOOL
   "Install the stuff?")
 
 if(UNIX)
-  set(DMITIGR_CPPLIPA_SHARE_INSTALL_DIR "share/dmitigr_cpplipa" CACHE
+  set(DMITIGR_LIBS_SHARE_INSTALL_DIR "share/dmitigr_libs" CACHE
     STRING "Name of the installation directory for the shared stuff relative to ${CMAKE_INSTALL_PREFIX}")
-  set(DMITIGR_CPPLIPA_CMAKE_INSTALL_DIR "${DMITIGR_CPPLIPA_SHARE_INSTALL_DIR}/cmake" CACHE
+  set(DMITIGR_LIBS_CMAKE_INSTALL_DIR "${DMITIGR_LIBS_SHARE_INSTALL_DIR}/cmake" CACHE
     STRING "Name of the installation directory for the CMake stuff relative to ${CMAKE_INSTALL_PREFIX}")
-  set(DMITIGR_CPPLIPA_LIB_INSTALL_DIR "lib" CACHE
+  set(DMITIGR_LIBS_LIB_INSTALL_DIR "lib" CACHE
     STRING "Name of the installation directory for the libraries relative to ${CMAKE_INSTALL_PREFIX}")
-  set(DMITIGR_CPPLIPA_INCLUDE_INSTALL_DIR "include" CACHE
+  set(DMITIGR_LIBS_INCLUDE_INSTALL_DIR "include" CACHE
     STRING "Name of the installation directory for the includes relative to ${CMAKE_INSTALL_PREFIX}")
 elseif(WIN32)
   # On Windows, CMAKE_INSTALL_PREFIX is $ENV{ProgramFiles}\\${CMAKE_PROJECT_NAME} by default. In turn:
   #   - on AMD64: ProgramFiles=%ProgramFiles%
   #   - on   x86: ProgramFiles=%ProgramFiles(x86)%
   # See: https://msdn.microsoft.com/en-us/library/aa384274.aspx
-  set(DMITIGR_CPPLIPA_SHARE_INSTALL_DIR "." CACHE
+  set(DMITIGR_LIBS_SHARE_INSTALL_DIR "." CACHE
     STRING "Name of the installation directory for the shared stuff relative to ${CMAKE_INSTALL_PREFIX}")
-  set(DMITIGR_CPPLIPA_CMAKE_INSTALL_DIR "cmake" CACHE
+  set(DMITIGR_LIBS_CMAKE_INSTALL_DIR "cmake" CACHE
     STRING "Name of the installation directory for the CMake stuff relative to ${CMAKE_INSTALL_PREFIX}")
-  set(DMITIGR_CPPLIPA_LIB_INSTALL_DIR "lib" CACHE
+  set(DMITIGR_LIBS_LIB_INSTALL_DIR "lib" CACHE
     STRING "Name of the installation directory for the libraries relative to ${CMAKE_INSTALL_PREFIX}")
-  set(DMITIGR_CPPLIPA_INCLUDE_INSTALL_DIR "include" CACHE
+  set(DMITIGR_LIBS_INCLUDE_INSTALL_DIR "include" CACHE
     STRING "Name of the installation directory for the includes relative to ${CMAKE_INSTALL_PREFIX}")
 endif()
 
@@ -131,18 +131,18 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # The libraries sources root directory.
 set(lib_root "src")
 
-# Ensure that dmitigr_cpplipa_libraries is empty!
-set(dmitigr_cpplipa_libraries)
-foreach(lib ${dmitigr_cpplipa_libraries_all})
+# Ensure that dmitigr_libs_package is empty!
+set(dmitigr_libs_package)
+foreach(lib ${dmitigr_libs})
   set(pref "${CMAKE_CURRENT_SOURCE_DIR}/${lib_root}/${lib}")
   if(EXISTS "${pref}" OR EXISTS "${pref}.hpp")
-    list(APPEND dmitigr_cpplipa_libraries ${lib})
+    list(APPEND dmitigr_libs_package ${lib})
   endif()
 endforeach()
 unset(pref)
 
-configure_file(cmake/dmitigr_cpplipa_libraries.cmake.in
-  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/dmitigr_cpplipa_libraries.cmake @ONLY
+configure_file(cmake/dmitigr_libs_package.cmake.in
+  ${CMAKE_CURRENT_SOURCE_DIR}/cmake/dmitigr_libs_package.cmake @ONLY
   NEWLINE_STYLE UNIX)
 
 # ------------------------------------------------------------------------------
@@ -153,17 +153,17 @@ set(content "#!/bin/bash\n# Copyright (C) Dmitry Igrishin\n\n")
 set(content "${content}# This file is automatically generated by CMake!\n\n")
 
 # Dump library list
-set(content "${content}cpplipa_libraries=\"")
-foreach(lib ${dmitigr_cpplipa_libraries})
+set(content "${content}igrilibs=\"")
+foreach(lib ${dmitigr_libs_package})
   set(content "${content}${lib} ")
 endforeach()
 string(STRIP "${content}" content)
 set(content "${content}\"\n")
 
 # Dump dependency lists
-foreach(lib ${dmitigr_cpplipa_libraries})
+foreach(lib ${dmitigr_libs_package})
   set(content "${content}${lib}_deps=\"")
-  dmitigr_cpplipa_get_deps(lib_deps "${lib}")
+  dmitigr_libs_get_deps(lib_deps "${lib}")
   foreach(dep ${lib_deps})
     # Check that the dependency is present
     string(FIND "${dep}" "3rdparty_" pos)
@@ -177,32 +177,32 @@ foreach(lib ${dmitigr_cpplipa_libraries})
       message(FATAL_ERROR "${lib} is depends on ${dep} which is not present")
     endif()
 
-    # Append the content for cpplipa_deps.sh
+    # Append the content for igrilibs_deps.sh
     set(content "${content}${dep} ")
   endforeach()
   string(STRIP "${content}" content)
   set(content "${content}\"\n")
 endforeach()
 if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tool)
-  file(WRITE tool/cpplipa_deps.sh "${content}")
+  file(WRITE tool/igrilibs_deps.sh "${content}")
 endif()
 unset(content)
-message("This library package contains: ${dmitigr_cpplipa_libraries}")
+message("This package contains: ${dmitigr_libs_package}")
 
 # ------------------------------------------------------------------------------
 # Third-party dependencies
 # ------------------------------------------------------------------------------
 
-if ("rajson" IN_LIST dmitigr_cpplipa_libraries)
+if ("rajson" IN_LIST dmitigr_libs_package)
   include(dmitigr_3rdparty_rapidjson)
 endif()
 
-if ("ws" IN_LIST dmitigr_cpplipa_libraries)
+if ("ws" IN_LIST dmitigr_libs_package)
   include(dmitigr_3rdparty_usockets)
   include(dmitigr_3rdparty_uwebsockets)
 endif()
 
-if ("wscl" IN_LIST dmitigr_cpplipa_libraries)
+if ("wscl" IN_LIST dmitigr_libs_package)
   include(dmitigr_3rdparty_uwsc)
 endif()
 
@@ -216,33 +216,33 @@ endif()
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}")
 
 if (WIN32)
-  set(dmitigr_cpplipa_resource_destination_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
+  set(dmitigr_libs_resource_destination_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIG>")
 elseif (UNIX)
-  set(dmitigr_cpplipa_resource_destination_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
+  set(dmitigr_libs_resource_destination_dir "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}")
 endif()
 
 # ------------------------------------------------------------------------------
 # Custom targets
 # ------------------------------------------------------------------------------
 
-add_custom_target(dmitigr_cpplipa_uninstall)
+add_custom_target(dmitigr_libs_uninstall)
 
-add_custom_target(dmitigr_cpplipa_create_resource_destination_dir ALL
-  COMMAND cmake -E make_directory "${dmitigr_cpplipa_resource_destination_dir}"
+add_custom_target(dmitigr_libs_create_resource_destination_dir ALL
+  COMMAND cmake -E make_directory "${dmitigr_libs_resource_destination_dir}"
   )
 
 # --------------------------------------
 # Installing
 # --------------------------------------
 
-if(DMITIGR_CPPLIPA_INSTALL)
+if(DMITIGR_LIBS_INSTALL)
   install(FILES LICENSE.txt
-    DESTINATION ${DMITIGR_CPPLIPA_SHARE_INSTALL_DIR})
+    DESTINATION ${DMITIGR_LIBS_SHARE_INSTALL_DIR})
   install(FILES
-    cmake/dmitigr_cpplipa_libraries.cmake
-    cmake/dmitigr_cpplipa_libraries_all.cmake
-    cmake/dmitigr_cpplipa-config.cmake
-    DESTINATION ${DMITIGR_CPPLIPA_CMAKE_INSTALL_DIR})
+    cmake/dmitigr_libs.cmake
+    cmake/dmitigr_libs_package.cmake
+    cmake/dmitigr_libs-config.cmake
+    DESTINATION ${DMITIGR_LIBS_CMAKE_INSTALL_DIR})
 endif()
 
 # ------------------------------------------------------------------------------
@@ -255,11 +255,11 @@ function(dmitigr_install_lib_includes file_list)
     string(REGEX REPLACE "^${lib_root}/" "" file "${file}")
     get_filename_component(dir ${file} DIRECTORY)
     install(FILES ${lib_root}/${file}
-      DESTINATION ${DMITIGR_CPPLIPA_INCLUDE_INSTALL_DIR}/dmitigr/${dir})
+      DESTINATION ${DMITIGR_LIBS_INCLUDE_INSTALL_DIR}/dmitigr/${dir})
   endforeach()
 endfunction()
 
-foreach(lib ${dmitigr_cpplipa_libraries})
+foreach(lib ${dmitigr_libs_package})
   string(TOUPPER "${lib}" LIB)
 
   set(dmlib dmitigr_${lib})
@@ -267,13 +267,13 @@ foreach(lib ${dmitigr_cpplipa_libraries})
 
   include(${dmlib})
 
-  dmitigr_cpplipa_set_library_info_lib_variables(${lib})
+  dmitigr_libs_set_library_info_lib_variables(${lib})
 
   # -------------
   # Documentation
   # -------------
 
-  if(DMITIGR_CPPLIPA_DOXYGEN)
+  if(DMITIGR_LIBS_DOXYGEN)
     configure_file(Doxyfile.in
       ${CMAKE_CURRENT_SOURCE_DIR}/doxygen/${lib}/Doxyfile @ONLY
       NEWLINE_STYLE UNIX)
@@ -302,7 +302,7 @@ foreach(lib ${dmitigr_cpplipa_libraries})
       list(APPEND ${dmlib}_headers ${file})
     endforeach()
 
-    set(${dmlib}_header_only ${DMITIGR_CPPLIPA_HEADER_ONLY})
+    set(${dmlib}_header_only ${DMITIGR_LIBS_HEADER_ONLY})
   else()
     set(${dmlib}_header_only TRUE)
   endif()
@@ -362,7 +362,7 @@ foreach(lib ${dmitigr_cpplipa_libraries})
     message(FATAL_ERROR "Variable ${dmlib}_version_major is not defined")
   endif()
 
-  foreach(st ${dmitigr_cpplipa_source_types})
+  foreach(st ${dmitigr_libs_source_types})
     list(TRANSFORM ${dmlib}_${st} PREPEND "${lib_root}/${lib}/")
     list(APPEND ${dmlib}_sources ${${dmlib}_${st}})
   endforeach()
@@ -406,7 +406,7 @@ foreach(lib ${dmitigr_cpplipa_libraries})
       # DEBUG_POSTFIX "d"
       )
 
-    dmitigr_cpplipa_target_compile_options(${dmlib})
+    dmitigr_libs_target_compile_options(${dmlib})
   endif()
 
   if(NOT ${${dmlib}_header_only})
@@ -430,7 +430,7 @@ foreach(lib ${dmitigr_cpplipa_libraries})
   # ------------------------------------
 
   if(NOT ${${dmlib}_header_only})
-    foreach(dep ${dmitigr_cpplipa_${lib}_deps})
+    foreach(dep ${dmitigr_libs_${lib}_deps})
       target_link_libraries(${dmlib} PUBLIC dmitigr_${dep})
     endforeach()
 
@@ -439,7 +439,7 @@ foreach(lib ${dmitigr_cpplipa_libraries})
       PRIVATE ${${dmlib}_target_link_libraries_private}
       PUBLIC  ${${dmlib}_target_link_libraries_public})
   else() # header-only
-    foreach(dep ${dmitigr_cpplipa_${lib}_deps})
+    foreach(dep ${dmitigr_libs_${lib}_deps})
       target_link_libraries(${dmlib} INTERFACE dmitigr_${dep})
     endforeach()
 
@@ -452,7 +452,7 @@ foreach(lib ${dmitigr_cpplipa_libraries})
   # Installing
   # ------------------------------------
 
-  if(DMITIGR_CPPLIPA_INSTALL)
+  if(DMITIGR_LIBS_INSTALL)
     dmitigr_install_lib_includes(${dmlib}_headers)
     if(${${dmlib}_header_only})
       dmitigr_install_lib_includes(${dmlib}_implementations)
@@ -461,20 +461,20 @@ foreach(lib ${dmitigr_cpplipa_libraries})
     if(NOT ${${dmlib}_header_only})
       install(TARGETS ${dmlib}
         EXPORT ${dmlib}_export
-        ARCHIVE  DESTINATION ${DMITIGR_CPPLIPA_LIB_INSTALL_DIR}
-        LIBRARY  DESTINATION ${DMITIGR_CPPLIPA_LIB_INSTALL_DIR}
-        RUNTIME  DESTINATION ${DMITIGR_CPPLIPA_LIB_INSTALL_DIR})
+        ARCHIVE  DESTINATION ${DMITIGR_LIBS_LIB_INSTALL_DIR}
+        LIBRARY  DESTINATION ${DMITIGR_LIBS_LIB_INSTALL_DIR}
+        RUNTIME  DESTINATION ${DMITIGR_LIBS_LIB_INSTALL_DIR})
     else()
       install(TARGETS ${dmlib}
         EXPORT ${dmlib}_export
-        INCLUDES DESTINATION ${DMITIGR_CPPLIPA_INCLUDE_INSTALL_DIR})
+        INCLUDES DESTINATION ${DMITIGR_LIBS_INCLUDE_INSTALL_DIR})
     endif()
 
     # Don't use NAMESPACE, since ${dmlib} contains "dmitigr_" prefix already
     # and it seems there is no way to omit it in order to use NAMESPACE...
     install(EXPORT ${dmlib}_export
       # NAMESPACE dmitigr::
-      DESTINATION ${DMITIGR_CPPLIPA_CMAKE_INSTALL_DIR}
+      DESTINATION ${DMITIGR_LIBS_CMAKE_INSTALL_DIR}
       FILE ${dmlib}_${export_file_suffix}-config.cmake)
   endif()
 
@@ -482,20 +482,20 @@ foreach(lib ${dmitigr_cpplipa_libraries})
   # Uninstalling
   # ------------------------------------
 
-  add_custom_command(TARGET dmitigr_cpplipa_uninstall PRE_BUILD
-    COMMAND cmake -E rm -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CPPLIPA_CMAKE_INSTALL_DIR}/${dmlib}*
-    COMMAND cmake -E rm -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CPPLIPA_LIB_INSTALL_DIR}/${dmlib}*
-    COMMAND cmake -E rm -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CPPLIPA_LIB_INSTALL_DIR}/lib${dmlib}*
-    COMMAND cmake -E rm -rf ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CPPLIPA_INCLUDE_INSTALL_DIR}/dmitigr/${lib}*
-    COMMAND cmake -E rm -rf ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CPPLIPA_INCLUDE_INSTALL_DIR}/dmitigr/${lib})
+  add_custom_command(TARGET dmitigr_libs_uninstall PRE_BUILD
+    COMMAND cmake -E rm -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_LIBS_CMAKE_INSTALL_DIR}/${dmlib}*
+    COMMAND cmake -E rm -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_LIBS_LIB_INSTALL_DIR}/${dmlib}*
+    COMMAND cmake -E rm -f ${CMAKE_INSTALL_PREFIX}/${DMITIGR_LIBS_LIB_INSTALL_DIR}/lib${dmlib}*
+    COMMAND cmake -E rm -rf ${CMAKE_INSTALL_PREFIX}/${DMITIGR_LIBS_INCLUDE_INSTALL_DIR}/dmitigr/${lib}*
+    COMMAND cmake -E rm -rf ${CMAKE_INSTALL_PREFIX}/${DMITIGR_LIBS_INCLUDE_INSTALL_DIR}/dmitigr/${lib})
 
-  dmitigr_cpplipa_get_deps(res ${lib})
+  dmitigr_libs_get_deps(res ${lib})
   foreach(dep ${res})
     string(FIND "${dep}" "3rdparty_" pos)
     if (pos EQUAL 0)
       string(SUBSTRING "${dep}" 11 -1 dep)
-      add_custom_command(TARGET dmitigr_cpplipa_uninstall PRE_BUILD
-        COMMAND cmake -E rm -rf ${CMAKE_INSTALL_PREFIX}/${DMITIGR_CPPLIPA_INCLUDE_INSTALL_DIR}/dmitigr/3rdparty/*${dep}*)
+      add_custom_command(TARGET dmitigr_libs_uninstall PRE_BUILD
+        COMMAND cmake -E rm -rf ${CMAKE_INSTALL_PREFIX}/${DMITIGR_LIBS_INCLUDE_INSTALL_DIR}/dmitigr/3rdparty/*${dep}*)
     endif()
   endforeach()
 endforeach()
@@ -504,7 +504,7 @@ endforeach()
 # Tests
 # ------------------------------------------------------------------------------
 
-if(DMITIGR_CPPLIPA_TESTS)
+if(DMITIGR_LIBS_TESTS)
   enable_testing()
 
   function(dmitigr_configure_test lib test)
@@ -523,17 +523,19 @@ if(DMITIGR_CPPLIPA_TESTS)
       ${${dmlib}_tests_target_link_libraries}
       ${${dmlib}_test_${test}_target_link_libraries})
     target_compile_definitions(${exe} PRIVATE
-      ${${dmlib}_tests_target_compile_definitions})
+      ${${dmlib}_tests_target_compile_definitions}
+      ${${dmlib}_test_${test}_target_compile_definitions})
     target_compile_options(${exe} PRIVATE
-      "${${dmlib}_tests_target_compile_options}")
-    dmitigr_cpplipa_target_compile_options(${exe})
+      ${${dmlib}_tests_target_compile_options}
+      ${${dmlib}_test_${test}_target_compile_options})
+    dmitigr_libs_target_compile_options(${exe})
     if(is_unit_test)
       add_test(NAME ${exe} COMMAND ${exe})
     endif()
   endfunction()
 
   # Get the actual list of libraries with tests and configure these tests
-  foreach(lib ${dmitigr_cpplipa_libraries})
+  foreach(lib ${dmitigr_libs_package})
     set(dmlib dmitigr_${lib})
     if(${dmlib}_tests)
       list(APPEND libraries_with_tests ${lib})
@@ -566,7 +568,7 @@ if(DMITIGR_CPPLIPA_TESTS)
   # Dump list of libraries with tests
   set(content "#!/bin/bash\n# Copyright (C) Dmitry Igrishin\n\n")
   set(content "${content}# This file is automatically generated by CMake!\n\n")
-  set(content "${content}cpplipa_libraries_with_tests=\"")
+  set(content "${content}igrilibs_with_tests=\"")
   foreach(lib ${libraries_with_tests})
     set(content "${content}${lib} ")
   endforeach()
@@ -585,7 +587,7 @@ if(DMITIGR_CPPLIPA_TESTS)
 
   # Write content
   if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/tool)
-    file(WRITE tool/cpplipa_test_deps.sh "${content}")
+    file(WRITE tool/igrilibs_test_deps.sh "${content}")
   endif()
   unset(content)
 endif()

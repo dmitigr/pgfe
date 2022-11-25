@@ -18,7 +18,7 @@
 # Info
 # ------------------------------------------------------------------------------
 
-dmitigr_cpplipa_set_library_info(fs 0 0 0 "Standard filesystem extensions")
+dmitigr_libs_set_library_info(fs 0 0 0 "Standard filesystem extensions")
 
 # ------------------------------------------------------------------------------
 # Sources

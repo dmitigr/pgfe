@@ -18,20 +18,21 @@
 # Info
 # ------------------------------------------------------------------------------
 
-dmitigr_cpplipa_set_library_info(str 0 0 0 "Standard string extensions")
+dmitigr_libs_set_library_info(str 0 0 0 "Standard string extensions")
 
 # ------------------------------------------------------------------------------
 # Sources
 # ------------------------------------------------------------------------------
 
 set(dmitigr_str_headers
+  basics.hpp
+  c_str.h
   c_str.hpp
   exceptions.hpp
   line.hpp
   numeric.hpp
   predicate.hpp
   sequence.hpp
-  simple_phrase.hpp
   stream.hpp
   substr.hpp
   time.hpp
@@ -42,7 +43,7 @@ set(dmitigr_str_headers
 # Tests
 # ------------------------------------------------------------------------------
 
-if(DMITIGR_CPPLIPA_TESTS)
-  set(dmitigr_str_tests test)
+if(DMITIGR_LIBS_TESTS)
+  set(dmitigr_str_tests test time)
   set(dmitigr_str_tests_target_link_libraries dmitigr_base)
 endif()

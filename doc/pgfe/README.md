@@ -142,7 +142,7 @@ Create `hello/CMakeLists.txt`:
 ```cmake
 cmake_minimum_required(VERSION 3.16)
 project(foo)
-find_package(dmitigr_cpplipa REQUIRED COMPONENTS pgfe)
+find_package(dmitigr_libs REQUIRED COMPONENTS pgfe)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(hello hello.cpp)
@@ -159,7 +159,7 @@ cmake --build .
 
 ### Advanced usage
 
-For more details please, see [usage section][dmitigr_cpplipa_usage] for hints
+For more details please, see [usage section][dmitigr_libs_usage] for hints
 how to link Pgfe.
 
 ## Quick tutorial
@@ -185,7 +185,7 @@ auto make_options()
 {
   return Connection_options{}
     .set(Communication_mode::net)
-    .set_net_hostname("localhost")
+    .set_hostname("localhost")
     .set_database("db")
     .set_username("user")
     .set_password("password");
@@ -622,8 +622,8 @@ Pgfe is depends on the [libpq] library.
 
 ## CMake options
 
-Since Pgfe is a C++ library subpackage of [Cpplipa][dmitigr_cpplipa], almost
-all the [CMake options of Cpplipa][dmitigr_cpplipa_cmake_options] are applicable
+Since Pgfe is a C++ library subpackage of [Igrilibs][dmitigr_libs], almost
+all the [CMake options of Igrilibs][dmitigr_libs_cmake_options] are applicable
 to Pgfe.
 
 Please, pay attention to the following:
@@ -636,9 +636,9 @@ Please, pay attention to the following:
   doesn't selects the build configuration within the generated build environment.
   The [CMake] command line option `--config` should be used for that purpose.
 
-[dmitigr_cpplipa]: https://github.com/dmitigr/cpplipa
-[dmitigr_cpplipa_cmake_options]: https://github.com/dmitigr/cpplipa#cmake-options
-[dmitigr_cpplipa_usage]: https://github.com/dmitigr/cpplipa.git#usage
+[dmitigr_libs]: https://github.com/dmitigr/igrilibs
+[dmitigr_libs_cmake_options]: https://github.com/dmitigr/igrilibs#cmake-options
+[dmitigr_libs_usage]: https://github.com/dmitigr/igrilibs.git#usage
 [dmitigr_pgfe]: https://github.com/dmitigr/pgfe.git
 
 [PostgreSQL]: https://www.postgresql.org/

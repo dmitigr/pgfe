@@ -17,14 +17,14 @@
 #ifndef DMITIGR_STR_TRANSFORM_HPP
 #define DMITIGR_STR_TRANSFORM_HPP
 
-#include "version.hpp"
 #include "../base/assert.hpp"
+#include "basics.hpp"
+#include "predicate.hpp"
 
 #include <algorithm>
-#include <locale>
+#include <cctype>
 #include <string>
 #include <string_view>
-#include <vector>
 
 namespace dmitigr::str {
 
@@ -34,7 +34,7 @@ namespace dmitigr::str {
 
 /// @returns The string with the specified `delimiter` between the characters.
 inline std::string
-sparsed_string(const std::string_view input, const std::string& delimiter)
+sparsed_string(const std::string_view input, const std::string_view delimiter)
 {
   std::string result;
   if (!input.empty()) {
@@ -52,7 +52,7 @@ sparsed_string(const std::string_view input, const std::string& delimiter)
 
 /**
  * @par Effects
- * `(str.back() == c)`.
+ * `str.back() == c`.
  */
 inline void terminate(std::string& str, const char c)
 {
@@ -60,53 +60,31 @@ inline void terminate(std::string& str, const char c)
     str += c;
 }
 
-// Trims `str` by dropping whitespaces at both sides of it.
-inline void trim(std::string& str, const std::locale& loc = {})
+/// Trims `str` by dropping whitespaces at both sides of it.
+inline std::string trimmed(std::string str, const Trim trim = Trim::all)
 {
   if (str.empty())
-    return;
+    return str;
 
-  const auto is_not_space = [&loc](const auto c){return !isspace(c, loc);};
   const auto b = begin(str);
   const auto e = end(str);
-  const auto tb = find_if(b, e, is_not_space);
+  const auto tb = static_cast<bool>(trim & Trim::lhs) ?
+    find_if(b, e, is_non_space<char>) : b;
   if (tb == e) {
     str.clear(); // the string consists of spaces, so just clear it out
-    return;
+    return str;
+  }
+  const auto te = static_cast<bool>(trim & Trim::rhs) ?
+    find_if(rbegin(str), rend(str), is_non_space<char>).base() : e;
+
+  const std::string::size_type new_size = te - tb;
+  if (new_size != str.size()) {
+    if (tb != b)
+      move(tb, te, b);
+    str.resize(new_size);
   }
 
-  const auto rb = rbegin(str);
-  const auto re = rend(str);
-  const auto te = find_if(rb, re, is_not_space).base();
-  move(tb, te, b);
-  str.resize(te - tb);
-}
-
-/**
- * @brief Splits the `input` string into the parts separated by the
- * specified `separators`.
- *
- * @returns The vector of splitted parts.
- */
-template<class S = std::string>
-inline std::vector<S> split(const std::string_view input,
-  const std::string_view separators)
-{
-  std::vector<S> result;
-  result.reserve(4);
-  std::string_view::size_type pos{std::string_view::npos};
-  std::string_view::size_type offset{};
-  while (offset < input.size()) {
-    pos = input.find_first_of(separators, offset);
-    DMITIGR_ASSERT(offset <= pos);
-    const auto part_size =
-      std::min<std::string_view::size_type>(pos, input.size()) - offset;
-    result.push_back(S{input.substr(offset, part_size)});
-    offset += part_size + 1;
-  }
-  if (pos != std::string_view::npos) // input ends with a separator
-    result.emplace_back();
-  return result;
+  return str;
 }
 
 // -----------------------------------------------------------------------------
@@ -116,30 +94,29 @@ inline std::vector<S> split(const std::string_view input,
  * @brief Replaces all of uppercase characters in `str` by the corresponding
  * lowercase characters.
  */
-inline void lowercase(std::string& str, const std::locale& loc = {})
+inline void lowercase(std::string& str)
 {
   auto b = begin(str);
   auto e = end(str);
-  transform(b, e, b, [&loc](const char c){return tolower(c, loc);});
+  transform(b, e, b, [](const unsigned char c){return tolower(c);});
 }
 
 /**
  * @returns The modified copy of the `str` with all of uppercase characters
  * replaced by the corresponding lowercase characters.
  */
-inline std::string to_lowercase(std::string str, const std::locale& loc = {})
+inline std::string to_lowercase(std::string result)
 {
-  lowercase(str, loc);
-  return str;
+  lowercase(result);
+  return result;
 }
 
 /// @returns `true` if all of characters of `str` are in uppercase.
-inline bool is_lowercased(const std::string_view str,
-  const std::locale& loc = {}) noexcept
+inline bool is_lowercased(const std::string_view str) noexcept
 {
-  return std::all_of(cbegin(str), cend(str), [&loc](const char c)
+  return std::all_of(cbegin(str), cend(str), [](const unsigned char c)
   {
-    return islower(c, loc);
+    return islower(c);
   });
 }
 
@@ -150,29 +127,29 @@ inline bool is_lowercased(const std::string_view str,
  * @brief Replaces all of lowercase characters in `str` by the corresponding
  * uppercase characters.
  */
-inline void uppercase(std::string& str, const std::locale& loc = {})
+inline void uppercase(std::string& str)
 {
   auto b = begin(str);
   auto e = end(str);
-  transform(b, e, b, [&loc](const char c){return toupper(c, loc);});
+  transform(b, e, b, [](const unsigned char c){return toupper(c);});
 }
 
 /**
  * @returns The modified copy of the `str` with all of lowercase characters
  * replaced by the corresponding uppercase characters.
  */
-inline std::string to_uppercase(std::string str, const std::locale& loc = {})
+inline std::string to_uppercase(std::string result)
 {
-  uppercase(str, loc);
-  return str;
+  uppercase(result);
+  return result;
 }
 
 /// @returns `true` if all of character of `str` are in lowercase.
-inline bool is_uppercased(const std::string_view str, const std::locale& loc = {}) noexcept
+inline bool is_uppercased(const std::string_view str) noexcept
 {
-  return std::all_of(cbegin(str), cend(str), [&loc](const char c)
+  return std::all_of(cbegin(str), cend(str), [](const unsigned char c)
   {
-    return isupper(c, loc);
+    return isupper(c);
   });
 }
 

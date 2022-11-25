@@ -18,7 +18,7 @@
 # Info
 # ------------------------------------------------------------------------------
 
-dmitigr_cpplipa_set_library_info(net 0 0 0 "Networking")
+dmitigr_libs_set_library_info(net 0 0 0 "Networking")
 
 # ------------------------------------------------------------------------------
 # Sources
@@ -59,7 +59,7 @@ endif()
 # Tests
 # ------------------------------------------------------------------------------
 
-if(DMITIGR_CPPLIPA_TESTS)
+if(DMITIGR_LIBS_TESTS)
   if(UNIX AND NOT CMAKE_SYSTEM_NAME MATCHES MSYS|MinGW|Cygwin)
     set(dmitigr_net_tests net)
     set(dmitigr_net_tests_target_link_libraries dmitigr_base)

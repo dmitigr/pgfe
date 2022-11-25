@@ -148,8 +148,8 @@ DMITIGR_PGFE_INLINE const char* to_literal(const Server_errc errc) noexcept
     return "c22_invalid_indicator_parameter_value";
   case Server_errc::c22_invalid_parameter_value:
     return "c22_invalid_parameter_value";
-  case Server_errc::c22_invalid_preceding_following_size:
-    return "c22_invalid_preceding_following_size";
+  case Server_errc::c22_invalid_preceding_or_following_size:
+    return "c22_invalid_preceding_or_following_size";
   case Server_errc::c22_invalid_regular_expression:
     return "c22_invalid_regular_expression";
   case Server_errc::c22_invalid_row_count_in_limit_clause:
@@ -224,20 +224,22 @@ DMITIGR_PGFE_INLINE const char* to_literal(const Server_errc errc) noexcept
     return "c22_non_unique_keys_in_json_object";
   case Server_errc::c22_singleton_json_item_required:
     return "c22_singleton_json_item_required";
-  case Server_errc::c22_json_array_not_found:
-    return "c22_json_array_not_found";
-  case Server_errc::c22_json_member_not_found:
-    return "c22_json_member_not_found";
-  case Server_errc::c22_json_number_not_found:
-    return "c22_json_number_not_found";
-  case Server_errc::c22_object_not_found:
-    return "c22_object_not_found";
+  case Server_errc::c22_sql_json_array_not_found:
+    return "c22_sql_json_array_not_found";
+  case Server_errc::c22_sql_json_member_not_found:
+    return "c22_sql_json_member_not_found";
+  case Server_errc::c22_sql_json_number_not_found:
+    return "c22_sql_json_number_not_found";
+  case Server_errc::c22_sql_json_object_not_found:
+    return "c22_sql_json_object_not_found";
   case Server_errc::c22_too_many_json_array_elements:
     return "c22_too_many_json_array_elements";
   case Server_errc::c22_too_many_json_object_members:
     return "c22_too_many_json_object_members";
-  case Server_errc::c22_json_scalar_required:
-    return "c22_json_scalar_required";
+  case Server_errc::c22_sql_json_scalar_required:
+    return "c22_sql_json_scalar_required";
+  case Server_errc::c22_sql_json_item_cannot_be_cast_to_target_type:
+    return "c22_sql_json_item_cannot_be_cast_to_target_type";
   case Server_errc::c23_integrity_constraint_violation:
     return "c23_integrity_constraint_violation";
   case Server_errc::c23_restrict_violation:

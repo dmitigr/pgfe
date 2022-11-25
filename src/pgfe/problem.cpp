@@ -21,9 +21,9 @@
 #include "problem.hpp"
 
 #include <cassert>
+#include <cctype>
 #include <cerrno>
 #include <cstdlib>
-#include <locale>
 
 namespace dmitigr::pgfe {
 
@@ -150,14 +150,13 @@ DMITIGR_PGFE_INLINE std::error_condition Problem::min_error_condition() noexcept
 
 DMITIGR_PGFE_INLINE int Problem::sqlstate_string_to_int(const char* const sqlstate)
 {
-  const std::locale loc;
   const std::string_view state{sqlstate};
   if (!((state.size() == 5) &&
-      std::isalnum(state[0], loc) &&
-      std::isalnum(state[1], loc) &&
-      std::isalnum(state[2], loc) &&
-      std::isalnum(state[3], loc) &&
-      std::isalnum(state[4], loc)))
+      std::isalnum(static_cast<unsigned char>(state[0])) &&
+      std::isalnum(static_cast<unsigned char>(state[1])) &&
+      std::isalnum(static_cast<unsigned char>(state[2])) &&
+      std::isalnum(static_cast<unsigned char>(state[3])) &&
+      std::isalnum(static_cast<unsigned char>(state[4]))))
     throw Client_exception{"cannot convert SQLSTATE to int"};
 
   errno = 0;

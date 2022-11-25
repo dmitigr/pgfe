@@ -14,4 +14,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(dmitigr_cpplipa_libraries "@dmitigr_cpplipa_libraries@")
+set(dmitigr_libs_package "@dmitigr_libs_package@")

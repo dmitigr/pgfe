@@ -115,7 +115,7 @@ public:
   }
 
   /// @returns `true` if `text` is either valid IPv4 or IPv6 address.
-  static bool is_valid(const std::string& str)
+  static bool is_valid(const std::string& str) noexcept
   {
     char buf[sizeof(::in6_addr)];
     return inet_pton__(AF_INET, str.c_str(), buf) > 0 ||
@@ -182,6 +182,8 @@ private:
   bool is_valid_{};
   std::variant<::in_addr, ::in6_addr> binary_;
 
+  friend int cmp(const Ip_address&, const Ip_address&) noexcept;
+
   void* binary__()
   {
     return const_cast<void*>(static_cast<const Ip_address*>(this)->binary());
@@ -227,6 +229,94 @@ private:
         "representation of IP address to text representation"};
   }
 };
+
+/**
+ * @returns
+ *   - `0` if:
+ *     - `lhs` and `rhs` are invalid;
+ *     - `lhs` and `rhs` are valid, represents IP addresses
+ *     of the same family (IPv4 or IPv6) and equals.
+ *   - `-1` if:
+ *     - `lhs` is not valid and `rhs` is valid;
+ *     - `lhs` represents IPv4 and `rhs` represents IPv6;
+ *     - `lhs` and `rhs` represents IP addresses of the same family
+ *     (IPv4 or IPv6) and `lhs` is less then `rhs`;
+ *   - `1` if:
+ *     - `lhs` is valid and `rhs` is not valid;
+ *     - `lhs` represents IPv6 and `rhs` represents IPv4;
+ *     - `lhs` and `rhs` represents IP addresses of the same family
+ *     (IPv4 or IPv6) and `lhs` is greater then `rhs`;
+ */
+inline int cmp(const Ip_address& lhs, const Ip_address& rhs) noexcept
+{
+  if (!lhs.is_valid() && !rhs.is_valid())
+    // Both invalid addresses are always equals.
+    return 0;
+  else if (!rhs.is_valid())
+    // Any address is always greater than invalid address.
+    return 1;
+  else if (!lhs.is_valid())
+    // Any invalid address is always less than any address.
+    return -1;
+
+  const auto* const lhs_addr = std::get_if<::in_addr>(&lhs.binary_);
+  const auto* const rhs_addr = std::get_if<::in_addr>(&rhs.binary_);
+  if (!lhs_addr && rhs_addr)
+    // IPv6 is always greater than IPv4.
+    return 1;
+  else if (lhs_addr && !rhs_addr)
+    // IPv4 is always less than IPv6.
+    return -1;
+  else if (lhs_addr && rhs_addr)
+    // Compare IPv4.
+    return lhs_addr->s_addr < rhs_addr->s_addr ? -1 :
+      lhs_addr->s_addr > rhs_addr->s_addr ? 1 : 0;
+  else {
+    // Compare IPv6
+    const auto* const lhs_addr6 = std::get_if<::in6_addr>(&lhs.binary_);
+    const auto* const rhs_addr6 = std::get_if<::in6_addr>(&rhs.binary_);
+    DMITIGR_ASSERT(lhs_addr6);
+    DMITIGR_ASSERT(rhs_addr6);
+    return std::memcmp(lhs_addr6->s6_addr, rhs_addr6->s6_addr,
+      sizeof(::in6_addr::s6_addr));
+  }
+}
+
+/// @returns `true` if `lhs` is less than `rhs`.
+inline bool operator<(const Ip_address& lhs, const Ip_address& rhs) noexcept
+{
+  return cmp(lhs, rhs) < 0;
+}
+
+/// @returns `true` if `lhs` is less than or equals to `rhs`.
+inline bool operator<=(const Ip_address& lhs, const Ip_address& rhs) noexcept
+{
+  return cmp(lhs, rhs) <= 0;
+}
+
+/// @returns `true` if `lhs` is equals to `rhs`.
+inline bool operator==(const Ip_address& lhs, const Ip_address& rhs) noexcept
+{
+  return cmp(lhs, rhs) == 0;
+}
+
+/// @returns `true` if `lhs` is not equals to `rhs`.
+inline bool operator!=(const Ip_address& lhs, const Ip_address& rhs) noexcept
+{
+  return cmp(lhs, rhs) != 0;
+}
+
+/// @returns `true` if `lhs` is greater than or equals to `rhs`.
+inline bool operator>=(const Ip_address& lhs, const Ip_address& rhs) noexcept
+{
+  return cmp(lhs, rhs) >= 0;
+}
+
+/// @returns `true` if `lhs` is greater than `rhs`.
+inline bool operator>(const Ip_address& lhs, const Ip_address& rhs) noexcept
+{
+  return cmp(lhs, rhs) > 0;
+}
 
 /// An socket address.
 class Socket_address final {

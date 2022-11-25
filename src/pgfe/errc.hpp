@@ -283,7 +283,7 @@ enum class Server_errc {
   c22_invalid_parameter_value = 3452619,
 
   /// 22013
-  c22_invalid_preceding_following_size = 3452583,
+  c22_invalid_preceding_or_following_size = 3452583,
 
   /// 2201B
   c22_invalid_regular_expression = 3452591,
@@ -397,16 +397,16 @@ enum class Server_errc {
   c22_singleton_json_item_required = 3452660,
 
   /// 22039
-  c22_json_array_not_found = 3452661,
+  c22_sql_json_array_not_found = 3452661,
 
   /// 2203A
-  c22_json_member_not_found = 3452662,
+  c22_sql_json_member_not_found = 3452662,
 
   /// 2203B
-  c22_json_number_not_found = 3452663,
+  c22_sql_json_number_not_found = 3452663,
 
   /// 2203C
-  c22_object_not_found = 3452664,
+  c22_sql_json_object_not_found = 3452664,
 
   /// 2203D
   c22_too_many_json_array_elements = 3452665,
@@ -415,7 +415,10 @@ enum class Server_errc {
   c22_too_many_json_object_members = 3452666,
 
   /// 2203F
-  c22_json_scalar_required = 3452667,
+  c22_sql_json_scalar_required = 3452667,
+
+  /// 2203G
+  c22_sql_json_item_cannot_be_cast_to_target_type = 3452668,
 
   /*
    * Class 23 - Integrity Constraint Violation

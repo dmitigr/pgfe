@@ -39,7 +39,7 @@ namespace dmitigr {
 /**
  * @ingroup errors
  *
- * @brief A Generic category of errors.
+ * @brief A generic category of errors.
  *
  * @see Exception.
  */

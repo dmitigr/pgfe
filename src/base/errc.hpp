@@ -49,7 +49,8 @@ constexpr const char* to_literal(const Errc errc) noexcept
  * @returns The literal returned by `to_literal(errc)`, or literal
  * "unknown error" if `to_literal(errc)` returned `nullptr`.
  */
-constexpr const char* to_literal_anyway(const Errc errc) noexcept
+template<typename E>
+constexpr const char* to_literal_anyway(const E errc) noexcept
 {
   constexpr const char* unknown{"unknown error"};
   const char* const literal{to_literal(errc)};

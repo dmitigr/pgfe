@@ -17,19 +17,18 @@
 #ifndef DMITIGR_NET_UTIL_HPP
 #define DMITIGR_NET_UTIL_HPP
 
-#include <locale>
+#include <cctype>
 #include <string>
 
 namespace dmitigr::net {
 
 /// @returns `true` if the `hostname` denotes a valid hostname.
-inline bool is_hostname_valid(const std::string& hostname)
+inline bool is_hostname_valid(const std::string& hostname) noexcept
 {
   // Returns `true` if `ch` is a valid hostname character.
-  static const auto is_hostname_char = [](const char ch)
+  static const auto is_hostname_char = [](const unsigned char ch) noexcept
   {
-    static const std::locale l;
-    return std::isalnum(ch, l) || (ch == '_') || (ch == '-');
+    return std::isalnum(ch) || ch == '_' || ch == '-';
   };
 
   constexpr std::string::size_type max_length{253};

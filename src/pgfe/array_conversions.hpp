@@ -19,6 +19,7 @@
 
 #include "../base/assert.hpp"
 #include "../str/c_str.hpp"
+#include "../str/predicate.hpp"
 #include "basic_conversions.hpp"
 #include "conversions_api.hpp"
 #include "data.hpp"
@@ -26,7 +27,6 @@
 
 #include <algorithm>
 #include <cassert>
-#include <locale>
 #include <memory>
 #include <optional>
 #include <string>
@@ -516,7 +516,6 @@ const char* parse_array_literal(const char* literal, const char delimiter,
   char previous_char{};
   char previous_nonspace_char{};
   std::string element;
-  const std::locale loc;
   while (const char c = *literal) {
     switch (state) {
     case in_beginning: {
@@ -524,7 +523,7 @@ const char* parse_array_literal(const char* literal, const char delimiter,
         handler(dimension);
         dimension = 1;
         state = in_dimension;
-      } else if (std::isspace(c, loc)) {
+      } else if (str::is_space(c)) {
         // Skip space.
       } else
         throw Client_exception{Client_errc::malformed_literal};
@@ -535,7 +534,7 @@ const char* parse_array_literal(const char* literal, const char delimiter,
     case in_dimension: {
       DMITIGR_ASSERT(dimension > 0);
 
-      if (std::isspace(c, loc)) {
+      if (str::is_space(c)) {
         // Skip space.
       } else if (c == delimiter) {
         if (previous_nonspace_char == delimiter || previous_nonspace_char == '{')
@@ -615,7 +614,7 @@ const char* parse_array_literal(const char* literal, const char delimiter,
     } // extracted element processing
 
   preparing_to_the_next_iteration:
-    if (!std::isspace(c, loc))
+    if (str::is_non_space(c))
       previous_nonspace_char = c;
     previous_char = c;
     ++literal;

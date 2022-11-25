@@ -18,7 +18,6 @@
 #define DMITIGR_STR_LINE_HPP
 
 #include "exceptions.hpp"
-#include "version.hpp"
 
 #include <algorithm>
 #include <cstddef>

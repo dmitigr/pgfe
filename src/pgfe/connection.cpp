@@ -58,10 +58,10 @@ DMITIGR_PGFE_INLINE Server_status ping(const Connection_options& options)
   case PQPING_NO_ATTEMPT:
     throw Client_exception{"due to client-side problem no attempt was made to"
       " contact the PostgreSQL server"};
-  default:
-    break;
+  default:;
   }
   DMITIGR_ASSERT(false);
+  throw false; // disable -Wreturn-type
 }
 
 // =============================================================================

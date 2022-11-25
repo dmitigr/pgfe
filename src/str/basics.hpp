@@ -14,20 +14,24 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DMITIGR_STR_STR_HPP
-#define DMITIGR_STR_STR_HPP
+#ifndef DMITIGR_STR_BASICS_HPP
+#define DMITIGR_STR_BASICS_HPP
 
-#include "basics.hpp"
-#include "c_str.h"
-#include "c_str.hpp"
-#include "exceptions.hpp"
-#include "line.hpp"
-#include "numeric.hpp"
-#include "predicate.hpp"
-#include "sequence.hpp"
-#include "stream.hpp"
-#include "substr.hpp"
-#include "time.hpp"
-#include "transform.hpp"
+#include "../base/enum_bitmask.hpp"
 
-#endif  // DMITIGR_STR_STR_HPP
+namespace dmitigr {
+
+namespace str {
+/// Denotes trimming mode bitmask.
+enum class Trim {
+  lhs = 1,
+  rhs,
+  all
+};
+} // namespace str
+
+template<> struct Is_bitmask_enum<str::Trim> : std::true_type {};
+
+} // namespace dmitigr
+
+#endif  // DMITIGR_STR_BASICS_HPP

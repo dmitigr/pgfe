@@ -71,10 +71,8 @@ enum class Large_object_seek_whence {
 
 } // namespace pgfe
 
-namespace util {
 template<>
 struct Is_bitmask_enum<pgfe::Large_object_open_mode> final : std::true_type {};
-} // namespace util
 
 namespace pgfe {
 

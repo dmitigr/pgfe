@@ -18,7 +18,6 @@
 #define DMITIGR_STR_NUMERIC_HPP
 
 #include "exceptions.hpp"
-#include "version.hpp"
 
 #include <algorithm>
 #include <limits>

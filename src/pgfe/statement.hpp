@@ -23,9 +23,9 @@
 #include "tuple.hpp"
 #include "types_fwd.hpp"
 
+#include <cctype>
 #include <cstdint>
 #include <list>
-#include <locale>
 #include <optional>
 #include <string>
 #include <string_view>
@@ -211,7 +211,7 @@ public:
    * data of this instance.
    *
    * @par Exception safety guarantee
-   * Strong.
+   * Basic.
    */
   DMITIGR_PGFE_API void append(const Statement& appendix);
 
@@ -254,7 +254,7 @@ public:
    * named by the `name`. The extra data will *not* be affected.
    *
    * @par Exception safety guarantee
-   * Strong.
+   * Basic.
    *
    * @see has_parameter(), bind().
    */
@@ -397,7 +397,6 @@ private:
   };
   using Fragment_list = std::list<Fragment>;
 
-  std::locale loc_;
   Fragment_list fragments_;
   std::vector<bool> positional_parameters_; // cache
   std::vector<Fragment_list::const_iterator> named_parameters_; // cache
@@ -405,7 +404,7 @@ private:
   mutable std::optional<Tuple> extra_; // cache
 
   static std::pair<Statement, std::string_view::size_type>
-  parse_sql_input(std::string_view, const std::locale& loc);
+  parse_sql_input(std::string_view);
 
   bool is_invariant_ok() const noexcept override;
 
@@ -439,12 +438,10 @@ private:
   // Predicates
   // ---------------------------------------------------------------------------
 
-  static bool is_space(const char c, const std::locale& loc) noexcept;
-  static bool is_blank_string(const std::string& str, const std::locale& loc) noexcept;
   static bool is_comment(const Fragment& f) noexcept;
   static bool is_text(const Fragment& f) noexcept;
-  static bool is_ident_char(const char c, const std::locale& loc) noexcept;
-  static bool is_quote_char(const char c) noexcept;
+  static bool is_ident_char(const unsigned char c) noexcept;
+  static bool is_quote_char(const unsigned char c) noexcept;
 
   // ---------------------------------------------------------------------------
   // Extra data

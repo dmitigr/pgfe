@@ -25,9 +25,8 @@ namespace dmitigr::pgfe {
 
 DMITIGR_PGFE_INLINE Statement_vector::Statement_vector(std::string_view input)
 {
-  const std::locale loc;
   while (!input.empty()) {
-    auto [st, pos] = Statement::parse_sql_input(input, loc);
+    auto [st, pos] = Statement::parse_sql_input(input);
     statements_.emplace_back(std::move(st));
     DMITIGR_ASSERT(pos <= input.size());
     input = input.substr(pos);

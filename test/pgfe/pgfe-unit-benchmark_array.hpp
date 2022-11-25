@@ -14,8 +14,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DMITIGR_CPPLIPA_TESTS_PGFE_UNIT_BENCHMARK_ARRAY_HPP
-#define DMITIGR_CPPLIPA_TESTS_PGFE_UNIT_BENCHMARK_ARRAY_HPP
+#ifndef DMITIGR_LIBS_TESTS_PGFE_UNIT_BENCHMARK_ARRAY_HPP
+#define DMITIGR_LIBS_TESTS_PGFE_UNIT_BENCHMARK_ARRAY_HPP
 
 #include "pgfe-unit.hpp"
 
@@ -56,4 +56,4 @@ inline std::tuple<std::ofstream, std::unique_ptr<dmitigr::pgfe::Connection>> pre
 
 } // namespace dmitigr::pgfe::test::arraybench
 
-#endif // DMITIGR_CPPLIPA_TESTS_PGFE_UNIT_BENCHMARK_ARRAY_HPP
+#endif // DMITIGR_LIBS_TESTS_PGFE_UNIT_BENCHMARK_ARRAY_HPP

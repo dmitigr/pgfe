@@ -41,6 +41,46 @@ int main()
     DMITIGR_ASSERT(ip.binary());
     DMITIGR_ASSERT(ip.to_string() == v6_addr_str);
 
+    // Comparison.
+    {
+      net::Ip_address ip1;
+      net::Ip_address ip2;
+      DMITIGR_ASSERT(!ip1.is_valid());
+      DMITIGR_ASSERT(!ip2.is_valid());
+      DMITIGR_ASSERT(ip1 == ip2);
+    }
+    {
+      net::Ip_address ip1;
+      const auto ip2 = net::Ip_address::from_text("192.168.1.1");
+      DMITIGR_ASSERT(!ip1.is_valid());
+      DMITIGR_ASSERT(ip2.is_valid());
+      DMITIGR_ASSERT(ip1 < ip2);
+    }
+    {
+      const auto ip1 = net::Ip_address::from_text("192.168.1.1");
+      const auto ip2 = net::Ip_address::from_text("192.168.1.1");
+      DMITIGR_ASSERT(ip1 == ip2);
+      const auto ip1_copy = ip1;
+      const auto ip2_copy = ip2;
+      DMITIGR_ASSERT(ip1 == ip1_copy);
+      DMITIGR_ASSERT(ip2 == ip2_copy);
+    }
+    {
+      const auto ip1 = net::Ip_address::from_text("192.168.1.1");
+      const auto ip2 = net::Ip_address::from_text("192.168.1.2");
+      DMITIGR_ASSERT(ip1 < ip2);
+    }
+    {
+      const auto ip1 = net::Ip_address::from_text("192.168.1.1");
+      const auto ip2 = net::Ip_address::from_text("fe80::1:2:3:4");
+      DMITIGR_ASSERT(ip1 < ip2);
+    }
+    {
+      const auto ip1 = net::Ip_address::from_text("fe80::1:2:3:4");
+      const auto ip2 = net::Ip_address::from_text("fe80::1:2:3:4");
+      DMITIGR_ASSERT(ip1 == ip2);
+    }
+
     const int n = 10;
     auto n1 = net::conv(n);
     DMITIGR_ASSERT(n != n1);

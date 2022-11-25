@@ -17,11 +17,8 @@
 #ifndef DMITIGR_STR_PREDICATE_HPP
 #define DMITIGR_STR_PREDICATE_HPP
 
-#include "version.hpp"
-
 #include <algorithm>
-#include <locale>
-#include <string>
+#include <cctype>
 #include <string_view>
 
 namespace dmitigr::str {
@@ -31,41 +28,50 @@ namespace dmitigr::str {
 // -----------------------------------------------------------------------------
 
 /// @returns `true` if `c` is a valid space character.
-inline bool is_space_character(const char c,
-  const std::locale& loc = {}) noexcept
+template<typename Ch>
+bool is_space(const Ch ch) noexcept
 {
-  return std::isspace(c, loc);
+  return std::isspace(static_cast<unsigned char>(ch));
 }
 
-/// @returns `(is_space_character(c) == false)`.
-inline bool is_non_space_character(const char c,
-  const std::locale& loc = {}) noexcept
+/// @returns `!is_space(ch)`.
+template<typename Ch>
+bool is_non_space(const Ch ch) noexcept
 {
-  return !is_space_character(c, loc);
+  return !is_space(ch);
 }
 
-/// @returns `true` if `c` is a valid simple identifier character.
-inline bool is_simple_identifier_character(const char c,
-  const std::locale& loc = {}) noexcept
+/// @returns `true` if `c` is printable character.
+template<typename Ch>
+bool is_printable(const Ch ch) noexcept
 {
-  return std::isalnum(c, loc) || c == '_';
+  return std::isprint(static_cast<unsigned char>(ch));
 }
 
-/// @returns `(is_simple_identifier_character(c) == false)`.
-inline bool is_non_simple_identifier_character(const char c,
-  const std::locale& loc = {}) noexcept
+/// @returns `true` if `c` is a zero character.
+template<typename Ch>
+bool is_zero(const Ch ch) noexcept
 {
-  return !is_simple_identifier_character(c, loc);
+  return ch == '\0';
+}
+
+/// @returns `true` if `c` is a non zero character.
+template<typename Ch>
+bool is_non_zero(const Ch ch) noexcept
+{
+  return !is_zero(ch);
+}
+
+/// @returns `true` if `str` is a blank string.
+inline bool is_blank(const std::string_view str) noexcept
+{
+  return std::all_of(cbegin(str), cend(str), is_space<char>);
 }
 
 /// @returns `true` if `str` has at least one space character.
-inline bool has_space(const std::string& str,
-  const std::locale& loc = {}) noexcept
+inline bool has_space(const std::string_view str) noexcept
 {
-  return std::any_of(cbegin(str), cend(str), [&loc](const auto ch)
-  {
-    return is_space_character(ch, loc);
-  });
+  return std::any_of(cbegin(str), cend(str), is_space<char>);
 }
 
 /// @returns `true` if `input` is starting with `pattern`.

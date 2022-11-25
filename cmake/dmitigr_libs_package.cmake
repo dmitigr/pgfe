@@ -14,23 +14,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-# ------------------------------------------------------------------------------
-# Info
-# ------------------------------------------------------------------------------
-
-dmitigr_libs_set_library_info(base 0 0 0 "Base stuff")
-
-# ------------------------------------------------------------------------------
-# Sources
-# ------------------------------------------------------------------------------
-
-set(dmitigr_base_headers
-  assert.hpp
-  endianness.hpp
-  enum_bitmask.hpp
-  err.hpp
-  errc.hpp
-  errctg.hpp
-  exceptions.hpp
-  ret.hpp
-  )
+set(dmitigr_libs_package "base;fs;os;str;util;net;pgfe")

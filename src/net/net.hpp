@@ -17,14 +17,19 @@
 #ifndef DMITIGR_NET_NET_HPP
 #define DMITIGR_NET_NET_HPP
 
+#include "types_fwd.hpp"
 #include "address.hpp"
 #include "basics.hpp"
 #include "client.hpp"
 #include "conversions.hpp"
 #include "descriptor.hpp"
 #include "endpoint.hpp"
+#include "errctg.hpp"
+#include "exceptions.hpp"
+#include "last_error.hpp"
 #include "listener.hpp"
 #include "socket.hpp"
 #include "util.hpp"
+#include "version.hpp"
 
 #endif  // DMITIGR_NET_NET_HPP

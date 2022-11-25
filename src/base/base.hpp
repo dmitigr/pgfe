@@ -18,8 +18,11 @@
 #define DMITIGR_BASE_BASE_HPP
 
 #include "assert.hpp"
+#include "enum_bitmask.hpp"
+#include "err.hpp"
 #include "errc.hpp"
 #include "errctg.hpp"
 #include "exceptions.hpp"
+#include "ret.hpp"
 
 #endif  // DMITIGR_BASE_BASE_HPP

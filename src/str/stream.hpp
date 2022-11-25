@@ -17,14 +17,19 @@
 #ifndef DMITIGR_STR_STREAM_HPP
 #define DMITIGR_STR_STREAM_HPP
 
+#include "../base/ret.hpp"
 #include "../fs/filesystem.hpp"
+#include "basics.hpp"
 #include "exceptions.hpp"
-#include "version.hpp"
+#include "predicate.hpp"
 
+#include <algorithm>
 #include <array>
+#include <cctype>
 #include <cstddef>
 #include <istream>
 #include <fstream>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -40,8 +45,8 @@ namespace dmitigr::str {
  * @param is_binary The indicator of binary read mode.
  */
 template<typename Pred>
-std::vector<std::string> read_to_strings_if(std::istream& input,
-  const Pred& pred, const char delimiter = '\n')
+std::vector<std::string>
+read_to_strings_if(std::istream& input, const Pred& pred, const char delimiter = '\n')
 {
   std::vector<std::string> result;
   std::string line;
@@ -59,7 +64,8 @@ std::vector<std::string> read_to_strings_if(std::istream& input,
  * @param is_binary The indicator of binary read mode.
  */
 template<typename Pred>
-std::vector<std::string> read_to_strings_if(const std::filesystem::path& path,
+std::vector<std::string>
+read_to_strings_if(const std::filesystem::path& path,
   const Pred& pred, const char delimiter = '\n', const bool is_binary = true)
 {
   constexpr std::ios_base::openmode in{std::ios_base::in};
@@ -72,8 +78,8 @@ std::vector<std::string> read_to_strings_if(const std::filesystem::path& path,
  *
  * @see read_to_strings_if().
  */
-inline std::vector<std::string> read_to_strings(std::istream& input,
-  const char delimiter = '\n')
+inline std::vector<std::string>
+read_to_strings(std::istream& input, const char delimiter = '\n')
 {
   return read_to_strings_if(input, [](const auto&){return true;}, delimiter);
 }
@@ -94,16 +100,44 @@ read_to_strings(const std::filesystem::path& path,
 /**
  * @brief Reads a whole `input` stream to a string.
  *
+ * @par Requires
+ * `!(BufSize % 8)`.
+ *
  * @returns The string with the content read from the `input`.
  */
-inline std::string read_to_string(std::istream& input)
+template<std::size_t BufSize = 4096>
+std::string read_to_string(std::istream& input, const std::optional<Trim> trim = {})
 {
   std::string result;
-  std::array<char, 4096> buffer;
+  std::array<char, BufSize> buffer;
   static_assert(!(buffer.size() % 8));
+  bool lhs_trimmed{};
+  const auto append_buffer = [&]
+  {
+    std::size_t space_count{};
+    if (trim && !lhs_trimmed && static_cast<bool>(*trim & Trim::lhs)) {
+      for (const auto ch : buffer) {
+        if (!is_space(ch)) {
+          lhs_trimmed = true;
+          break;
+        } else
+          ++space_count;
+      }
+    }
+    result.append(buffer.data() + space_count,
+      static_cast<std::size_t>(input.gcount()) - space_count);
+  };
   while (input.read(buffer.data(), buffer.size()))
-    result.append(buffer.data(), buffer.size());
-  result.append(buffer.data(), static_cast<std::size_t>(input.gcount()));
+    append_buffer();
+  append_buffer();
+
+  if (trim && static_cast<bool>(*trim & Trim::rhs)) {
+    const auto rb = crbegin(result);
+    const auto re = crend(result);
+    const auto te = find_if(rb, re, is_non_space<char>).base();
+    result.resize(te - cbegin(result));
+  }
+
   return result;
 }
 
@@ -115,15 +149,39 @@ inline std::string read_to_string(std::istream& input)
  *
  * @returns The string with the file data.
  */
-inline std::string read_to_string(const std::filesystem::path& path,
-  const bool is_binary = true)
+template<std::size_t BufSize = 4096>
+Ret<std::string> read_to_string_nothrow(const std::filesystem::path& path,
+  const bool is_binary = true,
+  const std::optional<Trim> trim = {})
 {
+  using Ret = Ret<std::string>;
   constexpr std::ios_base::openmode in{std::ios_base::in};
   std::ifstream input{path, is_binary ? in | std::ios_base::binary : in};
   if (input)
-    return read_to_string(input);
+    return Ret::make_result(read_to_string<BufSize>(input, trim));
   else
-    throw Exception{"unable to open \"" + path.generic_string() + "\""};
+    return Ret::make_error(Err{Errc::generic,
+        "unable to open \"" + path.generic_string() + "\""});
+}
+
+/**
+ * @brief Reads the file into an instance of `std::string`.
+ *
+ * @param path The path to the file to read the data from.
+ * @param is_binary The indicator of binary read mode.
+ *
+ * @returns The string with the file data.
+ */
+template<std::size_t BufSize = 4096>
+std::string read_to_string(const std::filesystem::path& path,
+  const bool is_binary = true,
+  const std::optional<Trim> trim = {})
+{
+  auto [err, res] = read_to_string_nothrow<BufSize>(path, is_binary, trim);
+  if (!err)
+    return res;
+  else
+    throw Exception{err};
 }
 
 } // namespace dmitigr::str

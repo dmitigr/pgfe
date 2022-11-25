@@ -15,6 +15,7 @@
 // limitations under the License.
 
 #include "../base/assert.hpp"
+#include "../str/predicate.hpp"
 #include "connection.hpp"
 #include "data.hpp"
 #include "exceptions.hpp"
@@ -53,7 +54,7 @@ Statement::Fragment::is_named_parameter(const std::string_view name) const noexc
 
 DMITIGR_PGFE_INLINE Statement::Statement(const std::string_view text)
 {
-  auto s = parse_sql_input(text, loc_).first;
+  auto s = parse_sql_input(text).first;
   swap(s);
   assert(is_invariant_ok());
 }
@@ -107,7 +108,6 @@ DMITIGR_PGFE_INLINE Statement& Statement::operator=(Statement&& rhs) noexcept
 DMITIGR_PGFE_INLINE void Statement::swap(Statement& rhs) noexcept
 {
   using std::swap;
-  swap(loc_, rhs.loc_);
   swap(fragments_, rhs.fragments_);
   swap(positional_parameters_, rhs.positional_parameters_);
   swap(named_parameters_, rhs.named_parameters_);
@@ -171,7 +171,7 @@ DMITIGR_PGFE_INLINE bool Statement::is_query_empty() const noexcept
   return all_of(cbegin(fragments_), cend(fragments_),
     [this](const Fragment& f)
     {
-      return is_comment(f) || (is_text(f) && is_blank_string(f.str, loc_));
+      return is_comment(f) || (is_text(f) && str::is_blank(f.str));
     });
 }
 
@@ -219,21 +219,15 @@ DMITIGR_PGFE_INLINE bool Statement::has_missing_parameters() const noexcept
 
 DMITIGR_PGFE_INLINE void Statement::append(const Statement& appendix)
 {
-  const bool was_query_empty = is_query_empty();
+  const bool was_query_empty{is_query_empty()};
 
-  // Updating fragments
-  auto old_fragments = fragments_;
-  try {
-    fragments_.insert(cend(fragments_), cbegin(appendix.fragments_),
-      cend(appendix.fragments_));
-    update_cache(appendix); // can throw (strong exception safety guarantee)
+  // Update fragments.
+  fragments_.insert(cend(fragments_), cbegin(appendix.fragments_),
+    cend(appendix.fragments_));
+  update_cache(appendix); // can throw
 
-    if (was_query_empty)
-      is_extra_data_should_be_extracted_from_comments_ = true;
-  } catch (...) {
-    fragments_.swap(old_fragments); // rollback
-    throw;
-  }
+  if (was_query_empty)
+    is_extra_data_should_be_extracted_from_comments_ = true;
 
   assert(is_invariant_ok());
 }
@@ -270,25 +264,19 @@ Statement::replace_parameter(const std::string_view name,
   if (!(has_parameter(name) && (this != &replacement)))
     throw Client_exception{"cannot replace Statement parameter"};
 
-  // Updating fragments
-  auto old_fragments = fragments_;
-  try {
-    for (auto fi = begin(fragments_); fi != end(fragments_);) {
-      if (fi->is_named_parameter(name)) {
-        // Insert the `replacement` just before `fi`.
-        fragments_.insert(fi, cbegin(replacement.fragments_),
-          cend(replacement.fragments_));
-        // Erase named parameter pointed by `fi` and got the next iterator.
-        fi = fragments_.erase(fi);
-      } else
-        ++fi;
-    }
-
-    update_cache(replacement);  // can throw (strong exception safety guarantee)
-  } catch (...) {
-    fragments_.swap(old_fragments);
-    throw;
+  // Update fragments.
+  for (auto fi = begin(fragments_); fi != end(fragments_);) {
+    if (fi->is_named_parameter(name)) {
+      // Insert the `replacement` just before `fi`.
+      fragments_.insert(fi, cbegin(replacement.fragments_),
+        cend(replacement.fragments_));
+      // Erase named parameter pointed by `fi` and got the next iterator.
+      fi = fragments_.erase(fi);
+    } else
+      ++fi;
   }
+
+  update_cache(replacement);  // can throw
 
   assert(is_invariant_ok());
 }
@@ -423,14 +411,14 @@ public:
 
   /// @returns The vector of associated extra data.
   static std::vector<std::pair<Key, Value>>
-  extract(const Fragment_list& fragments, const std::locale& loc)
+  extract(const Fragment_list& fragments)
   {
     std::vector<std::pair<Key, Value>> result;
-    const auto iters = first_related_comments(fragments, loc);
+    const auto iters = first_related_comments(fragments);
     if (iters.first != cend(fragments)) {
       const auto comments = joined_comments(iters.first, iters.second);
       for (const auto& comment : comments) {
-        auto associations = extract(comment.first, comment.second, loc);
+        auto associations = extract(comment.first, comment.second);
         result.reserve(result.capacity() + associations.size());
         for (auto& a : associations)
           result.push_back(std::move(a));
@@ -457,10 +445,9 @@ private:
    *
    * @param input An input string with comments.
    * @param comment_type A type of comments in the `input`.
-   * @param loc The locale.
    */
   static std::vector<std::pair<Key, Value>> extract(const std::string_view input,
-    const Comment_type comment_type, const std::locale& loc)
+    const Comment_type comment_type)
   {
     enum { top, dollar, dollar_quote_leading_tag,
       dollar_quote, dollar_quote_dollar } state = top;
@@ -470,9 +457,9 @@ private:
     std::string dollar_quote_leading_tag_name;
     std::string dollar_quote_trailing_tag_name;
 
-    const auto is_valid_tag_char = [&loc](const char c) noexcept
+    const auto is_valid_tag_char = [](const unsigned char c) noexcept
     {
-      return isalnum(c, loc) || c == '_' || c == '-';
+      return std::isalnum(c) || c == '_' || c == '-';
     };
 
     for (const auto current_char : input) {
@@ -510,7 +497,7 @@ private:
              */
             state = top;
             result.emplace_back(std::move(dollar_quote_leading_tag_name),
-              Data::make(cleaned_content(std::move(content), comment_type, loc),
+              Data::make(cleaned_content(std::move(content), comment_type),
                 Data_format::text));
             content = {};
             dollar_quote_leading_tag_name = {};
@@ -536,7 +523,7 @@ private:
    * @returns The number of characters to remove after each '\n'.
    */
   static std::size_t indent_size(const std::string_view content,
-    const Comment_type comment_type, const std::locale& loc)
+    const Comment_type comment_type)
   {
     const auto set_if_less = [](auto& variable, const auto count)
     {
@@ -557,7 +544,7 @@ private:
           count = 0;
         else if (current_char == '*')
           state = after_asterisk;
-        else if (isspace(current_char, loc))
+        else if (str::is_space(current_char))
           ++count;
         else
           state = after_non_asterisk;
@@ -618,12 +605,12 @@ private:
    *   multiline comments only).
    */
   static std::string cleaned_content(std::string&& content,
-    const Comment_type comment_type, const std::locale& loc)
+    const Comment_type comment_type)
   {
     std::string result;
 
     // Removing the indentation characters (if any).
-    if (const std::size_t isize = indent_size(content, comment_type, loc); isize > 0) {
+    if (const std::size_t isize = indent_size(content, comment_type); isize > 0) {
       std::size_t count{};
       enum { eating, skiping } state = eating;
       for (const auto current_char : content) {
@@ -681,15 +668,14 @@ private:
    * @returns The pair of iterators that specifies the range of relevant comments.
    */
   std::pair<Fragment_list::const_iterator, Fragment_list::const_iterator>
-  static first_related_comments(const Fragment_list& fragments, const std::locale& loc)
+  static first_related_comments(const Fragment_list& fragments)
   {
     using Ft = Fragment::Type;
     const auto b = cbegin(fragments);
     const auto e = cend(fragments);
     auto result = std::make_pair(e, e);
 
-    const auto is_nearby_string = [](const std::string_view str,
-      const std::locale& strloc)
+    const auto is_nearby_string = [](const std::string_view str)
     {
       std::string::size_type count{};
       for (const auto c : str) {
@@ -697,7 +683,7 @@ private:
           ++count;
           if (count > 1)
             return false;
-        } else if (!is_space(c, strloc))
+        } else if (!str::is_space(c))
           break;
       }
       return true;
@@ -707,10 +693,10 @@ private:
      * Stops lookup when either named parameter or positional parameter are found.
      * (Only fragments of type `text` can have related comments.)
      */
-    auto i = find_if(b, e, [&loc, &is_nearby_string](const Fragment& f)
+    auto i = find_if(b, e, [&is_nearby_string](const Fragment& f)
     {
       return (f.type == Ft::text &&
-        is_nearby_string(f.str, loc) && !is_blank_string(f.str, loc)) ||
+        is_nearby_string(f.str) && !str::is_blank(f.str)) ||
         f.type == Ft::named_parameter ||
         f.type == Ft::positional_parameter;
     });
@@ -719,9 +705,9 @@ private:
       do {
         --i;
         DMITIGR_ASSERT(is_comment(*i) ||
-          (is_text(*i) && is_blank_string(i->str, loc)));
+          (is_text(*i) && str::is_blank(i->str)));
         if (i->type == Ft::text) {
-          if (!is_nearby_string(i->str, loc))
+          if (!is_nearby_string(i->str))
             break;
         }
         result.first = i;
@@ -794,9 +780,9 @@ private:
 DMITIGR_PGFE_INLINE const Tuple& Statement::extra() const noexcept
 {
   if (!extra_)
-    extra_.emplace(Extra::extract(fragments_, loc_));
+    extra_.emplace(Extra::extract(fragments_));
   else if (is_extra_data_should_be_extracted_from_comments_)
-    extra_->append(Tuple{Extra::extract(fragments_, loc_)});
+    extra_->append(Tuple{Extra::extract(fragments_)});
   is_extra_data_should_be_extracted_from_comments_ = false;
   assert(is_invariant_ok());
   return *extra_;
@@ -905,39 +891,29 @@ Statement::push_named_parameter(const std::string& str, const char quote_char)
 // Updaters
 // ---------------------------------------------------------------------------
 
-// Exception safety guarantee: strong.
+// Exception safety guarantee: basic.
 DMITIGR_PGFE_INLINE void Statement::update_cache(const Statement& rhs)
 {
-  // Preparing for merge positional parameters.
+  // Prepare positional parameters for merge.
   const auto old_pos_params_size = positional_parameters_.size();
   const auto rhs_pos_params_size = rhs.positional_parameters_.size();
-  if (old_pos_params_size < rhs_pos_params_size)
-    positional_parameters_.resize(rhs_pos_params_size); // can throw
+  const auto new_pos_params_size = std::max(old_pos_params_size, rhs_pos_params_size);
+  positional_parameters_.resize(new_pos_params_size); // can throw
 
-  try {
-    const auto new_pos_params_size = positional_parameters_.size();
-    DMITIGR_ASSERT(new_pos_params_size >= rhs_pos_params_size);
+  // Recreate the cache for named parameters. (Can throw.)
+  named_parameters_ = named_parameters();
 
-    // Creating the cache for named parameters. (Can throw.)
-    decltype (named_parameters_) new_named_parameters = named_parameters();
+  // Check the new parameter count.
+  const auto new_parameter_count = new_pos_params_size + named_parameters_.size();
+  if (new_parameter_count > max_parameter_count())
+    throw Client_exception{"parameter count (" +
+      std::to_string(new_parameter_count) + ") "
+      "exceeds the maximum (" + std::to_string(max_parameter_count()) + ")"};
 
-    // Check the new parameter count.
-    const auto new_parameter_count = new_pos_params_size + new_named_parameters.size();
-    if (new_parameter_count > max_parameter_count())
-      throw Client_exception{"parameter count (" +
-        std::to_string(new_parameter_count) + ") "
-        "exceeds the maximum (" + std::to_string(max_parameter_count()) + ")"};
-
-    // Merging positional parameters (cannot throw).
-    for (std::size_t i{}; i < rhs_pos_params_size; ++i) {
-      if (!positional_parameters_[i] && rhs.positional_parameters_[i])
-        positional_parameters_[i] = true;
-    }
-
-    named_parameters_.swap(new_named_parameters); // commit (cannot throw)
-  } catch (...) {
-    positional_parameters_.resize(old_pos_params_size); // rollback
-    throw;
+  // Merge positional parameters (cannot throw).
+  for (std::size_t i{}; i < rhs_pos_params_size; ++i) {
+    if (!positional_parameters_[i] && rhs.positional_parameters_[i])
+      positional_parameters_[i] = true;
   }
 
   assert(is_invariant_ok());
@@ -990,21 +966,6 @@ DMITIGR_PGFE_INLINE auto Statement::named_parameters() const
 // ---------------------------------------------------------------------------
 
 DMITIGR_PGFE_INLINE bool
-Statement::is_space(const char c, const std::locale& loc) noexcept
-{
-  return isspace(c, loc);
-}
-
-DMITIGR_PGFE_INLINE bool
-Statement::is_blank_string(const std::string& str, const std::locale& loc) noexcept
-{
-  return all_of(cbegin(str), cend(str), [&loc](const auto& c)
-  {
-    return is_space(c, loc);
-  });
-}
-
-DMITIGR_PGFE_INLINE bool
 Statement::is_comment(const Fragment& f) noexcept
 {
   return (f.type == Fragment::Type::one_line_comment) ||
@@ -1018,13 +979,13 @@ Statement::is_text(const Fragment& f) noexcept
 }
 
 DMITIGR_PGFE_INLINE bool
-Statement::is_ident_char(const char c, const std::locale& loc) noexcept
+Statement::is_ident_char(const unsigned char c) noexcept
 {
-  return isalnum(c, loc) || c == '_' || c == '$';
+  return std::isalnum(c) || c == '_' || c == '$';
 }
 
 DMITIGR_PGFE_INLINE bool
-Statement::is_quote_char(const char c) noexcept
+Statement::is_quote_char(const unsigned char c) noexcept
 {
   return c == '\'' || c == '\"';
 }
@@ -1101,7 +1062,7 @@ Statement::is_quote_char(const char c) noexcept
  * that follows returned SQL string.
  */
 DMITIGR_PGFE_INLINE std::pair<Statement, std::string_view::size_type>
-Statement::parse_sql_input(const std::string_view text, const std::locale& loc)
+Statement::parse_sql_input(const std::string_view text)
 {
   enum {
     top,
@@ -1162,7 +1123,7 @@ Statement::parse_sql_input(const std::string_view text, const std::locale& loc)
         continue;
 
       case '$':
-        if (!is_ident_char(previous_char, loc))
+        if (!is_ident_char(previous_char))
           state = dollar;
         else
           fragment += current_char;
@@ -1209,12 +1170,12 @@ Statement::parse_sql_input(const std::string_view text, const std::locale& loc)
 
     case dollar:
       DMITIGR_ASSERT(previous_char == '$');
-      if (isdigit(current_char, loc)) {
+      if (isdigit(static_cast<unsigned char>(current_char))) {
         state = positional_parameter;
         result.push_text(fragment);
         fragment.clear();
         // The 1st digit of positional parameter (current_char) will be stored below.
-      } else if (is_ident_char(current_char, loc)) {
+      } else if (is_ident_char(current_char)) {
         if (current_char == '$') {
           state = dollar_quote;
         } else {
@@ -1231,8 +1192,8 @@ Statement::parse_sql_input(const std::string_view text, const std::locale& loc)
       continue;
 
     case positional_parameter:
-      DMITIGR_ASSERT(isdigit(previous_char, loc));
-      if (!isdigit(current_char, loc)) {
+      DMITIGR_ASSERT(isdigit(static_cast<unsigned char>(previous_char)));
+      if (!isdigit(static_cast<unsigned char>(current_char))) {
         state = top;
         result.push_positional_parameter(fragment);
         fragment.clear();
@@ -1245,11 +1206,11 @@ Statement::parse_sql_input(const std::string_view text, const std::locale& loc)
         goto finish;
 
     case dollar_quote_leading_tag:
-      DMITIGR_ASSERT(previous_char != '$' && is_ident_char(previous_char, loc));
+      DMITIGR_ASSERT(previous_char != '$' && is_ident_char(previous_char));
       if (current_char == '$') {
         fragment += current_char;
         state = dollar_quote;
-      } else if (is_ident_char(current_char, loc)) {
+      } else if (is_ident_char(current_char)) {
         dollar_quote_leading_tag_name += current_char;
         fragment += current_char;
       } else
@@ -1281,7 +1242,7 @@ Statement::parse_sql_input(const std::string_view text, const std::locale& loc)
 
     case colon:
       DMITIGR_ASSERT(previous_char == ':');
-      if (is_ident_char(current_char, loc) || is_quote_char(current_char)) {
+      if (is_ident_char(current_char) || is_quote_char(current_char)) {
         state = named_parameter;
         result.push_text(fragment);
         fragment.clear();
@@ -1301,10 +1262,10 @@ Statement::parse_sql_input(const std::string_view text, const std::locale& loc)
         goto finish;
 
     case named_parameter:
-      DMITIGR_ASSERT(is_ident_char(previous_char, loc) ||
+      DMITIGR_ASSERT(is_ident_char(previous_char) ||
         (is_quote_char(previous_char) && quote_char));
 
-      if (!is_ident_char(current_char, loc)) {
+      if (!is_ident_char(current_char)) {
         state = top;
         result.push_named_parameter(fragment, quote_char);
         fragment.clear();

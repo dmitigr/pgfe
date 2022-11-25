@@ -14,10 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-function(dmitigr_cpplipa_load_with_deps component)
+function(dmitigr_libs_load_with_deps component)
   # Loading the component's dependencies
-  foreach(dep ${dmitigr_cpplipa_${component}_deps})
-    dmitigr_cpplipa_load_with_deps(${dep})
+  foreach(dep ${dmitigr_libs_${component}_deps})
+    dmitigr_libs_load_with_deps(${dep})
   endforeach()
 
   # Loading the component
@@ -42,13 +42,13 @@ endfunction()
 
 # ------------------------------------------------------------------------------
 
-include(${CMAKE_CURRENT_LIST_DIR}/dmitigr_cpplipa_libraries.cmake)
-include(${CMAKE_CURRENT_LIST_DIR}/dmitigr_cpplipa_libraries_all.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/dmitigr_libs.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/dmitigr_libs_package.cmake)
 
-if(NOT dmitigr_cpplipa_FIND_COMPONENTS)
-  set(dmitigr_cpplipa_FIND_COMPONENTS ${dmitigr_cpplipa_libraries})
+if(NOT dmitigr_libs_FIND_COMPONENTS)
+  set(dmitigr_libs_FIND_COMPONENTS ${dmitigr_libs_package})
 endif()
 
-foreach(component ${dmitigr_cpplipa_FIND_COMPONENTS})
-  dmitigr_cpplipa_load_with_deps(${component})
+foreach(component ${dmitigr_libs_FIND_COMPONENTS})
+  dmitigr_libs_load_with_deps(${component})
 endforeach()

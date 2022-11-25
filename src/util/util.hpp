@@ -17,9 +17,8 @@
 #ifndef DMITIGR_UTIL_UTIL_HPP
 #define DMITIGR_UTIL_UTIL_HPP
 
+#include "contract.hpp"
 #include "diagnostic.hpp"
-#include "endianness.hpp"
-#include "enum_bitmask.hpp"
 #include "memory.hpp"
 
 #endif  // DMITIGR_UTIL_UTIL_HPP

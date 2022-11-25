@@ -14,10 +14,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DMITIGR_UTIL_ENDIANNESS_HPP
-#define DMITIGR_UTIL_ENDIANNESS_HPP
+#ifndef DMITIGR_BASE_ENDIANNESS_HPP
+#define DMITIGR_BASE_ENDIANNESS_HPP
 
-namespace dmitigr::util {
+namespace dmitigr {
 
 /// An endianness.
 enum class Endianness {
@@ -39,6 +39,6 @@ inline Endianness endianness() noexcept
   return result;
 }
 
-} // namespace dmitigr::util
+} // namespace dmitigr
 
-#endif  // DMITIGR_UTIL_ENDIANNESS_HPP
+#endif  // DMITIGR_BASE_ENDIANNESS_HPP

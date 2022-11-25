@@ -17,48 +17,49 @@
 #ifndef DMITIGR_STR_TIME_HPP
 #define DMITIGR_STR_TIME_HPP
 
+#include "../base/assert.hpp"
 #include "exceptions.hpp"
-#include "version.hpp"
 
 #include <chrono>
+#include <cstring>
+#include <cstdio>
 #include <ctime>
-#include <string>
+#include <string_view>
 
 namespace dmitigr::str {
 
-// -----------------------------------------------------------------------------
-// Time
-// -----------------------------------------------------------------------------
-
 /**
  * @returns The human-readable string representation of the given timepoint
- * with microseconds or empty string on error.
+ * with microseconds or empty string_view on error.
  */
 template<class Clock, class Duration>
-std::string to_string(const std::chrono::time_point<Clock, Duration> tp)
+std::string_view
+to_string_view(const std::chrono::time_point<Clock, Duration> tp) noexcept
 {
   namespace chrono = std::chrono;
   const auto tp_time_t = Clock::to_time_t(tp);
   const auto tse = tp.time_since_epoch();
   const auto sec = chrono::duration_cast<chrono::seconds>(tse);
-  const auto rest_us = chrono::duration_cast<chrono::microseconds>(tse - sec);
-  char buf[32];
-  std::string result;
-  if (const auto count = std::strftime(buf, sizeof(buf), "%Y-%m-%d %H:%M:%S",
-      std::localtime(&tp_time_t))) {
-    const auto us = std::to_string(rest_us.count());
-    result.reserve(count + 1 + us.size());
-    result.assign(buf, count);
-    result.append(".").append(us);
+  const auto us = chrono::duration_cast<chrono::microseconds>(tse - sec);
+  static thread_local char buf[64];
+  if (const auto dt_length = std::strftime(buf,
+      sizeof(buf), "%Y-%m-%d %H:%M:%S", std::localtime(&tp_time_t))) {
+    const auto max_rest_length = sizeof(buf) - dt_length;
+    const auto rest_length = std::snprintf(buf + dt_length,
+      max_rest_length, "%c%ld", '.', us.count());
+    DMITIGR_ASSERT(rest_length > 0 &&
+      static_cast<std::size_t>(rest_length) < max_rest_length);
+    return {buf, dt_length + rest_length};
   }
-  return result;
+  buf[0] = '\0';
+  return {buf, 0};
 }
 
-/// @retruns `to_string(Clock::now())`.
+/// @retruns `to_string_view(Clock::now())`.
 template<class Clock = std::chrono::system_clock>
-inline std::string now_string()
+inline std::string_view now() noexcept
 {
-  return to_string(Clock::now());
+  return to_string_view(Clock::now());
 }
 
 } // namespace dmitigr::str

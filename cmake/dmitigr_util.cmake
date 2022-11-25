@@ -18,7 +18,7 @@
 # Info
 # ------------------------------------------------------------------------------
 
-dmitigr_cpplipa_set_library_info(util 0 0 0 "Utilities")
+dmitigr_libs_set_library_info(util 0 0 0 "Utilities")
 
 # ------------------------------------------------------------------------------
 # Sources
@@ -35,6 +35,6 @@ set(dmitigr_util_headers
 # Tests
 # ------------------------------------------------------------------------------
 
-if(DMITIGR_CPPLIPA_TESTS)
+if(DMITIGR_LIBS_TESTS)
   set(dmitigr_util_tests diag)
 endif()

@@ -19,7 +19,7 @@
 #include "misc.hpp"
 #include "pq.hpp"
 
-#include <locale>
+#include <cctype>
 
 namespace dmitigr::pgfe {
 
@@ -36,12 +36,11 @@ DMITIGR_PGFE_INLINE std::string unquote_identifier(const std::string_view identi
 
   std::string result;
   const std::string_view::size_type sz = identifier.size();
-  const std::locale loc;
   for (std::string_view::size_type i = 0; i < sz; ++i) {
     const char c = identifier[i];
     if (state == top) {
       if (c != '"')
-        result += std::tolower(c, loc);
+        result += std::tolower(static_cast<unsigned char>(c));
       else
         state = double_quote;
     } else if (state == double_quote) {
@@ -64,11 +63,10 @@ DMITIGR_PGFE_INLINE int array_dimension(const std::string_view literal,
     return 0;
 
   int dimension{};
-  const std::locale loc;
   for (const auto c : literal) {
     if (c == '{')
       ++dimension;
-    else if (std::isspace(c, loc))
+    else if (std::isspace(static_cast<unsigned char>(c)))
       ; // Skip space.
     else if (!dimension || c == delimiter)
       throw Client_exception{Client_errc::malformed_literal};

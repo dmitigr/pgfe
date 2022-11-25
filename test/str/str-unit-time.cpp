@@ -14,20 +14,25 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DMITIGR_STR_STR_HPP
-#define DMITIGR_STR_STR_HPP
+#include "../../src/base/assert.hpp"
+#include "../../src/str/time.hpp"
 
-#include "basics.hpp"
-#include "c_str.h"
-#include "c_str.hpp"
-#include "exceptions.hpp"
-#include "line.hpp"
-#include "numeric.hpp"
-#include "predicate.hpp"
-#include "sequence.hpp"
-#include "stream.hpp"
-#include "substr.hpp"
-#include "time.hpp"
-#include "transform.hpp"
+#include <iostream>
+#include <limits>
 
-#endif  // DMITIGR_STR_STR_HPP
+int main()
+{
+  try {
+    namespace str = dmitigr::str;
+
+    std::cout.precision(std::numeric_limits<long int>::max_digits10);
+    std::cout << str::now() << std::endl;
+    std::cout << str::now() << std::endl;
+  } catch (const std::exception& e) {
+    std::cerr << e.what() << std::endl;
+    return 1;
+  } catch (...) {
+    std::cerr << "unknown error" << std::endl;
+    return 2;
+  }
+}

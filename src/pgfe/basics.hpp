@@ -17,7 +17,7 @@
 #ifndef DMITIGR_PGFE_BASICS_HPP
 #define DMITIGR_PGFE_BASICS_HPP
 
-#include "../util/enum_bitmask.hpp"
+#include "../base/enum_bitmask.hpp"
 
 #include <string_view>
 
@@ -78,12 +78,10 @@ enum class External_library {
 
 // =============================================================================
 
-namespace util {
 template<>
 struct Is_bitmask_enum<pgfe::Socket_readiness> final : std::true_type {};
 template<>
 struct Is_bitmask_enum<pgfe::External_library> final : std::true_type {};
-} // namespace util
 
 namespace pgfe {
 

@@ -17,6 +17,7 @@
 #ifndef DMITIGR_BASE_EXCEPTIONS_HPP
 #define DMITIGR_BASE_EXCEPTIONS_HPP
 
+#include "err.hpp"
 #include "errctg.hpp"
 
 #include <exception>
@@ -39,8 +40,7 @@ public:
    * @param what The what-string.
    */
   Exception(const std::error_condition& errc, const std::string& what)
-    : what_{what}
-    , condition_{errc}
+    : err_{errc, what}
   {}
 
   /**
@@ -52,21 +52,31 @@ public:
     : Exception{Errc::generic, what}
   {}
 
+  /// Constructs an instance from the object of type Err.
+  explicit Exception(Err err)
+    : err_{std::move(err)}
+  {}
+
   /// @returns The what-string.
   const char* what() const noexcept override
   {
-    return what_.what();
+    return err_.what().c_str();
   }
 
   /// @returns The error condition.
   std::error_condition condition() const noexcept
   {
-    return condition_;
+    return err_.condition();
+  }
+
+  /// @returns The underlying Err instance.
+  const Err& err() const noexcept
+  {
+    return err_;
   }
 
 private:
-  std::runtime_error what_;
-  std::error_condition condition_;
+  Err err_;
 };
 
 } // namespace dmitigr

@@ -17,7 +17,7 @@
 #ifndef DMITIGR_NET_CONVERSIONS_HPP
 #define DMITIGR_NET_CONVERSIONS_HPP
 
-#include "../util/endianness.hpp"
+#include "../base/endianness.hpp"
 #include "exceptions.hpp"
 
 #include <cstdint>
@@ -47,12 +47,12 @@ inline void copy(void* const dest, const std::size_t dest_size,
 
   const auto src_ubytes = static_cast<const unsigned char*>(src);
   const auto dest_ubytes = static_cast<unsigned char*>(dest);
-  switch (util::endianness()) {
-  case util::Endianness::big:
+  switch (endianness()) {
+  case Endianness::big:
     for (std::size_t i = 0; i < src_size; ++i)
       dest_ubytes[dest_size - src_size + i] = src_ubytes[i];
     break;
-  case util::Endianness::little:
+  case Endianness::little:
     for (std::size_t i = 0; i < src_size; ++i)
       dest_ubytes[dest_size - 1 - i] = src_ubytes[i];
     break;

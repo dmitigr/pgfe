@@ -18,7 +18,7 @@
 # Info
 # ------------------------------------------------------------------------------
 
-dmitigr_cpplipa_set_library_info(pgfe 2 0 1 "PostgreSQL client API")
+dmitigr_libs_set_library_info(pgfe 2 0 1 "PostgreSQL client API")
 
 # ------------------------------------------------------------------------------
 # Sources
@@ -117,7 +117,7 @@ endif()
 # Tests
 # ------------------------------------------------------------------------------
 
-if(DMITIGR_CPPLIPA_TESTS)
+if(DMITIGR_LIBS_TESTS)
   set(dmitigr_pgfe_tests
     array_dimension
     benchmark_array_client
@@ -149,12 +149,12 @@ if(DMITIGR_CPPLIPA_TESTS)
   set(dmitigr_pgfe_tests_target_link_libraries dmitigr_base dmitigr_os dmitigr_str
     dmitigr_util)
 
-  set(prefix ${dmitigr_cpplipa_SOURCE_DIR}/test/pgfe)
+  set(prefix ${dmitigr_libs_SOURCE_DIR}/test/pgfe)
   add_custom_target(dmitigr_pgfe_copy_test_resources ALL
     COMMAND cmake -E copy_if_different
     "${prefix}/pgfe-unit-statement_vector.sql"
-    "${dmitigr_cpplipa_resource_destination_dir}"
+    "${dmitigr_libs_resource_destination_dir}"
     )
   add_dependencies(dmitigr_pgfe_copy_test_resources
-    dmitigr_cpplipa_create_resource_destination_dir)
+    dmitigr_libs_create_resource_destination_dir)
 endif()

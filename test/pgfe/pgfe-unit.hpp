@@ -14,8 +14,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DMITIGR_CPPLIPA_TEST_PGFE_UNIT_HPP
-#define DMITIGR_CPPLIPA_TEST_PGFE_UNIT_HPP
+#ifndef DMITIGR_LIBS_TEST_PGFE_UNIT_HPP
+#define DMITIGR_LIBS_TEST_PGFE_UNIT_HPP
 
 #include "../../src/base/assert.hpp"
 #include "../../src/os/environment.hpp"
@@ -86,4 +86,4 @@ inline auto make_ssl_connection()
 
 } // namespace dmitigr::pgfe::test
 
-#endif // DMITIGR_CPPLIPA_TEST_PGFE_UNIT_HPP
+#endif // DMITIGR_LIBS_TEST_PGFE_UNIT_HPP
