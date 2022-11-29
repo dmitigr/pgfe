@@ -406,7 +406,7 @@ foreach(lib ${dmitigr_libs_package})
       # DEBUG_POSTFIX "d"
       )
 
-    dmitigr_libs_target_compile_options(${dmlib})
+    dmitigr_target_compile_options(${dmlib})
   endif()
 
   if(NOT ${${dmlib}_header_only})
@@ -528,7 +528,7 @@ if(DMITIGR_LIBS_TESTS)
     target_compile_options(${exe} PRIVATE
       ${${dmlib}_tests_target_compile_options}
       ${${dmlib}_test_${test}_target_compile_options})
-    dmitigr_libs_target_compile_options(${exe})
+    dmitigr_target_compile_options(${exe})
     if(is_unit_test)
       add_test(NAME ${exe} COMMAND ${exe})
     endif()

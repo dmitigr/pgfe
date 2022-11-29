@@ -78,13 +78,13 @@ set(dmitigr_libs_http_deps base dt net str)
 set(dmitigr_libs_jrpc_deps base algo math rajson str)
 set(dmitigr_libs_msg_deps base fs ipc os rajson sqlixx)
 set(dmitigr_libs_pgfe_deps base fs net str util)
-set(dmitigr_libs_prg_deps base fs log os rajson str)
+set(dmitigr_libs_prg_deps base fs log os)
 set(dmitigr_libs_ws_deps base fs http net 3rdparty_uwebsockets)
 set(dmitigr_libs_wscl_deps base net 3rdparty_uwsc)
 # Level 4
 set(dmitigr_libs_lisp_deps base)
 # Level 5
-set(dmitigr_libs_web_deps base concur fs http jrpc lisp log prg str tpl url ws)
+set(dmitigr_libs_web_deps base concur fs http jrpc lisp log rajson str tpl url ws)
 
 # ------------------------------------------------------------------------------
 # Source type list
@@ -121,52 +121,6 @@ function(dmitigr_libs_get_deps res_var lib)
   endforeach()
 
   set(${res_var} ${result} PARENT_SCOPE)
-endfunction()
-
-# ------------------------------------------------------------------------------
-# Target compile options
-# ------------------------------------------------------------------------------
-
-function(dmitigr_libs_target_compile_options t)
-  if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
-    target_compile_options(${t} PRIVATE
-      -pedantic
-      -Wall
-      -Wextra
-      # -Winline
-      -Winit-self
-      -Wuninitialized
-      -Wmaybe-uninitialized
-      -Woverloaded-virtual
-      -Wsuggest-override
-      -Wlogical-op
-      -Wswitch)
-  elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
-    target_compile_options(${t} PRIVATE
-      -pedantic
-      -Weverything
-      -Wno-c++98-compat
-      -Wno-c++98-compat-pedantic
-      -Wno-documentation-unknown-command
-      -Wno-disabled-macro-expansion
-      -Wno-weak-vtables
-      -Wno-ctad-maybe-unsupported
-      -Wno-padded
-      -Wno-exit-time-destructors
-      -Wno-global-constructors
-      -Wno-covered-switch-default
-      -Wno-switch-enum # but -Wswitch still active!
-      -Wno-unused-private-field
-      -Wno-reserved-id-macro
-      )
-  elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
-    target_compile_options(${t} PRIVATE
-      /W4
-      /Zc:throwingNew,referenceBinding,noexceptTypes
-      /errorReport:none
-      /nologo
-      /utf-8)
-  endif()
 endfunction()
 
 # ------------------------------------------------------------------------------

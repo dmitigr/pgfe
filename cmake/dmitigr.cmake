@@ -47,3 +47,49 @@ function(dmitigr_get_version in_string out_major out_minor out_patch)
   set(${out_minor} ${minor} PARENT_SCOPE)
   set(${out_patch} ${patch} PARENT_SCOPE)
 endfunction()
+
+# ------------------------------------------------------------------------------
+# Target compile options
+# ------------------------------------------------------------------------------
+
+function(dmitigr_target_compile_options t)
+  if (CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
+    target_compile_options(${t} PRIVATE
+      -pedantic
+      -Wall
+      -Wextra
+      # -Winline
+      -Winit-self
+      -Wuninitialized
+      -Wmaybe-uninitialized
+      -Woverloaded-virtual
+      -Wsuggest-override
+      -Wlogical-op
+      -Wswitch)
+  elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    target_compile_options(${t} PRIVATE
+      -pedantic
+      -Weverything
+      -Wno-c++98-compat
+      -Wno-c++98-compat-pedantic
+      -Wno-documentation-unknown-command
+      -Wno-disabled-macro-expansion
+      -Wno-weak-vtables
+      -Wno-ctad-maybe-unsupported
+      -Wno-padded
+      -Wno-exit-time-destructors
+      -Wno-global-constructors
+      -Wno-covered-switch-default
+      -Wno-switch-enum # but -Wswitch still active!
+      -Wno-unused-private-field
+      -Wno-reserved-id-macro
+      )
+  elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
+    target_compile_options(${t} PRIVATE
+      /W4
+      /Zc:throwingNew,referenceBinding,noexceptTypes
+      /errorReport:none
+      /nologo
+      /utf-8)
+  endif()
+endfunction()
