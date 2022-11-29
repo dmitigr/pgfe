@@ -393,7 +393,7 @@ DMITIGR_PGFE_INLINE bool Prepared_statement::is_invariant_ok() const noexcept
   return state_ok && params_ok && preparsed_ok && parameterizable_ok;
 }
 
-DMITIGR_PGFE_INLINE [[noreturn]] void
+[[noreturn]] DMITIGR_PGFE_INLINE void
 Prepared_statement::throw_exception(std::string msg) const
 {
   const auto id = !is_valid() ? std::string{"invalid prepared statement"} :
