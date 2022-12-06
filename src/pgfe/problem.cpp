@@ -127,10 +127,10 @@ DMITIGR_PGFE_INLINE const char* Problem::source_function() const noexcept
   return pq_result_.er_source_function();
 }
 
-DMITIGR_PGFE_INLINE Problem_severity Problem::severity() const noexcept
+DMITIGR_PGFE_INLINE std::optional<Problem_severity> Problem::severity() const noexcept
 {
   const char* const s{pq_result_.er_severity_non_localized()};
-  return s ? to_problem_severity(std::string_view{s}) : Problem_severity{-1};
+  return s ? to_problem_severity(std::string_view{s}) : std::nullopt;
 }
 
 DMITIGR_PGFE_INLINE std::error_condition Problem::min_condition() noexcept

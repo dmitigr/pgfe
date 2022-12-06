@@ -21,6 +21,7 @@
 #include "pq.hpp"
 #include "types_fwd.hpp"
 
+#include <optional>
 #include <string>
 #include <system_error>
 
@@ -55,10 +56,11 @@ public:
   DMITIGR_PGFE_API const char* sqlstate() const noexcept;
 
   /**
-   * @returns The problem severity, or `-1` if the problem is not recognized
-   * by Pgfe or occured on the PostgreSQL server of version prior to 9.6.
+   * @returns The problem severity, or `std::nullopt` if the problem is not
+   * recognized by Pgfe or occured on the PostgreSQL server of version prior
+   * to 9.6.
    */
-  DMITIGR_PGFE_API Problem_severity severity() const noexcept;
+  DMITIGR_PGFE_API std::optional<Problem_severity> severity() const noexcept;
 
   /**
    * @returns The brief human-readable description of the problem.

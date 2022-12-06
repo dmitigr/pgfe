@@ -34,7 +34,7 @@ DMITIGR_PGFE_INLINE bool Error::is_valid() const noexcept
 DMITIGR_PGFE_INLINE bool Error::is_invariant_ok() const noexcept
 {
   const auto sev = severity();
-  return ((static_cast<int>(sev) == -1) ||
+  return (!sev ||
     (sev == Problem_severity::error) ||
     (sev == Problem_severity::fatal) ||
     (sev == Problem_severity::panic)) && Problem::is_invariant_ok();
