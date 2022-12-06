@@ -85,6 +85,7 @@ class Row_info;
 class Signal;
 class Statement;
 class Statement_vector;
+class Transaction_guard;
 class Tuple;
 
 class Exception;

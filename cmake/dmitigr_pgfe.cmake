@@ -60,6 +60,7 @@ set(dmitigr_pgfe_headers
   signal.hpp
   statement.hpp
   statement_vector.hpp
+  transaction_guard.hpp
   types_fwd.hpp
   )
 
@@ -144,6 +145,7 @@ if(DMITIGR_LIBS_TESTS)
     row
     statement
     statement_vector
+    transaction_guard
     )
 
   set(dmitigr_pgfe_tests_target_link_libraries dmitigr_base dmitigr_os dmitigr_str

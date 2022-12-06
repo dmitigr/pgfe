@@ -38,7 +38,7 @@ set(dmitigr_libs
   # Level 3
   concur fcgi http jrpc msg pgfe prg ws wscl
   # Level 4
-  lisp
+  lisp pgfex
   # Level 5
   web
   )
@@ -83,6 +83,7 @@ set(dmitigr_libs_ws_deps base fs http net 3rdparty_uwebsockets)
 set(dmitigr_libs_wscl_deps base net 3rdparty_uwsc)
 # Level 4
 set(dmitigr_libs_lisp_deps base)
+set(dmitigr_libs_pgfex_deps pgfe rajson)
 # Level 5
 set(dmitigr_libs_web_deps base concur fs http jrpc lisp log rajson str tpl url ws)
 
