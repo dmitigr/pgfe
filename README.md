@@ -79,7 +79,8 @@ int main() try {
   containers can be performed with easy;
   - provides a support of dynamic construction of SQL queries;
   - allows to separate SQL queries and C++ code on the client side;
-  - provides simple, robust and thread-safe connection pool.
+  - provides a simple, robust and thread-safe connection pool;
+  - provides a transaction guard facility.
 
 ## Requirements
 
@@ -156,11 +157,6 @@ mkdir hello/build && cd hello/build
 cmake ..
 cmake --build .
 ```
-
-### Advanced usage
-
-For more details please, see [usage section][dmitigr_libs_usage] for hints
-how to link Pgfe.
 
 ## Quick tutorial
 
@@ -601,6 +597,42 @@ int main()
 }
 ```
 
+### Transaction guard
+
+Pgfe provides a convenient [RAII-style][raii] facility for owning a transaction
+(or subtransaction) for the duration of a scoped block. When control leaves the
+scope in which the `Transaction_guard` object was created, the Transaction_guard
+is destructed and the transaction is *rolled back*. If the rollback failed, the
+connection is closed, to prevent further interaction with the database, since
+failed rollback might indicate a total mess.
+
+```cpp
+// Example 17. Using the transaction guard.
+
+void foo(Connection& conn)
+{
+  assert(conn.is_connected() && !conn.is_transaction_uncommitted());
+  try {
+    Transaction_guard tg{conn}; // begin transaction
+    {
+      Transaction_guard tg{conn}; // begin subtransaction (define savepoint 1)
+      {
+        Transaction_guard tg{conn}; // begin subtransaction (define savepoint 2)
+        tg.commit(); // release savepoint 2
+      }
+      tg.commit(); // release savepoint 1
+    }
+    tg.commit_and_chain(); // commit transaction and immediately begin the next one
+    {
+      Transaction_guard tg{conn}; // begin subtransaction (define savepoint 1)
+      throw 1; // oops, attempt to rollback the entire transaction
+    }
+  } catch (...) {
+    assert(!conn.is_connected() || !conn.is_transaction_uncommitted());
+  }
+}
+```
+
 ## Exceptions
 
 Pgfe itself may throw:
@@ -622,11 +654,7 @@ Pgfe is depends on the [libpq] library.
 
 ## CMake options
 
-Since Pgfe is a C++ library subpackage of [Igrilibs][dmitigr_libs], almost
-all the [CMake options of Igrilibs][dmitigr_libs_cmake_options] are applicable
-to Pgfe.
-
-Please, pay attention to the following:
+Please note:
 
   - by default, `CMAKE_BUILD_TYPE` is set to `Release`;
   - by using `Pq_ROOT` it's possible to specify a prefix for both binary and
@@ -636,9 +664,6 @@ Please, pay attention to the following:
   doesn't selects the build configuration within the generated build environment.
   The [CMake] command line option `--config` should be used for that purpose.
 
-[dmitigr_libs]: https://github.com/dmitigr/igrilibs
-[dmitigr_libs_cmake_options]: https://github.com/dmitigr/igrilibs#cmake-options
-[dmitigr_libs_usage]: https://github.com/dmitigr/igrilibs.git#usage
 [dmitigr_pgfe]: https://github.com/dmitigr/pgfe.git
 
 [PostgreSQL]: https://www.postgresql.org/
@@ -652,6 +677,7 @@ Please, pay attention to the following:
 
 [boost_datetime]: https://www.boost.org/doc/libs/release/libs/date_time/
 [boost_optional]: https://www.boost.org/doc/libs/release/libs/optional/
+[raii]: https://en.cppreference.com/w/cpp/language/raii
 
 [CMake]: https://cmake.org/
 [Doxygen]: http://doxygen.org/
