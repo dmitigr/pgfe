@@ -17,7 +17,7 @@
 #ifndef DMITIGR_PGFE_CONNECTION_OPTIONS_HPP
 #define DMITIGR_PGFE_CONNECTION_OPTIONS_HPP
 
-#include "../fs/filesystem.hpp"
+#include "../fsx/filesystem.hpp"
 #include "basics.hpp"
 #include "dll.hpp"
 

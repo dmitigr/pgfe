@@ -14,10 +14,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DMITIGR_FS_FS_HPP
-#define DMITIGR_FS_FS_HPP
+#ifndef DMITIGR_FSX_FSX_HPP
+#define DMITIGR_FSX_FSX_HPP
 
 #include "filesystem.hpp"
 #include "misc.hpp"
 
-#endif  // DMITIGR_FS_FS_HPP
+#endif  // DMITIGR_FSX_FSX_HPP

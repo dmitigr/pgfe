@@ -32,7 +32,7 @@ set(dmitigr_libs
   # Level 0 (base level)
   base
   # Level 1
-  algo dt fs hsh ipc math os que rnd str tpl util uv
+  algo dt fsx hsh ipc math os que rnd str tpl util uv
   # Level 2
   log mulf net rajson sqlixx url
   # Level 3
@@ -53,7 +53,7 @@ set(dmitigr_libs_3rdparty_uwebsockets_deps 3rdparty_usockets)
 # Level 1
 set(dmitigr_libs_algo_deps base)
 set(dmitigr_libs_dt_deps base)
-set(dmitigr_libs_fs_deps)
+set(dmitigr_libs_fsx_deps)
 set(dmitigr_libs_hsh_deps)
 set(dmitigr_libs_ipc_deps base)
 set(dmitigr_libs_math_deps base)
@@ -65,27 +65,27 @@ set(dmitigr_libs_tpl_deps base)
 set(dmitigr_libs_util_deps base)
 set(dmitigr_libs_uv_deps base)
 # Level 2
-set(dmitigr_libs_log_deps base fs os str)
+set(dmitigr_libs_log_deps base fsx os str)
 set(dmitigr_libs_mulf_deps base str)
-set(dmitigr_libs_net_deps base fs os)
-set(dmitigr_libs_rajson_deps base fs 3rdparty_rapidjson)
-set(dmitigr_libs_sqlixx_deps base fs)
+set(dmitigr_libs_net_deps base fsx os)
+set(dmitigr_libs_rajson_deps base fsx 3rdparty_rapidjson)
+set(dmitigr_libs_sqlixx_deps base fsx)
 set(dmitigr_libs_url_deps base str)
 # Level 3
 set(dmitigr_libs_concur_deps base log)
-set(dmitigr_libs_fcgi_deps base fs math net)
+set(dmitigr_libs_fcgi_deps base fsx math net)
 set(dmitigr_libs_http_deps base dt net str)
 set(dmitigr_libs_jrpc_deps base algo math rajson str)
-set(dmitigr_libs_msg_deps base fs ipc os rajson sqlixx)
-set(dmitigr_libs_pgfe_deps base fs net str util)
-set(dmitigr_libs_prg_deps base fs log os)
-set(dmitigr_libs_ws_deps base fs http net 3rdparty_uwebsockets)
+set(dmitigr_libs_msg_deps base fsx ipc os rajson sqlixx)
+set(dmitigr_libs_pgfe_deps base fsx net str util)
+set(dmitigr_libs_prg_deps base fsx log os)
+set(dmitigr_libs_ws_deps base fsx http net 3rdparty_uwebsockets)
 set(dmitigr_libs_wscl_deps base net 3rdparty_uwsc)
 # Level 4
 set(dmitigr_libs_lisp_deps base)
 set(dmitigr_libs_pgfex_deps pgfe rajson)
 # Level 5
-set(dmitigr_libs_web_deps base concur fs http jrpc lisp log rajson str tpl url ws)
+set(dmitigr_libs_web_deps base concur fsx http jrpc lisp log rajson str tpl url ws)
 
 # ------------------------------------------------------------------------------
 # Source type list

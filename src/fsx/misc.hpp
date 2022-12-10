@@ -14,15 +14,15 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DMITIGR_FS_MISC_HPP
-#define DMITIGR_FS_MISC_HPP
+#ifndef DMITIGR_FSX_MISC_HPP
+#define DMITIGR_FSX_MISC_HPP
 
 #include "filesystem.hpp"
 
 #include <optional>
 #include <vector>
 
-namespace dmitigr::fs {
+namespace dmitigr::fsx {
 
 /**
  * @returns The vector of the paths.
@@ -72,26 +72,24 @@ file_paths_by_extension(const std::filesystem::path& root,
 }
 
 /**
- * @brief Searches for the `dir` directory starting from the current working
- * directory and up to the root directory.
+ * @brief Searches for the `dir` directory starting from `path` up to the root.
  *
- * @returns The first path found to the `dir` directory, or
- * `std::nullopt` if no specified directory found.
+ * @returns A first path to a directory in which `dir` directory found, or
+ * `std::nullopt` if no such a directory found.
  */
 inline std::optional<std::filesystem::path>
-parent_directory_path(const std::filesystem::path& dir)
+first_parent(std::filesystem::path path, const std::filesystem::path& child)
 {
-  auto path = std::filesystem::current_path();
   while (true) {
-    if (is_directory(path / dir))
+    if (exists(path / child))
       return path;
-    else if (path.has_relative_path())
+    else if (path.has_parent_path())
       path = path.parent_path();
     else
       return std::nullopt;
   }
 }
 
-} // namespace dmitigr::fs
+} // namespace dmitigr::fsx
 
-#endif  // DMITIGR_FS_MISC_HPP
+#endif  // DMITIGR_FSX_MISC_HPP

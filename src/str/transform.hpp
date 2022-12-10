@@ -60,6 +60,29 @@ inline void terminate(std::string& str, const char c)
     str += c;
 }
 
+/// Eliminates duplicate characters from string `str`.
+inline void eliminate_duplicates(std::string& str)
+{
+  auto new_size = str.size();
+  for (decltype(new_size) i{}; i < new_size; ++i) {
+    const char ch = str[i];
+    const auto b = begin(str) + i + 1;
+    const auto e = begin(str) + new_size;
+    const bool is_non_unique = find(b, e, ch) != e;
+    if (is_non_unique) {
+      remove_if(b, e, [ch, &new_size](const char c)
+      {
+        if (c == ch) {
+          --new_size;
+          return true;
+        } else
+          return false;
+      });
+    }
+  }
+  str.resize(new_size);
+}
+
 /// Trims `str` by dropping whitespaces at both sides of it.
 inline std::string trimmed(std::string str, const Trim trim = Trim::all)
 {

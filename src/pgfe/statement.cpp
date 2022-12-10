@@ -152,7 +152,7 @@ Statement::parameter_name(const std::size_t index) const
 {
   if (!((positional_parameter_count() <= index) && (index < parameter_count())))
     throw Client_exception{"cannot get Statement parameter name"};
-  return (named_parameters_[index - positional_parameter_count()])->str;
+  return named_parameters_[index - positional_parameter_count()]->str;
 }
 
 DMITIGR_PGFE_INLINE std::size_t
@@ -232,7 +232,7 @@ DMITIGR_PGFE_INLINE void Statement::append(const Statement& appendix)
   assert(is_invariant_ok());
 }
 
-DMITIGR_PGFE_INLINE void
+DMITIGR_PGFE_INLINE Statement&
 Statement::bind(const std::string_view name,
   const std::optional<std::string>& value)
 {
@@ -243,6 +243,7 @@ Statement::bind(const std::string_view name,
       fragment.value = value;
   }
   assert(is_invariant_ok());
+  return *this;
 }
 
 DMITIGR_PGFE_INLINE const std::optional<std::string>&
@@ -255,6 +256,34 @@ Statement::bound(const std::string_view name) const
       return fragment.value;
   }
   DMITIGR_ASSERT(false);
+}
+
+DMITIGR_PGFE_INLINE std::size_t
+Statement::bound_parameter_count() const noexcept
+{
+  return count_if(cbegin(fragments_), cend(fragments_),
+    [counted = std::vector<std::string>{}](const auto& fragment)mutable -> bool
+    {
+      if (fragment.is_named_parameter()) {
+        const bool is_uncounted{none_of(cbegin(counted), cend(counted),
+          [&fragment](const auto& name){return name == fragment.str;})};
+        if (is_uncounted) {
+          counted.push_back(fragment.str);
+          return static_cast<bool>(fragment.value);
+        }
+      }
+      return false;
+    });
+}
+
+DMITIGR_PGFE_INLINE bool
+Statement::has_bound_parameters() const noexcept
+{
+  const auto e = cend(fragments_);
+  return find_if(cbegin(fragments_), e, [](const auto& fragment)
+  {
+    return fragment.is_named_parameter() && fragment.value;
+  }) != e;
 }
 
 DMITIGR_PGFE_INLINE void

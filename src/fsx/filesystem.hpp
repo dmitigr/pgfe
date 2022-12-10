@@ -14,8 +14,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef DMITIGR_FS_FILESYSTEM_HPP
-#define DMITIGR_FS_FILESYSTEM_HPP
+#ifndef DMITIGR_FSX_FILESYSTEM_HPP
+#define DMITIGR_FSX_FILESYSTEM_HPP
 
 #if (defined(__clang__) && (__clang_major__ < 7)) || \
     (defined(__GNUG__)  && (__GNUC__ < 8) && !defined (__clang__))
@@ -27,4 +27,4 @@
   #include <filesystem>
 #endif
 
-#endif // DMITIGR_FS_FILESYSTEM_HPP
+#endif // DMITIGR_FSX_FILESYSTEM_HPP

@@ -72,7 +72,7 @@ public:
       if (savepoint_.empty())
         savepoint_ = "pgfe_savepoint";
       rollback_stmt_ = R"(rollback to savepoint :"s")";
-      rollback_stmt_.replace_parameter("s", savepoint_);
+      rollback_stmt_.bind("s", savepoint_);
     } else
       rollback_stmt_ = "rollback";
 
@@ -128,29 +128,32 @@ public:
    */
   void rollback()
   {
-    if (conn_.is_transaction_uncommitted())
+    if (conn_.is_transaction_uncommitted() && !is_subtransaction_committed_)
       conn_.execute(rollback_stmt_);
   }
 
 private:
   Connection& conn_;
   bool is_subtransaction_{};
+  bool is_subtransaction_committed_{};
   std::string savepoint_;
   Statement rollback_stmt_;
 
   Statement savepoint_stmt__(const std::string_view input) const
   {
     DMITIGR_ASSERT(!savepoint_.empty());
-    Statement stmt{input};
-    stmt.replace_parameter("s", savepoint_);
-    return stmt;
+    return Statement{input}.bind("s", savepoint_);
   }
 
   void commit__(const Statement commit_query)
   {
-    if (conn_.is_transaction_uncommitted())
-      conn_.execute(is_subtransaction_ ?
-        savepoint_stmt__(R"(release :"s")") : commit_query);
+    if (conn_.is_transaction_uncommitted()) {
+      if (is_subtransaction_) {
+        conn_.execute(savepoint_stmt__(R"(release :"s")"));
+        is_subtransaction_committed_ = true;
+      } else
+        conn_.execute(commit_query);
+    }
   }
 };
 

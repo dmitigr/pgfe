@@ -218,6 +218,8 @@ public:
   /**
    * @brief Binds the parameter named by the `name` with the specified `value`.
    *
+   * @returns `*this`.
+   *
    * @par Requires
    * `has_parameter(name)`.
    *
@@ -228,9 +230,9 @@ public:
    * @par Exception safety guarantee
    * Basic.
    *
-   * @see has_parameter(), replace_parameter().
+   * @see has_parameter(), replace_parameter(), bound().
    */
-  DMITIGR_PGFE_API void
+  DMITIGR_PGFE_API Statement&
   bind(const std::string_view name, const std::optional<std::string>& value);
 
   /**
@@ -238,9 +240,25 @@ public:
    *
    * @par Requires
    * `has_parameter(name)`.
+   *
+   * @see bind().
    */
   DMITIGR_PGFE_API const std::optional<std::string>&
   bound(const std::string_view name) const;
+
+  /**
+   * @returns The number of bound parameters.
+   *
+   * @see has_bound_parameters(), bound().
+   */
+  DMITIGR_PGFE_API std::size_t bound_parameter_count() const noexcept;
+
+  /**
+   * @returns `true` if `bound_parameter_count() > 0`.
+   *
+   * @see bound_parameter_count(), bound().
+   */
+  DMITIGR_PGFE_API bool has_bound_parameters() const noexcept;
 
   /**
    * @brief Replaces the parameter named by the `name` with the specified

@@ -18,7 +18,7 @@
 #define DMITIGR_NET_ENDPOINT_HPP
 
 #include "../base/assert.hpp"
-#include "../fs/filesystem.hpp"
+#include "../fsx/filesystem.hpp"
 #include "basics.hpp"
 
 #include <optional>

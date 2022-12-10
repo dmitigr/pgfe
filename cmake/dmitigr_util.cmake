@@ -25,9 +25,9 @@ dmitigr_libs_set_library_info(util 0 0 0 "Utilities")
 # ------------------------------------------------------------------------------
 
 set(dmitigr_util_headers
+  autostack.hpp
+  contract.hpp
   diagnostic.hpp
-  endianness.hpp
-  enum_bitmask.hpp
   memory.hpp
   )
 

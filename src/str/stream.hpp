@@ -18,7 +18,7 @@
 #define DMITIGR_STR_STREAM_HPP
 
 #include "../base/ret.hpp"
-#include "../fs/filesystem.hpp"
+#include "../fsx/filesystem.hpp"
 #include "basics.hpp"
 #include "exceptions.hpp"
 #include "predicate.hpp"
@@ -30,10 +30,20 @@
 #include <istream>
 #include <fstream>
 #include <optional>
+#include <ostream> // std::endl
+#include <sstream>
 #include <string>
 #include <vector>
 
 namespace dmitigr::str {
+
+/// @returns New line sequence.
+std::string endlstr()
+{
+  std::stringstream ss;
+  ss << std::endl;
+  return ss.str();
+}
 
 /**
  * @brief Reads the file into the vector of strings.

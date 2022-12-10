@@ -18,13 +18,13 @@
 # Info
 # ------------------------------------------------------------------------------
 
-dmitigr_libs_set_library_info(fs 0 0 0 "Standard filesystem extensions")
+dmitigr_libs_set_library_info(fsx 0 0 0 "Standard filesystem extensions")
 
 # ------------------------------------------------------------------------------
 # Sources
 # ------------------------------------------------------------------------------
 
-set(dmitigr_fs_headers
+set(dmitigr_fsx_headers
   filesystem.hpp
   misc.hpp
   )
@@ -33,4 +33,4 @@ set(dmitigr_fs_headers
 # Dependencies
 # ------------------------------------------------------------------------------
 
-dmitigr_append_cppfs(dmitigr_fs_target_link_libraries_interface)
+dmitigr_append_cppfs(dmitigr_fsx_target_link_libraries_interface)

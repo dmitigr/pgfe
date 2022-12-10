@@ -17,6 +17,7 @@
 #ifndef DMITIGR_UTIL_UTIL_HPP
 #define DMITIGR_UTIL_UTIL_HPP
 
+#include "autostack.hpp"
 #include "contract.hpp"
 #include "diagnostic.hpp"
 #include "memory.hpp"

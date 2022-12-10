@@ -18,7 +18,7 @@
 #define DMITIGR_NET_ADDRESS_HPP
 
 #include "../base/assert.hpp"
-#include "../fs/filesystem.hpp"
+#include "../fsx/filesystem.hpp"
 #include "exceptions.hpp"
 
 #include <algorithm>

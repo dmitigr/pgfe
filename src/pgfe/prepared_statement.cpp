@@ -357,10 +357,17 @@ DMITIGR_PGFE_INLINE Prepared_statement::Prepared_statement(
   init_connection__(std::move(state));
   state_->preparsed_ = static_cast<bool>(preparsed);
   if (state_->preparsed_) {
+    std::size_t bound_params_count{};
     const std::size_t pc = preparsed->parameter_count();
     parameters_.resize(pc);
-    for (std::size_t i = preparsed->positional_parameter_count(); i < pc; ++i)
-      parameters_[i].name = preparsed->parameter_name(i);
+    for (std::size_t i = preparsed->positional_parameter_count(); i < pc; ++i) {
+      const auto name = preparsed->parameter_name(i);
+      if (preparsed->bound(name))
+        ++bound_params_count;
+      else
+        parameters_[i - bound_params_count].name = name;
+    }
+    parameters_.resize(pc - bound_params_count);
   } else
     parameters_.reserve(8);
 

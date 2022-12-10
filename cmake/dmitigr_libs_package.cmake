@@ -14,4 +14,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set(dmitigr_libs_package "base;fs;os;str;util;net;pgfe")
+set(dmitigr_libs_package "base;fsx;os;str;util;net;pgfe")

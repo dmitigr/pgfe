@@ -18,7 +18,7 @@
 #define DMITIGR_NET_LISTENER_HPP
 
 #include "../base/assert.hpp"
-#include "../fs/filesystem.hpp"
+#include "../fsx/filesystem.hpp"
 #include "address.hpp"
 #include "descriptor.hpp"
 #include "endpoint.hpp"
