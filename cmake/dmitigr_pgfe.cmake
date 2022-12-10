@@ -18,7 +18,7 @@
 # Info
 # ------------------------------------------------------------------------------
 
-dmitigr_libs_set_library_info(pgfe 2 1 0 "PostgreSQL client API")
+dmitigr_libs_set_library_info(pgfe 2 1 1 "PostgreSQL client API")
 
 # ------------------------------------------------------------------------------
 # Sources
