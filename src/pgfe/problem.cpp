@@ -72,9 +72,23 @@ DMITIGR_PGFE_INLINE const char* Problem::query_position() const noexcept
   return pq_result_.er_query_position();
 }
 
+DMITIGR_PGFE_INLINE std::string::size_type
+Problem::query_position_num() const noexcept
+{
+  const char* const pos{query_position()};
+  return pos ? std::strtoul(pos, nullptr, 10) : 0;
+}
+
 DMITIGR_PGFE_INLINE const char* Problem::internal_query_position() const noexcept
 {
   return pq_result_.er_internal_query_position();
+}
+
+DMITIGR_PGFE_INLINE std::string::size_type
+Problem::internal_query_position_num() const noexcept
+{
+  const char* const pos{internal_query_position()};
+  return pos ? std::strtoul(pos, nullptr, 10) : 0;
 }
 
 DMITIGR_PGFE_INLINE const char* Problem::internal_query() const noexcept
@@ -120,6 +134,12 @@ DMITIGR_PGFE_INLINE const char* Problem::source_file() const noexcept
 DMITIGR_PGFE_INLINE const char* Problem::source_line() const noexcept
 {
   return pq_result_.er_source_line();
+}
+
+DMITIGR_PGFE_INLINE std::string::size_type Problem::source_line_num() const noexcept
+{
+  const char* const pos{source_line()};
+  return pos ? std::strtoul(pos, nullptr, 10) : 0;
 }
 
 DMITIGR_PGFE_INLINE const char* Problem::source_function() const noexcept

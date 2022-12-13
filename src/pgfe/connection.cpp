@@ -539,7 +539,8 @@ Connection::handle_input(const bool wait_response)
           response_status_ = Response_status::ready_not_preprocessed;
         else
           response_status_ = Response_status::empty;
-      }
+      } else
+        response_status_ = Response_status::unready;
     }
   }
 

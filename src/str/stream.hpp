@@ -30,20 +30,11 @@
 #include <istream>
 #include <fstream>
 #include <optional>
-#include <ostream> // std::endl
 #include <sstream>
 #include <string>
 #include <vector>
 
 namespace dmitigr::str {
-
-/// @returns New line sequence.
-std::string endlstr()
-{
-  std::stringstream ss;
-  ss << std::endl;
-  return ss.str();
-}
 
 /**
  * @brief Reads the file into the vector of strings.

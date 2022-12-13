@@ -44,4 +44,9 @@ DMITIGR_PGFE_INLINE const Error& Server_exception::error() const noexcept
   return *error_;
 }
 
+DMITIGR_PGFE_INLINE std::shared_ptr<Error> Server_exception::error_ptr() const noexcept
+{
+  return error_;
+}
+
 } // namespace dmitigr::pgfe

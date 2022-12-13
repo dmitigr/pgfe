@@ -96,10 +96,22 @@ public:
   DMITIGR_PGFE_API const char* query_position() const noexcept;
 
   /**
+   * @returns The the numeric representation of `query_position()`, or
+   * `0` if `!query_position()`.
+   */
+  DMITIGR_PGFE_API std::string::size_type query_position_num() const noexcept;
+
+  /**
    * @returns: Similar to query_position(), but it is used when the position
    * refers to an internally-generated query rather than the one submitted.
    */
   DMITIGR_PGFE_API const char* internal_query_position() const noexcept;
+
+  /**
+   * @returns The the numeric representation of `internal_query_position()`, or
+   * `0` if `!internal_query_position()`.
+   */
+  DMITIGR_PGFE_API std::string::size_type internal_query_position_num() const noexcept;
 
   /**
    * @returns The text of the failed internally-generated query.
@@ -155,6 +167,12 @@ public:
 
   /// @returns The line number of the source-code location reporting the problem.
   DMITIGR_PGFE_API const char* source_line() const noexcept;
+
+  /**
+   * @returns The the numeric representation of `source_line()`, or
+   * `0` if `!source_line()`.
+   */
+  DMITIGR_PGFE_API std::string::size_type source_line_num() const noexcept;
 
   /// @returns The name of the source-code function reporting the problem.
   DMITIGR_PGFE_API const char* source_function() const noexcept;

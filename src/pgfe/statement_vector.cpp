@@ -115,7 +115,7 @@ Statement_vector::query_absolute_position(const std::size_t index,
   const auto statement_position = [this](const std::size_t idx)
   {
     std::string::size_type result{};
-    for (std::size_t i = 0; i < idx; ++i)
+    for (std::size_t i{}; i < idx; ++i)
       result += operator[](i).to_string().size() + 1;
     return result;
   };

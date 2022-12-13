@@ -85,7 +85,7 @@ public:
   /// The constructor.
   explicit Result(PGresult* const pgresult) noexcept
     : status_{pgresult ? PQresultStatus(pgresult) : static_cast<Status>(-1)}
-    , pgresult_(pgresult)
+    , pgresult_{pgresult}
   {}
 
   /**

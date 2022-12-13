@@ -73,6 +73,9 @@ public:
   /// @returns The error response (aka error report).
   DMITIGR_PGFE_API const Error& error() const noexcept;
 
+  /// @returns The error response as the underlying shared pointer.
+  DMITIGR_PGFE_API std::shared_ptr<Error> error_ptr() const noexcept;
+
 private:
   std::shared_ptr<Error> error_;
 };
