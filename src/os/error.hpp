@@ -29,7 +29,7 @@ inline std::string error_message(const int code)
 {
 #ifdef _WIN32
   char buf[128];
-  if (const int e = ::strerror_s(buf, code))
+  if (const int e = ::strerror_s(buf, sizeof(buf), code))
     throw Sys_exception{e, "cannot get an OS error message"};
   else
     return buf;
