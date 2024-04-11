@@ -67,11 +67,12 @@ try {
     pgfe::Connection conn;
     try {
       conn.connect();
-    } catch (const std::exception& e) {}
+    } catch (const std::exception& e) {
+      DMITIGR_ASSERT(conn.status() == Connection_status::disconnected);
+    }
+    conn.disconnect();
     DMITIGR_ASSERT(conn.status() == Connection_status::disconnected);
   }
-    // conn.disconnect();
-    // DMITIGR_ASSERT(conn.status() == Connection_status::disconnected);
 
   // Ping
   {
