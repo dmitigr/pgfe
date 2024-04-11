@@ -197,6 +197,21 @@ Connection_options::port() const noexcept
 }
 
 DMITIGR_PGFE_INLINE Connection_options&
+Connection_options::set_service_name(std::optional<std::string> value)
+{
+  if (value)
+    validate(is_non_empty(*value), "service name");
+  service_name_ = std::move(value);
+  return *this;
+}
+
+DMITIGR_PGFE_INLINE const std::optional<std::string>&
+Connection_options::service_name() const noexcept
+{
+  return service_name_;
+}
+
+DMITIGR_PGFE_INLINE Connection_options&
 Connection_options::set_uds_directory(std::optional<std::filesystem::path> value)
 {
   if (value)
@@ -629,6 +644,7 @@ operator==(const Connection_options& lhs, const Connection_options& rhs) noexcep
     lhs.ssl_min_protocol_version_ == rhs.ssl_min_protocol_version_ &&
     lhs.ssl_max_protocol_version_ == rhs.ssl_max_protocol_version_ &&
     // strings
+    lhs.service_name_ == rhs.service_name_ &&
     lhs.uds_directory_ == rhs.uds_directory_ &&
     lhs.uds_require_server_process_username_ ==
     rhs.uds_require_server_process_username_ &&
@@ -658,41 +674,39 @@ public:
   /// The constructor.
   explicit Connection_options(const pgfe::Connection_options& o)
   {
-    const auto cm = o.communication_mode();
-    if (!cm)
-      throw Client_exception{"incomplete connection options:"
-        " communication mode is not specified"};
+    const auto& srv = o.service_name();
+    if (srv)
+      values_[service] = *srv;
 
-    switch (*cm) {
-    case Communication_mode::net: {
-      if (const auto& v = o.hostname())
-        values_[host] = *v;
-      if (const auto& v  = o.address())
-        values_[hostaddr] = *v;
-      if (const auto v = o.port())
-        values_[port] = std::to_string(*v);
-      if (const auto v = o.is_tcp_keepalives_enabled())
-        values_[keepalives] = std::to_string(*v);
-      if (const auto v = o.tcp_keepalives_idle())
-        values_[keepalives_idle] = std::to_string(v->count());
-      if (const auto v = o.tcp_keepalives_interval())
-        values_[keepalives_interval] = std::to_string(v->count());
-      if (const auto v = o.tcp_keepalives_count())
-        values_[keepalives_count] = std::to_string(*v);
-      if (const auto v = o.tcp_user_timeout())
-        values_[tcp_user_timeout] = std::to_string(v->count());
-      break;
-    }
-    case Communication_mode::uds:
-      if (const auto& v = o.uds_directory())
-        values_[host] = v->generic_string();
-      if (const auto v = o.port())
-        values_[port] = std::to_string(*v);
-      if (const auto& v = o.uds_require_server_process_username())
-        values_[requirepeer] = *v;
-      break;
-    default:
-      DMITIGR_ASSERT(false);
+    {
+      const auto cm = o.communication_mode();
+      if (!cm || cm == Communication_mode::net) {
+        if (const auto& v = o.hostname())
+          values_[host] = *v;
+        if (const auto& v  = o.address())
+          values_[hostaddr] = *v;
+        if (const auto v = o.port())
+          values_[port] = std::to_string(*v);
+        if (const auto v = o.is_tcp_keepalives_enabled())
+          values_[keepalives] = std::to_string(*v);
+        if (const auto v = o.tcp_keepalives_idle())
+          values_[keepalives_idle] = std::to_string(v->count());
+        if (const auto v = o.tcp_keepalives_interval())
+          values_[keepalives_interval] = std::to_string(v->count());
+        if (const auto v = o.tcp_keepalives_count())
+          values_[keepalives_count] = std::to_string(*v);
+        if (const auto v = o.tcp_user_timeout())
+          values_[tcp_user_timeout] = std::to_string(v->count());
+      }
+
+      if (!cm || cm == Communication_mode::uds) {
+        if (const auto& v = o.uds_directory())
+          values_[host] = v->generic_string();
+        if (const auto v = o.port())
+          values_[port] = std::to_string(*v);
+        if (const auto& v = o.uds_require_server_process_username())
+          values_[requirepeer] = *v;
+      }
     }
 
     if (const auto& v = o.session_mode())
@@ -717,7 +731,8 @@ public:
     if (const auto& v = o.kerberos_service_name())
       values_[krbsrvname] = *v;
 
-    values_[sslmode] = "disable";
+    if (!srv)
+      values_[sslmode] = "disable";
     if (const auto is_ssl = o.is_ssl_enabled(); is_ssl && *is_ssl) {
       const auto is_full = o.is_ssl_server_hostname_verification_enabled();
       if (!is_full || !*is_full) {
@@ -763,7 +778,6 @@ public:
     values_[options] = "";
     values_[application_name] = "";
     values_[fallback_application_name] = "";
-    values_[service] = "";
     values_[target_session_attrs] = "any";
 
     update_cache();
@@ -860,10 +874,11 @@ private:
     sslsni, requirepeer, ssl_min_protocol_version, ssl_max_protocol_version,
 
     target_session_attrs,
+    service,
 
     // Options that are unavailable from Pgfe API (at least for now):
     gsslib, connect_timeout, client_encoding, options, application_name,
-    fallback_application_name, service,
+    fallback_application_name,
 
     // The last member is special - it denotes keyword count.
     Keyword_count_

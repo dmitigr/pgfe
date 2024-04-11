@@ -24,6 +24,7 @@
 
 #include <chrono>
 #include <cstdlib>
+#include <filesystem>
 #include <fstream>
 #include <iostream>
 #include <stdexcept>
@@ -82,6 +83,19 @@ inline auto make_ssl_connection()
     .set_ssl_server_hostname_verification_enabled(true);
 
   return std::make_unique<pgfe::Connection>(conn_opts);
+}
+
+inline auto service_file_path()
+{
+#ifdef _WIN32
+  auto appdata = os::environment_variable("APPDATA");
+  DMITIGR_ASSERT(appdata);
+  return std::filesystem::path{*appdata}/"postgresql"/".pg_service.conf";
+#else // Unix
+  auto home = os::environment_variable("HOME");
+  DMITIGR_ASSERT(home);
+  return std::filesystem::path{*home}/".pg_service.conf";
+#endif
 }
 
 } // namespace dmitigr::pgfe::test

@@ -61,7 +61,6 @@ set(dmitigr_pgfe_headers
   statement.hpp
   statement_vector.hpp
   transaction_guard.hpp
-  tuple.hpp
   types_fwd.hpp
   )
 
@@ -144,6 +143,7 @@ if(DMITIGR_LIBS_TESTS)
     ps
     lob
     row
+    service
     statement
     statement_vector
     transaction_guard

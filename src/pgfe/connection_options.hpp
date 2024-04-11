@@ -154,6 +154,27 @@ public:
   DMITIGR_PGFE_API std::optional<std::int_fast32_t>
   port() const noexcept;
 
+  // ---------------------------------------------------------------------------
+
+  /**
+   * @brief Sets the service name to use for additional options.
+   *
+   * @details Explicitly specified options overrides options specified in the
+   * connection service file.
+   *
+   * @see service_name(), https://www.postgresql.org/docs/current/libpq-pgservice.html
+   */
+  DMITIGR_PGFE_API Connection_options&
+  set_service_name(std::optional<std::string> value);
+
+  /**
+   * @returns The current value of the option.
+   *
+   * @see set_service_name().
+   */
+  DMITIGR_PGFE_API const std::optional<std::string>&
+  service_name() const noexcept;
+
   /// @}
 
   // --------------------------------------------------------------------------
@@ -624,6 +645,7 @@ private:
   std::optional<Session_mode> session_mode_;
   std::optional<std::chrono::milliseconds> connect_timeout_;
   std::optional<std::chrono::milliseconds> wait_response_timeout_;
+  std::optional<std::string> service_name_;
   std::optional<std::filesystem::path> uds_directory_;
   std::optional<std::string> uds_require_server_process_username_;
   std::optional<bool> tcp_keepalives_enabled_;
