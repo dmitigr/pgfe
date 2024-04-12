@@ -61,6 +61,7 @@ set(dmitigr_pgfe_headers
   statement.hpp
   statement_vector.hpp
   transaction_guard.hpp
+  tuple.hpp
   types_fwd.hpp
   )
 
