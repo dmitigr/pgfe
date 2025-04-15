@@ -57,12 +57,12 @@ DMITIGR_PGFE_INLINE Completion::Completion(const std::string_view tag)
       errno = 0;
       char* p{};
       const long number = std::strtol(word.c_str(), &p, 10);
-      if (const int err = errno)
-        throw Client_exception{"cannot parse command completion tag:"
-          " " + os::error_message(err)};
       if (p == word.c_str())
         // The word is not a number.
         break;
+      else if (errno != 0)
+        throw Client_exception{"cannot parse command completion tag:"
+          " " + os::error_message(errno)};
       else if (row_count_ < 0)
         row_count_ = number;
 
