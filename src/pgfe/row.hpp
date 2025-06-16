@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2022 Dmitry Igrishin
+// Copyright 2023 Dmitry Igrishin
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -96,7 +96,7 @@ public:
    * `field_index(name, offset) < field_count()`.
    */
   DMITIGR_PGFE_API Data_view data(const std::string_view name,
-    std::size_t offset = 0) const noexcept override;
+    std::size_t offset = 0) const override;
 
   /// @name Iterators
   /// @{

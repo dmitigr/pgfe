@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2022 Dmitry Igrishin
+// Copyright 2023 Dmitry Igrishin
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ DMITIGR_PGFE_INLINE Data_view Row::data(const std::size_t index) const
 }
 
 DMITIGR_PGFE_INLINE Data_view Row::data(const std::string_view name,
-  const std::size_t offset) const noexcept
+  const std::size_t offset) const
 {
   return data(field_index(name, offset));
 }
