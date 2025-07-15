@@ -32,7 +32,7 @@ DMITIGR_PGFE_INLINE std::string Client_error_category::message(const int ev) con
 
 DMITIGR_PGFE_INLINE std::string Server_error_category::message(const int ev) const
 {
-  const char* const desc{to_literal_anyway(static_cast<Client_errc>(ev))};
+  const char* const desc{to_literal_anyway(static_cast<Server_errc>(ev))};
   constexpr const char* const sep{": "};
   const auto sqlstate = Problem::sqlstate_int_to_string(ev);
   std::string result;
