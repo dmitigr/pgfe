@@ -1,6 +1,6 @@
 // -*- C++ -*-
 //
-// Copyright 2022 Dmitry Igrishin
+// Copyright 2025 Dmitry Igrishin
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@
 #include "connection.hpp"
 #include "statement.hpp"
 
-#include <iostream>
 #include <string>
 
 namespace dmitigr::pgfe {
@@ -48,22 +47,19 @@ public:
   ~Transaction_guard()
   {
     try {
-      try {
-        rollback();
-      } catch (...) {
-        conn_.disconnect();
-        throw;
-      }
-    } catch (const std::exception& e) {
-      std::clog << "rollback error:" << e.what() << '\n';
+      rollback();
     } catch (...) {
-      std::clog << "rollback error: unknown error\n";
+      conn_.disconnect();
     }
   }
 
-  /// Begins the transaction (or defines a savepoint) if `auto_begin`.
-  Transaction_guard(Connection& conn,
-    const bool auto_begin = true, std::string savepoint = {})
+  /// Begins the transaction (or defines a savepoint).
+  explicit Transaction_guard(Connection& conn)
+    : Transaction_guard{conn, std::string{}}
+  {}
+
+  /// @overload
+  Transaction_guard(Connection& conn, std::string savepoint)
     : conn_{conn}
     , is_subtransaction_{conn_.is_transaction_uncommitted()}
     , savepoint_{std::move(savepoint)}
@@ -76,8 +72,7 @@ public:
     } else
       rollback_stmt_ = "rollback";
 
-    if (auto_begin)
-      begin();
+    begin();
   }
 
   /// @returns `true` if this instance guards a subtransaction.
@@ -92,52 +87,64 @@ public:
     return savepoint_;
   }
 
-  /// Begins a transaction (or opens savepoint) if it hasn't already begun.
+  /// Begins a transaction (or opens savepoint) if `!has_begun()`.
   void begin()
   {
-    if (!conn_.is_transaction_uncommitted())
-      conn_.execute("begin");
-
-    if (is_subtransaction_)
-      conn_.execute(savepoint_stmt__(R"(savepoint :"s")"));
+    if (!has_begun_) {
+      if (is_subtransaction_)
+        conn_.execute(savepoint_stmt__(R"(savepoint :"s")"));
+      else
+        conn_.execute("begin");
+      has_begun_ = true;
+    }
   }
 
-  /**
-   * @brief Commits the transaction (or destroys a savepoint) if the
-   * transaction is uncommitted.
-   */
+  /// @returns `true` if a transaction guarded by this instance has begun.
+  bool has_begun() const noexcept
+  {
+    return has_begun_;
+  }
+
+  /// Commits the transaction (or destroys a savepoint) if `has_begun()`.
   void commit()
   {
-    commit__("commit");
+    commit__(commit_stmt_);
   }
 
   /**
    * @brief Similar to commit().
    *
-   * @details If `!is_subtransaction()`, immediately begins a new transaction
-   * with the same transaction characteristics as the just committed one.
+   * @details Immediately begins a new (sub-)transaction with the same
+   * transaction characteristics as the just committed one.
    */
   void commit_and_chain()
   {
-    commit__("commit and chain");
+    commit__(commit_and_chain_stmt_);
+    if (is_subtransaction_)
+      begin();
+    has_begun_ = true;
   }
 
   /**
    * @brief Rollbacks the transaction (or savepoint if `is_subtransaction()`)
-   * if the transaction is uncommitted.
+   * if `has_begun()`.
    */
   void rollback()
   {
-    if (conn_.is_transaction_uncommitted() && !is_subtransaction_committed_)
+    if (has_begun_) {
       conn_.execute(rollback_stmt_);
+      has_begun_ = false;
+    }
   }
 
 private:
   Connection& conn_;
   bool is_subtransaction_{};
-  bool is_subtransaction_committed_{};
+  bool has_begun_{};
   std::string savepoint_;
   Statement rollback_stmt_;
+  inline static Statement commit_stmt_{"commit"};
+  inline static Statement commit_and_chain_stmt_{"commit and chain"};
 
   Statement savepoint_stmt__(const std::string_view input) const
   {
@@ -145,14 +152,14 @@ private:
     return Statement{input}.bind("s", savepoint_);
   }
 
-  void commit__(const Statement commit_query)
+  void commit__(const Statement& commit_query)
   {
-    if (conn_.is_transaction_uncommitted()) {
-      if (is_subtransaction_) {
+    if (has_begun_) {
+      if (is_subtransaction_)
         conn_.execute(savepoint_stmt__(R"(release :"s")"));
-        is_subtransaction_committed_ = true;
-      } else
+      else
         conn_.execute(commit_query);
+      has_begun_ = false;
     }
   }
 };
